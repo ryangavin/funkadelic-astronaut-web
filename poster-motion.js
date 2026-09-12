@@ -18,6 +18,15 @@
   }));
   let timer;
   let glyphs = [];
+  function paperHeight() {
+    const hero = document.querySelector('.hero');
+    if (hero) document.body.style.setProperty('--hero-paper-height', `${hero.offsetTop + hero.offsetHeight}px`);
+  }
+  if (document.body && document.body.style) {
+    paperHeight();
+    addEventListener('resize', paperHeight);
+    if (document.fonts) document.fonts.ready.then(paperHeight);
+  }
   // Separate painted glyphs let the grain travel with each letter's transform.
   function buildGlyphs() {
     stop();

@@ -73,7 +73,15 @@
           <feComponentTransfer>
             <feFuncA type="discrete" tableValues="0 0.45 0.88 1 1 1 1 1" />
           </feComponentTransfer>
-          <feComposite in="rough" operator="in" />
+          <feComposite in="rough" operator="in" result="worn" />
+          <feColorMatrix in="grain" type="luminanceToAlpha" />
+          <feComponentTransfer>
+            <feFuncA type="discrete" tableValues="0 0 0 0 0 0.2 0.45 0.65" />
+          </feComponentTransfer>
+          <feComposite in2="SourceAlpha" operator="in" result="flecks" />
+          <feFlood flood-color="#29231d" />
+          <feComposite in2="flecks" operator="in" />
+          <feComposite in2="worn" operator="over" />
         </filter>
       </defs>
     </svg>

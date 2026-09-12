@@ -984,7 +984,7 @@ video {
 
 /* One neutral-gray overlay wears both light paper and dark ink alike. */
 .hero::after, .scene::after { content: none; }
-body::after, #video-dialog::after {
+body::after, #video-dialog::after, .hero::after {
   content: "";
   position: fixed;
   inset: 0;
@@ -1152,7 +1152,7 @@ dialog::backdrop { background: #121420e8; }
 .astronaut { filter: url(#astronaut-palette) url(#printed-ink); mix-blend-mode: normal; }
 
 /* Visible dark paper fibers complement the lighter ink wear on every surface. */
-body::before, #video-dialog::before {
+body::before, #video-dialog::before, .hero::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -1165,7 +1165,7 @@ body::before, #video-dialog::before {
 #video-dialog::before { position: absolute; }
 
 /* Broad, uneven paper staining sits beneath the finer dark fibers. */
-body::before, #video-dialog::before {
+body::before, #video-dialog::before, .hero::before {
   background-image: url("assets/paper-dark-flecks.svg"), url("assets/paper-patina.svg");
   background-size: 640px 640px, 900px 900px;
   background-blend-mode: multiply;
@@ -1174,7 +1174,7 @@ body::before, #video-dialog::before {
 }
 
 /* Exposure after printing: tide lines, damp edges, and faint paper creases. */
-body::before, #video-dialog::before {
+body::before, #video-dialog::before, .hero::before {
   background-image: url("assets/poster-weathering.svg"), url("assets/paper-dark-flecks.svg"), url("assets/paper-patina.svg");
   background-size: 100% 1500px, 640px 640px, 900px 900px;
   background-repeat: repeat-y, repeat, repeat;
@@ -1208,7 +1208,7 @@ body::before, body::after { position: absolute; }
 .gallery-indicators [aria-current], .gallery-controls button:hover { background: #ead3a718; }
 
 /* Edge damage has its own anchors; resizing cannot pull it into the sheet. */
-body::before, #video-dialog::before {
+body::before, #video-dialog::before, .hero::before {
   background-image:
     url("assets/weathering-left.svg"),
     url("assets/weathering-right.svg"),
@@ -1221,29 +1221,29 @@ body::before, #video-dialog::before {
 }
 
 /* Every weathering layer uses a fixed-scale corner or center anchor. */
-body::before, #video-dialog::before {
+body::before, #video-dialog::before, .hero::before {
   background-position: left top, right top, center 1250px, left top, center top;
   background-size: 200px 1500px, 200px 1500px, 1200px 250px, 640px 640px, 900px 900px;
 }
-body::after, #video-dialog::after {
+body::after, #video-dialog::after, .hero::after {
   background-position: left top;
   background-size: 360px 360px;
 }
 
 /* Fine light and dark grain share the broad texture's horizontal center. */
-body::before, #video-dialog::before {
+body::before, #video-dialog::before, .hero::before {
   background-position: left top, right top, center 1250px, center top, center top;
 }
-body::after, #video-dialog::after { background-position: center top; }
+body::after, #video-dialog::after, .hero::after { background-position: center top; }
 
 /* Infinite paper texture: fixed tile sizes and a fixed document origin.
    Only the edge damage follows the sheet's changing boundaries. */
-body::before, #video-dialog::before {
+body::before, #video-dialog::before, .hero::before {
   background-position: left top, right top, center 1250px, 0 0, 0 0;
   background-size: 200px 1500px, 200px 1500px, 1200px 250px, 640px 640px, 900px 900px;
   background-origin: border-box;
 }
-body::after, #video-dialog::after {
+body::after, #video-dialog::after, .hero::after {
   background-position: 0 0;
   background-size: 360px 360px;
   background-origin: border-box;
@@ -1290,7 +1290,7 @@ html::after {
 }
 
 /* A separate top-center tide mark keeps wide paper from weathering only at its sides. */
-body::before, #video-dialog::before {
+body::before, #video-dialog::before, .hero::before {
   background-image:
     url("assets/weathering-top-center.svg"),
     url("assets/weathering-left.svg"),
@@ -1474,3 +1474,8 @@ body::before, #video-dialog::before {
 @media (max-width: 760px) {
   .wordmark svg { filter: drop-shadow(2px 3px 0 #121420); }
 }
+
+/* Hero paper weathering sits behind the moving cutout ink. */
+body::before, body::after { clip-path: inset(var(--hero-paper-height, 0px) 0 0); }
+.hero::before, .hero::after { position: absolute; z-index: 0; }
+.hero-title { z-index: 1; }
