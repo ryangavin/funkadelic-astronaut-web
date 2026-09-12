@@ -137,10 +137,10 @@ if (focalPhoto) {
     const w = frame.clientWidth, h = frame.clientHeight;
     const mobile = w <= 760;
     const targetX = w * (mobile ? .44 : .26);
-    const targetY = mobile ? 270 : Math.max(220, h * .28);
+    const targetY = h * (mobile ? 270 / 760 : 220 / 760);
     const scale = mobile
       ? Math.max(w / focalPhoto.naturalWidth, h / focalPhoto.naturalHeight)
-      : Math.max(w / focalPhoto.naturalWidth, h / focalPhoto.naturalHeight, (h - targetY + 48) / (focalPhoto.naturalHeight * (1 - fy)));
+      : Math.max(w / focalPhoto.naturalWidth, h / focalPhoto.naturalHeight, (h - targetY + h * 48 / 760) / (focalPhoto.naturalHeight * (1 - fy)));
     const width = focalPhoto.naturalWidth * scale, height = focalPhoto.naturalHeight * scale;
     Object.assign(focalPhoto.style, {
       width: `${width}px`, height: `${height}px`,

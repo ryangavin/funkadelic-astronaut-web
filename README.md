@@ -52,3 +52,7 @@ The September 12 typography export is now the default: Modak for display letteri
 `style.css` imports ordered layers from `styles/`: `base.css` holds baseline layout, `poster.css` holds the established poster treatment, `sections.css` holds the current section compositions, and `cutout.css` owns the shared cutout typography. Asset URLs in these sheets are relative to `styles/`. `cutout-type.js` supplies the same glyph structure to headings and dynamic labels. Keep visual cutout changes in the shared layer; section rules should control size and placement.
 
 The HTML remains directly served static markup, and behavior is split into focused JavaScript files. Publishing is currently on hold.
+
+### Section composition references
+
+About and Tour use a shared `--composition-unit`: a 1440px larger-screen reference and a 390px compact reference, switching at 760px. Their heights, copy, gutters, gallery controls, and Tour footer scale together. Gallery changes do not resize the section. Ribbon height tracks page width, and gallery image focal positioning tracks section height. Intentional wave cropping remains part of the composition.
