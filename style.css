@@ -1462,3 +1462,15 @@ body::before, #video-dialog::before {
 
 .hero > .streaming-links a { width: min(5vw, 72px); height: min(5vw, 72px); }
 .hero > .streaming-links .streaming-logo { width: min(3.6vw, 50.4px); height: min(3.6vw, 50.4px); filter: url(#printed-ink); }
+
+/* Grain belongs to the moving ink, rather than a stationary parent layer. */
+.wordmark svg { filter: drop-shadow(4px 5px 0 #121420); }
+.wordmark .moving-glyph { transform-box: fill-box; transform-origin: center; }
+.wordmark .moving-glyph text { filter: url(#printed-ink); }
+.navigation .utility, .navigation .anchors { filter: none; }
+.navigation .print-jitter > span,
+.navigation svg.print-jitter,
+.navigation .nav-underline { filter: url(#printed-ink); }
+@media (max-width: 760px) {
+  .wordmark svg { filter: drop-shadow(2px 3px 0 #121420); }
+}

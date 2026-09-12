@@ -17,6 +17,39 @@
     })),
   }));
   let timer;
+  let glyphs = [];
+  // Separate painted glyphs let the grain travel with each letter's transform.
+  function buildGlyphs() {
+    stop();
+    glyphs.forEach(glyph => glyph.remove());
+    glyphs = [];
+    words.forEach(word => {
+      word.style.visibility = '';
+      const chars = word.textContent.trim();
+      for (let i = 0; i < word.getNumberOfChars(); i++) {
+        const start = word.getStartPositionOfChar(i);
+        const end = word.getEndPositionOfChar(i);
+        const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        group.setAttribute('class', 'moving-glyph');
+        const glyph = word.cloneNode(false);
+        glyph.classList.remove('print-jitter');
+        glyph.textContent = chars[i];
+        glyph.setAttribute('x', start.x);
+        glyph.setAttribute('y', start.y);
+        glyph.setAttribute('textLength', Math.hypot(end.x - start.x, end.y - start.y));
+        glyph.setAttribute('aria-hidden', 'true');
+        group.append(glyph);
+        word.parentNode.append(group);
+        glyphs.push(group);
+      }
+      word.style.visibility = 'hidden';
+    });
+    sync();
+  }
+  if (document.fonts && document.createElementNS) {
+    document.fonts.ready.then(buildGlyphs);
+    addEventListener('resize', buildGlyphs);
+  }
   const random = amplitude => +( (Math.random() * 2 - 1) * amplitude).toFixed(3);
   const jitter = () => ({ x: random(.45), y: random(.8), angle: random(.55) });
   function restore(node, name, value) {
@@ -25,6 +58,7 @@
   }
   function stop() {
     clearInterval(timer);
+    glyphs.forEach(glyph => { glyph.style.translate = ""; glyph.style.rotate = ""; });
     interactions.forEach(({letters}) => letters.forEach(letter => { letter.style.translate = ''; letter.style.rotate = ''; }));
     words.forEach((word, i) => {
       attributes.forEach((name, j) => restore(word, name, originals[i].values[j]));
@@ -47,6 +81,12 @@
       astronaut.style.translate = `${random(1.6)}px ${random(2.3)}px`;
       astronaut.style.rotate = `${random(.7)}deg`;
     }
+    glyphs.forEach(glyph => {
+      const frame = jitter();
+      glyph.style.translate = `${frame.x}px ${frame.y}px`;
+      glyph.style.rotate = `${frame.angle}deg`;
+    });
+    if (glyphs.length) return;
     words.forEach((word, row) => {
       const count = word.getNumberOfChars();
       const frames = Array.from({length:count}, jitter);
