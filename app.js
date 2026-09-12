@@ -70,12 +70,12 @@ function shape(section) {
   const svg = section.querySelector(".seam");
   svg.setAttribute("viewBox", `0 0 ${w} ${wave}`);
   const colors = hero
-    ? ["#a52837", "#ead3a7", "#121420", "#c58930"]
+    ? ["#a52837", "#ead3a7", "#121420"]
     : section.id === "learn"
       ? ["#c58930", "#ead3a7", "#a52837"]
       : ["#a52837", "#ead3a7", "#121420"];
   svg.innerHTML = colors.map((color, i) =>
-    `<path d="${scaled}" fill="none" stroke="${color}" stroke-width="${(hero ? [44, 30, 20, 6] : [44, 26, 14])[i] * (w < 760 ? .65 : 1)}"/>`
+    `<path d="${scaled}" fill="none" stroke="${color}" stroke-width="${(hero ? [44, 30, 20] : [44, 26, 14])[i] * (w < 760 ? .65 : 1)}"/>`
   ).join("");
 }
 // The editor redraws the same path used by clipping and all ink layers.

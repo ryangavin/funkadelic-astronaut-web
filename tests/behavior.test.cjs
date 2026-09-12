@@ -89,7 +89,7 @@ test("every responsive seam uses exactly the same geometry as its clip", () => {
       const paths = [...s.seam.innerHTML.matchAll(/ d="([^"]+)"/g)].map(
         (m) => m[1],
       );
-      assert.equal(paths.length, s.id === "listen" ? 4 : 3);
+      assert.equal(paths.length, 3);
       assert(!s.seam.innerHTML.includes("NaN"));
       assert(paths.every((d) => d === paths[0]));
       assert(s.style.clipPath.startsWith(`path('${paths[0]} L ${width} `));
