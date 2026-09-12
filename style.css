@@ -1623,3 +1623,9 @@ body::before {
 
 /* Restore deeper preview tones beneath the finished poster texture. */
 .listen:not(.sound-enabled) #inline-player { filter: grayscale(1) brightness(.96) contrast(.95); }
+
+/* Speckles are isolated marks on transparency, never a full-frame tonal wash. */
+body::after, #video-dialog::after, .hero::after, .listen::after {
+  mix-blend-mode: normal;
+  background-color: transparent;
+}
