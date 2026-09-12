@@ -664,8 +664,8 @@ html::after {
   z-index: 10001;
   pointer-events: none;
   background-image: url("../assets/paper-torn-top.svg"), url("../assets/paper-torn-bottom.svg"), url("../assets/paper-torn-left.svg"), url("../assets/paper-torn-right.svg");
-  background-position: 42% top, center bottom, left 155px, right 195px;
-  background-size: 280px 22px, 180px 22px, 22px 2400px, 22px 2400px;
+  background-position: center top, center bottom, left top, right top;
+  background-size: 100% 1.667vw, 100% 1.667vw, 1.53vw 100%, 1.53vw 100%;
   background-repeat: no-repeat;
 }
 #video-dialog::before {
@@ -1050,14 +1050,6 @@ html::after {
   width: 100%;
   height: auto;
 }
-.astronaut-paper {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  filter: drop-shadow(1px 2px 1px #12142035);
-}
 .hero-title .astronaut {
   filter: url(#printed-ink);
 }
@@ -1207,4 +1199,23 @@ body::after {
 .listen::after {
   mix-blend-mode: normal;
   background-color: transparent;
+}
+
+/* A dark surround exposes the torn paper silhouette on every edge. */
+html {
+  --poster-surround: clamp(4px, .65vw, 12px);
+  padding: var(--poster-surround);
+  background: var(--ink-black);
+}
+html::after { inset: var(--poster-surround); }
+
+/* Each sheet ages independently; the existing body wash still stains the assembled poster. */
+.hero::before {
+  background-image:
+    radial-gradient(ellipse at 8% 30%, #79502350 0%, #79502300 52%),
+    radial-gradient(ellipse at 92% 70%, #71462060 0%, #71462000 58%),
+    linear-gradient(165deg, #8b5d2b28, transparent 42%, #7b4d2638),
+    url("../assets/paper-dark-flecks.svg");
+  background-size: 100% 100%, 100% 100%, 100% 100%, 640px 640px;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
 }

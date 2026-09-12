@@ -340,3 +340,9 @@
 }
 .live-content .social-footer a { width: calc(48 * var(--composition-unit)); height: calc(48 * var(--composition-unit)); }
 .live-content .social-footer svg { width: calc(28 * var(--composition-unit)); height: calc(28 * var(--composition-unit)); }
+
+/* Compact About keeps its title below the crest and trims unused photo space. */
+@media (max-width: 760px) {
+  .scene.learn { height: calc(500 * var(--composition-unit)); }
+  .learn .learn-content { top: calc(var(--wave) * 1.1); }
+}
