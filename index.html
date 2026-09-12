@@ -180,11 +180,11 @@
           <div class="play-area">
             <div class="performance-actions"><button id="play-video" type="button" aria-label="Restart performance with sound" title="Play from the beginning with sound"><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path d="M6 3 L21 12 L6 21 Z" fill="currentColor" /></svg></button></div>
             <div id="playback-controls" class="performance-actions playback-controls" role="group" aria-label="Playback controls" hidden>
-              <button id="pause-video" type="button">Pause</button>
-              <label class="seek-control">Seek <input id="video-seek" type="range" min="0" max="0" step="0.1" value="0" disabled></label>
+              <button id="pause-video" type="button" aria-label="Pause performance" data-paused="false"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path class="pause-icon" d="M7 4v16M17 4v16" fill="none" stroke="currentColor" stroke-width="5"/><path class="play-icon" d="M6 3l15 9-15 9z" fill="currentColor"/></svg></button>
+              <input id="video-seek" aria-label="Seek performance" type="range" min="0" max="0" step="0.1" value="0" disabled>
+              <button id="mute-video" type="button" aria-label="Mute" aria-pressed="false" data-muted="false"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 9h4l5-5v16l-5-5H3z" fill="currentColor"/><path class="sound-icon" d="M16 8q5 4 0 8M19 4q9 8 0 16" fill="none" stroke="currentColor" stroke-width="2"/><path class="muted-icon" d="m16 9 6 6m0-6-6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+              <input id="video-volume" aria-label="Volume" type="range" min="0" max="1" step="0.05" value="1">
               <output id="video-time" aria-live="off">0:00 / 0:00</output>
-              <button id="mute-video" type="button" aria-pressed="false">Mute</button>
-              <label class="volume-control">Volume <input id="video-volume" type="range" min="0" max="1" step="0.05" value="1"></label>
             </div>
             <p id="video-status" role="status"></p>
             <a href="https://www.funkadelicastronaut.com/" class="video-fallback" hidden>Watch on the band’s official site ↗</a>

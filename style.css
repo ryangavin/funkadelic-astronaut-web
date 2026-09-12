@@ -1415,16 +1415,40 @@ body::before, #video-dialog::before, .hero::before {
   .listen-content { padding-top: calc(var(--wave) * .6); }
 }
 
-/* Inline controls remain above the background media and inside the content gutter. */
+/* Keep one stable video layer; the poster also backs failed/detached streams. */
+#inline-player { transform: none; will-change: auto; background: var(--petrol) url("assets/performance.webp") center / cover no-repeat; }
+#inline-player video { mix-blend-mode: normal; filter: none; opacity: 1; }
+.listen.sound-enabled #inline-player video { opacity: 1; }
+.listen.video-unavailable #inline-player video { visibility: hidden; }
+
+/* Transparent transport sits above the next wave's highest edge, with a
+   narrow footprint so the performance remains the focus. */
 #play-video[hidden], #playback-controls[hidden] { display: none; }
-.playback-controls { width: min(100%, 640px); align-items: center; padding: 16px; background: #121420e8; border-radius: 12px; color: var(--cream); }
-.playback-controls label { display: flex; align-items: center; gap: 8px; font-size: 14px; }
-.playback-controls input { min-width: 0; accent-color: var(--cream); min-height: 44px; }
-.playback-controls input:focus-visible { outline: 3px solid var(--cream); outline-offset: 3px; }
-.seek-control { flex: 1 1 220px; }
-.seek-control input { width: 100%; }
-.volume-control input { width: 100px; }
-#video-time { font-size: 13px; font-variant-numeric: tabular-nums; }
+.listen-content .play-area { position: static; }
+.playback-controls {
+  position: absolute;
+  bottom: 132px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: 44px minmax(60px, 1fr) 44px minmax(48px, 80px);
+  gap: 0 6px;
+  width: min(540px, calc(100% - 2 * var(--gutter)));
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  color: var(--cream);
+  filter: drop-shadow(0 1px 2px #121420);
+}
+.playback-controls button { width: 44px; height: 44px; padding: 0; background: transparent; color: inherit; display: grid; place-items: center; border-radius: 50%; }
+.playback-controls button:hover { background: #12142055; color: var(--cream); }
+.playback-controls input { width: 100%; min-width: 0; margin: 0; accent-color: var(--cream); min-height: 44px; }
+.playback-controls :focus-visible { outline: 3px solid var(--cream); outline-offset: 3px; }
+#video-time { grid-column: 2 / -1; font-size: 12px; font-variant-numeric: tabular-nums; text-shadow: 0 1px 3px #121420; }
+.play-icon, .muted-icon, [data-paused="true"] .pause-icon, [data-muted="true"] .sound-icon { display: none; }
+[data-paused="true"] .play-icon, [data-muted="true"] .muted-icon { display: block; }
+
+@media (max-width: 760px) { .playback-controls { bottom: 92px; } }
 
 /* Printed letters and icons move independently; link boxes remain stationary. */
 .navigation .print-jitter { display: inline-block; font: inherit; }

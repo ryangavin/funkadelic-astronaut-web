@@ -40,73 +40,121 @@
   }
   function volumeState() {
     volume.value = video.volume;
-    mute.textContent = video.muted ? 'Unmute' : 'Mute';
-    mute.setAttribute('aria-pressed', String(video.muted));
+    const silent = video.muted || video.volume === 0;
+    mute.setAttribute('aria-label', silent ? 'Unmute' : 'Mute');
+    mute.setAttribute('data-muted', String(silent));
+    mute.setAttribute('aria-pressed', String(silent));
   }
-  pause.addEventListener('click', () => { reset(); video.pause(); });
+  function playbackState() {
+    pause.setAttribute('aria-label', video.ended ? 'Replay performance' : video.paused ? 'Play performance' : 'Pause performance');
+    pause.setAttribute('data-paused', String(video.paused || video.ended));
+  }
+  pause.addEventListener('click', () => {
+    if (video.paused || video.ended) start(false, video.ended);
+    else { userPaused = true; video.pause(); }
+  });
   seek.addEventListener('input', () => {
     if (!seek.disabled) video.currentTime = Math.min(video.duration, Math.max(0, Number(seek.value)));
     progress();
   });
   volume.addEventListener('input', () => { video.volume = Number(volume.value); video.muted = false; volumeState(); });
-  mute.addEventListener('click', () => { video.muted = !video.muted; volumeState(); });
+  mute.addEventListener('click', () => {
+    if (video.muted || video.volume === 0) { video.muted = false; if (video.volume === 0) video.volume = 1; }
+    else video.muted = true;
+    volumeState();
+  });
   for (const event of ['timeupdate', 'durationchange', 'loadedmetadata', 'seeked']) video.addEventListener(event, progress);
   video.addEventListener('volumechange', volumeState);
   video.addEventListener('playing', () => {
+    scene.classList.remove('video-unavailable');
+    playbackState();
     if (soundEnabled && !video.paused) { presentation(true); progress(); volumeState(); }
   });
   video.addEventListener('pause', () => {
     // Source attachment/startup may pause programmatically; stale pause events
     // must not cancel the user's pending request or a resumed seek.
-    if (soundEnabled && !starting && video.paused) reset();
+    if (soundEnabled && !starting && video.paused) userPaused = true;
+    playbackState();
   });
-  video.addEventListener('ended', reset);
+  video.addEventListener('ended', () => { userPaused = true; playbackState(); progress(); });
   video.addEventListener('error', () => failed('Performance unavailable. Try again or watch on the official site.'));
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   const stream = 'https://video.squarespace-cdn.com/content/v1/699cdab6b1fb043597f25ba7/54ea9bd4-170c-4309-8ae2-44c6bab63092/playlist.m3u8';
-  let loading, hls, soundEnabled = false, userPaused = false;
+  let loading, hls, cancelLoad, soundEnabled = false, userPaused = false, visible = false;
   video.muted = true;
   function failed(message) {
     reset();
     video.pause();
+    dispose();
+    scene.classList.add('video-unavailable');
     status.textContent = message;
     fallback.hidden = false;
   }
+  function dispose() {
+    // Fatal errors can arrive AFTER MANIFEST_PARSED resolved. Invalidate the
+    // cached promise as well as the media source so the next click really retries.
+    const previous = hls;
+    hls = undefined;
+    cancelLoad?.();
+    cancelLoad = undefined;
+    loading = undefined;
+    previous?.destroy();
+    video.removeAttribute('src');
+    video.load();
+  }
   function ready() {
     if (loading) return loading;
-    loading = new Promise((resolve, reject) => {
+    const pending = new Promise((resolve, reject) => {
+      let cleanup = () => {};
+      cancelLoad = () => { cleanup(); reject(new Error('Stream detached')); };
       const attach = () => {
         if (window.Hls?.isSupported()) {
-          hls = new window.Hls({ maxBufferLength: 20 });
-          hls.on(window.Hls.Events.MANIFEST_PARSED, resolve);
-          hls.on(window.Hls.Events.ERROR, (_, data) => {
-            if (data.fatal) { reject(new Error('Stream unavailable')); failed('Performance unavailable. Watch on the official site.'); }
+          const instance = hls = new window.Hls({ maxBufferLength: 20 });
+          instance.on(window.Hls.Events.MANIFEST_PARSED, resolve);
+          instance.on(window.Hls.Events.ERROR, (_, data) => {
+            if (hls === instance && data.fatal) {
+              reject(new Error('Stream unavailable'));
+              failed('Performance unavailable. Try again or watch on the official site.');
+            }
           });
-          hls.loadSource(stream);
-          hls.attachMedia(video);
+          instance.loadSource(stream);
+          instance.attachMedia(video);
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          const loaded = () => { cleanup(); resolve(); };
+          const error = () => { cleanup(); reject(new Error('Stream unavailable')); };
+          cleanup = () => {
+            video.removeEventListener('loadedmetadata', loaded);
+            video.removeEventListener('error', error);
+          };
+          video.addEventListener('loadedmetadata', loaded);
+          video.addEventListener('error', error);
+          // The markup uses preload=none for the initial poster. Waiting for
+          // metadata with that setting can deadlock native HLS before play().
+          video.preload = 'metadata';
           video.src = stream;
-          video.addEventListener('loadedmetadata', resolve, { once: true });
-          video.addEventListener('error', reject, { once: true });
+          video.load();
         } else reject(new Error('Video unsupported'));
       };
       if (window.Hls) return attach();
       const script = document.createElement('script');
       script.src = 'assets/hls.min.js';
       script.onload = attach;
-      script.onerror = reject;
+      script.onerror = () => {
+        if (video.canPlayType('application/vnd.apple.mpegurl')) attach();
+        else reject(new Error('Player unavailable'));
+      };
+      cleanup = () => { script.onload = script.onerror = null; script.remove(); };
       document.head.append(script);
     });
-    loading = loading.catch(error => {
-      hls?.destroy();
-      hls = undefined;
-      loading = undefined;
+    loading = pending.catch(error => {
+      if (loading === result) dispose();
       throw error;
     });
-    return loading;
+    const result = loading;
+    return result;
   }
-  async function start(ambient = false) {
-    if (ambient && (motion.matches || userPaused || soundEnabled || starting)) return;
+  async function start(ambient = false, restart = true) {
+    if (ambient && (motion.matches || userPaused || soundEnabled || starting || !visible || document.hidden)) return;
     const attempt = ++request;
     if (!ambient) {
       starting = true;
@@ -114,12 +162,11 @@
     }
     try {
       await ready();
-      if (attempt !== request || (ambient && (motion.matches || userPaused || soundEnabled))) return;
+      if (attempt !== request || (ambient && (motion.matches || userPaused || soundEnabled || !visible || document.hidden))) return;
       if (!ambient) {
         soundEnabled = true;
         userPaused = false;
-        video.currentTime = 0;
-        video.muted = false;
+        if (restart) { video.currentTime = 0; video.muted = false; }
       }
       video.loop = ambient;
       await video.play();
@@ -129,7 +176,8 @@
         presentation(true);
         progress();
         volumeState();
-        pause.focus();
+        playbackState();
+        if (restart) pause.focus();
       }
       status.textContent = '';
       fallback.hidden = true;
@@ -144,10 +192,15 @@
   motion.addEventListener('change', () => {
     if (motion.matches) { reset(); video.pause(); }
   });
-  const observer = new IntersectionObserver(entries => {
-    if (entries.some(entry => entry.isIntersecting)) {
+  function visibility() {
+    if (visible && !document.hidden) {
       if (!motion.matches && !userPaused && !soundEnabled) start(true);
-    } else if (!soundEnabled && !starting) video.pause();
+    } else if (!soundEnabled && !starting) { request++; video.pause(); }
+  }
+  document.addEventListener('visibilitychange', visibility);
+  const observer = new IntersectionObserver(entries => {
+    visible = entries.some(entry => entry.isIntersecting);
+    visibility();
   }, { rootMargin: '100px' });
   observer.observe(scene);
 })();
