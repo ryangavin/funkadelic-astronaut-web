@@ -48,10 +48,10 @@ function shape(section) {
       parseFloat(getComputedStyle(section).getPropertyValue("--wave"));
   const hero = section.dataset.wave === "hero";
   const normalized = section.id === "learn"
-      ? "M 0 40 C 200 130 300 100 500 50 C 700 0 800 25 1000 64"
+      ? "M 0 64 C 200 25 300 0 500 50 C 700 100 800 130 1000 40"
       : "M 0 40 C 160 135 215 -8 355 36 C 500 105 545 112 685 52 C 825 -12 885 86 1000 64";
   const source = hero ? 230 : 120;
-  const amplitude = hero ? 1 : Math.min(1, Math.max(.35, w / 760));
+  const amplitude = 1;
   const nums = normalized.match(/[A-Z]|-?\d+(?:\.\d+)?/g);
   let axis = 0;
   const scaled = hero || ribbonDraft[section.id] ? customRibbon(section.id, w, wave) : nums
@@ -75,7 +75,7 @@ function shape(section) {
       ? ["#c58930", "#ead3a7", "#a52837"]
       : ["#a52837", "#ead3a7", "#121420"];
   svg.innerHTML = colors.map((color, i) =>
-    `<path d="${scaled}" fill="none" stroke="${color}" stroke-width="${(hero ? [44, 30, 20] : [44, 26, 14])[i] * (w < 760 ? .65 : 1)}"/>`
+    `<path d="${scaled}" fill="none" stroke="${color}" stroke-width="${(hero ? [44, 30, 20] : [44, 26, 14])[i] * (w / 1090)}"/>`
   ).join("");
 }
 // The editor redraws the same path used by clipping and all ink layers.
@@ -139,8 +139,8 @@ if (focalPhoto) {
     const targetX = w * (mobile ? .44 : .26);
     const targetY = mobile ? 270 : Math.max(220, h * .28);
     const scale = mobile
-      ? Math.max(w / focalPhoto.naturalWidth, 520 / focalPhoto.naturalHeight)
-      : Math.max(w / focalPhoto.naturalWidth, (h - targetY + 48) / (focalPhoto.naturalHeight * (1 - fy)));
+      ? Math.max(w / focalPhoto.naturalWidth, h / focalPhoto.naturalHeight)
+      : Math.max(w / focalPhoto.naturalWidth, h / focalPhoto.naturalHeight, (h - targetY + 48) / (focalPhoto.naturalHeight * (1 - fy)));
     const width = focalPhoto.naturalWidth * scale, height = focalPhoto.naturalHeight * scale;
     Object.assign(focalPhoto.style, {
       width: `${width}px`, height: `${height}px`,
@@ -164,8 +164,8 @@ if (gallery) {
       alt: "Funkadelic Astronaut performing together",
       crop: "band",
       paragraphs: [
-        "Three friends. One cosmic groove. Funkadelic Astronaut brings keyboards, drums, bass and vocals together in a collision of funk and electronics.",
-        "Launched in New Jersey in 2012 by Ryan Gavin and Kevin O’Neill, with Sam Luba joining in 2017. They’ve been taking that sound across the Northeast ever since. Come for the groove. Stay for the ride.",
+        "Three friends blending funk and electronics with keyboards, drums, bass and vocals.",
+        "Founded in New Jersey in 2012 by Ryan Gavin and Kevin O’Neill, with Sam Luba joining in 2017. Together, they’ve been bringing that sound to stages across the Northeast.",
       ],
     },
     {
@@ -225,6 +225,7 @@ if (gallery) {
       section.dataset.member = member.crop;
       document.querySelector("#member-role").textContent = member.role;
       document.querySelector("#member-name").textContent = member.name;
+      document.querySelector("#member-name").hidden = member.crop === "band";
       document.querySelector("#member-story").replaceChildren(
         ...member.paragraphs.map((text) => {
           const p = document.createElement("p");

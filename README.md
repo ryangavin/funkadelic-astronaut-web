@@ -10,7 +10,7 @@ Use `npm install`, then `npm run dev` to serve the site at http://127.0.0.1:4173
 - Performance: official homepage Squarespace-hosted HLS video, duration 522 seconds. The stable playlist URL is requested on play; expiring segment URLs are never persisted. HLS.js (Apache 2.0, license in assets) loads only on demand, with native HLS as the fallback when Media Source Extensions are unavailable.
 - Live listing checked September 11, 2026: https://www.bandsintown.com/a/6719052-funkadelic-astronaut — no upcoming shows. The empty state is intentional. Add confirmed dates as semantic table rows with date, venue/city and real ticket URLs.
 - Photos are genuine band media reused from the official site; no generated people. Photographer credits and high-resolution press downloads were not published with these assets. Contact the band for those materials.
-- Chicle by Sudtipos is served through the Google Fonts CDN under the SIL Open Font License. Font specimens comparing Chicle, Modak and Shrikhand are preserved in `output/font-specimens.html`.
+- Modak is served through the Google Fonts CDN under the SIL Open Font License. Font specimens comparing Chicle, Modak and Shrikhand are preserved in `output/font-specimens.html`.
 - Astronaut generated using built-in imagegen, then a transparency edit. See `output/astronaut-prompt.md`. Final web asset: `assets/astronaut.webp`.
 - The approved concepts remain untouched in `output/epk-directions`. None are rendered by the website.
 
@@ -38,10 +38,17 @@ The inline `printed-ink` SVG filter textures only display lettering. The repeati
 
 ## Typography studio
 
-Press **D** or click **Type · D** to open the tuning panel on either page. Escape closes it; hotkeys ignore text fields and select menus. Select a text group and an all-screens, desktop (761px+), or mobile (up to 760px) scope. Tune font family, size, tracking, line height, color, offsets, rotation and width/height; section headings also expose individual glyph width and margins, while the SVG title exposes text length. The whole wordmark group controls its position and scale. Chicle has a single font weight.
+Press **D** or click **Type · D** to open the tuning panel on either page. Escape closes it; hotkeys ignore text fields and select menus. Select a text group and an all-screens, desktop (761px+), or mobile (up to 760px) scope. Tune font family, size, tracking, line height, color, offsets, rotation and width/height; section headings also expose individual glyph width and margins, while the SVG title exposes text length. The whole wordmark group controls its position and scale. Modak has a single font weight.
 
 Drafts persist locally per page. Blank values inherit the site or all-screens adjustment. Preview on/off compares with the original; reset buttons clear a field, group/scope, or the entire draft. **Export JSON** downloads `funkadelic-typography.json`; **Copy JSON** offers clipboard or manual copying. Send this JSON back to implement defaults. It contains the viewport, scoped adjustments, exact CSS selectors/declarations and SVG attribute overrides. Font sizes are explicit pixels (SVG units for SVG text), so choose a responsive scope when needed. Position/scale adjustments compose with existing transforms. Include `typography-debug.js` when publishing.
 
 The panel title is a drag handle; focus it and use arrow keys for keyboard movement. Panel opacity is adjustable, with position and opacity saved separately from exported typography. Global font groups apply to all text, display lettering, or reading text, and individual text groups can override them. Additional Google Fonts load only when selected; font stylesheet URLs are included in the export. Locally installed font options use their listed fallbacks when unavailable.
 
 The September 12 typography export is now the default: Modak for display lettering and wordmark translate (-15px, -56px), rotation -2deg, and scale (1.04, 1.35) at every viewport size. Other font families tried in the studio are not preloaded. Existing drafts still override defaults; Preview off or Reset reveals the adopted styling.
+
+
+## Style organization
+
+`style.css` imports ordered layers from `styles/`: `base.css` holds baseline layout, `poster.css` holds the established poster treatment, `sections.css` holds the current section compositions, and `cutout.css` owns the shared cutout typography. Asset URLs in these sheets are relative to `styles/`. `cutout-type.js` supplies the same glyph structure to headings and dynamic labels. Keep visual cutout changes in the shared layer; section rules should control size and placement.
+
+The HTML remains directly served static markup, and behavior is split into focused JavaScript files. Publishing is currently on hold.

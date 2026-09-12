@@ -1,0 +1,282 @@
+#learn-title {
+  transform-origin: right center;
+  rotate: none;
+}
+#live-title {
+  transform: none;
+  rotate: none;
+}
+.learn-content .gallery-controls {
+  font-family: Modak, Georgia, serif;
+  font-weight: 400;
+}
+.learn-content .bio p {
+  font-size: clamp(21px, 2vw, 25px);
+  line-height: 1.4;
+}
+.learn-content .bio {
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 400;
+}
+.live-content table {
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 400;
+}
+.live-content .text-link {
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 400;
+}
+.learn-content #member-story p {
+  font-size: clamp(18px, 1.75vw, 22px);
+  line-height: 1.55;
+  text-shadow: 0 1px 1px #12142065;
+}
+.live-content td p {
+  font-size: clamp(18px, 1.75vw, 22px);
+  line-height: 1.55;
+  text-shadow: 0 1px 1px #12142065;
+}
+.live-content .text-link {
+  font-size: clamp(18px, 1.75vw, 22px);
+  line-height: 1.55;
+  text-shadow: 0 1px 1px #12142065;
+}
+.learn-content #member-name {
+  font-family: Modak, Georgia, serif;
+  font-weight: 400;
+  -webkit-text-stroke: .55px var(--ink-black);
+  paint-order: stroke fill;
+  text-shadow: 1px 2px 0 var(--ink-black);
+  filter: url(#printed-ink);
+}
+.live-content .tour-label {
+  font-family: Modak, Georgia, serif;
+  font-weight: 400;
+  -webkit-text-stroke: .55px var(--ink-black);
+  paint-order: stroke fill;
+  text-shadow: 1px 2px 0 var(--ink-black);
+  filter: url(#printed-ink);
+}
+.live-content th {
+  font-family: Modak, Georgia, serif;
+  font-weight: 400;
+  -webkit-text-stroke: .55px var(--ink-black);
+  paint-order: stroke fill;
+  text-shadow: 1px 2px 0 var(--ink-black);
+  filter: url(#printed-ink);
+}
+.live-content .empty-title {
+  font-family: Modak, Georgia, serif;
+  font-weight: 400;
+  -webkit-text-stroke: .55px var(--ink-black);
+  paint-order: stroke fill;
+  text-shadow: 1px 2px 0 var(--ink-black);
+  filter: url(#printed-ink);
+}
+.learn-content #member-role {
+  font-size: clamp(22px, 2.2vw, 30px);
+}
+.live-content .tour-label {
+  font-size: clamp(22px, 2.2vw, 30px);
+  letter-spacing: .06em;
+}
+.learn-content #member-name {
+  font-size: clamp(32px, 3.1vw, 44px);
+  line-height: 1.15;
+}
+.live-content .empty-title {
+  font-size: clamp(27px, 2.7vw, 36px);
+  line-height: 1.25;
+}
+#learn-title {
+  margin-bottom: -20px;
+}
+.learn-content #member-role {
+  margin-bottom: 14px;
+}
+#member-name[hidden] {
+  display: none;
+}
+#learn-title {
+  font-size: clamp(72px, 8.5vw, 118px);
+}
+.learn-content {
+  padding-top: calc(var(--wave) + 12px);
+  padding-bottom: 76px;
+}
+.learn-content .bio {
+  width: 50%;
+  max-width: 560px;
+}
+.learn-content #member-story p {
+  margin-bottom: 16px;
+}
+@media (max-width: 760px) {
+  #learn-title {
+  font-size: clamp(64px, 12vw, 90px);
+  margin-bottom: 8px;
+}
+  .learn-content {
+  padding-bottom: 76px;
+}
+  .learn-content .bio {
+  width: 100%;
+}
+}
+#learn-title {
+  align-self: flex-start;
+  transform: translateY(-44px);
+  text-align: left;
+}
+@media (max-width: 760px) {
+  #learn-title {
+  transform: translateY(-30px);
+}
+}
+.learn-content {
+  align-items: flex-start;
+}
+.learn-content .bio {
+  margin-left: 0;
+  margin-right: auto;
+}
+.learn .tint {
+  background: linear-gradient(90deg, #228542f7 0%, #228542ed 20%, #228542cc 40%, #22854294 60%, #2285424d 80%, #2285420d 100%);
+  opacity: .8;
+}
+.learn-content .bio {
+  position: relative;
+  top: -18px;
+}
+.learn-content .gallery-controls {
+  gap: 6px;
+  padding-top: 0;
+  margin-top: 4px;
+}
+.gallery-indicators {
+  gap: 0;
+}
+.gallery-controls .gallery-indicators button {
+  min-width: 32px;
+  width: 32px;
+  padding: 8px;
+  border: 0;
+  display: grid;
+  place-items: center;
+}
+.gallery-controls button:hover {
+  background: transparent;
+}
+.gallery-indicators [aria-current] {
+  background: transparent;
+}
+.gallery-pip {
+  display: block;
+  width: 9px;
+  height: 9px;
+  border-radius: 45% 55% 48% 52%;
+  border: 1px solid var(--ink-black);
+  background: var(--cream);
+  opacity: .55;
+  box-shadow: 1px 2px 0 var(--ink-black);
+  filter: url(#printed-ink);
+}
+.gallery-indicators [aria-current="true"] .gallery-pip {
+  opacity: 1;
+  background: var(--red);
+  transform: scale(1.25) rotate(-8deg);
+}
+.gallery-arrow svg {
+  display: block;
+  width: 32px;
+  height: 28px;
+  fill: var(--cream);
+  stroke: var(--ink-black);
+  stroke-width: 1.3;
+  stroke-linejoin: round;
+  filter: url(#printed-ink) drop-shadow(1px 2px 0 var(--ink-black));
+}
+.gallery-arrow:hover svg {
+  fill: var(--red);
+  transform: rotate(-5deg);
+}
+.learn-content .gallery-controls {
+  justify-content: center;
+  border: none;
+  box-shadow: none;
+}
+.gallery-controls button {
+  text-decoration: none;
+}
+.gallery-arrow svg {
+  animation: gallery-cutout-jiggle .9s steps(1, end) infinite;
+}
+#next-member svg {
+  animation-delay: -.35s;
+}
+@keyframes gallery-cutout-jiggle {
+  0%, 100% {
+  transform: translate(0, 0) rotate(-2deg);
+}
+  25% {
+  transform: translate(.6px, -.7px) rotate(1deg);
+}
+  50% {
+  transform: translate(-.5px, .4px) rotate(-1deg);
+}
+  75% {
+  transform: translate(.3px, .6px) rotate(2deg);
+}
+}
+@media (prefers-reduced-motion: reduce) {
+  .gallery-arrow svg {
+  animation: none;
+}
+}
+.learn-content #learn-title {
+  width: 50%;
+  max-width: 560px;
+  text-align: center;
+}
+.learn-content .bio {
+  text-align: center;
+}
+@media (max-width: 760px) {
+  .learn-content #learn-title {
+  width: 100%;
+  max-width: 480px;
+}
+}
+
+/* Section titles shrink with the poster rather than hitting a large phone floor. */
+@media (max-width: 760px) {
+  .learn-content #learn-title,
+  .live-content #live-title { font-size: 11vw; }
+}
+@media (max-width: 760px) {
+  .learn-content #member-role,
+  .live-content .tour-label { font-size: 5vw; }
+}
+
+/* About is a stable photo panel, with content anchored proportionally to its wave. */
+.scene.learn { height: 760px; }
+.learn .learn-content {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(var(--wave) * .75);
+  padding-top: 0;
+  padding-bottom: 0;
+  min-height: 0;
+  gap: 18px;
+}
+.learn .learn-content #learn-title { transform: none; margin: 0; }
+.learn .learn-content .bio { top: auto; margin-top: 0; }
+.learn-content #member-name { margin-bottom: 8px; }
+@media (max-width: 760px) {
+  .learn .learn-content { gap: 14px; }
+}
+
+/* Ribbon height and amplitude track width, preserving the wave's proportions. */
+.hero { --hero-wave: 13vw; }
+.scene { --wave: 11vw; }
+.scene.listen { --wave: 13vw; }

@@ -12,12 +12,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Chicle&amp;family=Modak&amp;display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&amp;family=Modak&amp;display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
     <script src="typography-debug.js" defer></script>
     <script src="app.js" defer></script>
+    <script src="cutout-type.js" defer></script>
     <script src="ribbon-editor.js" defer></script>
     <script src="living-video.js" defer></script>
     <script src="poster-motion.js" defer></script>
@@ -204,7 +205,7 @@
         <div class="tint" aria-hidden="true"></div>
         <svg class="seam" aria-hidden="true" preserveAspectRatio="none"></svg>
         <div class="scene-content learn-content">
-          <h2 id="learn-title" aria-label="About"><span class="display-word" aria-hidden="true"><span class="display-letter">A</span><span class="display-letter">B</span><span class="display-letter">O</span><span class="display-letter">U</span><span class="display-letter">T</span></span></h2>
+          <h2 class="cutout-type" id="learn-title" aria-label="About"><span class="display-word" aria-hidden="true"><span class="display-letter">A</span><span class="display-letter">B</span><span class="display-letter">O</span><span class="display-letter">U</span><span class="display-letter">T</span></span></h2>
           <div
             class="bio"
             role="region"
@@ -219,11 +220,11 @@
               aria-roledescription="slide"
               aria-label="1 of 4: The band"
             >
-              <p class="eyebrow" id="member-role">New Jersey · Funktronica</p>
-              <p class="intro" id="member-name">Funkadelic Astronaut</p>
-              <div class="member-story" id="member-story">
-                <p>Three friends. One cosmic groove. Funkadelic Astronaut brings keyboards, drums, bass and vocals together in a collision of funk and electronics.</p>
-                <p>Launched in New Jersey in 2012 by Ryan Gavin and Kevin O’Neill, with Sam Luba joining in 2017. They’ve been taking that sound across the Northeast ever since. Come for the groove. Stay for the ride.</p>
+              <p class="intro cutout-type" id="member-name" hidden>Funkadelic Astronaut</p>
+              <p class="eyebrow cutout-type" id="member-role">New Jersey · Funktronica</p>
+              <div class="member-story print-copy" id="member-story">
+                <p>Three friends blending funk and electronics with keyboards, drums, bass and vocals.</p>
+                <p>Founded in New Jersey in 2012 by Ryan Gavin and Kevin O’Neill, with Sam Luba joining in 2017. Together, they’ve been bringing that sound to stages across the Northeast.</p>
               </div>
             </div>
             <div class="gallery-controls" aria-label="Band gallery controls">
@@ -234,7 +235,7 @@
                 aria-label="Previous band introduction"
                 aria-controls="band-slide"
               >
-                ←
+                <svg viewBox="0 0 40 32" aria-hidden="true"><path d="M3 15 18 3 20 11 36 9 37 22 20 21 18 29Z" /></svg>
               </button>
               <div
                 class="gallery-indicators"
@@ -248,7 +249,7 @@
                   aria-current="true"
                   aria-controls="band-slide"
                 >
-                  01
+                  <span class="gallery-pip" aria-hidden="true"></span>
                 </button>
                 <button
                   type="button"
@@ -256,7 +257,7 @@
                   aria-label="Ryan Gavin"
                   aria-controls="band-slide"
                 >
-                  02
+                  <span class="gallery-pip" aria-hidden="true"></span>
                 </button>
                 <button
                   type="button"
@@ -264,7 +265,7 @@
                   aria-label="Kevin O’Neill"
                   aria-controls="band-slide"
                 >
-                  03
+                  <span class="gallery-pip" aria-hidden="true"></span>
                 </button>
                 <button
                   type="button"
@@ -272,7 +273,7 @@
                   aria-label="Sam Luba"
                   aria-controls="band-slide"
                 >
-                  04
+                  <span class="gallery-pip" aria-hidden="true"></span>
                 </button>
               </div>
               <button
@@ -282,7 +283,7 @@
                 aria-label="Next band introduction"
                 aria-controls="band-slide"
               >
-                →
+                <svg viewBox="0 0 40 32" aria-hidden="true"><path d="M37 15 22 3 20 11 4 9 3 22 20 21 22 29Z" /></svg>
               </button>
             </div>
             <p
@@ -313,7 +314,7 @@
         <div class="tint" aria-hidden="true"></div>
         <svg class="seam" aria-hidden="true" preserveAspectRatio="none"></svg>
         <div class="scene-content live-content">
-          <h2 id="live-title" aria-label="Tour">
+          <h2 class="cutout-type" id="live-title" aria-label="Tour">
             <span class="display-word" aria-hidden="true"
               ><span class="display-letter">T</span
               ><span class="display-letter">O</span
@@ -321,11 +322,11 @@
               ><span class="display-letter">R</span></span
             >
           </h2>
-          <p class="eyebrow tour-label">Upcoming shows</p>
-          <table>
+          <p class="eyebrow tour-label cutout-type">Upcoming shows</p>
+          <table class="print-copy">
             <caption class="sr-only">Upcoming Funkadelic Astronaut performances</caption>
             <thead><tr><th scope="col">Date</th><th scope="col">Venue / City</th><th scope="col">Tickets</th></tr></thead>
-            <tbody><tr><td colspan="3"><p class="empty-title">The next landing is on the horizon.</p><p>No upcoming shows announced. Check back for dates.</p></td></tr></tbody>
+            <tbody><tr><td colspan="3"><p class="empty-title cutout-type">The next landing is on the horizon.</p><p>No upcoming shows announced. Check back for dates.</p></td></tr></tbody>
           </table>
           <a
             class="text-link"

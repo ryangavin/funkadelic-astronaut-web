@@ -38,7 +38,7 @@
   // Keep paired transform controls aligned with the adopted site defaults.
   const adopted = { wordmark: { x:0, y:0, rotation:0, scaleX:1, scaleY:1 } };
   const scopes = { all: '', desktop: '(min-width: 761px)', mobile: '(max-width: 760px)' };
-  const fonts = { modak: 'Modak, Georgia, serif', shrikhand: 'Shrikhand, Georgia, serif', cooper: '"Cooper Black", Georgia, serif', fraunces: 'Fraunces, Georgia, serif', abril: '"Abril Fatface", Georgia, serif', bungee: 'Bungee, sans-serif', righteous: 'Righteous, sans-serif', space: '"Space Grotesk", Arial, sans-serif', inter: 'Inter, Arial, sans-serif', courier: '"Courier New", monospace', impact: 'Impact, sans-serif', chicle: 'Chicle, Georgia, serif', sans: '"Helvetica Neue", Arial, sans-serif', serif: 'Georgia, serif', mono: 'monospace' };
+  const fonts = { modak: 'Modak, Georgia, serif', shrikhand: 'Shrikhand, Georgia, serif', cooper: '"Cooper Black", Georgia, serif', fraunces: 'Fraunces, Georgia, serif', abril: '"Abril Fatface", Georgia, serif', bungee: 'Bungee, sans-serif', righteous: 'Righteous, sans-serif', space: '"Space Grotesk", Arial, sans-serif', inter: 'Inter, Arial, sans-serif', courier: '"Courier New", monospace', impact: 'Impact, sans-serif', chicle: 'Modak, Georgia, serif', sans: '"Helvetica Neue", Arial, sans-serif', serif: 'Georgia, serif', mono: 'monospace' };
   const webFonts = { modak: 'Modak', shrikhand: 'Shrikhand', fraunces: 'Fraunces:wght@100;200;300;400;500;600;700;800;900', abril: 'Abril+Fatface', bungee: 'Bungee', righteous: 'Righteous', space: 'Space+Grotesk:wght@300;400;500;600;700', inter: 'Inter:wght@100;200;300;400;500;600;700;800;900' };
   const loadedFonts = new Set();
   function loadFonts() {

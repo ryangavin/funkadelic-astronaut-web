@@ -1,0 +1,39 @@
+/* Canonical Modak ink treatment, shared by the hero and section cutouts. */
+:root {
+  --cutout-face: Modak, Georgia, serif;
+  --cutout-ink: var(--ink-black);
+  --cutout-paint-order: fill stroke;
+  --cutout-stretch: 1.18;
+}
+.wordmark svg text {
+  font-family: var(--cutout-face);
+  paint-order: var(--cutout-paint-order);
+  stroke: var(--cutout-ink);
+}
+/* One cutout treatment. Size and placement belong to the surrounding layout. */
+:is(#learn-title, #live-title, #member-role, #member-name, .tour-label, .empty-title).cutout-type {
+  --cutout-stroke: max(1.25px, .025em);
+  --cutout-shadow-x: max(1.5px, .025em);
+  --cutout-shadow-y: max(2px, .035em);
+  font-family: var(--cutout-face);
+  font-weight: 400;
+  letter-spacing: 0;
+  -webkit-text-stroke: var(--cutout-stroke) var(--ink-black);
+  paint-order: var(--cutout-paint-order);
+  text-shadow: var(--cutout-shadow-x) var(--cutout-shadow-y) 0 var(--ink-black);
+  filter: url(#printed-ink);
+}
+.cutout-type .display-letter {
+  transform: scaleX(var(--cutout-stretch));
+  margin-inline: .07em;
+}
+
+/* A gentler ink edge for reading copy, without heavy display-font texture. */
+.print-copy p {
+  -webkit-text-stroke: .9px var(--cutout-ink);
+  paint-order: stroke fill;
+}
+.learn-content #member-story.print-copy p,
+.live-content .print-copy td p:not(.cutout-type) {
+  text-shadow: .85px 1.25px 0 var(--cutout-ink);
+}

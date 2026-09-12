@@ -33,8 +33,9 @@ jobs:
       - name: Stage static website
         run: |
           mkdir _site
-          cp index.html press-kit.html style.css app.js typography-debug.js ribbon-editor.js living-video.js poster-motion.js portrait-strip.js _site/
+          cp index.html press-kit.html style.css app.js typography-debug.js ribbon-editor.js living-video.js poster-motion.js portrait-strip.js cutout-type.js _site/
           cp -R assets _site/assets
+          cp -R styles _site/styles
           touch _site/.nojekyll
       - uses: actions/upload-pages-artifact@v4
         with:
