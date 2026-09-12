@@ -1566,3 +1566,9 @@ body::before, body::after { clip-path: inset(var(--hero-paper-height, 0px) 0 0);
   opacity: .72;
 }
 .listen.sound-enabled #inline-player video { filter: none; opacity: 1; }
+
+/* Opaque grayscale preview prevents the fallback poster bleeding through. */
+.listen:not(.sound-enabled) #inline-player { filter: grayscale(1); }
+.listen:not(.sound-enabled) #inline-player video { filter: grayscale(1); opacity: 1; }
+.listen:not(.sound-enabled) .tint { background: linear-gradient(180deg, #0005, #0002 55%, #0006); }
+.listen.sound-enabled #inline-player { filter: none; }
