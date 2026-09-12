@@ -1515,7 +1515,47 @@ body::before, body::after { clip-path: inset(var(--hero-paper-height, 0px) 0 0);
 .astronaut > img { position: relative; filter: url(#astronaut-palette); }
 
 /* Keep the performance close to its native frame; ribbons trim the edges. */
-.scene.listen { aspect-ratio: 16 / 9; min-height: 360px; }
+.scene.listen { width: 100%; aspect-ratio: 16 / 9; min-height: 360px; }
 .listen .listen-content { position: absolute; inset: 0; min-height: 0; height: 100%; }
 .listen .listen-content .play-area { min-height: 0; margin: 0; }
 #inline-player { inset: 0; }
+
+/* Nest the transport in the first trough of the lower ribbon. */
+.playback-controls {
+  width: min(480px, calc(100% - 2 * var(--gutter)));
+  left: max(var(--gutter), calc(23% - 240px));
+  bottom: 72px;
+  transform: none;
+}
+@media (max-width: 760px) {
+  .playback-controls { left: var(--gutter); bottom: 76px; }
+}
+@media (min-width: 761px) and (max-width: 1000px) {
+  .playback-controls { bottom: 92px; }
+}
+
+/* Briefly introduce the transport, then reveal it on hover or keyboard focus. */
+@media (hover: hover) and (pointer: fine) {
+  .sound-enabled .playback-controls {
+    opacity: 0;
+    pointer-events: none;
+    animation: transport-intro 3s ease forwards;
+    transition: opacity .2s ease;
+  }
+  .sound-enabled .playback-controls :is(button, input) { pointer-events: none; }
+  .sound-enabled:hover .playback-controls :is(button, input),
+  .sound-enabled .playback-controls:has(:focus-visible) :is(button, input) { pointer-events: auto; }
+  .sound-enabled:hover .playback-controls,
+  .sound-enabled .playback-controls:has(:focus-visible) {
+    animation: none;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+@keyframes transport-intro {
+  0%, 80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sound-enabled .playback-controls { animation: none; transition: none; }
+}
