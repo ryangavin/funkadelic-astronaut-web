@@ -21,6 +21,8 @@
   function paperHeight() {
     const hero = document.querySelector('.hero');
     if (hero) document.body.style.setProperty('--hero-paper-height', `${hero.offsetTop + hero.offsetHeight}px`);
+    const performance = document.querySelector('#listen');
+    if (performance) document.body.style.setProperty('--poster-weathering-start', `${performance.getBoundingClientRect().bottom + window.scrollY}px`);
   }
   if (document.body && document.body.style) {
     paperHeight();

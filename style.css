@@ -1576,3 +1576,8 @@ body::before, body::after { clip-path: inset(var(--hero-paper-height, 0px) 0 0);
 /* Lift the preview's shadows without revealing the fallback beneath it. */
 .listen:not(.sound-enabled) #inline-player { filter: grayscale(1) brightness(1.18) contrast(.82); }
 .listen:not(.sound-enabled) .tint { background: transparent; }
+
+/* Paper patina must not act as a colored sheet over the video. */
+body::before, body::after { clip-path: inset(var(--poster-weathering-start, var(--hero-paper-height, 0px)) 0 0); }
+.listen::after { display: none; }
+.listen .tint { display: none; }
