@@ -1610,3 +1610,13 @@ body::before {
   background-size: 640px 640px;
   background-repeat: repeat;
 }
+
+/* Shared surface speckles cover the footage and its play button together. */
+.listen::after {
+  content: "";
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  mix-blend-mode: normal;
+  opacity: .4;
+}
