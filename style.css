@@ -1620,3 +1620,6 @@ body::before {
   mix-blend-mode: normal;
   opacity: .4;
 }
+
+/* Restore deeper preview tones beneath the finished poster texture. */
+.listen:not(.sound-enabled) #inline-player { filter: grayscale(1) brightness(.96) contrast(.95); }
