@@ -1572,3 +1572,7 @@ body::before, body::after { clip-path: inset(var(--hero-paper-height, 0px) 0 0);
 .listen:not(.sound-enabled) #inline-player video { filter: grayscale(1); opacity: 1; }
 .listen:not(.sound-enabled) .tint { background: linear-gradient(180deg, #0005, #0002 55%, #0006); }
 .listen.sound-enabled #inline-player { filter: none; }
+
+/* Lift the preview's shadows without revealing the fallback beneath it. */
+.listen:not(.sound-enabled) #inline-player { filter: grayscale(1) brightness(1.18) contrast(.82); }
+.listen:not(.sound-enabled) .tint { background: transparent; }
