@@ -1581,3 +1581,15 @@ body::before, body::after { clip-path: inset(var(--hero-paper-height, 0px) 0 0);
 body::before, body::after { clip-path: inset(var(--poster-weathering-start, var(--hero-paper-height, 0px)) 0 0); }
 .listen::after { display: none; }
 .listen .tint { display: none; }
+
+/* A dedicated full-frame wear layer gives the video one uniform treatment. */
+.listen::after {
+  display: block;
+  background-image: url("assets/paper-dark-flecks.svg"), url("assets/print-wear.svg");
+  background-size: 640px 640px, 360px 360px;
+  background-position: 0 0;
+  background-repeat: repeat;
+  mix-blend-mode: soft-light;
+  opacity: .24;
+  filter: grayscale(1);
+}
