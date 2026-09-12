@@ -216,6 +216,7 @@ button:disabled {
   z-index: 2147483647;
   pointer-events: none;
   overflow: visible;
+  filter: url(#printed-ink);
 }
 .media-plane {
   position: absolute;
