@@ -1559,3 +1559,10 @@ body::before, body::after { clip-path: inset(var(--hero-paper-height, 0px) 0 0);
 @media (prefers-reduced-motion: reduce) {
   .sound-enabled .playback-controls { animation: none; transition: none; }
 }
+
+/* The ambient preview stays muted until the visitor starts the performance. */
+.listen:not(.sound-enabled) #inline-player video {
+  filter: grayscale(1) contrast(1.12);
+  opacity: .72;
+}
+.listen.sound-enabled #inline-player video { filter: none; opacity: 1; }
