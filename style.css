@@ -1485,3 +1485,7 @@ body::before, body::after { clip-path: inset(var(--hero-paper-height, 0px) 0 0);
 .hero-title .astronaut { filter: none; display: block; }
 .astronaut > img { display: block; width: 100%; height: auto; filter: url(#astronaut-palette) url(#printed-ink); }
 .astronaut-paper { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(1px 2px 1px #12142035); }
+
+/* One cream paper surface and one moving weathering pass for the entire cutout. */
+.hero-title .astronaut { filter: url(#printed-ink); }
+.astronaut > img { position: relative; filter: url(#astronaut-palette); }
