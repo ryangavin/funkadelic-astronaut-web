@@ -1584,6 +1584,7 @@ body::before, body::after { clip-path: inset(var(--poster-weathering-start, var(
 
 /* A dedicated full-frame wear layer gives the video one uniform treatment. */
 .listen::after {
+  content: "";
   display: block;
   background-image: url("assets/paper-dark-flecks.svg"), url("assets/print-wear.svg");
   background-size: 640px 640px, 360px 360px;
@@ -1592,4 +1593,20 @@ body::before, body::after { clip-path: inset(var(--poster-weathering-start, var(
   mix-blend-mode: soft-light;
   opacity: .24;
   filter: grayscale(1);
+}
+
+/* Water damage happened after assembly, so one continuous wash covers it all. */
+body::before {
+  clip-path: none;
+  background-image: url("assets/weathering-top-center.svg"), url("assets/weathering-left.svg"), url("assets/weathering-right.svg"), url("assets/weathering-bottom.svg"), url("assets/paper-patina.svg");
+  background-position: center top, left top, right top, center 1250px, 0 0;
+  background-size: 880px 330px, 200px 1500px, 200px 1500px, 1200px 250px, 900px 900px;
+  background-repeat: no-repeat, repeat-y, repeat-y, no-repeat, repeat;
+}
+/* The hero keeps its fibers beneath the cutouts; the wash above is not doubled. */
+.hero::before {
+  background-image: url("assets/paper-dark-flecks.svg");
+  background-position: 0 0;
+  background-size: 640px 640px;
+  background-repeat: repeat;
 }
