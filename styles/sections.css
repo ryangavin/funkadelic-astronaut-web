@@ -15,8 +15,8 @@
   line-height: 1.4;
 }
 .learn-content .bio {
-  font-family: Fraunces, Georgia, serif;
-  font-weight: 400;
+  font-family: "Comic Sans MS", "Comic Sans", "Balsamiq Sans", cursive;
+  font-weight: 700;
 }
 .live-content table {
   font-family: Fraunces, Georgia, serif;
@@ -271,7 +271,7 @@
 }
 .learn .learn-content #learn-title { transform: none; margin: 0; }
 .learn .learn-content .bio { top: auto; margin-top: 0; }
-.learn-content #member-name { margin-bottom: 8px; }
+.learn-content #member-name { margin-bottom: 4px; }
 @media (max-width: 760px) {
   .learn .learn-content { gap: 14px; }
 }
@@ -286,11 +286,11 @@
 :root { --composition-unit: calc(100vw / 1440); }
 .scene.learn { height: calc(760 * var(--composition-unit)); }
 .learn .learn-content { gap: calc(18 * var(--composition-unit)); }
-.learn-content :is(#learn-title, .bio) { width: 50%; max-width: calc(560 * var(--composition-unit)); }
-.learn-content #learn-title { font-size: calc(118 * var(--composition-unit)); }
+.learn-content #learn-title { width: 50%; max-width: calc(560 * var(--composition-unit)); }
+.learn-content #learn-title { font-size: calc(90 * var(--composition-unit)); }
 .learn-content #member-role,
 .live-content .tour-label { font-size: calc(30 * var(--composition-unit)); }
-.learn-content #member-name { font-size: calc(44 * var(--composition-unit)); margin-bottom: calc(8 * var(--composition-unit)); }
+.learn-content #member-name { font-size: calc(44 * var(--composition-unit)); margin-bottom: calc(4 * var(--composition-unit)); }
 .learn-content #member-role { margin-bottom: calc(14 * var(--composition-unit)); }
 .learn-content #member-story p,
 .live-content td p,
@@ -312,7 +312,7 @@
 .gallery-pip { width: calc(9 * var(--composition-unit)); height: calc(9 * var(--composition-unit)); }
 @media (max-width: 760px) {
   :root { --composition-unit: calc(100vw / 390); }
-  .learn-content :is(#learn-title, .bio) { width: 100%; max-width: none; }
+  .learn-content #learn-title { width: 100%; max-width: none; }
   .learn .learn-content { gap: calc(14 * var(--composition-unit)); }
   .learn-content #learn-title,
   .live-content #live-title { font-size: 11vw; }
@@ -346,3 +346,52 @@
   .scene.learn { height: calc(500 * var(--composition-unit)); }
   .learn .learn-content { top: calc(var(--wave) * 1.1); }
 }
+
+/* Keep gallery navigation anchored to the composition, independent of slide length. */
+.learn .learn-content { bottom: calc(150 * var(--composition-unit)); }
+.learn .learn-content .bio { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.learn-content .gallery-controls { margin-top: auto; flex-shrink: 0; }
+@media (max-width: 760px) {
+  .learn .learn-content { bottom: calc(55 * var(--composition-unit)); }
+}
+
+/* The photo panel is the carousel; copy placement follows each portrait. */
+.learn .learn-content .bio { position: static; width:100%; max-width:none; margin:0; }
+.learn-content .gallery-copy { width:50%; max-width:calc(560 * var(--composition-unit)); }
+.learn-content .gallery-controls { position:absolute; bottom:0; left:50%; transform:translateX(-50%); margin:0; }
+.learn[data-member]:not([data-member="band"]) #learn-title { display:none; }
+.learn[data-member]:not([data-member="band"]) .gallery-copy { padding-top:calc(90 * var(--composition-unit)); }
+.learn:is([data-member="ryan"], [data-member="sam"]) .gallery-copy { margin-left:auto; }
+.learn:is([data-member="ryan"], [data-member="sam"]) .tint { transform:scaleX(-1); }
+@media (max-width:760px) {
+  .learn-content .gallery-copy { width:100%; max-width:none; }
+  .learn[data-member]:not([data-member="band"]) .gallery-copy { padding-top:calc(45 * var(--composition-unit)); }
+}
+
+/* Member portraits get a full, centered credit block beside the photograph. */
+@media (min-width:761px) {
+  .learn[data-member]:not([data-member="band"]) .gallery-copy {
+    width:50%; max-width:none; height:100%; padding:calc(15 * var(--composition-unit)) calc(18 * var(--composition-unit)) 0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; box-sizing:border-box;
+  }
+  .learn[data-member]:not([data-member="band"]) #member-name { font-size:calc(64 * var(--composition-unit)); margin-bottom:calc(-2 * var(--composition-unit)); }
+  .learn[data-member]:not([data-member="band"]) #member-role { font-size:calc(34 * var(--composition-unit)); margin-bottom:calc(25 * var(--composition-unit)); }
+  .learn[data-member]:not([data-member="band"]) #member-story p { font-size:calc(29 * var(--composition-unit)); line-height:1.4; }
+}
+
+/* Soften photographic detail beneath the copy, fading toward the portrait. */
+.learn .photo-softening {
+  position:absolute; inset:0; z-index:-1; pointer-events:none;
+  backdrop-filter:blur(calc(11 * var(--composition-unit)));
+  -webkit-backdrop-filter:blur(calc(11 * var(--composition-unit)));
+  mask-image:linear-gradient(90deg, black 0%, black 35%, transparent 75%);
+  -webkit-mask-image:linear-gradient(90deg, black 0%, black 35%, transparent 75%);
+}
+
+.learn:is([data-member="ryan"], [data-member="sam"]) .photo-softening { transform:scaleX(-1); }
+@media (min-width:761px) {
+  .learn[data-member="kevin"]:not([data-member="band"]) .gallery-copy { width:56%; padding-inline:calc(12 * var(--composition-unit)); }
+}
+
+.learn[data-member="kevin"] #member-story p { text-wrap:balance; }

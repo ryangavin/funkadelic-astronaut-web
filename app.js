@@ -1,9 +1,9 @@
 /* Shared top-edge geometry drives both clipping and every colored seam. */
 // Ribbon settings use viewport-relative units and leave untouched designs intact.
 const ribbonDefaults = {
-  listen: { frequency: 1.38, amplitude: 27.4, rotation: 0, x: 0.5, y: 6.3 },
-  learn: { frequency: 1, amplitude: 30, rotation: 0, x: 0, y: 0 },
-  live: { frequency: 2, amplitude: 28, rotation: 0, x: 0, y: 0 },
+  listen: { frequency: 1.38, amplitude: 27.4, rotation: 0, x: 71.5, y: 6.3 },
+  learn: { frequency: 0.93, amplitude: 37.3, rotation: 0, x: -51.4, y: 3.9 },
+  live: { frequency: 2.28, amplitude: 17.2, rotation: 0, x: -5.3, y: -15.6 },
 };
 const ribbonLimits = { frequency: [.25, 4], amplitude: [0, 80], rotation: [-20, 20], x: [-100, 100], y: [-100, 100] };
 const ribbonKey = 'fa-ribbons-v1';
@@ -47,25 +47,7 @@ function shape(section) {
     wave = parseFloat(getComputedStyle(section.querySelector(".seam")).height) ||
       parseFloat(getComputedStyle(section).getPropertyValue("--wave"));
   const hero = section.dataset.wave === "hero";
-  const normalized = section.id === "learn"
-      ? "M 0 64 C 200 25 300 0 500 50 C 700 100 800 130 1000 40"
-      : "M 0 40 C 160 135 215 -8 355 36 C 500 105 545 112 685 52 C 825 -12 885 86 1000 64";
-  const source = hero ? 230 : 120;
-  const amplitude = 1;
-  const nums = normalized.match(/[A-Z]|-?\d+(?:\.\d+)?/g);
-  let axis = 0;
-  const scaled = hero || ribbonDraft[section.id] ? customRibbon(section.id, w, wave) : nums
-    .map((t) => {
-      if (/[A-Z]/.test(t)) {
-        axis = 0;
-        return t;
-      }
-      const vertical = axis++ % 2;
-      const baseline = hero ? 45 : 60;
-      const value = vertical ? baseline + (+t - baseline) * amplitude : +t;
-      return (value * (vertical ? wave / source : w / 1000)).toFixed(3);
-    })
-    .join(" ");
+  const scaled = customRibbon(section.id, w, wave);
   section.style.clipPath = `path('${scaled} L ${w} ${h} L 0 ${h} Z')`;
   const svg = section.querySelector(".seam");
   svg.setAttribute("viewBox", `0 0 ${w} ${wave}`);
@@ -136,7 +118,9 @@ if (focalPhoto) {
     const [fx, fy] = focalPoints[focalPhoto.src.split("/").pop()] || [.5, .5];
     const w = frame.clientWidth, h = frame.clientHeight;
     const mobile = w <= 760;
-    const targetX = w * (mobile ? .44 : .26);
+    const isMember = !focalPhoto.src.endsWith("performance.webp");
+    const isRyan = focalPhoto.src.endsWith("band-13.webp");
+    const targetX = w * (mobile ? (isRyan ? .32 : .62) : (isRyan ? .27 : (isMember ? .74 : .26)));
     const targetY = h * (mobile ? 270 / 760 : 220 / 760);
     const scale = mobile
       ? Math.max(w / focalPhoto.naturalWidth, h / focalPhoto.naturalHeight)
@@ -144,8 +128,8 @@ if (focalPhoto) {
     const width = focalPhoto.naturalWidth * scale, height = focalPhoto.naturalHeight * scale;
     Object.assign(focalPhoto.style, {
       width: `${width}px`, height: `${height}px`,
-      left: `${Math.min(0, targetX - fx * width)}px`,
-      top: `${Math.min(0, targetY - fy * height)}px`,
+      left: `${Math.max(w - width, Math.min(0, targetX - fx * width))}px`,
+      top: `${Math.max(h - height, Math.min(0, targetY - fy * height))}px`,
     });
   }
   focalPhoto.addEventListener("load", positionFocalPhoto);
@@ -170,13 +154,13 @@ if (gallery) {
     },
     {
       name: "Ryan Gavin",
-      role: "Keyboards · Co-founder",
+      role: "Keyboard Wizard",
       photo: "assets/band-13.webp",
       alt: "Ryan Gavin playing keyboards at Crossroads",
       crop: "ryan",
       paragraphs: [
-        "Ryan co-founded Funkadelic Astronaut in 2012 with high school friend Kevin O’Neill.",
-        "He plays keyboards in the New Jersey trio.",
+        "Ryan co-founded Funkadelic Astronaut in 2012 with longtime friend Kevin O’Neill.",
+        "Blending music and technology, he brings an adventurous touch to the keys—taking chances and helping steer the trio into unexpected territory.",
       ],
     },
     {
@@ -186,8 +170,8 @@ if (gallery) {
       alt: "Kevin O’Neill playing drums at Crossroads",
       crop: "kevin",
       paragraphs: [
-        "Kevin co-founded Funkadelic Astronaut in 2012 with high school friend Ryan Gavin.",
-        "He plays drums in the New Jersey trio.",
+        "A naturally gifted drummer, Kevin has been making music with Ryan since before Funkadelic Astronaut had a name.",
+        "Behind the kit since day one, he brings a steady presence to a bond that runs deeper than bandmates—more like brothers.",
       ],
     },
     {
