@@ -37,3 +37,25 @@ Paper aging belongs to the backing, including its torn margin. Content sits abov
 it; transparent illustration areas reveal the paper. Opaque photos retain their own
 colors. Overall poster water stains remain a separate layer above the composition.
 This is a plain DOM utility, not yet the proposed React/npm framework.
+
+## Shared weathered strip preset
+
+Use `PaperCutout.mount(element, {preset: 'scrap'})` or
+`data-paper-cutout="scrap"` for the navigation and title-strip material.
+The preset owns aged stock, speckle/print wear, broad torn edges, pale exposed
+fibers, and the shared astronaut shadow. Adjust placement in CSS and pass `margin` only when
+needed for the shape. All strips share the same material settings.
+
+`edgeHighlight` controls exposed fiber width in screen pixels (0.5 by default
+for scraps); `fiberOpacity` controls visibility. Highlight and speckle sizes stay
+consistent across differently sized strips. The astronaut keeps its original
+silhouette and reference-unit fiber settings.
+
+The astronaut and scraps share `--paper-shadow`: a dark contour plus an offset
+shadow. Override that one material token to adjust their edge depth together.
+
+Both presets use the astronaut's two tear layers: `.018 / 38` for broad
+irregularity and `.28 / 3` for fine irregularity, each with two octaves.
+Scraps convert those reference units using the astronaut's rendered scale, so
+long title strips retain the same detail size. Paper and weathering are distorted
+together on scraps to prevent misaligned white edges.

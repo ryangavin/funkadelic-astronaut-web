@@ -128,7 +128,8 @@
       if (v.tracking !== undefined) css['letter-spacing'] = `${v.tracking}em`;
       if (v.line !== undefined) css['line-height'] = `${v.line}`;
       if (v.weight !== undefined) css['font-weight'] = `${v.weight}`;
-      if (v.font) result.push({ label, selector: `${selector}, :is(${selector}) :where(*)`, media: scopes[s] || null, css: { 'font-family': fonts[v.font] } });
+      // Old local drafts must follow the site's two-font palette.
+      if (v.font) result.push({ label, selector: `${selector}, :is(${selector}) :where(*)`, media: scopes[s] || null, css: { 'font-family': ['modak', 'chicle'].includes(v.font) ? fonts.modak : 'var(--body-face)' } });
       if (v.color) { css.color = v.color; css.fill = v.color; }
       if (v.x !== undefined || v.y !== undefined) css.translate = `${v.x ?? inherited.x ?? 0}px ${v.y ?? inherited.y ?? 0}px`;
       if (v.rotation !== undefined) css.rotate = `${v.rotation}deg`;

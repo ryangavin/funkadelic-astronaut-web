@@ -1219,3 +1219,41 @@ html::after { inset: var(--poster-surround); }
   background-size: 100% 100%, 100% 100%, 100% 100%, 640px 640px;
   background-repeat: no-repeat, no-repeat, no-repeat, repeat;
 }
+
+/* The same fill-then-black-stroke treatment as the wordmark.
+   Clip the stroke inside each logo silhouette, including its interior openings. */
+.hero > .streaming-links svg.streaming-logo {
+  background: none;
+  mask: none;
+  overflow: visible;
+  filter: drop-shadow(2px 3px 0 var(--ink-black));
+}
+.hero > .streaming-links .platform-ink {
+  fill: var(--hover-ink);
+  stroke: var(--ink-black);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  paint-order: fill stroke;
+  filter: url(#printed-ink);
+}
+/* A visible torn lower edge, matching the stock around the poster. */
+html:has(.launch-footer)::after {
+  background-size: 100% 1.667vw, 100% max(24px, 3vw), 1.53vw 100%, 1.53vw 100%;
+}
+
+.hero > .streaming-links .platform-black { fill: var(--ink-black); stroke: none; }
+
+/* A sketch on the base stock, underneath the separately pasted paper pieces. */
+.hero > .hero-background-sketch {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 66%;
+  mix-blend-mode: multiply;
+  opacity: .76;
+  filter: contrast(1.5);
+  z-index: 0;
+  pointer-events: none;
+}

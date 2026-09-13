@@ -17,7 +17,7 @@
   host.style.cssText = 'position:fixed;z-index:10001;inset:0;pointer-events:none';
   const root = host.attachShadow({mode:'open'});
   root.innerHTML = `<style>
-    :host {font:13px/1.45 system-ui,sans-serif;color:#f2f0e9} *{box-sizing:border-box} [hidden]{display:none!important}
+    :host {font:13px/1.45 var(--body-face);color:#f2f0e9} *{box-sizing:border-box} [hidden]{display:none!important}
     aside{pointer-events:auto;position:absolute;top:12px;right:12px;width:min(370px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain;background:rgb(23 28 37 / var(--opacity,.9));border:1px solid #50596a;border-radius:14px;box-shadow:0 12px 60px #0008;padding:18px}
     header{display:flex;align-items:center;justify-content:space-between;cursor:grab;touch-action:none} h2{font-size:18px;margin:0} p,small{color:#bac3d0} p{margin:10px 0}
     button,input,select,textarea{font:inherit;color:inherit;background:#282f3c;border:1px solid #596375;border-radius:6px;padding:7px;min-width:0} button{cursor:pointer} button:hover{background:#3a4659} :focus-visible{outline:2px solid #cef091;outline-offset:2px}

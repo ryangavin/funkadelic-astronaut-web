@@ -15,15 +15,15 @@
   line-height: 1.4;
 }
 .learn-content .bio {
-  font-family: "Comic Sans MS", "Comic Sans", "Balsamiq Sans", cursive;
+  font-family: var(--body-face);
   font-weight: 700;
 }
 .live-content table {
-  font-family: Fraunces, Georgia, serif;
+  font-family: var(--body-face);
   font-weight: 400;
 }
 .live-content .text-link {
-  font-family: Fraunces, Georgia, serif;
+  font-family: var(--body-face);
   font-weight: 400;
 }
 .learn-content #member-story p {
@@ -395,3 +395,45 @@
 }
 
 .learn[data-member="kevin"] #member-story p { text-wrap:balance; }
+
+/* Launch pass: shared heading rhythm and a footer that grows with its links. */
+:root {
+  --section-heading-size: calc(90 * var(--composition-unit));
+  --section-subtitle-gap: calc(18 * var(--composition-unit));
+}
+.learn-content #learn-title,
+.live-content #live-title { font-size: var(--section-heading-size); line-height: 1; margin: 0; }
+.learn .learn-content { gap: var(--section-subtitle-gap); }
+.live-content .tour-label { margin-top: var(--section-subtitle-gap); }
+.scene.live { height: auto; min-height: calc(858 * var(--composition-unit)); }
+/* Compact white ink stamps, grouped into social and music links. */
+.launch-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 24px;
+  margin-top: calc(48 * var(--composition-unit));
+  padding-block: 16px 20px;
+  font-family: var(--body-face);
+  color: var(--cream);
+}
+.launch-footer nav { display: flex; align-items: center; gap: 8px; }
+.launch-footer nav:last-of-type { justify-content: flex-end; }
+.launch-footer nav a { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; }
+.launch-footer svg,
+.launch-footer .streaming-logo { display: block; width: 25px; height: 25px; fill: currentColor; filter: url(#printed-ink); }
+.launch-footer a:is(:hover, :focus-visible) { opacity: .75; }
+.launch-footer .source-credit {
+  grid-column: 1 / -1; justify-self: start;
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 32px; font-size: 12px;
+}
+.launch-footer .source-credit svg { width: 16px; height: 16px; }
+.launch-footer .source-credit:is(:hover, :focus-visible) { text-decoration: underline; }
+@media (max-width: 760px) {
+  :root { --section-heading-size: 11vw; --section-subtitle-gap: calc(14 * var(--composition-unit)); }
+  .scene.live { min-height: 0; }
+  .launch-footer { gap: 4px 12px; margin-top: 32px; }
+  .launch-footer nav { flex-wrap: wrap; gap: 0; align-content: start; }
+  .launch-footer nav:last-of-type { justify-content: flex-start; }
+  .launch-footer svg, .launch-footer .streaming-logo { width: 23px; height: 23px; }
+}

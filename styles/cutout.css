@@ -11,7 +11,7 @@
   stroke: var(--cutout-ink);
 }
 /* One cutout treatment. Size and placement belong to the surrounding layout. */
-:is(#learn-title, #live-title, #member-role, #member-name, .tour-label, .empty-title).cutout-type,
+:is(#learn-title, #live-title, #member-role, #member-name, .tour-label, .empty-title, .launch-footer h3).cutout-type,
 .learn-content #member-story.print-copy p {
   --cutout-stroke: max(1.25px, .025em);
   --cutout-shadow-x: max(1.5px, .025em);
@@ -41,7 +41,7 @@
 
 /* Reading copy uses the canonical cutout treatment with its own typeface. */
 .learn-content #member-story.print-copy p {
-  --cutout-face: "Comic Sans MS", "Comic Sans", "Balsamiq Sans", cursive;
+  --cutout-face: var(--body-face);
   --cutout-stroke: max(2.5px, .05em);
   --cutout-paint-order: stroke fill;
   font-weight:700;

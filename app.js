@@ -54,8 +54,8 @@ function shape(section) {
   const colors = hero
     ? ["#a52837", "#ead3a7", "#121420"]
     : section.id === "learn"
-      ? ["#c58930", "#ead3a7", "#a52837"]
-      : ["#a52837", "#ead3a7", "#121420"];
+      ? ["#121420", "#ead3a7", "#c58930"]
+      : ["#c58930", "#ead3a7", "#121420"];
   svg.innerHTML = colors.map((color, i) =>
     `<path d="${scaled}" fill="none" stroke="${color}" stroke-width="${(hero ? [44, 30, 20] : [44, 26, 14])[i] * (w / 1090)}"/>`
   ).join("");
@@ -143,7 +143,7 @@ if (gallery) {
   const members = [
     {
       name: "Funkadelic Astronaut",
-      role: "New Jersey · Funktronica",
+      role: "New Jersey · Future Rock",
       photo: "assets/performance.webp",
       alt: "Funkadelic Astronaut performing together",
       crop: "band",

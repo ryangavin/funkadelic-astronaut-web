@@ -1,4 +1,5 @@
 :root {
+  --body-face: "Comic Sans MS", "Comic Sans", "Balsamiq Sans", cursive;
   --gutter: clamp(24px, 5.5vw, 100px);
 }
 * {
@@ -11,7 +12,7 @@ body {
   margin: 0;
   background: var(--cream);
   color: var(--plum);
-  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--body-face);
 }
 a {
   color: inherit;
@@ -80,7 +81,7 @@ button:disabled {
   white-space: nowrap;
 }
 .utility span {
-  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--body-face);
 }
 .utility-arrow {
   width: 0.78em;
@@ -410,8 +411,7 @@ dialog::backdrop {
   padding: 0 0 16px;
 }
 .player-header h2 {
-  font: 18px Georgia,
-    serif;
+  font: 18px var(--body-face);
   text-transform: none;
   letter-spacing: 0;
 }
