@@ -32,6 +32,7 @@ function harness(width, reducedMotion = false) {
     scene("listen", 600, 800),
     scene("learn", 0, 800),
     scene("live", -600, 800),
+    scene("footer", -1200, 160),
   ];
   const el = {
     addEventListener() {},
@@ -92,6 +93,9 @@ test("every responsive seam uses exactly the same geometry as its clip", () => {
       assert.equal(paths.length, 3);
       assert(!s.seam.innerHTML.includes("NaN"));
       assert(paths.every((d) => d === paths[0]));
+      const coordinates = paths[0].match(/-?\d+(?:\.\d+)?/g).map(Number);
+      assert(coordinates[0] < -20, "ribbon starts beyond the left edge");
+      assert(coordinates.at(-2) > width + 20, "ribbon ends beyond the right edge");
       assert(s.style.clipPath.startsWith(`path('${paths[0]} L ${width} `));
     }
   }

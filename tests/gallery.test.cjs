@@ -5,11 +5,13 @@ const fs = require("node:fs");
 const source = fs
   .readFileSync("app.js", "utf8")
   .split("// One manually selected introduction;")[1];
-function setup() {
+function setup(reducedMotion = false) {
+  const animations = [];
   const elements = {};
   const pending = [];
   const node = () => ({
     attributes: {},
+    animate(frames, options) { animations.push({ frames, options }); return { cancel() {}, finished: Promise.resolve() }; },
     events: {},
     dataset: {},
     textContent: "",
@@ -29,6 +31,7 @@ function setup() {
   for (const id of [
     "#band-gallery",
     "#learn",
+    "#learn-title",
     "#member-role",
     "#member-name",
     "#member-story",
@@ -45,6 +48,7 @@ function setup() {
   elements["#band-gallery"].querySelector = () => controls;
   elements["#band-gallery"].querySelectorAll = () => indicators;
   const context = {
+    matchMedia: () => ({ matches: reducedMotion }),
     document: { querySelector: (s) => elements[s], createElement: node },
     Image: class {
       decode() {
@@ -58,27 +62,34 @@ function setup() {
     "// One manually selected introduction;" + source,
     context,
   );
-  return { elements, photo, controls, indicators, pending };
+  return { elements, photo, controls, indicators, pending, animations };
 }
 const flush = () => new Promise((resolve) => setImmediate(resolve));
-test("manual gallery wraps both ways and commits matching image, name and indicator", async () => {
+test("edge arrows stop at the first and last introduction", async () => {
   const h = setup();
+  assert.equal(h.elements["#previous-member"].hidden, true);
+  h.elements["#previous-member"].events.click();
+  assert.equal(h.pending.length, 0);
+  for (const name of ["Ryan Gavin", "Kevin O’Neill", "Sam Luba"]) {
+    h.elements["#next-member"].events.click();
+    h.pending.shift().resolve();
+    await flush();
+    assert.equal(h.elements["#member-name"].textContent, name);
+    assert.equal(h.elements["#previous-member"].hidden, false);
+  }
+  assert.equal(h.elements["#next-member"].hidden, true);
+  h.elements["#next-member"].events.click();
+  assert.equal(h.pending.length, 0);
   h.elements["#previous-member"].events.click();
   h.pending.shift().resolve();
   await flush();
-  assert.equal(h.elements["#member-name"].textContent, "Sam Luba");
-  assert.equal(h.photo.src, "assets/band-21.webp");
-  assert.equal(h.indicators[3].attributes["aria-current"], "true");
-  h.elements["#next-member"].events.click();
-  h.pending.shift().resolve();
-  await flush();
-  assert.equal(h.elements["#member-name"].textContent, "Funkadelic Astronaut");
-  assert.equal(h.indicators[3].attributes["aria-current"], undefined);
+  assert.equal(h.elements["#member-name"].textContent, "Kevin O’Neill");
+  assert.equal(h.elements["#next-member"].hidden, false);
 });
 test("rapid selections ignore stale image completion and failed loads preserve current slide", async () => {
   const h = setup();
-  h.indicators[1].events.click();
-  h.indicators[2].events.click();
+  h.elements["#next-member"].events.click();
+  h.elements["#next-member"].events.click();
   const first = h.pending.shift(),
     last = h.pending.shift();
   last.resolve();
@@ -87,7 +98,7 @@ test("rapid selections ignore stale image completion and failed loads preserve c
   await flush();
   assert.equal(h.elements["#member-name"].textContent, "Kevin O’Neill");
   assert.equal(h.photo.src, "assets/band-22.webp");
-  h.indicators[3].events.click();
+  h.elements["#next-member"].events.click();
   h.pending.shift().reject();
   await flush();
   assert.equal(h.elements["#member-name"].textContent, "Kevin O’Neill");
@@ -111,5 +122,21 @@ test("keyboard Home and End select first and last without auto rotation", async 
     await flush();
     assert(prevented);
     assert.equal(h.elements["#member-name"].textContent, name);
+  }
+});
+
+test("transitions slide in the navigation direction and respect reduced motion", async () => {
+  for (const reducedMotion of [false, true]) {
+    const h = setup(reducedMotion);
+    h.elements["#next-member"].events.click();
+    h.pending.shift().resolve();
+    await flush();
+    if (reducedMotion) assert.equal(h.animations.length, 0);
+    else assert.equal(h.animations.at(-1).frames[0].transform, "translateX(72px)");
+    h.elements["#previous-member"].events.click();
+    h.pending.shift().resolve();
+    await flush();
+    if (reducedMotion) assert.equal(h.animations.length, 0);
+    else assert.equal(h.animations.at(-1).frames[0].transform, "translateX(-72px)");
   }
 });

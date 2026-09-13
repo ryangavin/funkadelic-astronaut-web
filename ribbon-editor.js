@@ -2,7 +2,7 @@
 (() => {
   const model = window.ribbonStudio;
   if (!model) return;
-  const sections = [['listen', 'Hero → Video'], ['learn', 'Video → About'], ['live', 'About → Tour']].filter(([id]) => document.getElementById(id));
+  const sections = [['listen', 'Hero → Video'], ['learn', 'Video → About'], ['live', 'About → Tour'], ['footer', 'Tour → Footer']].filter(([id]) => document.getElementById(id));
   if (!sections.length) return;
   let selected = sections[0][0], draft = model.get();
   const fields = [

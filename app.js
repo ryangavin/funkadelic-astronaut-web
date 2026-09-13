@@ -1,6 +1,7 @@
 /* Shared top-edge geometry drives both clipping and every colored seam. */
 // Ribbon settings use viewport-relative units and leave untouched designs intact.
 const ribbonDefaults = {
+  footer: { frequency: 1.3, amplitude: 15, rotation: 0, x: 0, y: -8 },
   listen: { frequency: 1.38, amplitude: 27.4, rotation: 0, x: 71.5, y: 6.3 },
   learn: { frequency: 0.93, amplitude: 37.3, rotation: 0, x: -51.4, y: 3.9 },
   live: { frequency: 2.28, amplitude: 17.2, rotation: 0, x: -5.3, y: -15.6 },
@@ -32,9 +33,12 @@ function customRibbon(id, width, height) {
   const slope = x => -height / width * v.amplitude / 100 * omega * Math.sin(omega * (x / width - phase - v.x / 100)) + tilt;
   const point = (x, y) => `${x.toFixed(3)} ${y.toFixed(3)}`;
   const count = Math.max(8, Math.ceil(v.frequency * 8));
-  let path = `M ${point(0, y(0))}`;
+  // Carry stroke ends beyond the paper edge, including the ink filter displacement.
+  const bleed = Math.max(32, width * .05);
+  const start = -bleed, span = width + 2 * bleed;
+  let path = `M ${point(start, y(start))}`;
   for (let i = 0; i < count; i++) {
-    const x = i * width / count, end = (i + 1) * width / count, third = (end - x) / 3;
+    const x = start + i * span / count, end = start + (i + 1) * span / count, third = (end - x) / 3;
     path += ` C ${point(x + third, y(x) + slope(x) * third)} ${point(end - third, y(end) - slope(end) * third)} ${point(end, y(end))}`;
   }
   return path;
@@ -188,13 +192,35 @@ if (gallery) {
   ];
   const section = document.querySelector("#learn"),
     photo = section.querySelector(".media-plane img");
-  const indicators = [...gallery.querySelectorAll("[data-member]")];
+  const previous = document.querySelector("#previous-member");
+  const nextButton = document.querySelector("#next-member");
+  const motion = matchMedia("(prefers-reduced-motion: reduce)");
+  const movingContent = [photo, document.querySelector("#learn-title"), document.querySelector("#band-slide")];
+  let animations = [];
+  function slideContent(direction, outgoing) {
+    animations.forEach(animation => animation.cancel());
+    animations = motion.matches ? [] : movingContent.map(element => element.animate(
+      outgoing
+        ? [{ transform: "translateX(0)", opacity: 1 }, { transform: `translateX(${-direction * 48}px)`, opacity: 0 }]
+        : [{ transform: `translateX(${direction * 72}px)`, opacity: 0 }, { transform: "translateX(0)", opacity: 1 }],
+      { duration: outgoing ? 150 : 420, easing: "cubic-bezier(.22,.61,.36,1)", fill: outgoing ? "forwards" : "none" },
+    ));
+    return Promise.all(animations.map(animation => animation.finished.catch(() => {})));
+  }
+  function updateArrows() {
+    previous.hidden = selected === 0;
+    nextButton.hidden = selected === members.length - 1;
+    if (document.activeElement === previous && previous.hidden) nextButton.focus();
+    if (document.activeElement === nextButton && nextButton.hidden) previous.focus();
+  }
   const announcement = document.querySelector("#gallery-status");
   let selected = 0,
     requested = 0,
     version = 0;
   async function selectMember(index) {
-    requested = (index + members.length) % members.length;
+    if (index < 0 || index >= members.length || index === requested) return;
+    animations.forEach(animation => animation.cancel());
+    requested = index;
     const next = requested,
       request = ++version,
       member = members[next];
@@ -203,6 +229,9 @@ if (gallery) {
       const image = new Image();
       image.src = member.photo;
       await image.decode();
+      if (request !== version) return;
+      const direction = next > selected ? 1 : -1;
+      await slideContent(direction, true);
       if (request !== version) return;
       photo.src = member.photo;
       photo.alt = member.alt;
@@ -223,11 +252,9 @@ if (gallery) {
           "aria-label",
           `${next + 1} of ${members.length}: ${member.name}`,
         );
-      indicators.forEach((button, i) => {
-        if (i === next) button.setAttribute("aria-current", "true");
-        else button.removeAttribute("aria-current");
-      });
       selected = next;
+      updateArrows();
+      slideContent(direction, false);
       announcement.textContent = `${next + 1} of ${members.length}: ${member.name}. ${member.role}.`;
     } catch {
       if (request === version) {
@@ -245,9 +272,7 @@ if (gallery) {
   document
     .querySelector("#next-member")
     .addEventListener("click", () => selectMember(requested + 1));
-  indicators.forEach((button, i) =>
-    button.addEventListener("click", () => selectMember(i)),
-  );
+  updateArrows();
   gallery
     .querySelector(".gallery-controls")
     .addEventListener("keydown", (event) => {

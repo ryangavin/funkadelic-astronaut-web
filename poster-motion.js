@@ -6,7 +6,13 @@
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const interactions = [...document.querySelectorAll('.navigation a, .hero > .streaming-links a')].map(link => ({
     link, ink: link.querySelector('.print-jitter'), hovered: false,
-  })).filter(item => item.ink).map(item => ({ ...item, letters: [...item.ink.children, ...item.link.querySelectorAll('svg.print-jitter, .nav-underline.print-jitter, .streaming-logo.print-jitter')] }));
+  })).filter(item => item.ink).map(item => ({
+    ...item,
+    // Layered SVG icons move as a single print, never their individual paths.
+    letters: item.ink.tagName?.toLowerCase() === 'svg'
+      ? [item.ink]
+      : [...item.ink.children, ...item.link.querySelectorAll('svg.print-jitter, .nav-underline.print-jitter, .streaming-logo.print-jitter')],
+  }));
   const engaged = item => item.hovered || item.link.matches(':focus-visible');
   const attributes = ['dx', 'dy', 'rotate'];
   const originals = words.map(word => ({

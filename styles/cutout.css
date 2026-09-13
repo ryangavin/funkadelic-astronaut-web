@@ -49,3 +49,10 @@
   paint-order:var(--cutout-paint-order);
   text-shadow:var(--cutout-shadow-x) var(--cutout-shadow-y) 0 var(--cutout-ink);
 }
+
+/* Keep the small Modak credit legible with ink inside the letter edges. */
+.launch-footer .source-credit span {
+  -webkit-text-stroke: .75px var(--cutout-ink);
+  paint-order: var(--cutout-paint-order);
+  text-shadow: 1px 1px 0 var(--cutout-ink);
+}
