@@ -46,14 +46,15 @@
   filter: none;
 }
 
-/* Keep the transport in the open center below the upper ribbon. */
+/* Tuck the compact transport above the lower ribbon on the right. */
 #listen .playback-controls {
   width: min(340px, calc(100% - 64px));
   grid-template-columns: 44px minmax(60px, 1fr) 44px minmax(48px, 64px);
-  left: 50%;
-  top: calc(var(--wave) * 0.65 + 12px);
-  bottom: auto;
-  transform: translateX(-50%);
+  left: auto;
+  right: 32px;
+  top: auto;
+  bottom: calc(var(--wave) * 0.35 + 8px);
+  transform: none;
 }
 
 /* The same two-word composition, with more of the illustrated paper exposed. */
@@ -61,6 +62,8 @@
   width: 86%;
 }
 @media (max-width: 760px) {
+  /* A phone-wide row also crosses the higher left side of the lower wave. */
+  #listen .playback-controls { bottom: calc(var(--wave) * .85 + 8px); }
   .hero-title .wordmark {
     width: 90%;
   }

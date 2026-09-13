@@ -59,7 +59,9 @@ function shape(section) {
     ? ["#a52837", "#ead3a7", "#121420"]
     : section.id === "learn"
       ? ["#121420", "#ead3a7", "#c58930"]
-      : ["#c58930", "#ead3a7", "#121420"];
+      : section.id === "footer"
+        ? ["#9275b2", "#ead3a7", "#121420"]
+        : ["#c58930", "#ead3a7", "#121420"];
   svg.innerHTML = colors.map((color, i) =>
     `<path d="${scaled}" fill="none" stroke="${color}" stroke-width="${(hero ? [44, 30, 20] : [44, 26, 14])[i] * (w / 1090)}"/>`
   ).join("");
