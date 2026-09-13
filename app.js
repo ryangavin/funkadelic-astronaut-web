@@ -22,7 +22,7 @@ function validateRibbons(data) {
   }
   return clean;
 }
-try { ribbonDraft = validateRibbons(JSON.parse(localStorage.getItem(ribbonKey))); } catch {}
+// Browser drafts are restored by the temporary editor, never by production layout.
 function customRibbon(id, width, height) {
   const v = { ...ribbonDefaults[id], ...ribbonDraft[id] };
   const phase = id === 'listen' ? .165 : id === 'learn' ? .23 : .1;
@@ -68,6 +68,7 @@ function shape(section) {
 if (typeof window !== 'undefined') window.ribbonStudio = {
   defaults: ribbonDefaults, limits: ribbonLimits,
   get: () => JSON.parse(JSON.stringify(ribbonDraft)),
+  preview(data) { ribbonDraft = validateRibbons(data); scenes.forEach(shape); },
   set(data) {
     ribbonDraft = validateRibbons(data);
     let saved = true;
@@ -272,6 +273,10 @@ if (gallery) {
   document
     .querySelector("#next-member")
     .addEventListener("click", () => selectMember(requested + 1));
+  if (typeof window !== "undefined") window.bandGalleryStudio = {
+    select: id => selectMember(members.findIndex(member => member.crop === id)),
+    current: () => members[selected].crop,
+  };
   updateArrows();
   gallery
     .querySelector(".gallery-controls")

@@ -66,6 +66,7 @@
   if (document.fonts && document.createElementNS) {
     document.fonts.ready.then(buildGlyphs);
     addEventListener('resize', buildGlyphs);
+    addEventListener('layout-studio-type-change', buildGlyphs);
   }
   const random = amplitude => +( (Math.random() * 2 - 1) * amplitude).toFixed(3);
   const jitter = () => ({ x: random(.45), y: random(.8), angle: random(.55) });
