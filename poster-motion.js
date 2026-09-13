@@ -125,7 +125,7 @@
     stop();
     if (reduced.matches || document.hidden || (!words.length && !astronaut && !interactions.some(engaged))) return;
     update();
-    timer = setInterval(update, 150);
+    timer = setInterval(update, PRINT_CADENCE_MS);
   }
   reduced.addEventListener('change', sync);
   document.addEventListener('visibilitychange', sync);

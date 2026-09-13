@@ -13,7 +13,7 @@ test('random registration remains bounded and restores original spacing for redu
   let tick, change, visibility;
   const reduced = {matches:false,addEventListener:(_,cb)=>change=cb};
   const document = {hidden:false,querySelector:()=>astronaut,querySelectorAll:selector=>selector==='.navigation a, .hero > .streaming-links a'?[]:selector==='.display-letter'?[letter]:[word],addEventListener:(_,cb)=>visibility=cb};
-  vm.runInNewContext(fs.readFileSync(require.resolve('../poster-motion.js'),'utf8'),{document,matchMedia:()=>reduced,Math,setInterval:cb=>(tick=cb,1),clearInterval:()=>{}});
+  vm.runInNewContext(fs.readFileSync(require.resolve('../print-cadence.js'),'utf8') + fs.readFileSync(require.resolve('../poster-motion.js'),'utf8'),{document,matchMedia:()=>reduced,Math,setInterval:cb=>(tick=cb,1),clearInterval:()=>{}});
   for(let frame=0;frame<200;frame++) {
     tick();
     assert.equal(letter.style.translate,'');assert.equal(letter.style.rotate,'');
@@ -47,7 +47,7 @@ test('shared link jitter follows hover/focus, resets for reduced motion, and kee
   const link = { querySelector:()=>ink, querySelectorAll:()=>[icon], matches:()=>focused, addEventListener:(name,fn)=>handlers[name]=fn };
   const reduced = {matches:false,addEventListener:(_,fn)=>change=fn};
   const document = {hidden:false,querySelector:()=>null,querySelectorAll:selector=>selector==='.navigation a, .hero > .streaming-links a'?[link]:[],addEventListener:(_,fn)=>visibility=fn};
-  vm.runInNewContext(fs.readFileSync(require.resolve('../poster-motion.js'),'utf8'), {
+  vm.runInNewContext(fs.readFileSync(require.resolve('../print-cadence.js'),'utf8') + fs.readFileSync(require.resolve('../poster-motion.js'),'utf8'), {
     document,matchMedia:()=>reduced,Math,
     setInterval:fn=>{timers.set(++nextId,fn);return nextId;},clearInterval:id=>timers.delete(id),
   });
@@ -76,7 +76,7 @@ test('layered streaming icons jitter as one SVG without moving their underlay or
   const link = {querySelector:()=>ink, querySelectorAll:()=>[ink], matches:()=>false, addEventListener:(name, fn)=>handlers[name]=fn};
   const reduced = {matches:false,addEventListener:()=>{}};
   const document = {hidden:false,querySelector:()=>null,querySelectorAll:selector=>selector==='.navigation a, .hero > .streaming-links a'?[link]:[],addEventListener:()=>{}};
-  vm.runInNewContext(fs.readFileSync(require.resolve('../poster-motion.js'),'utf8'), {
+  vm.runInNewContext(fs.readFileSync(require.resolve('../print-cadence.js'),'utf8') + fs.readFileSync(require.resolve('../poster-motion.js'),'utf8'), {
     document,matchMedia:()=>reduced,Math,setInterval:()=>1,clearInterval:()=>{},
   });
   handlers.pointerenter({pointerType:'mouse'});

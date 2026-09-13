@@ -149,6 +149,12 @@
       mount(strip, {preset: 'scrap', margin: 8});
     }
   }
+  const playButton = document.querySelector('#play-video');
+  if (playButton) mount(playButton, {
+    preset: 'scrap',
+    path: 'M360 48 A312 312 0 1 1 359.99 48 Z',
+    width: 720, height: 720, margin: 24, tear: 50,
+  });
   window.PaperCutout = {mount};
   document.querySelectorAll('[data-paper-cutout]').forEach(host => mount(host, {preset:host.dataset.paperCutout}));
 })();

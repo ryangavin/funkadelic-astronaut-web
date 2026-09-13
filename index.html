@@ -21,7 +21,9 @@
     <script src="cutout-type.js" defer></script>
     <script src="layout-studio-core.js" defer></script>
     <script src="layout-studio.js" defer></script>
+    <script src="print-cadence.js" defer></script>
     <script src="living-video.js" defer></script>
+    <script src="performance-print.js" defer></script>
     <script src="paper-cutout.js" defer></script>
     <script src="poster-motion.js" defer></script>
   </head>
@@ -34,6 +36,20 @@
       focusable="false"
     >
       <defs>
+        <filter id="performance-print-palette" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+          <feGaussianBlur stdDeviation="0.25" />
+          <feColorMatrix type="saturate" values="0" />
+          <feComponentTransfer>
+            <feFuncR type="gamma" amplitude="1" exponent="0.8" offset="0" />
+            <feFuncG type="gamma" amplitude="1" exponent="0.8" offset="0" />
+            <feFuncB type="gamma" amplitude="1" exponent="0.8" offset="0" />
+          </feComponentTransfer>
+          <feComponentTransfer>
+            <feFuncR type="discrete" tableValues="0.07059 0.16078 0.31765 0.32941 0.54510 0.77255 0.83137 0.91765" />
+            <feFuncG type="discrete" tableValues="0.07843 0.15686 0.25490 0.41176 0.50980 0.53725 0.70980 0.82745" />
+            <feFuncB type="discrete" tableValues="0.12549 0.22353 0.37647 0.46275 0.33333 0.18824 0.47451 0.65490" />
+          </feComponentTransfer>
+        </filter>
         <filter id="astronaut-palette" color-interpolation-filters="sRGB">
           <feColorMatrix type="saturate" values="0" />
           <feComponentTransfer>
@@ -161,6 +177,7 @@
       >
         <div class="media-plane" id="inline-player">
           <video id="performance" muted loop playsinline preload="none" poster="assets/performance.webp" aria-label="Funkadelic Astronaut live performance"></video>
+          <canvas id="performance-print" aria-hidden="true"></canvas>
         </div>
         <div class="tint" aria-hidden="true"></div>
         <svg class="seam" aria-hidden="true" preserveAspectRatio="none"></svg>
@@ -172,7 +189,7 @@
               <input id="video-seek" aria-label="Seek performance" type="range" min="0" max="0" step="0.1" value="0" disabled>
               <button id="mute-video" type="button" aria-label="Mute" aria-pressed="false" data-muted="false"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 9h4l5-5v16l-5-5H3z" fill="currentColor"/><path class="sound-icon" d="M16 8q5 4 0 8M19 4q9 8 0 16" fill="none" stroke="currentColor" stroke-width="2"/><path class="muted-icon" d="m16 9 6 6m0-6-6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
               <input id="video-volume" aria-label="Volume" type="range" min="0" max="1" step="0.05" value="1">
-              <output id="video-time" aria-live="off">0:00 / 0:00</output>
+              <output id="video-time" aria-live="off" hidden>0:00 / 0:00</output>
             </div>
             <p id="video-status" role="status"></p>
             <a href="https://www.funkadelicastronaut.com/" class="video-fallback" hidden>Watch on the band’s official site ↗</a>
