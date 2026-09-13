@@ -68,3 +68,22 @@ test('shared link jitter follows hover/focus, resets for reduced motion, and kee
   document.hidden=false;visibility(); assert.equal(timers.size,1);
   focused=false;handlers.blur(); assert.equal(timers.size,0); assert.equal(letter.style.translate,'');
 });
+
+test('layered streaming icons jitter as one SVG without moving their underlay or face', () => {
+  const underlay = {style:{}}, face = {style:{}};
+  const ink = {tagName:'svg', style:{}, children:[underlay, face]};
+  const handlers = {};
+  const link = {querySelector:()=>ink, querySelectorAll:()=>[ink], matches:()=>false, addEventListener:(name, fn)=>handlers[name]=fn};
+  const reduced = {matches:false,addEventListener:()=>{}};
+  const document = {hidden:false,querySelector:()=>null,querySelectorAll:selector=>selector==='.navigation a, .hero > .streaming-links a'?[link]:[],addEventListener:()=>{}};
+  vm.runInNewContext(fs.readFileSync(require.resolve('../poster-motion.js'),'utf8'), {
+    document,matchMedia:()=>reduced,Math,setInterval:()=>1,clearInterval:()=>{},
+  });
+  handlers.pointerenter({pointerType:'mouse'});
+  assert.ok(ink.style.translate);
+  assert.deepEqual(underlay.style, {});
+  assert.deepEqual(face.style, {});
+  handlers.pointerleave();
+  assert.equal(ink.style.translate, '');
+  assert.equal(ink.style.rotate, '');
+});

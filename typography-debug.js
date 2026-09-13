@@ -155,7 +155,14 @@
       node.setAttribute('textLength', preview ? current.length ?? original : original);
     }
   }
-  // Preserve accepted local typography while the overlay now edits ribbons.
+  // Compatibility bridge for the unified temporary studio. Legacy storage remains intact.
+  window.typographyDrafts = {
+    get: () => JSON.parse(JSON.stringify(draft)),
+    set(data) { draft = validate(data); apply(); },
+    preview(enabled) { preview = enabled; apply(); },
+    refresh: apply,
+  };
+  // Preserve accepted local typography while the unified overlay is closed.
   addEventListener('resize', apply);
   apply();
 })();

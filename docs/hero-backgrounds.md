@@ -10,6 +10,12 @@ Generated originals are preserved in assets:
 
 The approved New York treatment used object-position `center 66%`, opacity `.76`, contrast `1.5`, and multiply blending. The cosmic preview starts with that same treatment. Swap the hero-background-sketch image source to compare without altering the cutouts.
 
+## Four-ink star map
+
+Current preview: `assets/cosmic-star-map-four-ink.png`. The monochrome original is preserved. Generated with the built-in image tool using `assets/cosmic-star-map-rough.png` as the edit target.
+
+Final prompt: Edit this exact rough hand-drawn star map into a four-ink fountain pen drawing. Preserve the composition, all object placements, density, uneven hand-drawn shapes, crooked coordinate arcs, constellations, hasty scribbles and blank spaces. Change the ink palette only, using four colors: near-black, muted brick red, medium blue, and dusty purple. Assign different strokes and features different inks, like the same person switched between four fountain pens: blue chart arcs, red constellation connections and occasional star marks, purple spirals and some orbital paths, black planetary contours and remaining details. Distribute colors organically with occasional retraced color-over-black strokes and slight ink overlaps. Keep open linework, no filled color regions except original scribbled marks. Preserve the realistic amateur pen pressure, dry broken strokes, lopsided circles and corrections. White paper background for multiply blending onto tan. No polished vector lines, no perfect circles, no extra objects, no new text, no gradients, no washes, no colored background. Landscape 1536x1024.
+
 ## Rough star map generation
 
 Generated with the built-in image generation tool, referencing `assets/cosmic-sketch-rough.png`. Final prompt:
