@@ -1259,23 +1259,28 @@ html:has(.launch-footer)::after {
 }
 
 /* Scroll-reveal experiment: the paper collage shares one pinned video stage. */
-.hero-sequence { position: relative; height: 220svh; }
+.hero-sequence { position: relative; height: 340svh; }
 .hero-stage { position: sticky; top: 0; height: 100svh; overflow: clip; isolation: isolate; background: #121420; }
 .hero-stage > .scene.listen { position: absolute; inset: 0; margin: 0; height: 100%; min-height: 0; aspect-ratio: auto; clip-path: none !important; z-index: 0; }
 .hero-stage > .listen > .seam { display: none; }
 .hero-stage #inline-player { inset: 0; transform: none; }
 .hero-stage #inline-player video { width: 100%; height: 100%; object-fit: cover; }
 .hero-stage > .hero { position: absolute; inset: 0 0 auto; min-height: 100%; background: transparent; overflow: visible; z-index: 2; pointer-events: none; }
-.hero-stage > .hero::before { background-color: var(--cream); opacity: var(--paper-fade, 1); }
-.hero-stage > .hero::after, .hero-stage .hero-background-sketch { opacity: calc(var(--paper-fade, 1) * .76); }
+/* The base sheet is put aside; individual scraps sit directly on the performance. */
+.hero-stage > .hero::before, .hero-stage > .hero::after,
+.hero-stage .hero-background-sketch { display: none; }
 .hero-stage .navigation a, .hero-stage .streaming-links { pointer-events: auto; }
-.hero-stage .navigation > .utility { transform: translateY(calc(var(--reveal, 0) * -65vh)) rotate(calc(var(--reveal, 0) * -12deg)); }
-.hero-stage .navigation > .booking { transform: translateY(calc(var(--reveal, 0) * -70vh)) rotate(calc(var(--reveal, 0) * 14deg)); }
-.hero-stage .anchors { transform: translateY(calc(var(--reveal, 0) * -55vh)); }
-.hero-stage .word-paper-funk, .hero-stage .moving-glyph:has(.funk-word) { transform: translateX(calc(var(--reveal, 0) * -115vw)); }
-.hero-stage .word-paper-astro, .hero-stage .moving-glyph:has(.astro-word) { transform: translateX(calc(var(--reveal, 0) * 115vw)); }
-.hero-stage .astronaut { transform: translate(calc(var(--reveal, 0) * 65vw), calc(var(--reveal, 0) * 35vh)) rotate(calc(var(--reveal, 0) * 25deg)); }
-.hero-stage .streaming-links { transform: translate(calc(var(--reveal, 0) * -80vw), calc(var(--reveal, 0) * 40vh)) rotate(calc(var(--reveal, 0) * -15deg)); }
+.hero-stage .navigation > .utility { transform: translate(calc(var(--exit-press, 0) * -45vw), calc(var(--exit-press, 0) * -30vh)) rotate(calc(var(--exit-press, 0) * -18deg)); }
+.hero-stage .navigation > .booking { transform: translate(calc(var(--exit-booking, 0) * 45vw), calc(var(--exit-booking, 0) * -30vh)) rotate(calc(var(--exit-booking, 0) * 20deg)); }
+.hero-stage .anchors { transform: none; }
+.hero-stage .anchors a:first-child { transform: translateY(calc(var(--exit-band, 0) * -35vh)) rotate(calc(var(--exit-band, 0) * -18deg)); }
+.hero-stage .anchors a:last-child { transform: translateY(calc(var(--exit-tour, 0) * -35vh)) rotate(calc(var(--exit-tour, 0) * 22deg)); }
+.hero-stage .word-paper-funk, .hero-stage .moving-glyph:has(.funk-word) { transform: translateX(calc(var(--exit-funk, 0) * -120vw)); transform-origin: 0 0; }
+.hero-stage .word-paper-astro, .hero-stage .moving-glyph:has(.astro-word) { transform: translateX(calc(var(--exit-astro, 0) * 120vw)); transform-origin: 0 0; }
+.hero-stage .astronaut { transform: translate(calc(var(--exit-astronaut, 0) * 65vw), calc(var(--exit-astronaut, 0) * 35vh)) rotate(calc(var(--exit-astronaut, 0) * 30deg)); }
+.hero-stage .streaming-links { transform: translate(calc(var(--exit-music, 0) * -80vw), calc(var(--exit-music, 0) * 30vh)) rotate(calc(var(--exit-music, 0) * -20deg)); }
+.band-astronaut-peek { position: absolute; right: -3%; bottom: -4%; width: clamp(90px, 18vw, 240px); z-index: 4; pointer-events: none; transform: translateX(calc((1 - var(--peek, 0)) * 130%)) rotate(calc(-18deg + (1 - var(--peek, 0)) * 30deg)); }
+.band-astronaut-peek > img { display: block; width: 100%; height: auto; filter: url(#astronaut-palette); }
 .hero-stage .listen-content { opacity: var(--controls-reveal, 0); }
 .hero-stage .listen-content .play-area { position: absolute; inset: 0; display: grid; place-items: center; }
 .hero-stage #play-video { position: relative; inset: auto; }
@@ -1288,3 +1293,34 @@ html:has(.launch-footer)::after {
   .hero-stage { display: flex; flex-direction: column-reverse; }
   .hero-stage .listen-content { opacity: 1; }
 }
+
+
+/* Keep the original widescreen composition, with the actual Band panel overlapping it. */
+.hero-sequence .hero-stage { height: auto; }
+.hero-stage > .scene.listen { position: relative; inset: auto; height: auto; aspect-ratio: 16 / 9; }
+.hero-stage > .hero { min-height: 0; }
+.hero-stage > .scene.learn { position: relative; z-index: 3; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-stage { display: block; }
+  .hero-stage > .hero { position: absolute; }
+  .hero-stage .listen-content { opacity: 1; }
+}
+
+/* Button-driven reveal: no pinned stage or artificial scroll distance. */
+.hero-sequence { height: auto; }
+.hero-sequence .hero-stage { position: relative; height: auto; display: block; }
+.hero-stage > .hero { position: absolute; }
+.hero-stage > .hero[hidden] { display: none; }
+.hero-stage .listen-content { opacity: var(--controls-reveal, 0); }
+.reveal-performance {
+  position: absolute; left: 50%; bottom: 12%; transform: translateX(-50%);
+  z-index: 5; border: 2px solid #121420; border-radius: 4px;
+  padding: .65em 1.1em; background: var(--cream); color: #121420;
+  font: 700 clamp(14px, 1.7vw, 22px) var(--body-face);
+  box-shadow: 2px 3px 0 #121420; cursor: pointer; white-space: nowrap;
+}
+.reveal-performance:hover { rotate: -2deg; }
+.reveal-performance:focus-visible { outline: 3px solid white; outline-offset: 4px; }
+.reveal-performance[hidden] { display: none; }
+/* Small edge cameos do not affect document flow or cover the section copy. */
+#live > .band-astronaut-peek { width: clamp(70px, 10vw, 130px); bottom: 0; right: -2%; }
