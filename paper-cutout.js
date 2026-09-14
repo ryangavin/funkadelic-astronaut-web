@@ -131,7 +131,15 @@
     }
     const observer = new ResizeObserver(draw);
     observer.observe(host);
-    const api = {update, destroy() { observer.disconnect(); svg.remove(); host.classList.remove('paper-piece', 'paper-piece-jitter'); instances.delete(host); }};
+    const api = {
+      update,
+      restore() {
+        if (svg.parentNode !== host) host.prepend(svg);
+        draw();
+        return svg;
+      },
+      destroy() { observer.disconnect(); svg.remove(); host.classList.remove('paper-piece', 'paper-piece-jitter'); instances.delete(host); },
+    };
     instances.set(host, api);
     update(options);
     return api;
@@ -155,6 +163,11 @@
     path: 'M360 48 A312 312 0 1 1 359.99 48 Z',
     width: 720, height: 720, margin: 24, tear: 50,
   });
-  window.PaperCutout = {mount};
+  window.PaperCutout = {
+    mount,
+    restore(host) {
+      return instances.get(host)?.restore() || null;
+    },
+  };
   document.querySelectorAll('[data-paper-cutout]').forEach(host => mount(host, {preset:host.dataset.paperCutout}));
 })();

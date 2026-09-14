@@ -34,14 +34,27 @@ test("Band and Tour reuse one festival asset through distinct decorative layers"
   assert.match(source, /name:\s*"Kevin O’Neill"[\s\S]+?photo:\s*"assets\/band-22\.webp"/);
   assert.match(source, /name:\s*"Sam Luba"[\s\S]+?photo:\s*"assets\/band-21\.webp"/);
 });
-test("individual biographies use distinct torn-paper scraps without changing the overview", () => {
+test("hero scraps and individual biographies share one PaperCutout treatment", () => {
+  const html = fs.readFileSync("index.html", "utf8");
   const css = fs.readFileSync("styles/sections.css", "utf8");
-  assert.match(css, /\.learn\[data-member\]:not\(\[data-member="band"\]\) #member-story\s*\{[^}]+background:\s*linear-gradient\(112deg, #ead5a9, #f5e5c2 48%, #e7cf9f\)[^}]+clip-path:\s*polygon/s);
-  assert.match(css, /#member-story::before[^}]+paper-grain\.svg[^}]+mix-blend-mode:\s*multiply/s);
-  assert.match(css, /#member-story::after[^}]+box-shadow:\s*inset/s);
-  assert.match(css, /\.learn\[data-member="kevin"\] #member-story[^}]+clip-path:\s*polygon[^}]+rotate:\s*-\.7deg/s);
-  assert.match(css, /\.learn\[data-member="sam"\] #member-story[^}]+clip-path:\s*polygon[^}]+rotate:\s*\.35deg/s);
-  assert.doesNotMatch(css, /\.learn\[data-member="band"\] #member-story\s*\{/);
+  const paper = fs.readFileSync("paper-cutout.js", "utf8");
+  const paperCss = fs.readFileSync("styles/paper.css", "utf8");
+  assert.match(html, /class="member-story print-copy" id="member-story" data-paper-cutout="scrap"/);
+  assert.match(paper, /document\.querySelectorAll\('\.navigation a'\)[^;]+mount\(host, \{preset: 'scrap'/);
+  assert.match(paper, /document\.querySelectorAll\('\[data-paper-cutout\]'\)[^;]+mount\(host, \{preset:host\.dataset\.paperCutout\}/);
+  assert.match(paper, /agingColors:\s*\['#f6e8ca', '#f0dfbc', '#e8d3ab', '#ddc298'\]/);
+  assert.match(paper, /\['paper-dark-flecks\.svg', 'print-wear\.svg'\]/);
+  assert.match(paper, /classList\.add\('paper-piece'\)/);
+  assert.match(paper, /restore\(\)\s*\{[^}]+svg\.parentNode !== host[^}]+host\.prepend\(svg\)[^}]+draw\(\)/s);
+  assert.match(source, /memberStory\.replaceChildren\([\s\S]+?window\.PaperCutout\?\.restore\(memberStory\)/);
+  assert.match(paperCss, /\.paper-piece > \.paper-cutout\s*\{[^}]+position:\s*absolute;[^}]+inset:\s*0;[^}]+width:\s*100%;[^}]+height:\s*100%;[^}]+z-index:\s*-1/s);
+  assert.match(paperCss, /\.paper-piece\s*\{\s*isolation:\s*isolate/);
+  assert.match(paperCss, /\.paper-cutout\s*\{[^}]+--paper-shadow:[^;]+[^}]+filter:\s*var\(--paper-shadow\)/s);
+  assert.match(paperCss, /\.paper-cutout-fibers\s*\{[^}]+stroke:\s*#fff8e9[^}]+stroke-dasharray:/s);
+  assert.match(css, /\.learn:is\(:not\(\[data-member\]\), \[data-member="band"\]\) #member-story > \.paper-cutout\s*\{\s*display:\s*none/);
+  assert.match(css, /\.learn\[data-member="kevin"\] #member-story\s*\{\s*rotate:\s*-\.7deg/s);
+  assert.match(css, /\.learn\[data-member="sam"\] #member-story\s*\{\s*rotate:\s*\.35deg/s);
+  assert.doesNotMatch(css, /#member-story::(?:before|after)|#member-story[^}]+(?:background|clip-path|filter):/s);
   assert.match(css, /@media \(max-width:\s*760px\)[\s\S]+?#member-story[^}]+padding:\s*calc\(19 \* var\(--composition-unit\)\)/s);
 });
 function harness(width, reducedMotion = false) {

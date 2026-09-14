@@ -9,6 +9,7 @@ function setup(reducedMotion = false) {
   const animations = [];
   const elements = {};
   const pending = [];
+  const restoredPaper = [];
   const node = () => ({
     attributes: {},
     animate(frames, options) { animations.push({ frames, options }); return { cancel() {}, finished: Promise.resolve() }; },
@@ -49,10 +50,20 @@ function setup(reducedMotion = false) {
   elements["#learn"].querySelector = () => photo;
   elements["#band-gallery"].querySelector = () => controls;
   elements["#band-gallery"].querySelectorAll = () => indicators;
+  const paperBacking = { className: "paper-cutout", width: "100%", height: "100%", zIndex: -1 };
+  elements["#member-story"].children = [paperBacking];
   const context = {
     matchMedia: () => ({ matches: reducedMotion }),
     positionFocalPhoto() {},
     document: { querySelector: (s) => elements[s], createElement: node },
+    window: {
+      PaperCutout: {
+        restore(host) {
+          restoredPaper.push(host);
+          host.children.unshift(paperBacking);
+        },
+      },
+    },
     Image: class {
       decode() {
         return new Promise((resolve, reject) =>
@@ -65,7 +76,7 @@ function setup(reducedMotion = false) {
     "// One manually selected introduction;" + source,
     context,
   );
-  return { elements, photo, controls, indicators, pending, animations };
+  return { elements, photo, controls, indicators, pending, animations, restoredPaper, paperBacking };
 }
 const flush = () => new Promise((resolve) => setImmediate(resolve));
 test("edge arrows stop at the first and last introduction", async () => {
@@ -108,6 +119,19 @@ test("rapid selections ignore stale image completion and failed loads preserve c
   assert.equal(h.elements["#member-name"].textContent, "Kevin O’Neill");
   assert.match(h.elements["#gallery-status"].textContent, /could not load/);
   assert.equal(h.elements["#band-gallery"].attributes["aria-busy"], undefined);
+});
+test("member copy replacement restores the mounted PaperCutout backing", async () => {
+  const h = setup();
+  h.elements["#next-member"].events.click();
+  h.pending.shift().resolve();
+  await flush();
+  assert.equal(h.restoredPaper.length, 1);
+  assert.equal(h.restoredPaper[0], h.elements["#member-story"]);
+  assert.equal(h.elements["#member-story"].children[0], h.paperBacking);
+  assert.equal(h.paperBacking.width, "100%");
+  assert.equal(h.paperBacking.height, "100%");
+  assert.equal(h.paperBacking.zIndex, -1);
+  assert.equal(h.elements["#member-story"].children.length, 3);
 });
 test("keyboard Home and End select first and last without auto rotation", async () => {
   const h = setup();

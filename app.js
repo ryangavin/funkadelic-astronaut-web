@@ -263,13 +263,15 @@ if (gallery) {
       document.querySelector("#member-name").hidden = member.crop === "band";
       polaroidName.textContent = member.photo ? member.name : "";
       polaroidRole.textContent = member.photo ? member.role : "";
-      document.querySelector("#member-story").replaceChildren(
+      const memberStory = document.querySelector("#member-story");
+      memberStory.replaceChildren(
         ...member.paragraphs.map((text) => {
           const p = document.createElement("p");
           p.textContent = text;
           return p;
         }),
       );
+      window.PaperCutout?.restore(memberStory);
       document
         .querySelector("#band-slide")
         .setAttribute(
