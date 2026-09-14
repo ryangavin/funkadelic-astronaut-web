@@ -189,16 +189,36 @@ if (gallery) {
   const previous = document.querySelector("#previous-member");
   const nextButton = document.querySelector("#next-member");
   const motion = matchMedia("(prefers-reduced-motion: reduce)");
-  const movingContent = [polaroid, document.querySelector("#learn-title"), document.querySelector("#band-slide")];
+  const supportingContent = [document.querySelector("#learn-title"), document.querySelector("#band-slide")];
   let animations = [];
   function slideContent(direction, outgoing) {
     animations.forEach(animation => animation.cancel());
-    animations = motion.matches ? [] : movingContent.map(element => element.animate(
-      outgoing
-        ? [{ transform: "translateX(0)", opacity: 1 }, { transform: `translateX(${-direction * 48}px)`, opacity: 0 }]
-        : [{ transform: `translateX(${direction * 72}px)`, opacity: 0 }, { transform: "translateX(0)", opacity: 1 }],
-      { duration: outgoing ? 150 : 420, easing: "cubic-bezier(.22,.61,.36,1)", fill: outgoing ? "forwards" : "none" },
-    ));
+    if (motion.matches) animations = [];
+    else {
+      const polaroidFrames = outgoing
+        ? [
+            { translate: "0 0", rotate: "0deg", scale: 1, opacity: 1 },
+            { translate: `${-direction * 34}% -8px`, rotate: `${-direction * 2.5}deg`, scale: 1.015, opacity: .92, offset: .46 },
+            { translate: `${-direction * 118}% 7px`, rotate: `${-direction * 6}deg`, scale: .99, opacity: 0 },
+          ]
+        : [
+            { translate: `${direction * 118}% 9px`, rotate: `${direction * 6}deg`, scale: .99, opacity: 0 },
+            { translate: `${direction * 28}% -7px`, rotate: `${direction * 2}deg`, scale: 1.012, opacity: .94, offset: .62 },
+            { translate: "0 0", rotate: "0deg", scale: 1, opacity: 1 },
+          ];
+      const paperSlide = polaroid.animate(polaroidFrames, {
+        duration: outgoing ? 210 : 330,
+        easing: outgoing ? "cubic-bezier(.55,.02,.76,.44)" : "cubic-bezier(.18,.72,.22,1)",
+        fill: outgoing ? "forwards" : "none",
+      });
+      const copyAnimations = supportingContent.map(element => element.animate(
+        outgoing
+          ? [{ transform: "translateX(0)", opacity: 1 }, { transform: `translateX(${-direction * 22}px)`, opacity: 0 }]
+          : [{ transform: `translateX(${direction * 28}px)`, opacity: 0 }, { transform: "translateX(0)", opacity: 1 }],
+        { duration: outgoing ? 135 : 245, easing: "cubic-bezier(.22,.61,.36,1)", fill: outgoing ? "forwards" : "none" },
+      ));
+      animations = [paperSlide, ...copyAnimations];
+    }
     return Promise.all(animations.map(animation => animation.finished.catch(() => {})));
   }
   function updateArrows() {

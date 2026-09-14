@@ -614,11 +614,10 @@
   box-sizing: border-box;
   padding: calc(14 * var(--composition-unit)) calc(14 * var(--composition-unit)) calc(92 * var(--composition-unit));
   background: linear-gradient(104deg, #ead4aa, #f8e9c9 52%, #e8cfa0);
-  clip-path: polygon(.6% 1.2%, 99.1% 0, 100% 98.8%, 1.1% 100%, 0 44%);
-  box-shadow:
-    calc(4 * var(--composition-unit)) calc(7 * var(--composition-unit)) 0 rgb(18 20 32 / .58),
-    calc(13 * var(--composition-unit)) calc(21 * var(--composition-unit)) calc(25 * var(--composition-unit)) rgb(18 20 32 / .42),
-    0 calc(30 * var(--composition-unit)) calc(50 * var(--composition-unit)) rgb(18 20 32 / .2);
+  clip-path: polygon(.7% 1.5%, 17% .4%, 36% 1.1%, 57% .2%, 79% 1%, 99.1% .2%, 99.7% 20%, 99.3% 41%, 100% 63%, 99.4% 84%, 99% 98.9%, 80% 99.6%, 59% 98.8%, 38% 100%, 18% 99.2%, .5% 100%, 1% 78%, .2% 56%, .8% 34%, 0 13%);
+  filter:
+    drop-shadow(calc(4 * var(--composition-unit)) calc(7 * var(--composition-unit)) 0 rgb(18 20 32 / .58))
+    drop-shadow(calc(13 * var(--composition-unit)) calc(20 * var(--composition-unit)) calc(17 * var(--composition-unit)) rgb(18 20 32 / .36));
   transform-origin: 50% 54%;
   isolation: isolate;
 }
@@ -649,6 +648,7 @@
   position: relative;
   z-index: 1;
   overflow: hidden;
+  clip-path: polygon(.45% .9%, 19% .2%, 40% .75%, 62% 0, 83% .65%, 99.5% .15%, 99.15% 22%, 100% 48%, 99.3% 75%, 99.7% 99%, 77% 99.45%, 54% 98.9%, 31% 100%, .35% 99.2%, .8% 70%, 0 43%, .55% 18%);
   background: #d8c4a0;
   box-shadow:
     inset 0 0 0 1px rgb(63 48 38 / .34),
@@ -672,11 +672,13 @@
 .learn[data-member]:not([data-member="band"]) .polaroid-image::after {
   z-index: 3;
   background:
+    linear-gradient(90deg, rgb(72 48 34 / .18), transparent 2.2% 97.5%, rgb(72 48 34 / .14)),
+    linear-gradient(180deg, rgb(255 244 215 / .16), transparent 2.5% 96.5%, rgb(72 48 34 / .16)),
     radial-gradient(circle at 14% 24%, rgb(247 231 195 / .55) 0 1px, transparent 2px),
     radial-gradient(circle at 72% 66%, rgb(69 48 37 / .2) 0 1px, transparent 2px),
     repeating-linear-gradient(102deg, transparent 0 27px, rgb(73 52 42 / .08) 28px, transparent 29px 61px),
     url("../assets/paper-grain.svg") repeat;
-  background-size: 73px 67px, 97px 83px, auto, 260px 260px;
+  background-size: auto, auto, 73px 67px, 97px 83px, auto, 260px 260px;
   mix-blend-mode: soft-light;
   opacity: .62;
 }

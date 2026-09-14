@@ -27,6 +27,8 @@ test("Band and Tour reuse one festival asset through distinct decorative layers"
   assert.match(css, /\.polaroid-label[^}]+font-family:\s*var\(--body-face\)/s);
   assert.match(css, /#member-story p[^}]+font-size:\s*calc\(23 \* var\(--composition-unit\)\)/s);
   assert.match(css, /\.gallery-arrow[^}]+width:\s*calc\(82 \* var\(--composition-unit\)\)/s);
+  assert.match(css, /\.member-polaroid[^}]+clip-path:\s*polygon\([^)]*99\.7% 20%[^)]*\.2% 56%[^)]*\)/s);
+  assert.match(css, /\.polaroid-image[^}]+clip-path:\s*polygon\([^)]*99\.15% 22%[^)]*\.35% 99\.2%[^)]*\)/s);
   assert.match(source, /name:\s*"Funkadelic Astronaut"[\s\S]+?photo:\s*null/);
   assert.match(source, /name:\s*"Ryan Gavin"[\s\S]+?photo:\s*"assets\/band-13\.webp"/);
   assert.match(source, /name:\s*"Kevin O’Neill"[\s\S]+?photo:\s*"assets\/band-22\.webp"/);

@@ -129,18 +129,31 @@ test("keyboard Home and End select first and last without auto rotation", async 
   }
 });
 
-test("transitions slide in the navigation direction and respect reduced motion", async () => {
+test("Polaroids slide across the paper while supporting copy moves quietly", async () => {
   for (const reducedMotion of [false, true]) {
     const h = setup(reducedMotion);
     h.elements["#next-member"].events.click();
     h.pending.shift().resolve();
     await flush();
     if (reducedMotion) assert.equal(h.animations.length, 0);
-    else assert.equal(h.animations.at(-1).frames[0].transform, "translateX(72px)");
+    else {
+      assert.equal(h.animations.length, 6);
+      assert.equal(h.animations[0].frames.at(-1).translate, "-118% 7px");
+      assert.equal(h.animations[0].frames.at(-1).rotate, "-6deg");
+      assert.equal(h.animations[0].options.duration, 210);
+      assert.equal(h.animations[3].frames[0].translate, "118% 9px");
+      assert.equal(h.animations[3].options.duration, 330);
+      assert.equal(h.animations[4].frames[0].transform, "translateX(28px)");
+    }
     h.elements["#previous-member"].events.click();
     if (h.pending.length) h.pending.shift().resolve();
     await flush();
     if (reducedMotion) assert.equal(h.animations.length, 0);
-    else assert.equal(h.animations.at(-1).frames[0].transform, "translateX(-72px)");
+    else {
+      assert.equal(h.animations[6].frames.at(-1).translate, "118% 7px");
+      assert.equal(h.animations[6].frames.at(-1).rotate, "6deg");
+      assert.equal(h.animations[9].frames[0].translate, "-118% 9px");
+      assert.equal(h.animations[10].frames[0].transform, "translateX(-28px)");
+    }
   }
 });
