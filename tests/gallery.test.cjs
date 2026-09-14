@@ -47,7 +47,7 @@ function setup(reducedMotion = false) {
   const photo = node(),
     controls = node(),
     indicators = Array.from({ length: 4 }, node);
-  elements["#learn"].querySelector = () => photo;
+  elements["#learn"].querySelector = (selector) => selector === ".gallery-controls" ? controls : photo;
   elements["#band-gallery"].querySelector = () => controls;
   elements["#band-gallery"].querySelectorAll = () => indicators;
   const paperBacking = { className: "paper-cutout", width: "100%", height: "100%", zIndex: -1 };
@@ -165,7 +165,8 @@ test("Polaroids slide across the paper while supporting copy moves quietly", asy
       assert.equal(h.animations[0].frames.at(-1).translate, "-118% 7px");
       assert.equal(h.animations[0].frames.at(-1).rotate, "-6deg");
       assert.equal(h.animations[0].options.duration, 210);
-      assert.equal(h.animations[3].frames[0].translate, "118% 9px");
+      assert.equal(h.animations[3].frames[0].translate, "42% 12px");
+      assert.equal(h.animations[3].frames[0].scale, .86);
       assert.equal(h.animations[3].options.duration, 330);
       assert.equal(h.animations[4].frames[0].transform, "translateX(28px)");
     }

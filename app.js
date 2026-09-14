@@ -139,6 +139,9 @@ if (gallery) {
     {
       name: "Funkadelic Astronaut",
       role: "New Jersey · Future Rock",
+      paperCorners: "tl-br",
+      paperSeed: 0,
+      polaroidClipCorner: null,
       photo: null,
       alt: "",
       crop: "band",
@@ -150,6 +153,9 @@ if (gallery) {
     {
       name: "Ryan Gavin",
       role: "Keyboard Wizard",
+      paperCorners: "tl-br",
+      paperSeed: 1,
+      polaroidClipCorner: "bottom-left",
       photo: "assets/band-13.webp",
       alt: "Ryan Gavin playing keyboards at Crossroads",
       crop: "ryan",
@@ -160,7 +166,10 @@ if (gallery) {
     },
     {
       name: "Kevin O’Neill",
-      role: "Drums · Co-founder",
+      role: "Drums · Co-Founder",
+      paperCorners: "tr-bl",
+      paperSeed: 2,
+      polaroidClipCorner: null,
       photo: "assets/band-22.webp",
       alt: "Kevin O’Neill playing drums at Crossroads",
       crop: "kevin",
@@ -172,6 +181,9 @@ if (gallery) {
     {
       name: "Sam Luba",
       role: "Bass & vocals",
+      paperCorners: "tl-br",
+      paperSeed: 3,
+      polaroidClipCorner: null,
       photo: "assets/band-21.webp",
       alt: "Sam Luba singing and playing bass at Crossroads",
       crop: "sam",
@@ -191,7 +203,7 @@ if (gallery) {
   const motion = matchMedia("(prefers-reduced-motion: reduce)");
   const supportingContent = [document.querySelector("#learn-title"), document.querySelector("#band-slide")];
   let animations = [];
-  function slideContent(direction, outgoing) {
+  function slideContent(direction, outgoing, fromOverview = false) {
     animations.forEach(animation => animation.cancel());
     if (motion.matches) animations = [];
     else {
@@ -201,11 +213,17 @@ if (gallery) {
             { translate: `${-direction * 34}% -8px`, rotate: `${-direction * 2.5}deg`, scale: 1.015, opacity: .92, offset: .46 },
             { translate: `${-direction * 118}% 7px`, rotate: `${-direction * 6}deg`, scale: .99, opacity: 0 },
           ]
-        : [
-            { translate: `${direction * 118}% 9px`, rotate: `${direction * 6}deg`, scale: .99, opacity: 0 },
-            { translate: `${direction * 28}% -7px`, rotate: `${direction * 2}deg`, scale: 1.012, opacity: .94, offset: .62 },
-            { translate: "0 0", rotate: "0deg", scale: 1, opacity: 1 },
-          ];
+        : fromOverview
+          ? [
+              { translate: "42% 12px", rotate: "5deg", scale: .86, opacity: 0 },
+              { translate: "12% -5px", rotate: "1.5deg", scale: 1.01, opacity: .95, offset: .64 },
+              { translate: "0 0", rotate: "0deg", scale: 1, opacity: 1 },
+            ]
+          : [
+              { translate: `${direction * 118}% 9px`, rotate: `${direction * 6}deg`, scale: .99, opacity: 0 },
+              { translate: `${direction * 28}% -7px`, rotate: `${direction * 2}deg`, scale: 1.012, opacity: .94, offset: .62 },
+              { translate: "0 0", rotate: "0deg", scale: 1, opacity: 1 },
+            ];
       const paperSlide = polaroid.animate(polaroidFrames, {
         duration: outgoing ? 210 : 330,
         easing: outgoing ? "cubic-bezier(.55,.02,.76,.44)" : "cubic-bezier(.18,.72,.22,1)",
@@ -247,7 +265,8 @@ if (gallery) {
       }
       if (request !== version) return;
       const direction = next > selected ? 1 : -1;
-      await slideContent(direction, true);
+      const fromOverview = selected === 0 && next === 1;
+      await slideContent(direction, true, fromOverview);
       if (request !== version) return;
       if (member.photo) {
         photo.src = member.photo;
@@ -272,6 +291,16 @@ if (gallery) {
         }),
       );
       window.PaperCutout?.restore(memberStory);
+      window.PaperCutout?.update?.(memberStory, {
+        edge: "hand-torn",
+        corners: member.paperCorners,
+        edgeSeed: member.paperSeed,
+      });
+      window.PaperCutout?.update?.(polaroid, {
+        edge: "soft",
+        edgeSeed: member.paperSeed + 11,
+        clipCorner: member.polaroidClipCorner,
+      });
       document
         .querySelector("#band-slide")
         .setAttribute(
@@ -280,7 +309,7 @@ if (gallery) {
         );
       selected = next;
       updateArrows();
-      slideContent(direction, false);
+      slideContent(direction, false, fromOverview);
       announcement.textContent = `${next + 1} of ${members.length}: ${member.name}. ${member.role}.`;
     } catch {
       if (request === version) {
@@ -303,7 +332,7 @@ if (gallery) {
     current: () => members[selected].crop,
   };
   updateArrows();
-  gallery
+  section
     .querySelector(".gallery-controls")
     .addEventListener("keydown", (event) => {
       if (event.key === "ArrowRight" || event.key === "ArrowLeft") {

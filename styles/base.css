@@ -1,5 +1,48 @@
+@font-face {
+  font-family: "Balsamiq Sans";
+  src: url("../assets/fonts/balsamiq-sans/BalsamiqSans-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Balsamiq Sans";
+  src: url("../assets/fonts/balsamiq-sans/BalsamiqSans-Bold.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: Modak;
+  src: url("../assets/fonts/modak/Modak-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: Caveat;
+  src: url("../assets/fonts/caveat/Caveat-Variable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: Pacifico;
+  src: url("../assets/fonts/pacifico/Pacifico-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: Sacramento;
+  src: url("../assets/fonts/sacramento/Sacramento-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
-  --body-face: "Comic Sans MS", "Comic Sans", "Balsamiq Sans", cursive;
+  --body-face: "Balsamiq Sans", "Comic Sans MS", "Comic Sans", cursive;
   --gutter: clamp(24px, 5.5vw, 100px);
 }
 * {

@@ -8,7 +8,7 @@ Use `npm install`, then `npm run dev` to serve the site at http://127.0.0.1:4173
 - Booking email: https://www.funkadelicastronaut.com/
 - Current trio confirmed by https://funkadelicastronaut.bandcamp.com/
 - Performance: official homepage Squarespace-hosted HLS video, duration 522 seconds. The stable playlist URL is requested on play; expiring segment URLs are never persisted. HLS.js (Apache 2.0, license in assets) loads only on demand, with native HLS as the fallback when Media Source Extensions are unavailable.
-- Live listing checked September 11, 2026: https://www.bandsintown.com/a/6719052-funkadelic-astronaut — no upcoming shows. The empty state is intentional. Add confirmed dates as semantic table rows with date, venue/city and real ticket URLs.
+- Tour is presented as a sparse festival-day timetable: two bookings make a two-day board, three make a three-day board, and cards stack on phones. The current three-card design preview clearly labels the Olive’s and bowling-alley records as sample/fictional data; the September 26, 2026 Nyack Neighborhood Music & Arts Festival entry is user-verified and links to the organizer’s Instagram schedule. Keep the reusable empty-state template when no real dates exist, and never present placeholder details as announced shows.
 - Photos are genuine band media reused from the official site; no generated people. Photographer credits and high-resolution press downloads were not published with these assets. Contact the band for those materials.
 - Modak is served through the Google Fonts CDN under the SIL Open Font License. Font specimens comparing Chicle, Modak and Shrikhand are preserved in `output/font-specimens.html`.
 - Astronaut generated using built-in imagegen, then a transparency edit. See `output/astronaut-prompt.md`. Final web asset: `assets/astronaut.webp`.
@@ -37,6 +37,8 @@ Learn contains a manual overview/member gallery. Its verified member content and
 Band and Tour continue the header's festival illustration with independent crops from the same asset: upper stages/camp behind Band, and the lower pond/bassist/astronaut scene behind Tour. The Band overview is illustration-only; each member selection places its existing press-kit portrait in a responsive, warm-paper Polaroid above that world. The Polaroid frame and individual biography both use the hero's shared `PaperCutout` scrap treatment for displaced torn edges, exposed fibers, aged stock, flecks and print wear. The photo window retains its faded gloss and inset depth, while the thicker lower margin carries the member's name and role. Biography copy is plain Comic Sans-style ink on a gently rotated scrap; the overview copy remains directly on the illustrated field. Polaroids slide fully across the paper with a brief lift and settle; compact biography copy follows more quietly and leaves room for larger edge navigation.
 
 The inline `printed-ink` SVG filter textures only display lettering. The repeating paper SVG is decorative and cannot intercept input. `overflow:clip` prevents overscanned media from becoming an internally scrollable focus container. Run the six focused checks with `node --test tests/*.test.cjs`.
+
+All design-critical typography is served locally: Modak for poster display type, Balsamiq Sans as the open-licensed Comic Sans-style body face, and Pacifico, Caveat and Sacramento for the three live-text member signatures. See `docs/fonts.md` for file provenance and licenses.
 
 ## Typography studio
 

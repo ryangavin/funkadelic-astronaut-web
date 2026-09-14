@@ -13,6 +13,59 @@
   };
   const instances = new WeakMap();
   let serial = 0;
+  function handTornPath(width, height, unitsPerPixel, seed, corners) {
+    const depth = Math.min(9, Math.max(5, width / unitsPerPixel * .018)) * unitsPerPixel;
+    const rotate = (values, amount) => values.map((_, index) => values[(index + amount) % values.length]);
+    const top = rotate([.35, .12, .58, .06, .32, 1, .16, .48, .08, .7, .2, .4], seed % 5);
+    const right = rotate([.25, .62, .08, .42, .9, .16, .5, .06, .72], seed % 3);
+    const bottom = rotate([.5, .1, .68, .2, .92, .08, .42, .16, .75, .04, .55, .28], seed % 7);
+    const left = rotate([.18, .55, .05, .82, .22, .46, .1, .68, .3], seed % 4);
+    // Each corner gets a different torn approach and exit. The named diagonal
+    // only controls which pair is strongest; it never leaves the other pair square.
+    const profiles = corners === 'tr-bl'
+      ? {tl:[1.05,.58,.92], tr:[1.52,.84,1.28], br:[1.12,.66,.96], bl:[1.43,.76,1.22]}
+      : {tl:[1.46,.78,1.18], tr:[1.08,.62,.9], br:[1.5,.82,1.26], bl:[1.16,.7,1.02]};
+    const variation = ((seed % 4) - 1.5) * .06;
+    top[0] = profiles.tl[0] + variation;
+    top[1] = profiles.tl[1];
+    left[left.length - 1] = profiles.tl[2] - variation;
+    top[top.length - 1] = profiles.tr[0] - variation;
+    top[top.length - 2] = profiles.tr[1];
+    right[1] = profiles.tr[2] + variation;
+    right[right.length - 1] = profiles.br[0] + variation;
+    bottom[1] = profiles.br[1];
+    bottom[0] = profiles.br[2] - variation;
+    bottom[bottom.length - 1] = profiles.bl[0] - variation;
+    bottom[bottom.length - 2] = profiles.bl[1];
+    left[1] = profiles.bl[2] + variation;
+    const points = [];
+    top.forEach((inset, index) => points.push([width * index / (top.length - 1), depth * inset]));
+    right.slice(1).forEach((inset, index) => points.push([width - depth * inset, height * (index + 1) / right.length]));
+    bottom.slice(1).forEach((inset, index) => points.push([width * (1 - (index + 1) / bottom.length), height - depth * inset]));
+    left.slice(1).forEach((inset, index) => points.push([depth * inset, height * (1 - (index + 1) / left.length)]));
+    return `M${points.map(([x, y]) => `${x.toFixed(2)} ${y.toFixed(2)}`).join('L')}Z`;
+  }
+  function softWavyPath(width, height, unitsPerPixel, seed, clipCorner) {
+    const depth = Math.min(2.4, Math.max(1.25, width / unitsPerPixel * .0045)) * unitsPerPixel;
+    const clip = Math.min(12, Math.max(7, width / unitsPerPixel * .022)) * unitsPerPixel;
+    const rotate = (values, amount) => values.map((_, index) => values[(index + amount) % values.length]);
+    const top = rotate([.34,.12,.48,.22,.4,.08,.3,.18,.44,.14], seed % 4);
+    const right = rotate([.2,.42,.1,.3,.16,.46,.12,.34], seed % 3);
+    const bottom = rotate([.38,.14,.46,.2,.3,.08,.42,.16,.34,.12], seed % 5);
+    const left = rotate([.16,.4,.1,.32,.2,.44,.12,.28], seed % 4);
+    // Soft photo paper keeps complete corners. Ryan's optional punctuation is
+    // one short, clean diagonal at the bottom-left—not a torn macro contour.
+    const points = [[0, 0]];
+    top.slice(1, -1).forEach((inset, index) => points.push([width * (index + 1) / (top.length - 1), depth * inset]));
+    points.push([width, 0]);
+    right.slice(1, -1).forEach((inset, index) => points.push([width - depth * inset, height * (index + 1) / (right.length - 1)]));
+    points.push([width, height]);
+    bottom.slice(1, -1).forEach((inset, index) => points.push([width * (1 - (index + 1) / (bottom.length - 1)), height - depth * inset]));
+    if (clipCorner === 'bottom-left') points.push([clip, height], [0, height - clip]);
+    else points.push([0, height]);
+    left.slice(1, -1).forEach((inset, index) => points.push([depth * inset, height * (1 - (index + 1) / (left.length - 1))]));
+    return `M${points.map(([x, y]) => `${x.toFixed(2)} ${y.toFixed(2)}`).join('L')}Z`;
+  }
   function mount(host, options = {}) {
     if (instances.has(host)) return instances.get(host);
     const svg = template.content.firstElementChild.cloneNode(true);
@@ -69,7 +122,10 @@
       [{frequency: .018, amplitude: 38}, {frequency: .28, amplitude: 3}].forEach((layer, i) => {
         noises[i].setAttribute('baseFrequency', layer.frequency / tearScale);
         noises[i].setAttribute('numOctaves', '2');
-        displacements[i].setAttribute('scale', (i === 0 && custom ? settings.tear ?? layer.amplitude : layer.amplitude) * tearScale);
+        const amplitude = i === 0
+          ? settings.tear ?? (settings.edge === 'soft' ? 6 : layer.amplitude)
+          : layer.amplitude;
+        displacements[i].setAttribute('scale', amplitude * tearScale);
       });
       if (settings.edgeHighlight !== undefined) {
         // Exposed pale fibers sit outside the stock, just like the astronaut.
@@ -85,7 +141,14 @@
         image.setAttribute('width', tile);
         image.setAttribute('height', tile);
       }
-      shape.setAttribute('d', settings.path || (custom ? astronautPath : `M0 0H${width}V${height}H0Z`));
+      const shapePath = settings.path || (custom
+        ? astronautPath
+        : settings.edge === 'hand-torn'
+          ? handTornPath(width, height, unitsPerPixel, settings.edgeSeed ?? serial, settings.corners)
+          : settings.edge === 'soft'
+            ? softWavyPath(width, height, unitsPerPixel, settings.edgeSeed ?? serial, settings.clipCorner)
+            : `M0 0H${width}V${height}H0Z`);
+      shape.setAttribute('d', shapePath);
       const mask = svg.querySelector('mask');
       const rect = mask.querySelector('rect');
       for (const el of [mask, rect]) {
@@ -163,11 +226,32 @@
     path: 'M360 48 A312 312 0 1 1 359.99 48 Z',
     width: 720, height: 720, margin: 24, tear: 50,
   });
+  // The control remains a large transparent rectangle for touch/focus, while
+  // its visible paper follows the same arrow silhouette as the red ink layer.
+  const controlArrowPaths = {
+    'previous-member': 'M3 15 18 3 20 11 36 9 37 22 20 21 18 29Z',
+    'next-member': 'M37 15 22 3 20 11 4 9 3 22 20 21 22 29Z',
+  };
+  document.querySelectorAll('.gallery-arrow-cutout').forEach(host => mount(host, {
+    preset: 'scrap',
+    path: controlArrowPaths[host.closest('.gallery-arrow').id],
+    width: 40,
+    height: 32,
+    margin: 9,
+    tear: 2.4,
+    edgeHighlight: .45,
+  }));
   window.PaperCutout = {
     mount,
+    update(host, next) {
+      return instances.get(host)?.update(next) || null;
+    },
     restore(host) {
       return instances.get(host)?.restore() || null;
     },
   };
-  document.querySelectorAll('[data-paper-cutout]').forEach(host => mount(host, {preset:host.dataset.paperCutout}));
+  document.querySelectorAll('[data-paper-cutout]').forEach(host => mount(host, {
+    preset: host.dataset.paperCutout,
+    edge: host.dataset.paperEdge,
+  }));
 })();
