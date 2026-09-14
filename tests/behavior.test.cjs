@@ -9,7 +9,7 @@ test("Band and Tour reuse one festival asset through distinct decorative layers"
   const band = html.match(/<section\s+class="scene learn"[\s\S]+?<\/section>/)?.[0] || "";
   const tour = html.match(/<section\s+class="scene live"[\s\S]+?<\/section>/)?.[0] || "";
   assert.match(band, /festival-world festival-world-band/);
-  assert.match(band, /<figure class="member-polaroid">[\s\S]+?<img[^>]+alt=""[\s\S]+?<figcaption class="polaroid-label">/);
+  assert.match(band, /<figure class="member-polaroid" data-paper-cutout="scrap">[\s\S]+?<img[^>]+alt=""[\s\S]+?<figcaption class="polaroid-label">/);
   assert.doesNotMatch(band, /performance\.webp/);
   assert.match(tour, /festival-world festival-world-tour/);
   assert.doesNotMatch(tour, /performance\.webp|<div class="media-plane">/);
@@ -17,7 +17,7 @@ test("Band and Tour reuse one festival asset through distinct decorative layers"
   assert.match(css, /\.festival-world-band\s*\{[^}]+background-position:\s*center top/s);
   assert.match(css, /\.festival-world-tour\s*\{[^}]+background-position:\s*82% bottom/s);
   assert.match(css, /\.learn:is\(:not\(\[data-member\]\), \[data-member="band"\]\) \.media-plane img\s*\{\s*opacity:\s*0/s);
-  assert.match(css, /\.member-polaroid[^}]+padding:[^;]+[^}]+background:\s*linear-gradient\(104deg, #ead4aa, #f8e9c9 52%, #e8cfa0\)/s);
+  assert.match(css, /\.member-polaroid > \.paper-cutout[^}]+--paper-shadow:[^}]+drop-shadow/s);
   assert.match(css, /\.learn\[data-member="ryan"\] \.member-polaroid[^}]+rotate\(-3\.8deg\)/s);
   assert.match(css, /\.learn\[data-member="kevin"\] \.member-polaroid[^}]+rotate\(3deg\)/s);
   assert.match(css, /\.learn\[data-member="sam"\] \.member-polaroid[^}]+rotate\(-1\.6deg\)/s);
@@ -27,7 +27,7 @@ test("Band and Tour reuse one festival asset through distinct decorative layers"
   assert.match(css, /\.polaroid-label[^}]+font-family:\s*var\(--body-face\)/s);
   assert.match(css, /#member-story p[^}]+font-size:\s*calc\(23 \* var\(--composition-unit\)\)/s);
   assert.match(css, /\.gallery-arrow[^}]+width:\s*calc\(82 \* var\(--composition-unit\)\)/s);
-  assert.match(css, /\.member-polaroid[^}]+clip-path:\s*polygon\([^)]*99\.7% 20%[^)]*\.2% 56%[^)]*\)/s);
+  assert.doesNotMatch(css, /\.member-polaroid\s*\{[^}]+(?:background|clip-path|filter):/s);
   assert.match(css, /\.polaroid-image[^}]+clip-path:\s*polygon\([^)]*99\.15% 22%[^)]*\.35% 99\.2%[^)]*\)/s);
   assert.match(source, /name:\s*"Funkadelic Astronaut"[\s\S]+?photo:\s*null/);
   assert.match(source, /name:\s*"Ryan Gavin"[\s\S]+?photo:\s*"assets\/band-13\.webp"/);
@@ -39,7 +39,8 @@ test("hero scraps and individual biographies share one PaperCutout treatment", (
   const css = fs.readFileSync("styles/sections.css", "utf8");
   const paper = fs.readFileSync("paper-cutout.js", "utf8");
   const paperCss = fs.readFileSync("styles/paper.css", "utf8");
-  assert.match(html, /class="member-story print-copy" id="member-story" data-paper-cutout="scrap"/);
+  assert.match(html, /class="member-story" id="member-story" data-paper-cutout="scrap"/);
+  assert.match(html, /class="member-polaroid" data-paper-cutout="scrap"/);
   assert.match(paper, /document\.querySelectorAll\('\.navigation a'\)[^;]+mount\(host, \{preset: 'scrap'/);
   assert.match(paper, /document\.querySelectorAll\('\[data-paper-cutout\]'\)[^;]+mount\(host, \{preset:host\.dataset\.paperCutout\}/);
   assert.match(paper, /agingColors:\s*\['#f6e8ca', '#f0dfbc', '#e8d3ab', '#ddc298'\]/);
@@ -52,10 +53,24 @@ test("hero scraps and individual biographies share one PaperCutout treatment", (
   assert.match(paperCss, /\.paper-cutout\s*\{[^}]+--paper-shadow:[^;]+[^}]+filter:\s*var\(--paper-shadow\)/s);
   assert.match(paperCss, /\.paper-cutout-fibers\s*\{[^}]+stroke:\s*#fff8e9[^}]+stroke-dasharray:/s);
   assert.match(css, /\.learn:is\(:not\(\[data-member\]\), \[data-member="band"\]\) #member-story > \.paper-cutout\s*\{\s*display:\s*none/);
-  assert.match(css, /\.learn\[data-member="kevin"\] #member-story\s*\{\s*rotate:\s*-\.7deg/s);
-  assert.match(css, /\.learn\[data-member="sam"\] #member-story\s*\{\s*rotate:\s*\.35deg/s);
-  assert.doesNotMatch(css, /#member-story::(?:before|after)|#member-story[^}]+(?:background|clip-path|filter):/s);
+  assert.match(css, /\.learn\[data-member="kevin"\]:not\(\[data-member="band"\]\) #member-story\s*\{\s*rotate:\s*-1\.25deg/s);
+  assert.match(css, /\.learn\[data-member="sam"\]:not\(\[data-member="band"\]\) #member-story\s*\{\s*rotate:\s*\.75deg/s);
+  assert.doesNotMatch(css, /#member-story::(?:before|after)/);
+  const storyContainerRules = [...css.matchAll(/#member-story\s*\{([^}]*)\}/g)].map((match) => match[1]).join("\n");
+  assert.doesNotMatch(storyContainerRules, /(?:background|clip-path|filter):/);
   assert.match(css, /@media \(max-width:\s*760px\)[\s\S]+?#member-story[^}]+padding:\s*calc\(19 \* var\(--composition-unit\)\)/s);
+  assert.match(css, /@media \(max-width:\s*760px\)[\s\S]+?\.learn\[data-member="kevin"\]:not\(\[data-member="band"\]\) #member-story\s*\{\s*rotate:\s*-\.8deg/s);
+});
+test("individual biography copy is plain Comic Sans-style ink", () => {
+  const html = fs.readFileSync("index.html", "utf8");
+  const css = fs.readFileSync("styles/sections.css", "utf8");
+  assert.doesNotMatch(html, /id="member-story"[^>]+print-copy|class="[^"]*print-copy[^"]*" id="member-story"/);
+  assert.match(css, /\.learn\[data-member\]:not\(\[data-member="band"\]\) #member-story p\s*\{[^}]+font-family:\s*var\(--body-face\);[^}]+font-weight:\s*400;[^}]+-webkit-text-stroke:\s*0;[^}]+paint-order:\s*normal;[^}]+text-shadow:\s*none;[^}]+filter:\s*none;[^}]+mix-blend-mode:\s*normal;/s);
+  assert.doesNotMatch(css, /\.learn\[data-member="(?:ryan|kevin|sam)"\][^{]*#member-story p\s*\{/);
+  const memberStoryOverrides = [...css.matchAll(/\.learn\[data-member="(?:ryan|kevin|sam)"\][^{]*#member-story\s*\{([^}]*)\}/g)]
+    .map((match) => match[1])
+    .join("\n");
+  assert.doesNotMatch(memberStoryOverrides, /(?:margin|padding|width|font|line-height|text-wrap):/);
 });
 function harness(width, reducedMotion = false) {
   const events = {};
