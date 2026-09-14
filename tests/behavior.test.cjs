@@ -34,6 +34,16 @@ test("Band and Tour reuse one festival asset through distinct decorative layers"
   assert.match(source, /name:\s*"Kevin O’Neill"[\s\S]+?photo:\s*"assets\/band-22\.webp"/);
   assert.match(source, /name:\s*"Sam Luba"[\s\S]+?photo:\s*"assets\/band-21\.webp"/);
 });
+test("individual biographies use distinct torn-paper scraps without changing the overview", () => {
+  const css = fs.readFileSync("styles/sections.css", "utf8");
+  assert.match(css, /\.learn\[data-member\]:not\(\[data-member="band"\]\) #member-story\s*\{[^}]+background:\s*linear-gradient\(112deg, #ead5a9, #f5e5c2 48%, #e7cf9f\)[^}]+clip-path:\s*polygon/s);
+  assert.match(css, /#member-story::before[^}]+paper-grain\.svg[^}]+mix-blend-mode:\s*multiply/s);
+  assert.match(css, /#member-story::after[^}]+box-shadow:\s*inset/s);
+  assert.match(css, /\.learn\[data-member="kevin"\] #member-story[^}]+clip-path:\s*polygon[^}]+rotate:\s*-\.7deg/s);
+  assert.match(css, /\.learn\[data-member="sam"\] #member-story[^}]+clip-path:\s*polygon[^}]+rotate:\s*\.35deg/s);
+  assert.doesNotMatch(css, /\.learn\[data-member="band"\] #member-story\s*\{/);
+  assert.match(css, /@media \(max-width:\s*760px\)[\s\S]+?#member-story[^}]+padding:\s*calc\(19 \* var\(--composition-unit\)\)/s);
+});
 function harness(width, reducedMotion = false) {
   const events = {};
   const reduced = {
