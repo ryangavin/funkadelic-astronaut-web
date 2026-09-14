@@ -1,49 +1,32 @@
-/* Same crop and seam clipping as the native video, with browser-native ink mapping. */
+/* Restrained monochrome levels over held ambient frames. */
 #inline-player #performance,
 #inline-player #performance-print {
-  filter: url("#performance-print-palette");
   transition: opacity 650ms ease;
 }
+#inline-player #performance,
 #inline-player #performance-print {
   position: absolute;
   inset: 0;
-  display: none;
-  opacity: 1;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: 50% 50%;
   pointer-events: none;
+  filter: url("#ambient-print-finish");
+  opacity: 1;
   background: #121420;
 }
-#inline-player.has-print-frame #performance-print {
-  display: block;
-}
-/* Keep native decoding/audio alive, but never show full-rate frames under the canvas. */
-#inline-player.has-print-frame #performance {
-  opacity: 0;
-  filter: none;
-}
-.listen.video-unavailable #inline-player #performance-print {
-  display: none;
-}
-/* Once started deliberately, pause/seek/replay stay in normal video mode. */
-#listen.sound-enabled #inline-player #performance {
-  opacity: 1;
-  filter: none;
-}
-#listen.sound-enabled #inline-player #performance-print {
-  opacity: 0;
-}
+#inline-player #performance-print { display: none; }
+#inline-player.has-print-frame #performance-print { display: block; }
+#inline-player.has-print-frame #performance { opacity: 0; filter: none; }
+#listen.sound-enabled #inline-player #performance { opacity: 1; filter: none; }
+#listen.sound-enabled #inline-player #performance-print { opacity: 0; }
+#listen.video-unavailable #inline-player #performance-print { display: none; }
+#listen #inline-player { filter: none; }
+#listen:not(.sound-enabled)::after { opacity: var(--ambient-grain, .4); }
 @media (prefers-reduced-motion: reduce) {
   #inline-player #performance,
-  #inline-player #performance-print {
-    transition: none;
-  }
-}
-/* The palette itself supplies the ambient print treatment. */
-#listen #inline-player {
-  filter: none;
+  #inline-player #performance-print { transition: none; }
 }
 
 /* Tuck the compact transport above the lower ribbon on the right. */

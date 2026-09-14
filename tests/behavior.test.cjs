@@ -3,6 +3,35 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const vm = require("node:vm");
 const source = fs.readFileSync("app.js", "utf8");
+test("Band and Tour reuse one festival asset through distinct decorative layers", () => {
+  const html = fs.readFileSync("index.html", "utf8");
+  const css = fs.readFileSync("styles/sections.css", "utf8");
+  const band = html.match(/<section\s+class="scene learn"[\s\S]+?<\/section>/)?.[0] || "";
+  const tour = html.match(/<section\s+class="scene live"[\s\S]+?<\/section>/)?.[0] || "";
+  assert.match(band, /festival-world festival-world-band/);
+  assert.match(band, /<figure class="member-polaroid">[\s\S]+?<img[^>]+alt=""[\s\S]+?<figcaption class="polaroid-label">/);
+  assert.doesNotMatch(band, /performance\.webp/);
+  assert.match(tour, /festival-world festival-world-tour/);
+  assert.doesNotMatch(tour, /performance\.webp|<div class="media-plane">/);
+  assert.equal((css.match(/festival-scribble-fully-shaded\.png/g) || []).length, 1);
+  assert.match(css, /\.festival-world-band\s*\{[^}]+background-position:\s*center top/s);
+  assert.match(css, /\.festival-world-tour\s*\{[^}]+background-position:\s*82% bottom/s);
+  assert.match(css, /\.learn:is\(:not\(\[data-member\]\), \[data-member="band"\]\) \.media-plane img\s*\{\s*opacity:\s*0/s);
+  assert.match(css, /\.member-polaroid[^}]+padding:[^;]+[^}]+background:\s*linear-gradient\(104deg, #ead4aa, #f8e9c9 52%, #e8cfa0\)/s);
+  assert.match(css, /\.learn\[data-member="ryan"\] \.member-polaroid[^}]+rotate\(-3\.8deg\)/s);
+  assert.match(css, /\.learn\[data-member="kevin"\] \.member-polaroid[^}]+rotate\(3deg\)/s);
+  assert.match(css, /\.learn\[data-member="sam"\] \.member-polaroid[^}]+rotate\(-1\.6deg\)/s);
+  assert.match(css, /\.member-polaroid img[^}]+filter:\s*sepia\(\.13\) saturate\(\.82\) contrast\(\.9\) brightness\(1\.08\)/s);
+  assert.match(css, /\.polaroid-image::before[^}]+mix-blend-mode:\s*screen/s);
+  assert.match(css, /\.polaroid-image::after[^}]+paper-grain\.svg[^}]+mix-blend-mode:\s*soft-light/s);
+  assert.match(css, /\.polaroid-label[^}]+font-family:\s*var\(--body-face\)/s);
+  assert.match(css, /#member-story p[^}]+font-size:\s*calc\(23 \* var\(--composition-unit\)\)/s);
+  assert.match(css, /\.gallery-arrow[^}]+width:\s*calc\(82 \* var\(--composition-unit\)\)/s);
+  assert.match(source, /name:\s*"Funkadelic Astronaut"[\s\S]+?photo:\s*null/);
+  assert.match(source, /name:\s*"Ryan Gavin"[\s\S]+?photo:\s*"assets\/band-13\.webp"/);
+  assert.match(source, /name:\s*"Kevin O’Neill"[\s\S]+?photo:\s*"assets\/band-22\.webp"/);
+  assert.match(source, /name:\s*"Sam Luba"[\s\S]+?photo:\s*"assets\/band-21\.webp"/);
+});
 function harness(width, reducedMotion = false) {
   const events = {};
   const reduced = {

@@ -2,7 +2,9 @@
 (function (root) {
   const scopes = ["all", "desktop", "mobile"],
     members = ["band", "ryan", "kevin", "sam"];
+  const ambient = typeof module !== "undefined" ? require("./ambient-treatment.js") : root.AmbientTreatment;
   const fields = {
+    ...ambient.fields,
     x: ["Horizontal adjustment · px", -1600, 1600, 1],
     y: ["Vertical adjustment · px", -1600, 1600, 1],
     rotation: ["Rotation adjustment · °", -180, 180, 0.5],
@@ -24,6 +26,7 @@
   const move = ["x", "y", "rotation", "scale"],
     type = [...move, "width", "size", "line"];
   const targets = [
+    { id: "ambient-video", label: "Ambient video treatment", selector: "#inline-player", ambient: true, fields: Object.keys(ambient.fields) },
     {
       id: "wordmark",
       label: "Whole wordmark",
@@ -138,6 +141,14 @@
         const values = {};
         for (const f of t.fields) {
           const [, min, max] = fields[f];
+          if (min === "source") {
+            if (ambient.validate({source: v[f]}).source) values[f] = v[f];
+            continue;
+          }
+          if (min === "color") {
+            if (typeof v[f] === "string" && /^#[0-9a-f]{6}$/i.test(v[f])) values[f] = v[f];
+            continue;
+          }
           if (
             typeof v[f] === "number" &&
             Number.isFinite(v[f]) &&

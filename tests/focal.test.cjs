@@ -3,27 +3,21 @@ const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
 const source = fs.readFileSync('app.js', 'utf8').split('// Source-space face coordinates')[1].split('// One manually selected introduction;')[0];
-test('face positioning covers every edge of the panel and preserves aspect ratio', () => {
+test('member photos retain source focal points without full-bleed inline geometry', () => {
   const frame = { clientWidth: 730, clientHeight: 550 };
   const events = {};
-  let resize;
   const photo = { naturalWidth: 1500, naturalHeight: 999, src: 'assets/band-22.webp', style: {}, closest: () => frame, addEventListener: (name, fn) => events[name] = fn };
   vm.runInNewContext('// Source-space face coordinates' + source, {
-    document: { querySelector: () => photo },
-    ResizeObserver: class { constructor(fn) { resize = fn; } observe() {} }
+    document: { querySelector: () => photo }
   });
-  function check() {
-    const w = parseFloat(photo.style.width), h = parseFloat(photo.style.height);
-    const x = parseFloat(photo.style.left), y = parseFloat(photo.style.top);
-    assert.ok(Math.abs(w / h - photo.naturalWidth / photo.naturalHeight) < .001);
-    assert.ok(x <= .01 && y <= .01);
-    assert.ok(x + w >= frame.clientWidth - .01);
-    assert.ok(y + h >= frame.clientHeight - .01);
-
-  }
-  check();
+  assert.equal(photo.style.objectPosition, '66% 15%');
+  assert.deepEqual([photo.style.width,photo.style.height,photo.style.left,photo.style.top],['','','','']);
   for (const width of [320, 390, 760, 761, 1024, 1440]) {
-    frame.clientWidth = width; frame.clientHeight = width <= 760 ? 500 * width / 390 : 760 * width / 1440; resize(); check();
-    for (const src of ['band-13.webp', 'band-21.webp', 'band-22.webp']) { photo.src = 'assets/' + src; events.load(); check(); }
+    frame.clientWidth = width; frame.clientHeight = width <= 760 ? 500 * width / 390 : 760 * width / 1440;
+    for (const [src,position] of [['band-13.webp','33.5% 24%'], ['band-21.webp','21% 33%'], ['band-22.webp','66% 15%']]) {
+      photo.src = 'assets/' + src; events.load(); assert.equal(photo.style.objectPosition,position);
+      assert.deepEqual([photo.style.width,photo.style.height,photo.style.left,photo.style.top],['','','','']);
+    }
   }
+  assert.match(fs.readFileSync('styles/sections.css','utf8'),/aspect-ratio:\s*1500 \/ 999/);
 });

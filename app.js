@@ -110,37 +110,25 @@ addEventListener("scroll", requestParallax, { passive: true });
 addEventListener("resize", requestParallax);
 reduced.addEventListener("change", requestParallax);
 requestParallax();
-// Source-space face coordinates stay anchored in the clear part of the scene.
+// Source-space face coordinates keep each portrait composed inside its paper frame.
 const focalPhoto = document.querySelector("#learn .media-plane img");
+let positionFocalPhoto = () => {};
 if (focalPhoto) {
   const focalPoints = {
-    "performance.webp": [0.25, 0.075],
     "band-13.webp": [0.335, 0.24],
     "band-22.webp": [0.66, 0.15],
     "band-21.webp": [0.21, 0.33],
   };
-  const frame = focalPhoto.closest(".scene");
-  function positionFocalPhoto() {
+  positionFocalPhoto = () => {
     if (!focalPhoto.naturalWidth) return;
-    const [fx, fy] = focalPoints[focalPhoto.src.split("/").pop()] || [.5, .5];
-    const w = frame.clientWidth, h = frame.clientHeight;
-    const mobile = w <= 760;
-    const isMember = !focalPhoto.src.endsWith("performance.webp");
-    const isRyan = focalPhoto.src.endsWith("band-13.webp");
-    const targetX = w * (mobile ? (isRyan ? .32 : .62) : (isRyan ? .27 : (isMember ? .74 : .26)));
-    const targetY = h * (mobile ? 270 / 760 : 220 / 760);
-    const scale = mobile
-      ? Math.max(w / focalPhoto.naturalWidth, h / focalPhoto.naturalHeight)
-      : Math.max(w / focalPhoto.naturalWidth, h / focalPhoto.naturalHeight, (h - targetY + h * 48 / 760) / (focalPhoto.naturalHeight * (1 - fy)));
-    const width = focalPhoto.naturalWidth * scale, height = focalPhoto.naturalHeight * scale;
+    const sourceName = focalPhoto.src.split("/").pop();
+    const [fx, fy] = focalPoints[sourceName] || [.5, .5];
     Object.assign(focalPhoto.style, {
-      width: `${width}px`, height: `${height}px`,
-      left: `${Math.max(w - width, Math.min(0, targetX - fx * width))}px`,
-      top: `${Math.max(h - height, Math.min(0, targetY - fy * height))}px`,
+      width: "", height: "", left: "", top: "",
+      objectPosition: `${fx * 100}% ${fy * 100}%`,
     });
-  }
+  };
   focalPhoto.addEventListener("load", positionFocalPhoto);
-  new ResizeObserver(positionFocalPhoto).observe(frame);
   positionFocalPhoto();
 }
 
@@ -151,8 +139,8 @@ if (gallery) {
     {
       name: "Funkadelic Astronaut",
       role: "New Jersey · Future Rock",
-      photo: "assets/performance.webp",
-      alt: "Funkadelic Astronaut performing together",
+      photo: null,
+      alt: "",
       crop: "band",
       paragraphs: [
         "Three friends blending funk and electronics with keyboards, drums, bass and vocals.",
@@ -195,10 +183,13 @@ if (gallery) {
   ];
   const section = document.querySelector("#learn"),
     photo = section.querySelector(".media-plane img");
+  const polaroid = section.querySelector(".member-polaroid");
+  const polaroidName = document.querySelector("#polaroid-member-name");
+  const polaroidRole = document.querySelector("#polaroid-member-role");
   const previous = document.querySelector("#previous-member");
   const nextButton = document.querySelector("#next-member");
   const motion = matchMedia("(prefers-reduced-motion: reduce)");
-  const movingContent = [photo, document.querySelector("#learn-title"), document.querySelector("#band-slide")];
+  const movingContent = [polaroid, document.querySelector("#learn-title"), document.querySelector("#band-slide")];
   let animations = [];
   function slideContent(direction, outgoing) {
     animations.forEach(animation => animation.cancel());
@@ -229,19 +220,29 @@ if (gallery) {
       member = members[next];
     gallery.setAttribute("aria-busy", "true");
     try {
-      const image = new Image();
-      image.src = member.photo;
-      await image.decode();
+      if (member.photo) {
+        const image = new Image();
+        image.src = member.photo;
+        await image.decode();
+      }
       if (request !== version) return;
       const direction = next > selected ? 1 : -1;
       await slideContent(direction, true);
       if (request !== version) return;
-      photo.src = member.photo;
-      photo.alt = member.alt;
+      if (member.photo) {
+        photo.src = member.photo;
+        photo.alt = member.alt;
+      } else {
+        photo.removeAttribute("src");
+        photo.alt = "";
+      }
       section.dataset.member = member.crop;
+      positionFocalPhoto();
       document.querySelector("#member-role").textContent = member.role;
       document.querySelector("#member-name").textContent = member.name;
       document.querySelector("#member-name").hidden = member.crop === "band";
+      polaroidName.textContent = member.photo ? member.name : "";
+      polaroidRole.textContent = member.photo ? member.role : "";
       document.querySelector("#member-story").replaceChildren(
         ...member.paragraphs.map((text) => {
           const p = document.createElement("p");

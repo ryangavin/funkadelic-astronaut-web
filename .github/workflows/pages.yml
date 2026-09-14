@@ -33,7 +33,8 @@ jobs:
       - name: Stage static website
         run: |
           mkdir _site
-          cp index.html press-kit.html style.css app.js typography-debug.js ribbon-editor.js living-video.js poster-motion.js portrait-strip.js cutout-type.js _site/
+          cp index.html press-kit.html style.css app.js typography-debug.js ribbon-editor.js living-video.js poster-motion.js portrait-strip.js cutout-type.js paper-cutout.js print-cadence.js performance-print.js ambient-treatment.js layout-studio-core.js layout-studio.js _site/
+          node scripts/generate-ambient-sources.cjs _site/ambient-sources.js
           cp -R assets _site/assets
           cp -R styles _site/styles
           touch _site/.nojekyll

@@ -70,6 +70,7 @@
       if (original === null) node.removeAttribute("textLength");
       else node.setAttribute("textLength", original);
     }
+    let ambientDraft = {};
     const ribbons = {},
       rules = [];
     if (!defaults) {
@@ -92,6 +93,7 @@
       for (const t of targets) {
         const v = C.effective(state.draft, t.id, actualScope());
         if (!Object.keys(v).length) continue;
+        if (t.ambient) { ambientDraft = v; continue; }
         if (t.ribbon) {
           const names = {
             ribbonX: "x",
@@ -158,6 +160,7 @@
     }
     sheet.textContent = rules.join("\n");
     window.ribbonStudio?.preview(ribbons);
+    window.ambientVideoStudio?.preview(ambientDraft);
     dispatchEvent(new Event("layout-studio-type-change"));
     highlight();
   }
@@ -169,7 +172,7 @@
   root.innerHTML = `<style>
   :host{font:13px/1.4 Arial,sans-serif;color:#f2f0e9}*{box-sizing:border-box}[hidden]{display:none!important}
   aside{pointer-events:auto;position:absolute;right:12px;top:12px;width:min(370px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain;background:rgb(23 28 37 / var(--opacity,.92));border:1px solid #596375;border-radius:12px;padding:16px;box-shadow:0 12px 40px #0008}
-  header{display:flex;justify-content:space-between;align-items:center;cursor:grab;touch-action:none}h2{font-size:18px;margin:0}p,small{color:#c1cbd8}button,input,select,textarea{font:inherit;color:inherit;background:#282f3c;border:1px solid #596375;border-radius:5px;padding:6px;min-width:0}button{cursor:pointer}button:disabled{opacity:.45;cursor:default}:focus-visible{outline:2px solid #cef091;outline-offset:2px}label{display:block;margin:8px 0}select,textarea{width:100%}.inputs{display:grid;grid-template-columns:1fr 86px;gap:8px}.inputs input{width:100%}input[type=range]{padding:0;accent-color:#cef091;min-height:28px}.actions{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}#launcher{pointer-events:auto;position:absolute;right:12px;bottom:12px}#highlight{position:fixed;border:2px dashed #d1ff85;background:#d1ff8510;pointer-events:none}#status{min-height:18px;color:#cef091}textarea{height:120px}#scope-note{display:block} @media print{:host{display:none}}
+  header{display:flex;justify-content:space-between;align-items:center;cursor:grab;touch-action:none}h2{font-size:18px;margin:0}p,small{color:#c1cbd8}button,input,select,textarea{font:inherit;color:inherit;background:#282f3c;border:1px solid #596375;border-radius:5px;padding:6px;min-width:0}button{cursor:pointer}button:disabled{opacity:.45;cursor:default}:focus-visible{outline:2px solid #cef091;outline-offset:2px}label{display:block;margin:8px 0}select,textarea{width:100%}.inputs{display:grid;grid-template-columns:1fr 86px;gap:8px}.inputs input{width:100%}input[type=range]{padding:0;accent-color:#cef091;min-height:28px}.actions{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}#launcher{pointer-events:auto;position:absolute;right:12px;bottom:12px}#highlight{position:fixed;background:transparent;outline:2px dashed #d1ff85;outline-offset:4px;pointer-events:none}#status{min-height:18px;color:#cef091}textarea{height:120px}#scope-note{display:block} @media print{:host{display:none}}
   </style><div id="highlight" hidden></div><button id="launcher">Layout studio · D</button>
   <aside hidden aria-label="Layout studio"><header><h2 tabindex="0" title="Drag or use arrow keys to move panel">Layout studio</h2><button id="close" aria-label="Close studio">×</button></header>
   <p>Temporary browser draft. Export for later translation into site styles. D toggles · Escape closes.</p>
@@ -185,10 +188,12 @@
   const $ = (id) => root.getElementById(id),
     panel = root.querySelector("aside");
   targets.forEach((t) => $("target").add(new Option(t.label, t.id)));
+  addEventListener("ambient-sources-ready", () => { apply(); render(); });
   function values() {
     return C.effective(state.draft, selected.id, scope);
   }
   function fallback(f) {
+    if (selected.ambient) return window.ambientVideoStudio.defaults[f];
     if (["scale", "scaleX", "scaleY"].includes(f)) return 1;
     if (selected.ribbon)
       return window.ribbonStudio.defaults[selected.ribbon][
@@ -221,7 +226,26 @@
       row.textContent = label;
       const inputs = document.createElement("div");
       inputs.className = "inputs";
-      for (const type of ["range", "number"]) {
+      if (min === "source") {
+        const input = document.createElement("select");
+        input.setAttribute("aria-label", label);
+        const sources = window.ambientVideoSources || [];
+        const value = v[f] ?? fallback(f);
+        for (const source of sources) input.add(new Option(source.label, source.id));
+        if (!sources.some(s => s.id === value)) input.add(new Option(`${value} (missing — default shown)`, value));
+        input.value = value;
+        input.disabled = defaults || selecting;
+        input.onchange = () => {
+          const next = clone(state);
+          next.draft[scope][selected.id] = { ...next.draft[scope][selected.id], source: input.value };
+          commit(next);
+        };
+        inputs.append(input);
+        row.append(inputs);
+        $("fields").append(row);
+        continue;
+      }
+      for (const type of (min === "color" ? ["color", "text"] : ["range", "number"])) {
         const input = document.createElement("input");
         Object.assign(input, {
           type,
@@ -234,7 +258,7 @@
         input.dataset.field = f;
         input.setAttribute(
           "aria-label",
-          `${label}${type === "number" ? " precise value" : ""}`,
+          `${label}${type === "number" ? " precise value" : type === "text" ? " hex value" : ""}`,
         );
         let gesture = false;
         input.onfocus = () => {
@@ -245,9 +269,9 @@
         };
         input.oninput = () => {
           if (input.value === "") return;
-          const n = Number(input.value);
-          if (!Number.isFinite(n) || n < min || n > max) {
-            status(`Value must be between ${min} and ${max}.`);
+          const n = min === "color" ? input.value : Number(input.value);
+          if (min === "color" ? !/^#[0-9a-f]{6}$/i.test(n) : (!Number.isFinite(n) || n < min || n > max)) {
+            status(min === "color" ? "Use a six-digit hex color." : `Value must be between ${min} and ${max}.`);
             return;
           }
           const next = clone(state);

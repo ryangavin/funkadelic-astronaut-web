@@ -34,6 +34,8 @@ function setup(reducedMotion = false) {
     "#learn-title",
     "#member-role",
     "#member-name",
+    "#polaroid-member-role",
+    "#polaroid-member-name",
     "#member-story",
     "#band-slide",
     "#gallery-status",
@@ -49,6 +51,7 @@ function setup(reducedMotion = false) {
   elements["#band-gallery"].querySelectorAll = () => indicators;
   const context = {
     matchMedia: () => ({ matches: reducedMotion }),
+    positionFocalPhoto() {},
     document: { querySelector: (s) => elements[s], createElement: node },
     Image: class {
       decode() {
@@ -72,9 +75,10 @@ test("edge arrows stop at the first and last introduction", async () => {
   assert.equal(h.pending.length, 0);
   for (const name of ["Ryan Gavin", "Kevin O’Neill", "Sam Luba"]) {
     h.elements["#next-member"].events.click();
-    h.pending.shift().resolve();
+    if (h.pending.length) h.pending.shift().resolve();
     await flush();
     assert.equal(h.elements["#member-name"].textContent, name);
+    assert.equal(h.elements["#polaroid-member-name"].textContent, name);
     assert.equal(h.elements["#previous-member"].hidden, false);
   }
   assert.equal(h.elements["#next-member"].hidden, true);
@@ -118,7 +122,7 @@ test("keyboard Home and End select first and last without auto rotation", async 
         prevented = true;
       },
     });
-    h.pending.shift().resolve();
+    if (h.pending.length) h.pending.shift().resolve();
     await flush();
     assert(prevented);
     assert.equal(h.elements["#member-name"].textContent, name);
@@ -134,7 +138,7 @@ test("transitions slide in the navigation direction and respect reduced motion",
     if (reducedMotion) assert.equal(h.animations.length, 0);
     else assert.equal(h.animations.at(-1).frames[0].transform, "translateX(72px)");
     h.elements["#previous-member"].events.click();
-    h.pending.shift().resolve();
+    if (h.pending.length) h.pending.shift().resolve();
     await flush();
     if (reducedMotion) assert.equal(h.animations.length, 0);
     else assert.equal(h.animations.at(-1).frames[0].transform, "translateX(-72px)");

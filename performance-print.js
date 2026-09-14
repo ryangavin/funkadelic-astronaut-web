@@ -1,4 +1,4 @@
-/* Hold the displayed image on the print cadence; native video owns all audio and controls. */
+/* Hold muted performance frames on the print cadence; the native player owns media loading. */
 (() => {
   const video = document.querySelector("#performance");
   const canvas = document.querySelector("#performance-print");
@@ -6,12 +6,12 @@
   const scene = document.querySelector("#listen");
   if (!video || !canvas || !player || !scene) return;
   const context = canvas.getContext("2d", { alpha: false });
-  if (!context) return; // Native video still gets the CSS four-tone treatment.
+  let cadence = 100; // 1.5× the original rate; typography stays at 150ms.
 
   let timer,
     visible = false,
     suspended = false,
-    failed = false,
+    failed = !context,
     waiting = false;
   const canDraw = () =>
     !scene.classList.contains("sound-enabled") &&
@@ -31,16 +31,9 @@
   }
   function draw() {
     if (!canDraw() || video.seeking) return;
-    // A single bounded blit, no getImageData, export, WebGL upload, or pixel loop.
-    // Copying even a tainted native-HLS frame for display does not require readback.
-    const maxWidth = innerWidth <= 760 ? 640 : 960;
-    const scale = Math.min(
-      1,
-      maxWidth / video.videoWidth,
-      540 / video.videoHeight,
-    );
-    const width = Math.max(1, Math.round(video.videoWidth * scale));
-    const height = Math.max(1, Math.round(video.videoHeight * scale));
+    // Keep the complete 1280×720 artwork on desktop AND mobile; no spatial crushing.
+    const width = video.videoWidth;
+    const height = video.videoHeight;
     try {
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width;
@@ -60,7 +53,7 @@
     if (!canDraw()) return;
     draw();
     if (!failed && !video.paused && !video.ended && !video.seeking && !waiting)
-      timer = setInterval(draw, PRINT_CADENCE_MS);
+      timer = setInterval(draw, cadence);
   }
   video.addEventListener("playing", () => {
     waiting = false;
@@ -75,7 +68,7 @@
     stop();
   });
   video.addEventListener("loadeddata", () => {
-    failed = false;
+    failed = !context;
     waiting = false;
     sync();
   });
@@ -94,8 +87,8 @@
     failed = false;
     sync();
   });
-  // Explicit playback crossfades to the unfiltered native video. Freeze the
-  // outgoing canvas for that fade, then leave decoding/display to the player.
+  // Explicit playback freezes the outgoing print frame for the CSS fade. The
+  // shared media controller owns play/pause, source attachment and sound.
   const modeObserver = new MutationObserver(sync);
   modeObserver.observe(scene, { attributes: true, attributeFilter: ["class"] });
   document.addEventListener("visibilitychange", sync);
@@ -120,7 +113,24 @@
     });
     sync();
   });
-  // living-video.js already prevents ambient playback for reduced motion, pauses
-  // when that preference changes, and permits playback only after explicit Play.
-  // This renderer never starts, seeks, unmutes or changes the rate of the media.
+  const treatment = window.AmbientTreatment;
+  window.ambientVideoStudio = {
+    defaults: treatment.defaults,
+    preview(draft = {}) {
+      const v = { ...treatment.defaults, ...treatment.validate(draft) };
+      const sources = window.ambientVideoSources || [];
+      const source = sources.find(s => s.id === v.source) || sources.find(s => s.id === treatment.defaults.source);
+      if (source) window.livingVideo?.selectAmbientSource(source);
+      const filter = document.querySelector("#ambient-print-finish");
+      const { slope, intercept } = treatment.transfer(v);
+      for (const channel of filter.querySelectorAll(".ambient-level-channel")) {
+        channel.setAttribute("slope", slope);
+        channel.setAttribute("intercept", intercept);
+      }
+      scene.style.setProperty("--ambient-grain", v.grain);
+      const next = 1000 / v.fps;
+      if (next !== cadence) { cadence = next; sync(); }
+    },
+  };
+  // The same element supplies muted ambient frames and explicit unfiltered playback.
 })();

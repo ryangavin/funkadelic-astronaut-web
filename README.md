@@ -18,7 +18,7 @@ Use `npm install`, then `npm run dev` to serve the site at http://127.0.0.1:4173
 
 `app.js` derives clip paths and all seam bands from the same Bézier geometry on resize. Media is overscanned and translated from -32 to +32px on desktop / -14 to +14px on mobile according to each section's position in the viewport; below center is positive, above center negative. Reduced-motion disables translation and smooth scrolling. Text, section boundaries and controls do not translate.
 
-The performance opens in a native modal dialog with native video controls, Escape handling, focus restoration, and pause on close. No video bytes or playback-library bytes are fetched before interaction. The official-site fallback remains visible in case the external stream is unavailable. The full performance is displayed uncropped in the player; its preview photograph fills the organically clipped Listen scene.
+The full performance uses one inline video element and one HLS attachment. When the Listen scene approaches the viewport, it may load the stream and autoplay it muted as source frames for the printed ambient canvas. Explicit Play reuses that attachment, seeks to the beginning, disables looping, unmutes, and reveals the unfiltered native playback path with custom controls. The official-site fallback remains visible if the external stream is unavailable.
 
 ## Publishing
 
@@ -26,13 +26,15 @@ Repository: https://github.com/ryangavin/funkadelic-astronaut-web
 
 Public site: https://ryangavin.github.io/funkadelic-astronaut-web/
 
-Pushes to `main` run all 15 behavior tests and deploy through `.github/workflows/pages.yml`. No production build is required. The workflow stages both HTML pages, CSS, runtime JavaScript (including the ribbon studio, living video and poster motion), and `assets/`. All local asset paths are relative so the site works under the repository subpath. Dependencies, secrets, deployment staging, and local `output/` design/QA references are excluded from Git; only runtime files are included in the Pages artifact.
+Pushes to `main` run the full Node test suite and deploy through `.github/workflows/pages.yml`. No production build is required. The workflow stages both HTML pages, CSS, runtime JavaScript (including the ribbon studio, living video and poster motion), and `assets/`. All local asset paths are relative so the site works under the repository subpath. Dependencies, secrets, deployment staging, and local `output/` design/QA references are excluded from Git; only runtime files are included in the Pages artifact.
 
 The current home-page tuning panel is **Ribbons · D**, which replaces typography controls while preserving accepted typography. Hero → Video defaults in `app.js`: frequency 1.38, amplitude 27.4, rotation 0, horizontal offset 0.5, vertical offset 6.3. The typography notes below document the earlier studio workflow.
 
 ## Gallery and print treatment
 
-Learn contains a manual overview/member gallery. Its verified member content and photo mappings live in `app.js`; image decoding, request versioning, live announcements and keyboard controls keep selection consistent. There is no auto-rotation or animated transition. Footer profiles are the Instagram, YouTube and Facebook links from the official band homepage.
+Learn contains a manual overview/member gallery. Its verified member content and photo mappings live in `app.js`; image decoding, request versioning, live announcements and keyboard controls keep selection consistent. There is no auto-rotation. Footer profiles are the Instagram, YouTube and Facebook links from the official band homepage.
+
+Band and Tour continue the header's festival illustration with independent crops from the same asset: upper stages/camp behind Band, and the lower pond/bassist/astronaut scene behind Tour. The Band overview is illustration-only; each member selection places its existing press-kit portrait in a responsive, warm-paper Polaroid above that world. The photo surface uses a slightly faded glossy treatment, fine weathering and inset depth, while the member's name and role appear as a handwritten label on the thicker lower margin. Compact biography copy leaves room for larger edge navigation.
 
 The inline `printed-ink` SVG filter textures only display lettering. The repeating paper SVG is decorative and cannot intercept input. `overflow:clip` prevents overscanned media from becoming an internally scrollable focus container. Run the six focused checks with `node --test tests/*.test.cjs`.
 
@@ -56,3 +58,7 @@ The HTML remains directly served static markup, and behavior is split into focus
 ### Section composition references
 
 About and Tour use a shared `--composition-unit`: a 1440px larger-screen reference and a 390px compact reference, switching at 760px. Their heights, copy, gutters, gallery controls, and Tour footer scale together. Gallery changes do not resize the section. Ribbon height tracks page width, and gallery image focal positioning tracks section height. Intentional wave cropping remains part of the composition.
+
+### Ambient video tuning
+
+The landing scene samples the original 522-second performance at 10 displayed fps from the same muted media element used by explicit playback. A browser-native SVG levels pass renders those frames in restrained black and white. Explicit Play stops the ambient cadence, seeks the same stream to zero, and fades into unfiltered playback with audio. Open **Layout studio → Ambient video treatment** to tune brightness, contrast, black/white points, grain and cadence, or select a local clip discovered from `assets/ambient/` after refresh. Defaults stay baked in site code. See [the ambient treatment guide](docs/performance-print.md) for adding clips, static publishing, draft behavior and QA.

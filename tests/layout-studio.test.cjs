@@ -1,6 +1,14 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
 const C = require("../layout-studio-core.js");
+test("selection highlight stays transparent and outside target pixels", () => {
+  const source = fs.readFileSync("layout-studio.js", "utf8");
+  const rule = source.match(/#highlight\{([^}]+)\}/)?.[1] || "";
+  assert.match(rule, /background:transparent/);
+  assert.match(rule, /outline-offset:[1-9]/);
+  assert.doesNotMatch(rule, /border:/);
+});
 test("member drafts and viewport inheritance stay independent", () => {
   const d = C.validate({
     all: { "story:ryan": { x: 20, width: 340 }, "story:band": { width: 500 } },
@@ -89,4 +97,20 @@ test("undo restores edits, reset and import atomically without reference leaks",
   assert.equal(h.undo().draft.all.wordmark.x, 10);
   assert.deepEqual(h.undo().draft.all, {});
   assert.equal(h.canUndo, false);
+});
+
+test("ambient monochrome levels round trip with scoped reset and undo", () => {
+ const A=require('../ambient-treatment.js');
+ assert.equal(A.defaults.source,'original-performance-hls');
+ assert.deepEqual(Object.keys(A.fields),['source','fps','contrast','brightness','blackPoint','whitePoint','grain']);
+ const draft=C.validate({all:{'ambient-video':{source:'original-performance-hls',fps:10,contrast:1.1,blackPoint:.05,grain:.3}},mobile:{'ambient-video':{fps:8}},desktop:{}});
+ const state=C.parse(JSON.parse(JSON.stringify({kind:'funkadelic-layout-handoff',version:1,draft})));
+ assert.equal(C.effective(state.draft,'ambient-video','mobile').source,'original-performance-hls');
+ assert.equal(C.effective(state.draft,'ambient-video','mobile').contrast,1.1);
+ assert.equal(C.effective(state.draft,'ambient-video','mobile').fps,8);
+ const h=C.history(state), reset=h.get();delete reset.draft.mobile['ambient-video'];h.set(reset);
+ assert.equal(C.effective(h.get().draft,'ambient-video','mobile').fps,10);
+ assert.equal(h.undo().draft.mobile['ambient-video'].fps,8);
+ const bad=C.validate({all:{'ambient-video':{source:'../secret.mp4',blackPoint:.9,fps:Infinity}}});
+ assert.deepEqual(bad.all,{});
 });

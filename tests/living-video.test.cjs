@@ -29,7 +29,7 @@ function harness({ reduced = false, blocked = false, startupPause = false, defer
   });
   const motion = { matches: reduced, addEventListener(event, fn) { this.change = fn; } };
   let intersect, attached = 0; const instances = [];
-  const document = { querySelector: element, body: element('body'), hidden: false, addEventListener(event, fn) { this[event] = fn; } };
+  const document = { querySelector: sel => element(sel), body: element('body'), hidden: false, addEventListener(event, fn) { this[event] = fn; } };
   class Hls {
     static isSupported() { return !native; }
     static Events = { MANIFEST_PARSED: 'ready', ERROR: 'error' };
@@ -37,17 +37,25 @@ function harness({ reduced = false, blocked = false, startupPause = false, defer
     constructor() { instances.push(this); }
     destroy() { this.destroyed = true; }
     on(event, fn) { this.handlers[event] = fn; }
-    loadSource() {}
+    loadSource(source) { this.source = source; }
     attachMedia() { attached++; if (!deferred) this.handlers.ready(); }
   }
+  const pageEvents = {};
+  const window = { Hls, addEventListener(event, fn) { pageEvents[event] = fn; } };
   vm.runInNewContext(fs.readFileSync('living-video.js', 'utf8'), {
     document,
-    matchMedia: () => motion, window: { Hls }, innerWidth: 1200,
+    matchMedia: () => motion, window, innerWidth: 1200,
     IntersectionObserver: class { constructor(fn) { intersect = fn; } observe() {} },
   });
-  return { element, video, motion, intersect, instances, document, attached: () => attached };
+  return { element, video, motion, intersect, instances, document, pageEvents, api: window.livingVideo, attached: () => attached };
 }
 const settle = async () => { for (let i = 0; i < 8; i++) await Promise.resolve(); };
+test('landing markup has one shared performance video element', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.equal((html.match(/<video\b/g) || []).length, 1);
+  assert.match(html, /<video id="performance"/);
+  assert.doesNotMatch(html, /id="ambient-performance"/);
+});
 test('play restarts the same inline media with sound, including repeated clicks', async () => {
   const h = harness(); h.intersect([{ isIntersecting: true }]); await settle();
   assert.equal(h.video.paused, false); assert.equal(h.video.muted, true);
@@ -143,6 +151,13 @@ test('ambient startup cannot play after scrolling away or hiding the page', asyn
     assert.equal(h.video.paused, true);
   }
 });
+test('pagehide suspends ambient playback and pageshow resumes it', async () => {
+  const h = harness(); h.intersect([{isIntersecting:true}]); await settle();
+  assert.equal(h.video.paused,false);
+  h.pageEvents.pagehide(); assert.equal(h.video.paused,true);
+  h.pageEvents.pageshow(); await settle(); assert.equal(h.video.paused,false);
+  assert.equal(h.attached(),1);
+});
 test('ending offers compact replay with sound and zero volume can be unmuted', async () => {
   const h = harness(); h.element('#play-video').handlers.click(); await settle();
   h.video.currentTime = 120; h.video.ended = true; h.video.paused = true; h.video.handlers.ended();
@@ -163,4 +178,25 @@ test('native HLS requests metadata when MSE is unavailable and retries a media e
   h.video.handlers.error(); await settle();
   h.element('#play-video').handlers.click(); h.video.handlers.loadedmetadata(); await settle();
   assert.equal(h.video.paused, false); assert.equal(h.element('.video-fallback').hidden, true);
+});
+
+test('one HLS attachment supplies muted ambient frames and restarts at zero for explicit Play', async () => {
+ const h = harness(); h.intersect([{isIntersecting:true}]); await settle();
+ assert.equal(h.attached(),1); assert.equal(h.video.paused,false);
+ assert.equal(h.video.muted,true); assert.equal(h.video.defaultMuted,true); assert.equal(h.video.loop,true);
+ h.element('#play-video').handlers.click(); await settle();
+ assert.equal(h.attached(),1); assert.equal(h.video.currentTime,0);
+ assert.equal(h.video.muted,false); assert.equal(h.video.loop,false);
+});
+
+test('ambient local clips remain selectable and explicit Play reattaches the canonical HLS', async () => {
+ const h = harness(); h.intersect([{isIntersecting:true}]); await settle();
+ const first = h.instances[0];
+ h.api.selectAmbientSource({id:'alternate.webm',label:'alternate.webm',url:'/alternate.webm'});
+ assert.equal(first.destroyed,true); assert.equal(h.video.src,'/alternate.webm');
+ h.video.handlers.loadedmetadata(); await settle();
+ assert.equal(h.video.paused,false); assert.equal(h.video.muted,true); assert.equal(h.video.loop,true);
+ h.video.currentTime=90; h.element('#play-video').handlers.click(); await settle();
+ assert.equal(h.attached(),2); assert.equal(h.instances[1].source.includes('playlist.m3u8'),true);
+ assert.equal(h.video.currentTime,0); assert.equal(h.video.muted,false); assert.equal(h.video.loop,false);
 });

@@ -355,7 +355,7 @@
   .learn .learn-content { bottom: calc(55 * var(--composition-unit)); }
 }
 
-/* The photo panel is the carousel; copy placement follows each portrait. */
+/* The member frame and copy share the carousel; copy placement follows each portrait. */
 .learn .learn-content .bio { position: static; width:100%; max-width:none; margin:0; }
 .learn-content .gallery-copy { width:50%; max-width:calc(560 * var(--composition-unit)); }
 .learn-content .gallery-controls { position:absolute; bottom:0; left:50%; transform:translateX(-50%); margin:0; }
@@ -368,7 +368,7 @@
   .learn[data-member]:not([data-member="band"]) .gallery-copy { padding-top:calc(45 * var(--composition-unit)); }
 }
 
-/* Member portraits get a full, centered credit block beside the photograph. */
+/* Member portraits get a compact supporting story beside the Polaroid. */
 @media (min-width:761px) {
   .learn[data-member]:not([data-member="band"]) .gallery-copy {
     width:50%; max-width:none; height:100%; padding:calc(15 * var(--composition-unit)) calc(18 * var(--composition-unit)) 0;
@@ -512,4 +512,297 @@
     bottom: calc(var(--wave) * .65 + 54px);
   }
   .learn-content .gallery-controls { bottom: -54px; }
+}
+
+/* Continue the hero's illustrated festival world with distinct, non-repeating crops. */
+.festival-world {
+  position: absolute;
+  inset: -48px 0;
+  z-index: -3;
+  pointer-events: none;
+  background-image: url("../assets/festival-scribble-fully-shaded.png");
+  background-repeat: no-repeat;
+  mix-blend-mode: multiply;
+  filter: contrast(1.28) saturate(.82);
+  opacity: .9;
+  transform: translate3d(0, var(--shift, 0px), 0);
+  will-change: transform;
+}
+
+/* The overview opens on the upper stages and campground. Member Polaroids sit
+   above this same illustration after selection. */
+.learn { background: var(--cream); }
+.festival-world-band {
+  background-size: 118% auto;
+  background-position: center top;
+}
+.learn:is(:not([data-member]), [data-member="band"]) .media-plane {
+  background: transparent;
+}
+.learn:is(:not([data-member]), [data-member="band"]) .media-plane img {
+  opacity: 0;
+  visibility: hidden;
+}
+.learn:is(:not([data-member]), [data-member="band"]) .photo-softening {
+  display: none;
+}
+.learn:is(:not([data-member]), [data-member="band"]) .tint {
+  background: linear-gradient(90deg, rgb(18 20 32 / .88) 0%, rgb(18 20 32 / .72) 32%, rgb(18 20 32 / .28) 58%, transparent 78%);
+  opacity: 1;
+  transform: none;
+}
+
+/* Tour moves to the lower-right pond, bassist and astronaut-on-rocks scene. */
+.live { background: var(--cream); }
+.festival-world-tour {
+  z-index: -2;
+  background-size: 145% auto;
+  background-position: 82% bottom;
+}
+.live .tint {
+  background:
+    linear-gradient(180deg, rgb(18 20 32 / .36), rgb(18 20 32 / .68)),
+    linear-gradient(90deg, rgb(18 20 32 / .62), rgb(18 20 32 / .26));
+}
+
+@media (max-width: 760px) {
+  .festival-world { inset: -25px 0; }
+  .festival-world-band {
+    background-size: auto 170%;
+    background-position: 45% top;
+  }
+  .learn:is(:not([data-member]), [data-member="band"]) .tint {
+    background: linear-gradient(180deg, rgb(18 20 32 / .74) 0%, rgb(18 20 32 / .5) 64%, rgb(18 20 32 / .24) 100%);
+  }
+  .festival-world-tour {
+    background-size: auto 150%;
+    background-position: 82% bottom;
+  }
+  .live .tint {
+    background: linear-gradient(180deg, rgb(18 20 32 / .52), rgb(18 20 32 / .76));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .festival-world {
+    transform: none;
+    will-change: auto;
+  }
+}
+
+/* Member stills are physical photo objects above the illustrated world, not backgrounds. */
+.member-polaroid { display: none; margin: 0; }
+.learn[data-member]:not([data-member="band"]) .media-plane {
+  inset: 0;
+  z-index: 0;
+  background: transparent;
+  transform: none;
+  will-change: auto;
+}
+.learn[data-member]:not([data-member="band"]) .photo-softening { display: none; }
+.learn[data-member]:not([data-member="band"]) .tint {
+  background: linear-gradient(90deg, rgb(18 20 32 / .5), rgb(18 20 32 / .14));
+  opacity: 1;
+  transform: none;
+}
+.learn[data-member]:not([data-member="band"]) .learn-content { z-index: 1; }
+.learn[data-member]:not([data-member="band"]) .member-polaroid {
+  display: block;
+  position: absolute;
+  top: calc(132 * var(--composition-unit));
+  width: calc(500 * var(--composition-unit));
+  box-sizing: border-box;
+  padding: calc(14 * var(--composition-unit)) calc(14 * var(--composition-unit)) calc(92 * var(--composition-unit));
+  background: linear-gradient(104deg, #ead4aa, #f8e9c9 52%, #e8cfa0);
+  clip-path: polygon(.6% 1.2%, 99.1% 0, 100% 98.8%, 1.1% 100%, 0 44%);
+  box-shadow:
+    calc(4 * var(--composition-unit)) calc(7 * var(--composition-unit)) 0 rgb(18 20 32 / .58),
+    calc(13 * var(--composition-unit)) calc(21 * var(--composition-unit)) calc(25 * var(--composition-unit)) rgb(18 20 32 / .42),
+    0 calc(30 * var(--composition-unit)) calc(50 * var(--composition-unit)) rgb(18 20 32 / .2);
+  transform-origin: 50% 54%;
+  isolation: isolate;
+}
+.learn[data-member]:not([data-member="band"]) .member-polaroid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: url("../assets/paper-grain.svg") repeat;
+  background-size: 320px 320px;
+  mix-blend-mode: multiply;
+  opacity: .34;
+}
+.learn[data-member]:not([data-member="band"]) .member-polaroid::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  top: calc(-9 * var(--composition-unit));
+  left: 39%;
+  width: 22%;
+  height: calc(25 * var(--composition-unit));
+  background: rgb(197 137 48 / .68);
+  clip-path: polygon(3% 8%, 97% 0, 94% 96%, 0 88%);
+  mix-blend-mode: multiply;
+}
+.learn[data-member]:not([data-member="band"]) .polaroid-image {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  background: #d8c4a0;
+  box-shadow:
+    inset 0 0 0 1px rgb(63 48 38 / .34),
+    inset 0 0 calc(18 * var(--composition-unit)) rgb(70 49 31 / .22),
+    0 calc(2 * var(--composition-unit)) calc(4 * var(--composition-unit)) rgb(33 27 25 / .3);
+}
+.learn[data-member]:not([data-member="band"]) .polaroid-image::before,
+.learn[data-member]:not([data-member="band"]) .polaroid-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.learn[data-member]:not([data-member="band"]) .polaroid-image::before {
+  z-index: 2;
+  background:
+    radial-gradient(ellipse at 78% 12%, rgb(255 255 246 / .26), transparent 28%),
+    linear-gradient(118deg, transparent 15%, rgb(255 255 248 / .08) 28%, rgb(255 255 248 / .35) 43%, rgb(255 255 248 / .06) 53%, transparent 68%);
+  mix-blend-mode: screen;
+}
+.learn[data-member]:not([data-member="band"]) .polaroid-image::after {
+  z-index: 3;
+  background:
+    radial-gradient(circle at 14% 24%, rgb(247 231 195 / .55) 0 1px, transparent 2px),
+    radial-gradient(circle at 72% 66%, rgb(69 48 37 / .2) 0 1px, transparent 2px),
+    repeating-linear-gradient(102deg, transparent 0 27px, rgb(73 52 42 / .08) 28px, transparent 29px 61px),
+    url("../assets/paper-grain.svg") repeat;
+  background-size: 73px 67px, 97px 83px, auto, 260px 260px;
+  mix-blend-mode: soft-light;
+  opacity: .62;
+}
+.learn[data-member]:not([data-member="band"]) .member-polaroid img {
+  position: static;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1500 / 999;
+  max-width: none;
+  object-fit: cover;
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  filter: sepia(.13) saturate(.82) contrast(.9) brightness(1.08);
+  mix-blend-mode: normal;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+.learn[data-member]:not([data-member="band"]) .polaroid-label {
+  position: absolute;
+  z-index: 4;
+  left: calc(25 * var(--composition-unit));
+  right: calc(25 * var(--composition-unit));
+  bottom: calc(14 * var(--composition-unit));
+  color: #27211f;
+  font-family: var(--body-face);
+  line-height: 1;
+  text-align: left;
+  transform: rotate(-.7deg);
+  text-shadow: 0 1px 0 rgb(255 255 255 / .28);
+}
+.polaroid-label span { display: block; }
+#polaroid-member-name {
+  font-size: calc(29 * var(--composition-unit));
+  font-weight: 700;
+  letter-spacing: -.025em;
+}
+#polaroid-member-role {
+  margin-top: calc(7 * var(--composition-unit));
+  font-size: calc(18 * var(--composition-unit));
+  opacity: .75;
+}
+.learn[data-member]:not([data-member="band"]) .gallery-copy > :is(#member-name, #member-role) {
+  display: none;
+}
+.learn[data-member]:not([data-member="band"]) #member-story {
+  max-width: calc(500 * var(--composition-unit));
+  margin-inline: auto;
+}
+.learn[data-member]:not([data-member="band"]) #member-story p {
+  font-size: calc(23 * var(--composition-unit));
+  line-height: 1.35;
+}
+.learn[data-member]:not([data-member="band"]) .gallery-arrow {
+  width: calc(82 * var(--composition-unit));
+  height: calc(82 * var(--composition-unit));
+  padding: calc(7 * var(--composition-unit));
+}
+.learn[data-member="ryan"] .member-polaroid {
+  left: 6.5%;
+  transform: rotate(-3.8deg);
+}
+.learn[data-member="kevin"] .member-polaroid {
+  right: 6.5%;
+  transform: rotate(3deg);
+}
+.learn[data-member="sam"] .member-polaroid {
+  left: 8%;
+  top: calc(146 * var(--composition-unit));
+  transform: rotate(-1.6deg);
+}
+
+@media (max-width: 760px) {
+  .scene.learn[data-member]:not([data-member="band"]) {
+    height: calc(800 * var(--composition-unit));
+  }
+  .learn[data-member]:not([data-member="band"]) .member-polaroid {
+    top: calc(82 * var(--composition-unit));
+    width: calc(270 * var(--composition-unit));
+    padding: calc(9 * var(--composition-unit)) calc(9 * var(--composition-unit)) calc(60 * var(--composition-unit));
+    box-shadow:
+      calc(5 * var(--composition-unit)) calc(7 * var(--composition-unit)) 0 rgb(18 20 32 / .7),
+      calc(8 * var(--composition-unit)) calc(12 * var(--composition-unit)) calc(14 * var(--composition-unit)) rgb(18 20 32 / .3);
+  }
+  .learn[data-member]:not([data-member="band"]) .member-polaroid::after {
+    top: calc(-6 * var(--composition-unit));
+    height: calc(17 * var(--composition-unit));
+  }
+  .learn[data-member]:not([data-member="band"]) .polaroid-label {
+    left: calc(16 * var(--composition-unit));
+    right: calc(16 * var(--composition-unit));
+    bottom: calc(10 * var(--composition-unit));
+  }
+  #polaroid-member-name { font-size: calc(18 * var(--composition-unit)); }
+  #polaroid-member-role {
+    margin-top: calc(4 * var(--composition-unit));
+    font-size: calc(12 * var(--composition-unit));
+  }
+  .learn[data-member]:not([data-member="band"]) #member-story {
+    max-width: calc(330 * var(--composition-unit));
+  }
+  .learn[data-member]:not([data-member="band"]) #member-story p {
+    font-size: calc(16 * var(--composition-unit));
+    line-height: 1.35;
+  }
+  .learn[data-member]:not([data-member="band"]) .gallery-arrow {
+    width: calc(62 * var(--composition-unit));
+    height: calc(62 * var(--composition-unit));
+    padding: calc(5 * var(--composition-unit));
+  }
+  .learn[data-member="ryan"] .member-polaroid { left: 7%; }
+  .learn[data-member="kevin"] .member-polaroid { right: 7%; }
+  .learn[data-member="sam"] .member-polaroid {
+    left: 50%;
+    top: calc(88 * var(--composition-unit));
+    transform: translateX(-50%) rotate(-1.6deg);
+  }
+  .learn[data-member]:not([data-member="band"]) .learn-content {
+    top: calc(370 * var(--composition-unit));
+    bottom: calc(48 * var(--composition-unit) + 54px);
+    justify-content: flex-start;
+  }
+  .learn[data-member]:not([data-member="band"]) .gallery-copy {
+    padding-top: 0;
+  }
+  .learn[data-member]:not([data-member="band"]) .tint {
+    background: linear-gradient(180deg, transparent 0 38%, rgb(18 20 32 / .28) 54%, rgb(18 20 32 / .62) 100%);
+  }
 }

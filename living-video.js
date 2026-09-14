@@ -80,8 +80,11 @@
   video.addEventListener('error', () => failed('Performance unavailable. Try again or watch on the official site.'));
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   const stream = 'https://video.squarespace-cdn.com/content/v1/699cdab6b1fb043597f25ba7/54ea9bd4-170c-4309-8ae2-44c6bab63092/playlist.m3u8';
-  let loading, hls, cancelLoad, soundEnabled = false, userPaused = false, visible = false;
+  const originalSource = { id: 'original-performance-hls', label: 'Original full performance · 8:42', type: 'hls' };
+  let loading, hls, cancelLoad, currentSource, ambientSource = originalSource,
+    soundEnabled = false, userPaused = false, visible = false, suspended = false;
   video.muted = true;
+  video.defaultMuted = true;
   function failed(message) {
     reset();
     video.pause();
@@ -98,15 +101,32 @@
     cancelLoad?.();
     cancelLoad = undefined;
     loading = undefined;
+    currentSource = undefined;
     previous?.destroy();
     video.removeAttribute('src');
     video.load();
   }
-  function ready() {
-    if (loading) return loading;
+  function ready(source) {
+    if (loading && currentSource?.id === source.id) return loading;
+    if (currentSource?.id !== source.id) dispose();
+    currentSource = source;
     const pending = new Promise((resolve, reject) => {
       let cleanup = () => {};
-      cancelLoad = () => { cleanup(); reject(new Error('Stream detached')); };
+      cancelLoad = () => { cleanup(); reject(new Error('Media detached')); };
+      if (source.type !== 'hls') {
+        const loaded = () => { cleanup(); resolve(); };
+        const error = () => { cleanup(); reject(new Error('Clip unavailable')); };
+        cleanup = () => {
+          video.removeEventListener('loadedmetadata', loaded);
+          video.removeEventListener('error', error);
+        };
+        video.addEventListener('loadedmetadata', loaded);
+        video.addEventListener('error', error);
+        video.preload = 'auto';
+        video.src = source.url;
+        video.load();
+        return;
+      }
       const attach = () => {
         if (window.Hls?.isSupported()) {
           const instance = hls = new window.Hls({ maxBufferLength: 20 });
@@ -154,20 +174,20 @@
     return result;
   }
   async function start(ambient = false, restart = true) {
-    if (ambient && (motion.matches || userPaused || soundEnabled || starting || !visible || document.hidden)) return;
+    if (ambient && (motion.matches || userPaused || soundEnabled || starting || suspended || !visible || document.hidden)) return;
     const attempt = ++request;
     if (!ambient) {
       starting = true;
       status.textContent = 'Loading performance…';
     }
     try {
-      await ready();
-      if (attempt !== request || (ambient && (motion.matches || userPaused || soundEnabled || !visible || document.hidden))) return;
+      await ready(ambient ? ambientSource : originalSource);
+      if (attempt !== request || (ambient && (motion.matches || userPaused || soundEnabled || suspended || !visible || document.hidden))) return;
       if (!ambient) {
         soundEnabled = true;
         userPaused = false;
         if (restart) { video.currentTime = 0; video.muted = false; }
-      }
+      } else video.muted = true;
       video.loop = ambient;
       await video.play();
       if (attempt !== request) return;
@@ -188,16 +208,31 @@
       else failed('Playback unavailable. Try again or watch on the official site.');
     }
   }
+  function selectAmbientSource(source) {
+    if (!source || source.id === ambientSource.id) return;
+    ambientSource = source;
+    if (soundEnabled || starting) return;
+    request++;
+    video.pause();
+    dispose();
+    if (visible && !document.hidden && !suspended && !motion.matches && !userPaused) start(true);
+  }
+  window.livingVideo = { selectAmbientSource, originalSource };
   play.addEventListener('click', () => start());
   motion.addEventListener('change', () => {
     if (motion.matches) { reset(); video.pause(); }
   });
   function visibility() {
-    if (visible && !document.hidden) {
+    if (visible && !document.hidden && !suspended) {
       if (!motion.matches && !userPaused && !soundEnabled) start(true);
     } else if (!soundEnabled && !starting) { request++; video.pause(); }
   }
   document.addEventListener('visibilitychange', visibility);
+  window.addEventListener?.('pagehide', () => {
+    suspended = true;
+    if (!soundEnabled) { request++; video.pause(); }
+  });
+  window.addEventListener?.('pageshow', () => { suspended = false; visibility(); });
   const observer = new IntersectionObserver(entries => {
     visible = entries.some(entry => entry.isIntersecting);
     visibility();
