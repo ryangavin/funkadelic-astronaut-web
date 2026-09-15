@@ -12,6 +12,8 @@ The incremental React conversion lives under `src/` while the current static sit
 
 The first real React component is the complete pink Olive’s tour pass. Its editable event fields, portrait, and ticket state are documented in Storybook and registered as a draggable **Tour pass** block in Puck. Drafts and published pages use clearly labeled browser-local storage. Draft changes survive refresh, while the preview changes only when **Publish** is pressed; no backend or shared content store is implied.
 
+Layout blocks live alongside the content blocks. **Paper sheet** is the page container: the site's wheat stock inside a dark ink surround, with the torn-paper edging from `src/styles/torn-edge.css`, which any positioned element can reuse by adding the `torn-edge` class. **Pin** places whatever is dropped into it at x, y, width, and rotation values measured in sheet units, where the sheet is 1440 units wide, so a composition scales uniformly with the page instead of reflowing.
+
 Typography is shared through `src/styles/fonts.css`: Balsamiq Sans is the body token, Modak is the display token, and Caveat is the handwritten token used by the tour pass. These locally bundled font faces are loaded by the Puck surfaces and Storybook without importing the legacy homepage’s global CSS.
 
 Run `npm run build` to type-check and produce the application bundle, `npm run build-storybook` to verify the component library, and `npm test` for the existing behavior suite.

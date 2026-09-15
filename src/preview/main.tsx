@@ -1,5 +1,5 @@
 import { StrictMode, useEffect, useState } from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import { Render } from '@puckeditor/core';
 import { pageConfig, type PageData } from '../puck/config';
 import { loadPublished, PUBLISHED_STORAGE_KEY } from '../puck/storage';
@@ -37,7 +37,10 @@ if (!root) {
   throw new Error('Saved preview root was not found.');
 }
 
-createRoot(root).render(
+// Reuse the root across Vite hot reloads instead of creating a second one.
+const container = root as HTMLElement & { reactRoot?: Root };
+container.reactRoot ??= createRoot(container);
+container.reactRoot.render(
   <StrictMode>
     <SavedPreview />
   </StrictMode>,

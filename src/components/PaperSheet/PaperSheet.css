@@ -1,0 +1,71 @@
+/*
+  A sheet of the site's paper stock inside a dark ink surround. Anything placed
+  in it positions against a 1440-unit reference width, so layouts scale as one
+  composition instead of reflowing.
+*/
+
+.paper-sheet-surround {
+  --paper-sheet-surround: 10px;
+  box-sizing: border-box;
+  padding: var(--paper-sheet-surround);
+  background: #121420;
+}
+
+.paper-sheet {
+  --sheet-unit: calc(100cqw / 1440);
+  --paper-stock: #ead3a7;
+  --paper-ink: #121420;
+  box-sizing: border-box;
+  position: relative;
+  min-height: var(--paper-sheet-height, auto);
+  overflow: clip;
+  background-color: var(--paper-stock);
+  color: var(--paper-ink);
+  font-family: var(--font-body);
+}
+
+.paper-sheet[data-stock='ink'] {
+  --paper-stock: #121420;
+  --paper-ink: #ead3a7;
+}
+
+.paper-sheet[data-stock='white'] {
+  --paper-stock: #fff7ec;
+}
+
+/* Fibre flecks and patina, the same overlays the poster site uses on its stock */
+.paper-sheet::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background-image: url('/assets/paper-patina.svg'), url('/assets/paper-dark-flecks.svg');
+  background-size: 900px 900px, 640px 640px;
+  background-repeat: repeat;
+  mix-blend-mode: multiply;
+  opacity: 0.8;
+}
+
+.paper-sheet[data-stock='ink']::before {
+  background-image: url('/assets/paper-flecks.svg');
+  background-size: 640px 640px;
+  mix-blend-mode: screen;
+  opacity: 0.35;
+}
+
+/* Print wear sits above the content, like ink rubbed off the page */
+.paper-sheet__wear {
+  position: absolute;
+  z-index: 40;
+  inset: 0;
+  pointer-events: none;
+  background: url('/assets/print-wear.svg') repeat;
+  opacity: 0.5;
+}
+
+.paper-sheet__stage {
+  position: relative;
+  z-index: 1;
+  min-height: inherit;
+}

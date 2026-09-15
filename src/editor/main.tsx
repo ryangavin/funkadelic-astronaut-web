@@ -1,5 +1,5 @@
 import { StrictMode, useState } from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import { Puck } from '@puckeditor/core';
 import '@puckeditor/core/puck.css';
 import { emptyPage, pageConfig, type PageData } from '../puck/config';
@@ -31,7 +31,10 @@ if (!root) {
   throw new Error('Puck editor root was not found.');
 }
 
-createRoot(root).render(
+// Reuse the root across Vite hot reloads instead of creating a second one.
+const container = root as HTMLElement & { reactRoot?: Root };
+container.reactRoot ??= createRoot(container);
+container.reactRoot.render(
   <StrictMode>
     <Editor />
   </StrictMode>,
