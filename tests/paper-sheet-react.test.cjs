@@ -21,28 +21,18 @@ test('PaperSheet reuses the site torn edge and positions against a 1440 referenc
   }
 });
 
-test('Pin places children in sheet units and exposes the Puck drag handle', () => {
+test('Pin places children in sheet units', () => {
   const pin = read('src/components/Pin/Pin.tsx');
   const pinCss = read('src/components/Pin/Pin.css');
 
-  assert.match(pin, /dragRef/);
+  assert.match(pin, /'--pin-x': x/);
   assert.match(pinCss, /position: absolute/);
   assert.match(pinCss, /var\(--pin-x, 0\) \* var\(--sheet-unit/);
-});
-
-test('Puck registers the sheet and pin as slot-bearing layout blocks', () => {
-  const config = read('src/puck/config.tsx');
-
-  assert.match(config, /components: \['PaperSheet', 'Pin', 'Ribbon'\]/);
-  assert.match(config, /PaperSheet: \{[\s\S]+?content: \{ type: 'slot' \}/);
-  assert.match(config, /Pin: \{[\s\S]+?inline: true/);
-  assert.match(config, /dragRef=\{puck\.dragRef\}/);
 });
 
 test('PaperSheet prints an optional image onto the stock underneath the content', () => {
   const sheet = read('src/components/PaperSheet/PaperSheet.tsx');
   const sheetCss = read('src/components/PaperSheet/PaperSheet.css');
-  const config = read('src/puck/config.tsx');
 
   assert.match(sheet, /imageSrc\?: string/);
   assert.match(sheet, /const image = imageSrc \? \([\s\S]+?className="paper-sheet__image"/);
@@ -50,7 +40,4 @@ test('PaperSheet prints an optional image onto the stock underneath the content'
   assert.match(sheetCss, /\.paper-sheet__image \{[\s\S]+?mix-blend-mode: multiply/);
   assert.match(sheetCss, /\.paper-sheet__image \{[\s\S]+?z-index: 0/);
   assert.match(sheetCss, /\.paper-sheet__stage \{[\s\S]+?z-index: 1/);
-  for (const field of ['imageSrc', 'imageSize', 'imagePosition', 'imageOpacity', 'imageContrast']) {
-    assert.match(config, new RegExp(`PaperSheet: \\{[\\s\\S]+?${field}: \\{ type: '(text|number)'`));
-  }
 });

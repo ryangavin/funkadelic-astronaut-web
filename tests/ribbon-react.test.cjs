@@ -25,14 +25,6 @@ test('Ribbon draws the footer seam and clips its block along the same wave', () 
   assert.match(css, /\.ribbon \{[\s\S]+?padding-top: var\(--ribbon-height\)/);
 });
 
-test('Puck registers the ribbon as a slot-bearing layout block with the footer defaults', () => {
-  const config = read('src/puck/config.tsx');
-
-  assert.match(config, /components: \['PaperSheet', 'Pin', 'Ribbon'\]/);
-  assert.match(config, /Ribbon: \{[\s\S]+?content: \{ type: 'slot' \}/);
-  assert.match(config, /Ribbon: \{[\s\S]+?\.\.\.FOOTER_RIBBON_WAVE/);
-});
-
 test('Social icons include the GitHub mark used by the footer credit', () => {
   const platforms = read('src/components/SocialIcon/platforms.ts');
 

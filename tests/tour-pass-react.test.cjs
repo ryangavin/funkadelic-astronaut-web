@@ -35,30 +35,10 @@ test('React tour pass preserves the complete Olive’s artist pass', () => {
   assert.match(css, /\[data-color='green'\]/);
 });
 
-test('Puck exposes editable tour content and Storybook loads shared local fonts', () => {
-  const config = read('src/puck/config.tsx');
+test('Storybook loads shared local fonts', () => {
   const fonts = read('src/styles/fonts.css');
   const storybook = read('.storybook/preview.ts');
 
-  for (const field of [
-    'dateTime',
-    'weekday',
-    'month',
-    'day',
-    'tierLabel',
-    'venue',
-    'city',
-    'location',
-    'time',
-    'venueImageSrc',
-    'actionLabel',
-    'actionHref',
-  ]) {
-    assert.match(config, new RegExp(`${field}: \\{ type: 'text'`));
-  }
-
-  assert.match(config, /components: \['TourPass'\]/);
-  assert.match(config, /render: \(props\) => <TourPass \{\.\.\.props\} \/>/);
   assert.match(fonts, /font-family: 'Balsamiq Sans'/);
   assert.match(fonts, /font-family: 'Modak'/);
   assert.match(fonts, /font-family: 'Caveat'/);

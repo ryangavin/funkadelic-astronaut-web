@@ -11,11 +11,9 @@ export type PinProps = {
   /** Rotation in degrees. */
   rotation?: number;
   children?: React.ReactNode;
-  /** Puck's drag handle when editing. */
-  dragRef?: ((element: Element | null) => void) | null;
 };
 
-export function Pin({ x = 0, y = 0, width = 0, rotation = 0, children, dragRef }: PinProps) {
+export function Pin({ x = 0, y = 0, width = 0, rotation = 0, children }: PinProps) {
   const style = {
     '--pin-x': x,
     '--pin-y': y,
@@ -24,7 +22,7 @@ export function Pin({ x = 0, y = 0, width = 0, rotation = 0, children, dragRef }
   } as React.CSSProperties;
 
   return (
-    <div className="pin" style={style} ref={dragRef ?? undefined}>
+    <div className="pin" style={style}>
       {children}
     </div>
   );
