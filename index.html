@@ -94,13 +94,6 @@
           <feComposite in2="flecks" operator="in" />
           <feComposite in2="worn" operator="over" />
         </filter>
-        <filter id="tour-posterize" color-interpolation-filters="sRGB">
-          <feComponentTransfer>
-            <feFuncR type="discrete" tableValues=".08 .24 .5 .72 .9" />
-            <feFuncG type="discrete" tableValues=".07 .2 .42 .65 .84" />
-            <feFuncB type="discrete" tableValues=".1 .23 .43 .62 .78" />
-          </feComponentTransfer>
-        </filter>
       </defs>
     </svg>
     <a class="skip" href="#listen">Skip to music</a>
@@ -295,35 +288,74 @@
         <div class="scene-content live-content">
           <div class="tour-header">
             <h2 id="live-title" aria-label="Tour">
-              <span class="tour-wristband">
-              <svg class="wristband-shape" viewBox="0 0 720 214" preserveAspectRatio="none" aria-hidden="true">
+              <span class="tour-admission-ticket">
+              <svg class="tour-ticket-shape" viewBox="0 0 720 276" preserveAspectRatio="none" aria-hidden="true">
                 <defs>
-                  <linearGradient id="wristband-stock-depth" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stop-color="#f0cf61" />
-                    <stop offset=".2" stop-color="#dfb83f" />
-                    <stop offset=".58" stop-color="#c5962d" />
-                    <stop offset=".82" stop-color="#e0b33b" />
-                    <stop offset="1" stop-color="#9d6e20" />
+                  <linearGradient id="tour-ticket-paper" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#f6cba5" />
+                    <stop offset=".48" stop-color="#eeb78a" />
+                    <stop offset="1" stop-color="#d99a6c" />
                   </linearGradient>
-                  <path id="wristband-kicker-curve" d="M126 67C274 42 455 69 622 39" />
-                  <path id="wristband-title-curve" d="M116 139C273 109 454 148 625 103" />
-                  <path id="wristband-serial-curve" d="M401 177C482 184 557 172 627 151" />
+                  <pattern id="tour-ticket-fibers" width="17" height="15" patternUnits="userSpaceOnUse" patternTransform="rotate(-5)">
+                    <path d="M0 2h8M5 9h10" stroke="#fff1dc" stroke-opacity=".22" stroke-width="1" />
+                    <path d="M11 5h5M0 13h6" stroke="#7d3e27" stroke-opacity=".13" stroke-width="1" />
+                  </pattern>
+                  <pattern id="tour-ticket-weathering" width="96" height="74" patternUnits="userSpaceOnUse">
+                    <circle cx="13" cy="18" r=".8" fill="#713b2b" fill-opacity=".2" />
+                    <circle cx="71" cy="11" r=".55" fill="#713b2b" fill-opacity=".16" />
+                    <circle cx="44" cy="53" r=".7" fill="#fff0d9" fill-opacity=".22" />
+                    <path d="m81 39 5-1M22 67l3 .5" stroke="#713b2b" stroke-opacity=".12" stroke-width=".7" />
+                  </pattern>
+                  <linearGradient id="tour-ticket-age-wash" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#713b2b" stop-opacity=".08" />
+                    <stop offset=".22" stop-color="#713b2b" stop-opacity="0" />
+                    <stop offset=".74" stop-color="#fff0d9" stop-opacity=".04" />
+                    <stop offset="1" stop-color="#713b2b" stop-opacity=".07" />
+                  </linearGradient>
+                  <path id="tour-ticket-edge-silhouette" d="M20 16 90 15 160 16 230 15 300 16 370 15 440 16 510 15 580 16 650 15 700 16 701 75 700 135 701 195 700 251 630 250 560 251 490 250 420 251 350 250 280 251 210 250 140 251 70 250 20 251 19 190 20 130 19 70Z" />
+                  <clipPath id="tour-ticket-edge-clip"><use href="#tour-ticket-edge-silhouette" /></clipPath>
                 </defs>
-                <path class="wristband-cast" d="M18 55C149 18 276 31 386 39c121 9 226-3 322-25l7 156c-102 30-221 39-353 23-116-14-229-13-338 16Z" />
-                <path class="wristband-stock" d="M12 38C142 5 270 17 386 28c119 11 226 0 322-24l4 153c-101 28-220 35-350 20-116-13-231-11-343 17Z" />
-                <path class="wristband-rim wristband-rim-top" d="M15 40C145 8 271 20 386 30c119 11 224 0 319-23" />
-                <path class="wristband-rim wristband-rim-bottom" d="M21 190c111-27 225-29 341-16 130 15 249 8 347-20" />
-                <path class="wristband-fold" d="M12 38c29-8 58-14 87-18l-7 157c-24 4-49 10-73 17Z" />
-                <path class="wristband-fold-highlight" d="M22 41c22-6 43-10 65-14l-5 136c-19 4-38 8-57 13Z" />
-                <path class="wristband-crease" d="M99 20c-6 42-8 103-7 157" />
-                <path class="wristband-perf" d="M650 17c2 40 3 96 5 153" />
-                <g class="wristband-holes">
-                  <circle cx="675" cy="32" r="3.5" /><circle cx="676" cy="56" r="3.5" /><circle cx="676" cy="80" r="3.5" />
-                  <circle cx="677" cy="104" r="3.5" /><circle cx="677" cy="128" r="3.5" /><circle cx="678" cy="152" r="3.5" />
+                <g class="tour-ticket-composition" transform="matrix(1 -.012 .018 1 -1 9)">
+                  <use class="cutout-offset-edge cutout-offset-edge--bottom-right tour-ticket-offset-edge" href="#tour-ticket-edge-silhouette" />
+                  <g class="tour-ticket-sheet" clip-path="url(#tour-ticket-edge-clip)">
+                    <use class="tour-ticket-stock" href="#tour-ticket-edge-silhouette" />
+                    <rect class="tour-ticket-stub tour-ticket-stub-left" x="18" y="14" width="101" height="238" />
+                    <rect class="tour-ticket-stub tour-ticket-stub-right" x="609" y="14" width="93" height="238" />
+                    <rect class="tour-ticket-rail tour-ticket-rail-left" x="82" y="14" width="29" height="238" />
+                    <rect class="tour-ticket-rail tour-ticket-rail-right" x="609" y="14" width="27" height="238" />
+                    <use class="tour-ticket-fiber-layer" href="#tour-ticket-edge-silhouette" />
+                    <use class="tour-ticket-age-wash" href="#tour-ticket-edge-silhouette" />
+                    <use class="tour-ticket-weathering-layer" href="#tour-ticket-edge-silhouette" />
+                    <path class="tour-ticket-perf" d="M119 18V248M609 18V248" />
+
+                    <g class="tour-ticket-stub-copy tour-ticket-stub-copy-left" transform="translate(46 219) rotate(-90)" data-safe-area="34 27 38 192">
+                      <text class="tour-ticket-stub-label" x="0" y="0">SEC · FA</text>
+                      <text class="tour-ticket-stub-stamp" x="61" y="0">GEN. ADM.</text>
+                      <text class="tour-ticket-stub-serial" x="135" y="0">004269</text>
+                    </g>
+                    <text class="tour-ticket-rail-copy" x="101" y="237" transform="rotate(-90 101 237)">ADMIT ONE · THIS DATE ONLY</text>
+
+                    <path class="tour-ticket-star" d="m164 43 6 13 14 2-10 10 3 14-13-7-13 7 3-14-10-10 14-2Z" />
+                    <path class="tour-ticket-star" d="m564 43 6 13 14 2-10 10 3 14-13-7-13 7 3-14-10-10 14-2Z" />
+                    <text class="tour-ticket-presenter" x="364" y="49" text-anchor="middle">FUNKadelic ASTRONAUT</text>
+                    <text class="tour-ticket-presents" x="364" y="68" text-anchor="middle">PRESENTS</text>
+                    <text class="tour-ticket-title" x="364" y="130" text-anchor="middle">TOUR</text>
+                    <text class="tour-ticket-subtitle" x="364" y="153" text-anchor="middle">LIVE · ALL ACCESS</text>
+                    <path class="tour-ticket-rule" d="M143 163H588M310 164V239" />
+                    <text class="tour-ticket-month" x="148" y="191">SEP</text>
+                    <text class="tour-ticket-day" x="196" y="229">26</text>
+                    <text class="tour-ticket-year" x="282" y="179"><tspan x="282" dy="0">2</tspan><tspan x="282" dy="17">0</tspan><tspan x="282" dy="17">2</tspan><tspan x="282" dy="17">6</tspan></text>
+                    <text class="tour-ticket-location" x="329" y="191">NYACK, NEW YORK</text>
+                    <text class="tour-ticket-detail" x="329" y="225">SHOWS LISTED BELOW</text>
+
+                    <rect class="tour-ticket-price-field" x="646" y="35" width="42" height="197" />
+                    <g class="tour-ticket-price-copy" transform="translate(674 53) rotate(90)">
+                      <text class="tour-ticket-price-label" x="0" y="0">PRICE</text>
+                      <text class="tour-ticket-price" x="48" y="0">$42.69</text>
+                      <text class="tour-ticket-price-serial" x="137" y="0">FA 3853</text>
+                    </g>
+                  </g>
                 </g>
-                <text class="wristband-kicker"><textPath href="#wristband-kicker-curve">Funkadelic Astronaut · All access</textPath></text>
-                <text class="wristband-title" textLength="286" lengthAdjust="spacingAndGlyphs"><textPath href="#wristband-title-curve">TOUR</textPath></text>
-                <text class="wristband-serial"><textPath href="#wristband-serial-curve">FA · LIVE · 001</textPath></text>
               </svg>
               </span>
             </h2>
@@ -334,19 +366,17 @@
               href="https://www.bandsintown.com/a/6719052-funkadelic-astronaut"
             ><span>Follow for show announcements</span><span aria-hidden="true">↗</span></a>
           </div>
-          <div class="tour-board-heading">
-            <p class="eyebrow tour-label cutout-type">Upcoming festival days</p>
-            <p class="tour-board-note" id="tour-schedule-note">One verified event · two design samples</p>
-          </div>
+          <p class="sr-only" id="tour-schedule-note">Upcoming festival days. One verified event and two design samples.</p>
           <table class="print-copy tour-schedule" aria-describedby="tour-schedule-note">
             <caption class="sr-only">Three-day Funkadelic Astronaut tour schedule concept</caption>
             <thead><tr><th scope="col">Date</th><th scope="col">Venue / City</th><th scope="col">Tickets</th></tr></thead>
             <tbody>
               <!-- Preview-only record: replace every field when an Olive's date is announced. -->
-              <tr class="tour-day" data-show-status="sample" data-paper-cutout="scrap" data-paper-edge="soft">
+              <tr class="tour-day tour-pass-artist" data-show-status="sample">
                 <td class="tour-date-cell">
                   <time class="tour-day-date" datetime="2026-09-18"><span>Fri · Sep</span><strong>18</strong></time>
                   <span class="tour-day-status">Sample date</span>
+                  <span class="tour-pass-tier">Artist pass</span>
                 </td>
                 <td class="tour-show-cell">
                   <p class="tour-stage-label">Festival day 01</p>
@@ -355,13 +385,14 @@
                   <p class="tour-address"><span class="tour-field-label">Location</span><span>Address to be announced</span></p>
                   <p class="tour-set-time"><span class="tour-field-label">Time</span><span>Doors + set · TBD</span></p>
                 </td>
-                <td class="tour-action-cell"><span class="tour-ticket tour-ticket-disabled" aria-label="Sample ticket action unavailable">Ticket TBD</span></td>
+                <td class="tour-action-cell"><div class="tour-pass-action"><img class="tour-action-portrait" src="assets/tour-pass-ryan-cutout.png" width="398" height="512" alt="" aria-hidden="true" loading="lazy" /><span class="tour-speech-bubble tour-speech-disabled" aria-label="Sample ticket action unavailable">Ticket TBD</span></div></td>
               </tr>
               <!-- User-verified details; source schedule posted by the festival organizer. -->
-              <tr class="tour-day" data-show-status="verified" data-paper-cutout="scrap" data-paper-edge="soft">
+              <tr class="tour-day tour-pass-ga" data-show-status="verified">
                 <td class="tour-date-cell">
                   <time class="tour-day-date" datetime="2026-09-26"><span>Sat · Sep</span><strong>26</strong></time>
                   <span class="tour-day-status">Verified event</span>
+                  <span class="tour-pass-tier">GA pass</span>
                 </td>
                 <td class="tour-show-cell">
                   <p class="tour-stage-label">Festival day 02</p>
@@ -370,13 +401,14 @@
                   <p class="tour-address"><span class="tour-field-label">Location</span><span>5 First Avenue</span></p>
                   <p class="tour-set-time"><span class="tour-field-label">Time</span><time datetime="2026-09-26T18:00:00-04:00">6:00 PM</time></p>
                 </td>
-                <td class="tour-action-cell"><a class="tour-ticket" href="https://www.instagram.com/p/DdIkEEZRTxT/" aria-label="View Nyack Neighborhood Music and Arts Festival schedule on Instagram">Event details</a></td>
+                <td class="tour-action-cell"><div class="tour-pass-action"><img class="tour-action-portrait" src="assets/tour-pass-kevin-cutout.png" width="466" height="512" alt="" aria-hidden="true" loading="lazy" /><a class="tour-speech-bubble" href="https://www.instagram.com/p/DdIkEEZRTxT/" aria-label="View Nyack Neighborhood Music and Arts Festival schedule on Instagram">Event details</a></div></td>
               </tr>
               <!-- Entirely fictional record for testing the three-day sparse-data layout. -->
-              <tr class="tour-day" data-show-status="fictional" data-paper-cutout="scrap" data-paper-edge="soft">
+              <tr class="tour-day tour-pass-vip" data-show-status="fictional">
                 <td class="tour-date-cell">
                   <time class="tour-day-date" datetime="2026-10-03"><span>Sat · Oct</span><strong>03</strong></time>
                   <span class="tour-day-status">Fictional preview</span>
+                  <span class="tour-pass-tier">VIP pass</span>
                 </td>
                 <td class="tour-show-cell">
                   <p class="tour-stage-label">Festival day 03</p>
@@ -385,7 +417,7 @@
                   <p class="tour-address"><span class="tour-field-label">Location</span><span>A bowling-alley gig from the design universe</span></p>
                   <p class="tour-set-time"><span class="tour-field-label">Time</span><span>Doors 8:30 PM · set 9:30 PM</span></p>
                 </td>
-                <td class="tour-action-cell"><span class="tour-ticket tour-ticket-disabled" aria-label="Fictional ticket action unavailable">Mock ticket</span></td>
+                <td class="tour-action-cell"><div class="tour-pass-action"><img class="tour-action-portrait" src="assets/tour-pass-sam-cutout.png" width="438" height="512" alt="" aria-hidden="true" loading="lazy" /><span class="tour-speech-bubble tour-speech-disabled" aria-label="Fictional ticket action unavailable">Mock ticket</span></div></td>
               </tr>
             </tbody>
           </table>

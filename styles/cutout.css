@@ -5,6 +5,21 @@
   --cutout-paint-order: fill stroke;
   --cutout-stretch: 1.18;
 }
+
+/* Reusable misregistered cutout edge: a single offset silhouette behind artwork. */
+.cutout-offset-edge {
+  fill: var(--cutout-edge-color, #121420);
+  transform: translate(var(--cutout-edge-offset-x, 2px), var(--cutout-edge-offset-y, 2px))
+    scale(var(--cutout-edge-scale-x, 1), var(--cutout-edge-scale-y, 1));
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.cutout-offset-edge--bottom-right {
+  --cutout-edge-offset-x: .75px;
+  --cutout-edge-offset-y: .75px;
+  --cutout-edge-scale-x: 1.005;
+  --cutout-edge-scale-y: 1.012;
+}
 .wordmark svg text {
   font-family: var(--cutout-face);
   paint-order: var(--cutout-paint-order);
