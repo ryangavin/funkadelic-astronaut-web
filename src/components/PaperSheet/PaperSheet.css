@@ -69,3 +69,7 @@
   z-index: 1;
   min-height: inherit;
 }
+
+.paper-sheet[data-stock='pale'] {
+  --paper-stock: #f6e8ca;
+}
