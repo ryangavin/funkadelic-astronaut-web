@@ -1,3 +1,4 @@
+import type React from 'react';
 import './TourPass.css';
 
 export type TourPassProps = {
@@ -5,44 +6,60 @@ export type TourPassProps = {
   weekday: string;
   month: string;
   day: string;
-  statusLabel: string;
   tierLabel: string;
-  stageLabel: string;
   venue: string;
   city: string;
   location: string;
   time: string;
-  portraitSrc: string;
-  portraitAlt?: string;
+  /** Photo of the venue, layered faintly behind the poster text. */
+  venueImageSrc?: string;
   actionLabel: string;
   actionHref?: string;
   actionAriaLabel?: string;
+  /** Tilt of the whole pass in degrees. Negative tilts counter-clockwise. */
+  rotation?: number;
+  /** Which of the site's fountain-pen inks the pass is printed in. */
+  color?: TourPassColor;
 };
+
+export const TOUR_PASS_COLORS = ['red', 'blue', 'purple', 'green', 'amber'] as const;
+export type TourPassColor = (typeof TOUR_PASS_COLORS)[number];
+export const DEFAULT_TOUR_PASS_COLOR: TourPassColor = 'red';
+
+export const DEFAULT_TOUR_PASS_ROTATION = -2.15;
 
 export const OLIVES_TOUR_PASS_PROPS: TourPassProps = {
   dateTime: '2026-09-18',
   weekday: 'Fri',
   month: 'Sep',
   day: '18',
-  statusLabel: 'Sample date',
   tierLabel: 'Artist pass',
-  stageLabel: 'Festival day 01',
   venue: 'Olive’s',
   city: 'Nyack, New York',
   location: 'Address to be announced',
   time: 'Doors + set · TBD',
-  portraitSrc: '/assets/tour-pass-ryan-cutout.png',
-  portraitAlt: '',
+  venueImageSrc: '/assets/performance.webp',
   actionLabel: 'Ticket TBD',
   actionAriaLabel: 'Sample ticket action unavailable',
 };
 
-function PassField({ label, value, className }: { label: string; value: string; className: string }) {
+/** Deterministic bar pattern seeded from the pass date, so every date gets its own barcode. */
+function Barcode({ seed }: { seed: string }) {
+  const bars: React.ReactNode[] = [];
+  let x = 0;
+  let hash = 7;
+  for (let i = 0; i < 52; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i % seed.length)) % 9973;
+    const width = 1 + (hash % 3);
+    if (hash % 5 !== 0) {
+      bars.push(<rect key={i} x={x} y={0} width={width} height={24} />);
+    }
+    x += width + 1;
+  }
   return (
-    <p className={className}>
-      <span className="tour-pass__field-label">{label}</span>
-      <span>{value}</span>
-    </p>
+    <svg className="tour-pass__barcode" viewBox={`0 0 ${x} 24`} preserveAspectRatio="none" aria-hidden="true">
+      {bars}
+    </svg>
   );
 }
 
@@ -51,68 +68,67 @@ export function TourPass({
   weekday,
   month,
   day,
-  statusLabel,
   tierLabel,
-  stageLabel,
   venue,
   city,
   location,
   time,
-  portraitSrc,
-  portraitAlt = '',
+  venueImageSrc,
   actionLabel,
   actionHref,
   actionAriaLabel,
+  rotation = DEFAULT_TOUR_PASS_ROTATION,
+  color = DEFAULT_TOUR_PASS_COLOR,
 }: TourPassProps) {
-  const actionClassName = actionHref
-    ? 'tour-pass__speech-bubble'
-    : 'tour-pass__speech-bubble tour-pass__speech-bubble--disabled';
+  const passId = dateTime.replace(/\D/g, '') || dateTime;
 
   const action = actionHref ? (
-    <a className={actionClassName} href={actionHref} aria-label={actionAriaLabel}>
+    <a className="tour-pass__action" href={actionHref} aria-label={actionAriaLabel}>
       {actionLabel}
     </a>
   ) : (
-    <span className={actionClassName} aria-label={actionAriaLabel} aria-disabled="true">
+    <span className="tour-pass__action tour-pass__action--disabled" aria-label={actionAriaLabel} aria-disabled="true">
       {actionLabel}
     </span>
   );
 
   return (
-    <div className="tour-pass-frame">
+    <div
+      className="tour-pass-frame"
+      data-color={color}
+      style={{ '--tour-pass-rotation': `${rotation}deg` } as React.CSSProperties}
+    >
       <article className="tour-pass" aria-label={`${venue} ${tierLabel}`}>
-        <header className="tour-pass__date-panel">
-          <time className="tour-pass__date" dateTime={dateTime}>
-            <span>{weekday} · {month}</span>
-            <strong>{day}</strong>
-          </time>
-          <span className="tour-pass__status">{statusLabel}</span>
-          <span className="tour-pass__tier">{tierLabel}</span>
-        </header>
+        <div className="tour-pass__sheet">
+          {venueImageSrc ? (
+            <img className="tour-pass__venue-image" src={venueImageSrc} alt="" aria-hidden="true" />
+          ) : null}
 
-        <div className="tour-pass__show">
-          <p className="tour-pass__stage">{stageLabel}</p>
-          <p className="tour-pass__venue">
-            <span className="tour-pass__field-label">Venue</span>
-            <strong>{venue}</strong>
-          </p>
-          <PassField className="tour-pass__city" label="City" value={city} />
-          <PassField className="tour-pass__location" label="Location" value={location} />
-          <PassField className="tour-pass__time" label="Time" value={time} />
+          <header className="tour-pass__headline">
+            <time className="tour-pass__date" dateTime={dateTime}>
+              <strong>{day}</strong>
+              <span>
+                {weekday}
+                <br />
+                {month}
+              </span>
+            </time>
+          </header>
+
+          <div className="tour-pass__show">
+            <p className="tour-pass__venue">{venue}</p>
+            <p className="tour-pass__city">{city}</p>
+            <p className="tour-pass__location">{location}</p>
+            <p className="tour-pass__time">{time}</p>
+          </div>
+
+          {action}
         </div>
 
-        <footer className="tour-pass__action-panel">
-          <div className="tour-pass__action">
-            <img
-              className="tour-pass__portrait"
-              src={portraitSrc}
-              width="398"
-              height="512"
-              alt={portraitAlt}
-              aria-hidden={portraitAlt ? undefined : true}
-            />
-            {action}
-          </div>
+        <footer className="tour-pass__tier-band">
+          <strong className="tour-pass__tier">{tierLabel}</strong>
+          <Barcode seed={dateTime} />
+          <span className="tour-pass__pass-id">{passId}</span>
         </footer>
       </article>
     </div>

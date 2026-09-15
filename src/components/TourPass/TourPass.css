@@ -1,10 +1,44 @@
+/*
+  Show poster printed as a lanyard pass. Sizes are in --u (1/420 of the frame
+  width) so the whole card scales uniformly like a printed object.
+*/
+
 .tour-pass-frame {
   --tour-pass-unit: calc(100cqw / 420);
+  --tour-pass-rotation: -2.15deg;
+  /* Site inks, matching the hero artwork's fountain-pen palette. */
+  --pass-ink: #a52837;
+  --pass-tint: #ffd6d9;
+  --pass-tint-deep: #ffe9e4;
   box-sizing: border-box;
   container-type: inline-size;
   width: min(100%, 420px);
-  padding: 48px 9px 30px;
+  padding: 12px 9px 30px;
   color: #121420;
+}
+
+.tour-pass-frame[data-color='blue'] {
+  --pass-ink: #315d9d;
+  --pass-tint: #d9eaff;
+  --pass-tint-deep: #e6f0ff;
+}
+
+.tour-pass-frame[data-color='purple'] {
+  --pass-ink: #714485;
+  --pass-tint: #eadcff;
+  --pass-tint-deep: #f1e8ff;
+}
+
+.tour-pass-frame[data-color='green'] {
+  --pass-ink: #228542;
+  --pass-tint: #d6f0dc;
+  --pass-tint-deep: #e8f6ea;
+}
+
+.tour-pass-frame[data-color='amber'] {
+  --pass-ink: #c58930;
+  --pass-tint: #ffe6bd;
+  --pass-tint-deep: #fff1d9;
 }
 
 .tour-pass,
@@ -13,290 +47,241 @@
 }
 
 .tour-pass {
-  --pass-ink: #a52837;
+  --u: var(--tour-pass-unit);
+  --pass-night: #121420;
+  --pass-paper: #fff7ec;
+  --edge: calc(26 * var(--u));
   position: relative;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: 1fr auto;
   width: 100%;
   min-width: 0;
-  min-height: calc(438 * var(--tour-pass-unit));
-  overflow: visible;
-  transform: rotate(-2.15deg);
-  border: 2px solid var(--pass-ink);
-  border-radius: calc(8 * var(--tour-pass-unit));
-  background: linear-gradient(145deg, #ffd6d9, #fff4df 58%, #ffc8cf);
-  color: #121420;
+  min-height: calc(540 * var(--u));
+  overflow: hidden;
+  transform: rotate(var(--tour-pass-rotation));
+  border: 0;
+  border-radius: calc(3 * var(--u));
+  background:
+    repeating-conic-gradient(from 0deg at 50% calc(-40 * var(--u)), var(--pass-tint) 0 9deg, transparent 9deg 18deg),
+    linear-gradient(180deg, var(--pass-paper), var(--pass-tint-deep));
+  color: var(--pass-night);
   text-align: left;
   box-shadow:
-    calc(4 * var(--tour-pass-unit)) calc(5 * var(--tour-pass-unit)) 0 rgb(18 20 32 / 0.38),
-    calc(7 * var(--tour-pass-unit)) calc(9 * var(--tour-pass-unit)) calc(5 * var(--tour-pass-unit)) rgb(18 20 32 / 0.12);
+    calc(4 * var(--u)) calc(5 * var(--u)) 0 rgb(18 20 32 / 0.38),
+    calc(7 * var(--u)) calc(9 * var(--u)) calc(5 * var(--u)) rgb(18 20 32 / 0.12);
   font-family: var(--font-body);
 }
 
+/* Punched eyelet for the lanyard */
 .tour-pass::before {
   content: '';
   position: absolute;
   z-index: 4;
-  top: calc(-46 * var(--tour-pass-unit));
+  top: calc(12 * var(--u));
   left: 50%;
-  width: calc(66 * var(--tour-pass-unit));
-  height: calc(52 * var(--tour-pass-unit));
+  width: calc(18 * var(--u));
+  height: calc(18 * var(--u));
   translate: -50% 0;
-  clip-path: polygon(4% 0, 35% 0, 47% 76%, 53% 76%, 65% 0, 96% 0, 67% 100%, 33% 100%);
-  background: linear-gradient(90deg, #121420 0 13%, var(--pass-ink) 14% 43%, transparent 44% 56%, var(--pass-ink) 57% 86%, #121420 87% 100%);
-  filter: drop-shadow(0 2px 0 rgb(18 20 32 / 0.5));
+  border-radius: 50%;
+  border: calc(3 * var(--u)) solid #fff;
+  background: var(--pass-night);
+  box-shadow: 0 0 0 1px rgb(18 20 32 / 0.25), inset 0 1px 2px rgb(0 0 0 / 0.6);
 }
 
+/* Laminate sheen */
 .tour-pass::after {
   content: '';
   position: absolute;
-  z-index: 0;
+  z-index: 3;
   inset: 0;
   pointer-events: none;
-  border-radius: calc(7 * var(--tour-pass-unit));
-  background: linear-gradient(116deg, rgb(255 255 255 / 0.52) 0 9%, rgb(255 255 255 / 0.08) 17% 62%, rgb(255 255 255 / 0.32) 70% 77%, transparent 86%);
-  box-shadow: inset 0 0 0 3px rgb(255 255 255 / 0.3);
+  background: linear-gradient(116deg, rgb(255 255 255 / 0.4) 0 9%, rgb(255 255 255 / 0.05) 17% 62%, rgb(255 255 255 / 0.22) 70% 77%, transparent 86%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.6), inset 0 0 0 2px rgb(18 20 32 / 0.08);
 }
 
-.tour-pass :is(p, span, strong, time, a) {
-  filter: none;
-  text-shadow: none !important;
-  -webkit-text-stroke: 0;
-}
-
-.tour-pass__date-panel,
-.tour-pass__show,
-.tour-pass__action-panel {
-  position: relative;
-  z-index: 1;
-  min-width: 0;
-  padding-inline: calc(25 * var(--tour-pass-unit));
-}
-
-.tour-pass__date-panel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-rows: 1fr 1fr;
-  align-items: center;
-  column-gap: calc(13 * var(--tour-pass-unit));
-  min-height: calc(112 * var(--tour-pass-unit));
-  padding-top: calc(30 * var(--tour-pass-unit));
-  padding-bottom: calc(13 * var(--tour-pass-unit));
-  border-bottom: 2px solid color-mix(in srgb, var(--pass-ink) 72%, transparent);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--pass-ink) 15%, transparent), transparent 78%);
-}
-
-.tour-pass__date-panel::before {
-  content: '';
-  position: absolute;
-  z-index: 5;
-  top: calc(9 * var(--tour-pass-unit));
-  left: 50%;
-  width: calc(50 * var(--tour-pass-unit));
-  height: calc(11 * var(--tour-pass-unit));
-  translate: -50% 0;
-  border: 2px solid var(--pass-ink);
-  border-radius: 999px;
-  background: #121420;
-  box-shadow: inset 0 2px 2px rgb(0 0 0 / 0.65), 0 1px 0 rgb(255 255 255 / 0.7);
-}
-
-.tour-pass__date {
-  grid-column: 1;
-  grid-row: 1 / 3;
-  display: grid;
-  grid-template-columns: min-content auto;
-  align-items: end;
-  gap: calc(10 * var(--tour-pass-unit));
-}
-
-.tour-pass__date strong {
-  color: var(--pass-ink);
-  font: 400 calc(70 * var(--tour-pass-unit)) / 0.75 var(--font-display);
-  letter-spacing: -0.03em;
-}
-
-.tour-pass__date span,
-.tour-pass__stage {
-  font: 700 calc(18 * var(--tour-pass-unit)) / 0.95 var(--font-handwritten);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.tour-pass__status,
-.tour-pass__tier {
-  min-width: calc(104 * var(--tour-pass-unit));
-  border-radius: calc(3 * var(--tour-pass-unit));
-  font-family: var(--font-handwritten);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.tour-pass__status {
-  grid-column: 2;
-  grid-row: 1;
-  justify-self: stretch;
-  padding: calc(6 * var(--tour-pass-unit)) calc(9 * var(--tour-pass-unit));
-  border: 2px solid currentColor;
-  color: var(--pass-ink);
-  font-size: calc(15 * var(--tour-pass-unit));
-  line-height: 1;
-}
-
-.tour-pass__tier {
-  grid-column: 2;
-  grid-row: 2;
-  align-self: stretch;
-  display: grid;
-  place-items: center;
-  padding: calc(5 * var(--tour-pass-unit)) calc(9 * var(--tour-pass-unit));
-  background: var(--pass-ink);
-  color: #fff;
-  font-size: calc(20 * var(--tour-pass-unit));
-  line-height: 0.9;
-  letter-spacing: 0.06em;
-}
-
-.tour-pass__show {
-  display: grid;
-  grid-template-rows:
-    calc(27 * var(--tour-pass-unit))
-    calc(82 * var(--tour-pass-unit))
-    calc(48 * var(--tour-pass-unit))
-    calc(58 * var(--tour-pass-unit))
-    calc(50 * var(--tour-pass-unit));
-  padding-top: calc(15 * var(--tour-pass-unit));
-}
-
-.tour-pass__show p {
-  display: grid;
-  align-content: start;
+.tour-pass p {
   margin: 0;
 }
 
-.tour-pass__stage {
+.tour-pass__headline,
+.tour-pass__show,
+.tour-pass__action,
+.tour-pass__tier-band {
+  position: relative;
+  z-index: 1;
+}
+
+/* When: the date is the biggest thing on the poster */
+.tour-pass__headline {
+  padding: calc(14 * var(--u)) var(--edge) 0;
+}
+
+.tour-pass__date {
+  display: flex;
+  align-items: flex-end;
+  gap: calc(10 * var(--u));
   color: var(--pass-ink);
 }
 
+.tour-pass__date strong {
+  font: 400 calc(132 * var(--u)) / 0.78 var(--font-display);
+  letter-spacing: -0.04em;
+  text-shadow: calc(5 * var(--u)) calc(5 * var(--u)) 0 var(--pass-night);
+}
+
+.tour-pass__date span {
+  padding-bottom: calc(6 * var(--u));
+  font: 700 calc(30 * var(--u)) / 0.95 var(--font-body);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-shadow:
+    calc(1 * var(--u)) 0 0 var(--pass-night),
+    calc(2 * var(--u)) calc(1 * var(--u)) 0 var(--pass-night),
+    calc(3 * var(--u)) calc(3 * var(--u)) 0 var(--pass-night);
+}
+
+/* Where: venue, city, time, address, in that order */
+.tour-pass__show {
+  display: flex;
+  flex-direction: column;
+  gap: calc(6 * var(--u));
+  max-width: calc(330 * var(--u));
+  padding: calc(14 * var(--u)) var(--edge) calc(10 * var(--u));
+  text-transform: uppercase;
+  text-shadow: 0 0 calc(6 * var(--u)) #fff, 0 0 calc(2 * var(--u)) #fff;
+}
+
 .tour-pass__venue {
-  gap: calc(5 * var(--tour-pass-unit));
-  font: 700 calc(23 * var(--tour-pass-unit)) / 1.05 var(--font-handwritten);
-}
-
-.tour-pass__venue strong {
-  font-weight: 700;
-}
-
-.tour-pass__city,
-.tour-pass__location,
-.tour-pass__time {
-  gap: calc(4 * var(--tour-pass-unit));
-  font-family: var(--font-handwritten);
+  font: 400 calc(60 * var(--u)) / 0.85 var(--font-display);
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .tour-pass__city {
-  font-size: calc(20 * var(--tour-pass-unit));
-  font-weight: 600;
-  line-height: 1;
+  font: 700 calc(26 * var(--u)) / 1 var(--font-body);
+  letter-spacing: 0.03em;
+}
+
+.tour-pass__show .tour-pass__time {
+  margin-top: auto;
+  padding-top: calc(16 * var(--u));
+  font: 700 calc(17 * var(--u)) / 1.1 var(--font-body);
+  letter-spacing: 0.02em;
 }
 
 .tour-pass__location {
-  opacity: 0.88;
-  font-size: calc(17 * var(--tour-pass-unit));
-  font-weight: 600;
-  line-height: 1;
+  font: 700 calc(18 * var(--u)) / 1.1 var(--font-body);
+  letter-spacing: 0.04em;
+  opacity: 0.8;
 }
 
-.tour-pass__time {
-  font-size: calc(18 * var(--tour-pass-unit));
-  font-weight: 700;
-  line-height: 1;
+/* White sheet: a Polaroid-style print that carries all the poster content */
+.tour-pass__sheet {
+  --sheet-border: calc(10 * var(--u));
+  --sheet-foot: calc(84 * var(--u));
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  margin: calc(48 * var(--u)) calc(20 * var(--u)) calc(18 * var(--u));
+  padding-top: var(--sheet-border);
+  overflow: hidden;
+  border-radius: 0;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgb(18 20 32 / 0.08), calc(1 * var(--u)) calc(2 * var(--u)) calc(3 * var(--u)) rgb(18 20 32 / 0.22);
 }
 
-.tour-pass__field-label {
-  color: rgb(18 20 32 / 0.62);
-  font: 700 calc(13 * var(--tour-pass-unit)) / 1 var(--font-handwritten);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+/* Venue photo fills the print, inside the white border, ending above the button */
+.tour-pass__venue-image {
+  position: absolute;
+  z-index: 0;
+  top: var(--sheet-border);
+  right: var(--sheet-border);
+  bottom: var(--sheet-foot);
+  left: var(--sheet-border);
+  width: calc(100% - 2 * var(--sheet-border));
+  height: calc(100% - var(--sheet-border) - var(--sheet-foot));
+  object-fit: cover;
+  filter: grayscale(0.7) contrast(1.05) sepia(0.2);
+  mask-image: linear-gradient(180deg, rgb(0 0 0 / 0.22) 0, rgb(0 0 0 / 0.45) 45%, rgb(0 0 0 / 0.75) 100%);
 }
 
-.tour-pass__action-panel {
-  padding-top: 0;
-  padding-bottom: calc(25 * var(--tour-pass-unit));
+.tour-pass__headline,
+.tour-pass__show {
+  position: relative;
+  z-index: 1;
 }
 
 .tour-pass__action {
   position: relative;
-  display: flex;
-  align-items: end;
-  width: 100%;
-  min-height: calc(82 * var(--tour-pass-unit));
-  margin-top: calc(12 * var(--tour-pass-unit));
-}
-
-.tour-pass__portrait {
-  position: absolute;
-  z-index: 1;
-  bottom: calc(-10 * var(--tour-pass-unit));
-  left: calc(-8 * var(--tour-pass-unit));
-  width: auto;
-  height: calc(96 * var(--tour-pass-unit));
-  rotate: -3deg;
-  filter: drop-shadow(calc(2 * var(--tour-pass-unit)) calc(3 * var(--tour-pass-unit)) 0 rgb(18 20 32 / 0.7));
-}
-
-.tour-pass__speech-bubble {
-  position: relative;
   z-index: 2;
+}
+
+/* How to get in */
+.tour-pass__action {
   display: grid;
   place-items: center;
-  width: calc(100% - calc(58 * var(--tour-pass-unit)));
-  min-height: calc(64 * var(--tour-pass-unit));
-  margin-left: calc(58 * var(--tour-pass-unit));
-  padding: calc(12 * var(--tour-pass-unit)) calc(13 * var(--tour-pass-unit));
-  border: 3px solid var(--pass-ink);
-  border-radius:
-    calc(24 * var(--tour-pass-unit)) calc(31 * var(--tour-pass-unit))
-    calc(27 * var(--tour-pass-unit)) calc(18 * var(--tour-pass-unit));
-  background: linear-gradient(145deg, #fff, #fff8e9);
-  color: var(--pass-ink);
-  box-shadow: calc(3 * var(--tour-pass-unit)) calc(4 * var(--tour-pass-unit)) 0 #121420;
-  font: 700 calc(19 * var(--tour-pass-unit)) / 0.9 var(--font-handwritten);
-  letter-spacing: 0.05em;
+  margin: calc(16 * var(--u)) var(--edge) calc(18 * var(--u));
+  padding: calc(16 * var(--u)) calc(14 * var(--u));
+  border: 2px solid var(--pass-ink);
+  border-radius: calc(4 * var(--u));
+  background: var(--pass-ink);
+  color: #fff;
+  box-shadow: calc(4 * var(--u)) calc(4 * var(--u)) 0 var(--pass-night);
+  font: 700 calc(22 * var(--u)) / 1 var(--font-body);
+  letter-spacing: 0.08em;
   text-align: center;
   text-decoration: none;
   text-transform: uppercase;
-  transition: transform 160ms ease, filter 160ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
-.tour-pass__speech-bubble::before {
-  content: '';
-  position: absolute;
-  bottom: calc(11 * var(--tour-pass-unit));
-  left: calc(-10 * var(--tour-pass-unit));
-  width: calc(20 * var(--tour-pass-unit));
-  height: calc(20 * var(--tour-pass-unit));
-  transform: rotate(-8deg);
-  border-bottom: 3px solid var(--pass-ink);
-  border-left: 3px solid var(--pass-ink);
-  background: #ead3a7;
-  clip-path: polygon(0 100%, 100% 0, 100% 100%);
+.tour-pass__action:not(.tour-pass__action--disabled):is(:hover, :focus-visible) {
+  transform: translate(calc(-1 * var(--u)), calc(-1 * var(--u)));
+  box-shadow: calc(5 * var(--u)) calc(5 * var(--u)) 0 var(--pass-night);
 }
 
-.tour-pass__speech-bubble:not(.tour-pass__speech-bubble--disabled):is(:hover, :focus-visible) {
-  transform: translateY(-3px) rotate(-1deg);
-}
-
-.tour-pass__speech-bubble:focus-visible {
-  outline: 3px solid #121420;
+.tour-pass__action:focus-visible {
+  outline: 3px solid var(--pass-night);
   outline-offset: 3px;
 }
 
-.tour-pass__speech-bubble--disabled {
+.tour-pass__action--disabled {
   cursor: default;
-  opacity: 0.76;
+  opacity: 0.85;
+}
+
+/* Pass trim: tier, barcode, pass ID in one thin strip */
+.tour-pass__tier-band {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: calc(12 * var(--u));
+  min-height: calc(40 * var(--u));
+  padding: calc(8 * var(--u)) var(--edge);
+  background: var(--pass-night);
+  color: var(--pass-paper);
+}
+
+.tour-pass__tier {
+  color: var(--pass-tint);
+  font: 400 calc(22 * var(--u)) / 1 var(--font-display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tour-pass__barcode {
+  width: 100%;
+  height: calc(20 * var(--u));
+  fill: var(--pass-paper);
+  opacity: 0.85;
+}
+
+.tour-pass__pass-id {
+  font: 700 calc(12 * var(--u)) / 1 var(--font-body);
+  letter-spacing: 0.14em;
+  opacity: 0.85;
 }
 
 @media (max-width: 460px) {
@@ -305,79 +290,17 @@
   }
 
   .tour-pass {
-    transform: rotate(-0.42deg);
-  }
-
-  .tour-pass__date-panel,
-  .tour-pass__show,
-  .tour-pass__action-panel {
-    padding-inline: calc(19 * var(--tour-pass-unit));
-  }
-
-  .tour-pass__date-panel {
-    min-height: calc(104 * var(--tour-pass-unit));
-    padding-top: calc(28 * var(--tour-pass-unit));
-    padding-bottom: calc(11 * var(--tour-pass-unit));
-  }
-
-  .tour-pass__show {
-    grid-template-rows: auto;
-    row-gap: calc(12 * var(--tour-pass-unit));
-    padding-top: calc(14 * var(--tour-pass-unit));
-  }
-
-  .tour-pass__date span {
-    font-size: calc(16 * var(--tour-pass-unit));
-  }
-
-  .tour-pass__date strong {
-    font-size: calc(58 * var(--tour-pass-unit));
-  }
-
-  .tour-pass__stage {
-    font-size: calc(15 * var(--tour-pass-unit));
-  }
-
-  .tour-pass__venue {
-    font-size: calc(24 * var(--tour-pass-unit));
-  }
-
-  .tour-pass__city {
-    font-size: calc(19 * var(--tour-pass-unit));
-  }
-
-  .tour-pass__location {
-    font-size: calc(16 * var(--tour-pass-unit));
-  }
-
-  .tour-pass__field-label {
-    font-size: calc(12 * var(--tour-pass-unit));
-  }
-
-  .tour-pass__action-panel {
-    padding-bottom: calc(20 * var(--tour-pass-unit));
-  }
-
-  .tour-pass__action {
-    min-height: calc(88 * var(--tour-pass-unit));
-  }
-
-  .tour-pass__portrait {
-    height: calc(94 * var(--tour-pass-unit));
-  }
-
-  .tour-pass__speech-bubble {
-    min-height: calc(66 * var(--tour-pass-unit));
-    font-size: calc(13 * var(--tour-pass-unit));
+    /* Narrow screens have no room for the full tilt, so soften it. */
+    transform: rotate(calc(var(--tour-pass-rotation) * 0.2));
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tour-pass__speech-bubble {
+  .tour-pass__action {
     transition: none;
   }
 
-  .tour-pass__speech-bubble:not(.tour-pass__speech-bubble--disabled):is(:hover, :focus-visible) {
+  .tour-pass__action:not(.tour-pass__action--disabled):is(:hover, :focus-visible) {
     transform: none;
   }
 }

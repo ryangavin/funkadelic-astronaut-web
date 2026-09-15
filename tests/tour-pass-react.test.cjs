@@ -12,25 +12,27 @@ test('React tour pass preserves the complete Olive’s artist pass', () => {
 
   for (const content of [
     '2026-09-18',
-    'Sample date',
     'Artist pass',
-    'Festival day 01',
     'Olive’s',
     'Nyack, New York',
     'Address to be announced',
     'Doors + set · TBD',
-    '/assets/tour-pass-ryan-cutout.png',
+    '/assets/performance.webp',
     'Ticket TBD',
   ]) {
     assert.match(component, new RegExp(content.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
 
-  assert.match(component, /<header className="tour-pass__date-panel">/);
-  assert.match(component, /<img[\s\S]+?className="tour-pass__portrait"/);
+  assert.match(component, /<header className="tour-pass__headline">/);
+  assert.match(component, /className="tour-pass__tier-band"/);
+  assert.match(component, /className="tour-pass__venue-image"/);
   assert.match(component, /actionHref \? \([\s\S]+?<a[\s\S]+?: \([\s\S]+?<span/);
-  assert.match(css, /\.tour-pass::before[\s\S]+?clip-path:/);
-  assert.match(css, /\.tour-pass__speech-bubble::before[\s\S]+?clip-path:/);
-  assert.match(css, /transform: rotate\(-2\.15deg\)/);
+  assert.match(css, /\.tour-pass::before[\s\S]+?border-radius: 50%/);
+  assert.match(component, /function Barcode/);
+  assert.match(css, /transform: rotate\(var\(--tour-pass-rotation\)\)/);
+  assert.match(component, /DEFAULT_TOUR_PASS_ROTATION = -2\.15/);
+  assert.match(css, /\[data-color='blue'\]/);
+  assert.match(css, /\[data-color='green'\]/);
 });
 
 test('Puck exposes editable tour content and Storybook loads shared local fonts', () => {
@@ -43,14 +45,12 @@ test('Puck exposes editable tour content and Storybook loads shared local fonts'
     'weekday',
     'month',
     'day',
-    'statusLabel',
     'tierLabel',
-    'stageLabel',
     'venue',
     'city',
     'location',
     'time',
-    'portraitSrc',
+    'venueImageSrc',
     'actionLabel',
     'actionHref',
   ]) {
