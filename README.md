@@ -1,6 +1,12 @@
 # Funkadelic Astronaut EPK
 
-Use `npm install`, then `npm run dev` to serve the site at http://127.0.0.1:4173/ with Vite hot reload. CSS updates appear in place; HTML and classic script changes reload automatically. Never use Python’s HTTP server for the development preview. No production build is required.
+Use `npm install`, then `npm run dev` to serve the existing site at http://127.0.0.1:4173/ with Vite hot reload. CSS updates appear in place; HTML and classic script changes reload automatically. Never use Python’s HTTP server for the development preview.
+
+## React component workshop
+
+The incremental React conversion lives under `src/` while the current static site remains the default entry. Open http://127.0.0.1:4173/workshop.html for the small React migration surface, or run `npm run storybook` for the project-owned component library at http://localhost:6006/. Storybook includes accessibility, generated documentation, and the MCP addon at `/mcp`. Puck is installed as the future page-composition foundation but is intentionally not wired into an editor yet.
+
+Run `npm run build` to type-check and produce the application bundle, `npm run build-storybook` to verify the component workshop, and `npm test` for the existing behavior suite.
 
 ## Content and assets
 
