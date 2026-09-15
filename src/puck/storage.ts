@@ -1,28 +1,14 @@
 import type { PageData } from './config';
 
-export const DRAFT_STORAGE_KEY = 'funkadelic-astronaut:puck-draft:v1';
-export const PUBLISHED_STORAGE_KEY = 'funkadelic-astronaut:puck-published:v1';
+export const DRAFT_STORAGE_KEY = 'funkadelic-astronaut:puck-draft';
+export const PUBLISHED_STORAGE_KEY = 'funkadelic-astronaut:puck-published';
 
 function readPage(key: string): PageData | null {
   try {
-    const value: unknown = JSON.parse(window.localStorage.getItem(key) ?? 'null');
-
-    if (
-      value &&
-      typeof value === 'object' &&
-      'content' in value &&
-      Array.isArray(value.content) &&
-      'root' in value &&
-      value.root &&
-      typeof value.root === 'object'
-    ) {
-      return value as PageData;
-    }
+    return JSON.parse(window.localStorage.getItem(key) ?? 'null');
   } catch {
-    // Ignore malformed or unavailable browser storage and use the starter page.
+    return null;
   }
-
-  return null;
 }
 
 function writePage(key: string, data: PageData) {

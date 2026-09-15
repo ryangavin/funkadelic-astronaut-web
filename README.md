@@ -2,18 +2,19 @@
 
 Use `npm install`, then `npm run dev` to serve the existing site at http://127.0.0.1:4173/ with Vite hot reload. CSS updates appear in place; HTML and classic script changes reload automatically. Never use Python’s HTTP server for the development preview.
 
-## React component workshop
+## React conversion
 
 The incremental React conversion lives under `src/` while the current static site remains the default entry. The development surfaces are linked together:
 
-- http://127.0.0.1:4173/workshop/ introduces the component workflow.
 - http://127.0.0.1:4173/editor/ runs the Puck page composer using project-owned React blocks.
 - http://127.0.0.1:4173/preview/ renders the last page published from Puck.
 - http://localhost:6006/ runs Storybook with accessibility, generated documentation, and the MCP addon at `/mcp`.
 
-Puck drafts and published pages use clearly labeled browser-local storage. Draft changes survive refresh, while the preview changes only when **Publish** is pressed; no backend or shared content store is implied.
+The first real React component is the complete pink Olive’s tour pass. Its editable event fields, portrait, and ticket state are documented in Storybook and registered as a draggable **Tour pass** block in Puck. Drafts and published pages use clearly labeled browser-local storage. Draft changes survive refresh, while the preview changes only when **Publish** is pressed; no backend or shared content store is implied.
 
-Run `npm run build` to type-check and produce the application bundle, `npm run build-storybook` to verify the component workshop, and `npm test` for the existing behavior suite.
+Typography is shared through `src/styles/fonts.css`: Balsamiq Sans is the body token, Modak is the display token, and Caveat is the handwritten token used by the tour pass. These locally bundled font faces are loaded by the Puck surfaces and Storybook without importing the legacy homepage’s global CSS.
+
+Run `npm run build` to type-check and produce the application bundle, `npm run build-storybook` to verify the component library, and `npm test` for the existing behavior suite.
 
 ## Content and assets
 

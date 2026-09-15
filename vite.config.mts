@@ -8,7 +8,6 @@ export default defineConfig({
       input: {
         home: 'index.html',
         pressKit: 'press-kit.html',
-        workshop: 'workshop/index.html',
         editor: 'editor/index.html',
         preview: 'preview/index.html',
       },

@@ -1,10 +1,10 @@
 import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Render } from '@puckeditor/core';
-import { SiteNav } from '../components/SiteNav/SiteNav';
-import { pageConfig, starterPage, type PageData } from '../puck/config';
+import { pageConfig, type PageData } from '../puck/config';
 import { loadPublished, PUBLISHED_STORAGE_KEY } from '../puck/storage';
-import '../workshop/workshop.css';
+import '../styles/fonts.css';
+import './preview.css';
 
 function SavedPreview() {
   const [published, setPublished] = useState<PageData | null>(() => loadPublished());
@@ -20,16 +20,15 @@ function SavedPreview() {
     return () => window.removeEventListener('storage', syncPublishedPage);
   }, []);
 
-  const status = published
-    ? 'Showing the page published in this browser.'
-    : 'Nothing published yet; showing the starter page.';
+  if (!published?.content.length) {
+    return (
+      <p className="preview-empty">
+        Nothing published yet. <a href="/editor/">Open the Puck editor</a>
+      </p>
+    );
+  }
 
-  return (
-    <>
-      <SiteNav status={status} />
-      <Render config={pageConfig} data={published ?? starterPage} />
-    </>
-  );
+  return <Render config={pageConfig} data={published} />;
 }
 
 const root = document.getElementById('root');
