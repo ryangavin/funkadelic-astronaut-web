@@ -21,7 +21,7 @@ test("Band and Tour reuse one festival asset through distinct decorative layers"
   assert.doesNotMatch(tour, /performance\.webp|<div class="media-plane">/);
   assert.equal((css.match(/festival-scribble-fully-shaded\.png/g) || []).length, 1);
   assert.match(css, /\.festival-world-band\s*\{[^}]+background-position:\s*center top/s);
-  assert.match(css, /\.festival-world-tour\s*\{[^}]+background-size:\s*auto 265%;[^}]+background-position:\s*8% 96%/s);
+  assert.match(css, /\.festival-world-tour\s*\{[^}]+background-size:\s*auto 265%;[^}]+background-position:\s*68% 94%/s);
   assert.doesNotMatch(html, /id="tour-posterize"/);
   assert.match(css, /\.festival-world-tour\s*\{[^}]+filter:\s*contrast\(1\.08\) saturate\(1\.02\)/s);
   assert.doesNotMatch(css, /\.festival-world-tour::before/);

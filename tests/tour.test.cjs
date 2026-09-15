@@ -15,7 +15,9 @@ test("Tour title is a code-native vintage admission ticket", () => {
   assert.match(tour, /class="tour-ticket-rail tour-ticket-rail-left"[\s\S]+?class="tour-ticket-rail tour-ticket-rail-right"/);
   assert.match(tour, /FUNKadelic ASTRONAUT[\s\S]+?PRESENTS[\s\S]+?class="tour-ticket-title"[^>]*>TOUR<\/text>/);
   assert.match(tour, /class="tour-ticket-price"[^>]*>\$42\.69<\/text>/);
-  assert.match(tour, /class="tour-ticket-month"[^>]*>SEP<\/text>[\s\S]+?class="tour-ticket-day"[^>]*>26<\/text>/);
+  assert.match(tour, /class="tour-ticket-season-year"[^>]*>2026<\/text>[\s\S]+?class="tour-ticket-season-label"[^>]*>SEASON<\/text>/);
+  assert.match(tour, /class="tour-ticket-subtitle"[^>]*>LIVE · ALL ACCESS<\/text>/);
+  assert.match(tour, /class="tour-ticket-location"[^>]*>NORTHEAST \+ BEYOND<\/text>[\s\S]+?class="tour-ticket-detail"[^>]*>2026 DATES BELOW<\/text>/);
   assert.match(tour, /id="tour-ticket-edge-silhouette"[\s\S]+?clipPath id="tour-ticket-edge-clip"[\s\S]+?class="tour-ticket-sheet" clip-path="url\(#tour-ticket-edge-clip\)"/);
   assert.match(tour, /id="tour-ticket-edge-silhouette" d="M20 16 90 15 160 16[^"]+700 251[^"]+19 70Z"/);
   assert.match(tour, /<use class="cutout-offset-edge cutout-offset-edge--bottom-right tour-ticket-offset-edge" href="#tour-ticket-edge-silhouette" \/>[\s\S]+?class="tour-ticket-sheet"/);
@@ -31,13 +33,14 @@ test("Tour title is a code-native vintage admission ticket", () => {
   assert.doesNotMatch(css, /\.tour-admission-ticket > \.paper-cutout/);
   assert.doesNotMatch(css, /\.tour-admission-ticket\s*\{[^}]+(?:box-shadow|filter:|drop-shadow)/s);
   assert.doesNotMatch(css, /\.tour-admission-ticket::(?:before|after)/);
+  assert.match(css, /\.tour-ticket-shape\s*\{[^}]+filter:[^}]+drop-shadow[^}]+drop-shadow/s);
   assert.match(css, /\.tour-ticket-fiber-layer\s*\{[^}]+mix-blend-mode:\s*multiply/s);
   assert.match(tour, /id="tour-ticket-weathering"[\s\S]+?id="tour-ticket-age-wash"[\s\S]+?class="tour-ticket-age-wash"[\s\S]+?class="tour-ticket-weathering-layer"/);
   assert.match(css, /\.tour-ticket-weathering-layer\s*\{[^}]+opacity:\s*\.52;[^}]+mix-blend-mode:\s*multiply/s);
   assert.match(css, /\.tour-ticket-rail\s*\{[^}]+fill:\s*#dc5127;[^}]+opacity:\s*\.9;[^}]+filter:\s*url\(#printed-ink\)/s);
   assert.match(css, /\.tour-ticket-star\s*\{[^}]+filter:\s*url\(#printed-ink\)/s);
   assert.match(css, /\.tour-ticket-title\s*\{[^}]+Georgia[^}]+filter:\s*url\(#printed-ink\)/s);
-  assert.doesNotMatch(css, /\.tour-ticket-(?:price|detail|location|month|day|year|stub-label|stub-stamp|stub-serial)[^{]*\{[^}]+filter:/s);
+  assert.doesNotMatch(css, /\.tour-ticket-(?:price|detail|location|season-label|season-year|stub-label|stub-stamp|stub-serial)[^{]*\{[^}]+filter:/s);
 });
 
 test("Tour keeps its semantic show table and intentional empty-state path", () => {

@@ -600,7 +600,7 @@ html:has(.launch-footer)::after { z-index: 10003; }
 .festival-world-tour {
   z-index: -2;
   background-size: auto 265%;
-  background-position: 8% 96%;
+  background-position: 68% 94%;
   filter: contrast(1.08) saturate(1.02);
   opacity: .94;
 }
@@ -633,7 +633,7 @@ html:has(.launch-footer)::after { z-index: 10003; }
   }
   .festival-world-tour {
     background-size: auto 285%;
-    background-position: 6% 98%;
+    background-position: 66% 96%;
   }
   .live .tint {
     background: linear-gradient(180deg, rgb(18 20 32 / .28), rgb(18 20 32 / .52));
@@ -1208,6 +1208,9 @@ html:has(.launch-footer)::after { z-index: 10003; }
   width: 100%;
   height: 100%;
   overflow: visible;
+  filter:
+    drop-shadow(calc(4 * var(--composition-unit)) calc(6 * var(--composition-unit)) 0 rgb(18 20 32 / .34))
+    drop-shadow(calc(10 * var(--composition-unit)) calc(15 * var(--composition-unit)) calc(13 * var(--composition-unit)) rgb(18 20 32 / .24));
 }
 .tour-ticket-stock {
   fill: url(#tour-ticket-paper);
@@ -1251,7 +1254,7 @@ html:has(.launch-footer)::after { z-index: 10003; }
 .tour-ticket-presenter,
 .tour-ticket-presents,
 .tour-ticket-subtitle,
-.tour-ticket-month,
+.tour-ticket-season-label,
 .tour-ticket-location,
 .tour-ticket-detail,
 .tour-ticket-stub-copy,
@@ -1271,9 +1274,8 @@ html:has(.launch-footer)::after { z-index: 10003; }
   filter: url(#printed-ink);
 }
 .tour-ticket-subtitle { font-size: 18px; letter-spacing: 1.4px; }
-.tour-ticket-month { font-size: 17px; letter-spacing: 2px; }
-.tour-ticket-day { fill: var(--ink-black); font: 700 66px/.8 Georgia, serif; }
-.tour-ticket-year { fill: var(--ink-black); font: 700 15px/1 var(--body-face); }
+.tour-ticket-season-year { fill: var(--ink-black); font: 700 48px/.8 Georgia, serif; letter-spacing: -2px; }
+.tour-ticket-season-label { font-size: 15px; letter-spacing: 3.5px; }
 .tour-ticket-location { font-size: 19px; letter-spacing: .4px; }
 .tour-ticket-detail { font-size: 15px; letter-spacing: 1.1px; }
 .tour-ticket-stub-label { font-size: 13px; letter-spacing: 1.4px; }
