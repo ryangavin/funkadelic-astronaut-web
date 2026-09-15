@@ -7,6 +7,14 @@ import {
 } from '../components/PaperSheet/PaperSheet';
 import { Pin, type PinProps } from '../components/Pin/Pin';
 import {
+  FOOTER_RIBBON_HEIGHT,
+  FOOTER_RIBBON_WAVE,
+  RIBBON_COLOR_NAMES,
+  Ribbon,
+  type RibbonColor,
+  type RibbonProps,
+} from '../components/Ribbon/Ribbon';
+import {
   DEFAULT_TOUR_PASS_COLOR,
   DEFAULT_TOUR_PASS_ROTATION,
   OLIVES_TOUR_PASS_PROPS,
@@ -18,6 +26,7 @@ import {
 export type PageComponents = {
   PaperSheet: Omit<PaperSheetProps, 'children'> & { content: Slot };
   Pin: Omit<PinProps, 'children' | 'dragRef'> & { content: Slot };
+  Ribbon: Omit<RibbonProps, 'children' | 'color'> & { color: RibbonColor; content: Slot };
   TourPass: TourPassProps;
 };
 
@@ -25,7 +34,7 @@ export const pageConfig: Config<PageComponents> = {
   categories: {
     layout: {
       title: 'Layout',
-      components: ['PaperSheet', 'Pin'],
+      components: ['PaperSheet', 'Pin', 'Ribbon'],
     },
     tour: {
       title: 'Tour',
@@ -82,6 +91,45 @@ export const pageConfig: Config<PageComponents> = {
         <Pin {...props} dragRef={puck.dragRef}>
           <Content minEmptyHeight={80} />
         </Pin>
+      ),
+    },
+    Ribbon: {
+      label: 'Ribbon',
+      fields: {
+        color: {
+          type: 'select',
+          label: 'Band ink',
+          options: RIBBON_COLOR_NAMES.map((value) => ({ label: value, value })),
+        },
+        height: { type: 'number', label: 'Band height (px)', min: 24, max: 240, step: 2 },
+        frequency: { type: 'number', label: 'Waves across the width', min: 0.25, max: 4, step: 0.01 },
+        amplitude: { type: 'number', label: 'Wave depth (% of height)', min: 0, max: 80, step: 0.1 },
+        rotation: { type: 'number', label: 'Tilt (degrees)', min: -20, max: 20, step: 0.1 },
+        x: { type: 'number', label: 'Shift along (% of width)', min: -100, max: 100, step: 0.1 },
+        y: { type: 'number', label: 'Shift down (% of height)', min: -100, max: 100, step: 0.1 },
+        background: { type: 'text', label: 'Block fill (CSS colour)' },
+        worn: {
+          type: 'radio',
+          label: 'Ink finish',
+          options: [
+            { label: 'Worn', value: true },
+            { label: 'Crisp', value: false },
+          ],
+        },
+        content: { type: 'slot' },
+      },
+      defaultProps: {
+        color: 'purple',
+        height: FOOTER_RIBBON_HEIGHT,
+        ...FOOTER_RIBBON_WAVE,
+        background: '#121420',
+        worn: true,
+        content: [],
+      },
+      render: ({ content: Content, ...props }) => (
+        <Ribbon {...props}>
+          <Content minEmptyHeight={120} />
+        </Ribbon>
       ),
     },
     TourPass: {

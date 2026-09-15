@@ -33,7 +33,7 @@ test('Pin places children in sheet units and exposes the Puck drag handle', () =
 test('Puck registers the sheet and pin as slot-bearing layout blocks', () => {
   const config = read('src/puck/config.tsx');
 
-  assert.match(config, /components: \['PaperSheet', 'Pin'\]/);
+  assert.match(config, /components: \['PaperSheet', 'Pin', 'Ribbon'\]/);
   assert.match(config, /PaperSheet: \{[\s\S]+?content: \{ type: 'slot' \}/);
   assert.match(config, /Pin: \{[\s\S]+?inline: true/);
   assert.match(config, /dragRef=\{puck\.dragRef\}/);
