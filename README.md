@@ -4,7 +4,14 @@ Use `npm install`, then `npm run dev` to serve the existing site at http://127.0
 
 ## React component workshop
 
-The incremental React conversion lives under `src/` while the current static site remains the default entry. Open http://127.0.0.1:4173/workshop.html for the small React migration surface, or run `npm run storybook` for the project-owned component library at http://localhost:6006/. Storybook includes accessibility, generated documentation, and the MCP addon at `/mcp`. Puck is installed as the future page-composition foundation but is intentionally not wired into an editor yet.
+The incremental React conversion lives under `src/` while the current static site remains the default entry. The development surfaces are linked together:
+
+- http://127.0.0.1:4173/workshop/ introduces the component workflow.
+- http://127.0.0.1:4173/editor/ runs the Puck page composer using project-owned React blocks.
+- http://127.0.0.1:4173/preview/ renders the last page published from Puck.
+- http://localhost:6006/ runs Storybook with accessibility, generated documentation, and the MCP addon at `/mcp`.
+
+Puck drafts and published pages use clearly labeled browser-local storage. Draft changes survive refresh, while the preview changes only when **Publish** is pressed; no backend or shared content store is implied.
 
 Run `npm run build` to type-check and produce the application bundle, `npm run build-storybook` to verify the component workshop, and `npm test` for the existing behavior suite.
 
