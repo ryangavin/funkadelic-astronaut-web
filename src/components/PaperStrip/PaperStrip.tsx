@@ -1,8 +1,8 @@
-import type { CSSProperties, HTMLAttributes } from 'react';
+import type { ComponentProps, CSSProperties } from 'react';
 import { PaperSheet, type PaperStock } from '../PaperSheet/PaperSheet';
 import './PaperStrip.css';
 
-export type PaperStripProps = HTMLAttributes<HTMLDivElement> & {
+export type PaperStripProps = ComponentProps<'div'> & {
   stock?: PaperStock;
   /** Content padding, in CSS pixels. */
   paddingX?: number;

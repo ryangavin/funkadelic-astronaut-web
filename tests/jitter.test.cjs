@@ -92,3 +92,29 @@ test('reduced motion and hidden pages stop/reset and resume; disabled and zero m
     assert.equal(g.timers.size, 0); stop();
   }
 });
+
+test('several layers share one timer, move independently, and each restores its own base transform', async () => {
+  const { attachJitter } = await import('../src/behaviors/Jitter/motion.ts');
+  const f = fixture();
+  const layers = [{ style: { translate: '', rotate: '' } }, { style: { translate: '1px 0px', rotate: '2deg' } }, { style: { translate: '', rotate: '' } }];
+  const cleanup = attachJitter(f.trigger, layers, { preset: 'print' });
+  assert.equal(f.timers.size, 1);
+  let identical = 0;
+  for (let i = 0; i < 50; i++) {
+    [...f.timers.values()][0].frame();
+    const frames = layers.map(({ style }) => `${style.translate} ${style.rotate}`);
+    if (frames[0] === frames[1] || frames[1] === frames[2]) identical++;
+    for (const { style } of layers) {
+      const [x, y] = style.translate.split(' ').map(parseFloat);
+      assert.ok(Math.abs(x) <= .45 && Math.abs(y) <= .8 && Math.abs(parseFloat(style.rotate)) <= .55);
+    }
+  }
+  assert.equal(identical, 0);
+  cleanup();
+  assert.deepEqual(layers.map(({ style }) => style), [{ translate: '', rotate: '' }, { translate: '1px 0px', rotate: '2deg' }, { translate: '', rotate: '' }]);
+  assert.equal(f.timers.size, 0);
+  const empty = fixture();
+  const stop = attachJitter(empty.trigger, []);
+  assert.equal(empty.timers.size, 0);
+  stop();
+});

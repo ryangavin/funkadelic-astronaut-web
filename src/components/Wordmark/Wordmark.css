@@ -39,3 +39,17 @@
   stroke-width: var(--wordmark-outline);
   paint-order: fill stroke;
 }
+
+/* Jittered lettering: each glyph moves on its own, words never break mid-letter,
+   and one hidden copy of each text run reads normally to assistive technology. */
+.printed-wordmark__word { white-space: nowrap; }
+.printed-wordmark__glyph { display: inline-block; }
+.printed-wordmark__text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  user-select: none;
+}
