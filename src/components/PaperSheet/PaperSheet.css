@@ -54,6 +54,25 @@
   opacity: 0.35;
 }
 
+/*
+  A picture printed onto the stock under the content, like the festival sketch
+  behind the home page hero. Multiplied like ink so the fibre and stock colour
+  show through; the crop and fade are set per sheet.
+*/
+.paper-sheet__image {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--paper-sheet-image);
+  background-size: var(--paper-sheet-image-size, cover);
+  background-position: var(--paper-sheet-image-position, center);
+  background-repeat: no-repeat;
+  mix-blend-mode: multiply;
+  opacity: var(--paper-sheet-image-opacity, 0.76);
+  filter: contrast(var(--paper-sheet-image-contrast, 1.5));
+}
+
 /* Print wear sits above the content, like ink rubbed off the page */
 .paper-sheet__wear {
   position: absolute;

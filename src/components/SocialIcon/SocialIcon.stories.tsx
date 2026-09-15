@@ -26,6 +26,27 @@ type Story = StoryObj<typeof meta>;
 
 export const Spotify: Story = {};
 
+export const Instagram: Story = {
+  args: { platform: 'instagram', ink: 'red' },
+};
+
+/** Compare the camera badge's weight with its peers at footer and display sizes. */
+export const SizeComparison: Story = {
+  args: { ink: 'red' },
+  render: (args) => (
+    <div style={{ display: 'grid', gap: 28 }}>
+      {[25, 28, 56, 72].map((size) => (
+        <div key={size} style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+          <span style={{ width: 40, font: '12px sans-serif' }}>{size}px</span>
+          {SOCIAL_PLATFORM_NAMES.map((platform) => (
+            <SocialIcon key={platform} {...args} platform={platform} size={size} worn={size > 28 && args.worn} />
+          ))}
+        </div>
+      ))}
+    </div>
+  ),
+};
+
 export const AllPlatforms: Story = {
   args: { size: 56 },
   render: (args) => (

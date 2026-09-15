@@ -38,3 +38,19 @@ test('Puck registers the sheet and pin as slot-bearing layout blocks', () => {
   assert.match(config, /Pin: \{[\s\S]+?inline: true/);
   assert.match(config, /dragRef=\{puck\.dragRef\}/);
 });
+
+test('PaperSheet prints an optional image onto the stock underneath the content', () => {
+  const sheet = read('src/components/PaperSheet/PaperSheet.tsx');
+  const sheetCss = read('src/components/PaperSheet/PaperSheet.css');
+  const config = read('src/puck/config.tsx');
+
+  assert.match(sheet, /imageSrc\?: string/);
+  assert.match(sheet, /const image = imageSrc \? \([\s\S]+?className="paper-sheet__image"/);
+  assert.match(sheet, /\{image\}\s+<div className="paper-sheet__stage"/);
+  assert.match(sheetCss, /\.paper-sheet__image \{[\s\S]+?mix-blend-mode: multiply/);
+  assert.match(sheetCss, /\.paper-sheet__image \{[\s\S]+?z-index: 0/);
+  assert.match(sheetCss, /\.paper-sheet__stage \{[\s\S]+?z-index: 1/);
+  for (const field of ['imageSrc', 'imageSize', 'imagePosition', 'imageOpacity', 'imageContrast']) {
+    assert.match(config, new RegExp(`PaperSheet: \\{[\\s\\S]+?${field}: \\{ type: '(text|number)'`));
+  }
+});

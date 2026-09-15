@@ -1,5 +1,10 @@
 import type { Config, Data, Slot } from '@puckeditor/core';
-import { PAPER_STOCKS, PaperSheet, type PaperSheetProps } from '../components/PaperSheet/PaperSheet';
+import {
+  PAPER_SHEET_IMAGE_DEFAULTS,
+  PAPER_STOCKS,
+  PaperSheet,
+  type PaperSheetProps,
+} from '../components/PaperSheet/PaperSheet';
 import { Pin, type PinProps } from '../components/Pin/Pin';
 import {
   DEFAULT_TOUR_PASS_COLOR,
@@ -38,9 +43,24 @@ export const pageConfig: Config<PageComponents> = {
         },
         height: { type: 'number', label: 'Height (sheet units, 0 = fit content)', min: 0, step: 10 },
         surround: { type: 'number', label: 'Ink surround (px)', min: 0, max: 40 },
+        imageSrc: { type: 'text', label: 'Printed image (URL, blank for plain stock)' },
+        imageSize: { type: 'text', label: 'Image crop (cover, contain, or e.g. 118% auto)' },
+        imagePosition: { type: 'text', label: 'Image position (e.g. center 66%)' },
+        imageOpacity: { type: 'number', label: 'Image opacity', min: 0, max: 1, step: 0.02 },
+        imageContrast: { type: 'number', label: 'Image contrast', min: 0.5, max: 3, step: 0.05 },
         content: { type: 'slot' },
       },
-      defaultProps: { stock: 'wheat', height: 900, surround: 10, content: [] },
+      defaultProps: {
+        stock: 'wheat',
+        height: 900,
+        surround: 10,
+        imageSrc: '',
+        imageSize: PAPER_SHEET_IMAGE_DEFAULTS.size,
+        imagePosition: PAPER_SHEET_IMAGE_DEFAULTS.position,
+        imageOpacity: PAPER_SHEET_IMAGE_DEFAULTS.opacity,
+        imageContrast: PAPER_SHEET_IMAGE_DEFAULTS.contrast,
+        content: [],
+      },
       render: ({ content: Content, ...props }) => (
         <PaperSheet {...props}>
           <Content minEmptyHeight={200} />
