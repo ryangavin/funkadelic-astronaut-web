@@ -40,38 +40,86 @@
   transition: none;
 }
 
-.movable__lift {
-  position: relative;
-  transition: scale 220ms cubic-bezier(0.3, 0.6, 0.3, 1);
+/* The grip: a ring on a small white disc, the white of a Polaroid's card, just inside the corner so it is
+   always over the thing itself, there when the thing is under the pointer or has focus. Drag it to turn.
+   A clear halo round it keeps the hover while the pointer crosses to it, and it lingers a beat after. */
+.movable__grip {
+  position: absolute;
+  top: calc(8 * var(--movable-unit));
+  right: calc(8 * var(--movable-unit));
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: calc(56 * var(--movable-unit));
+  height: calc(56 * var(--movable-unit));
+  border-radius: 50%;
+  background: linear-gradient(180deg, #fbfaf7, #f4f2ed 66%, #ecebe5);
+  color: #121420;
+  box-shadow: 0 0 0 1px rgb(18 20 32 / 0.18), 0 2px 5px rgb(0 0 0 / 0.35);
+  cursor: grab;
+  opacity: 0;
+  scale: 0.7;
+  transition: opacity 160ms ease 220ms, scale 160ms ease 220ms;
+  pointer-events: none;
 }
 
-/* The shadow of a lifted thing, laid beneath it. */
-.movable__lift::before {
+.movable__grip::before {
   content: '';
   position: absolute;
-  inset: 3% 2%;
-  z-index: -1;
-  border-radius: 2%;
-  background: rgb(10 5 2 / 0.4);
-  filter: blur(calc(10 * var(--movable-unit)));
-  translate: calc(10 * var(--movable-unit)) calc(18 * var(--movable-unit));
-  opacity: 0;
-  transition: opacity 220ms cubic-bezier(0.3, 0.6, 0.3, 1);
-  pointer-events: none;
+  inset: calc(-18 * var(--movable-unit));
+  border-radius: 50%;
+}
+
+.movable__grip svg {
+  width: 66%;
+  height: 66%;
+}
+
+@media (hover: hover) {
+  .movable[data-movable]:hover > .movable__grip,
+  .movable__grip:hover {
+    opacity: 1;
+    scale: 1;
+    transition-delay: 0ms;
+    pointer-events: auto;
+  }
+}
+
+.movable[data-movable]:focus-visible > .movable__grip,
+.movable[data-turning] > .movable__grip {
+  opacity: 1;
+  scale: 1;
+  transition-delay: 0ms;
+  pointer-events: auto;
+}
+
+.movable[data-turning] {
+  cursor: grabbing;
+}
+
+.movable[data-turning] > .movable__grip {
+  cursor: grabbing;
+}
+
+/* The shadow of a lifted thing is thrown by the thing itself: a round mug casts a
+   round shadow, a pen a long thin one, and a print the shape of the print. Lying on
+   the surface it has none of its own beyond whatever it is drawn with. */
+.movable__lift {
+  position: relative;
+  filter: drop-shadow(0 0 0 rgb(10 5 2 / 0));
+  transition:
+    scale 220ms cubic-bezier(0.3, 0.6, 0.3, 1),
+    filter 220ms cubic-bezier(0.3, 0.6, 0.3, 1);
 }
 
 .movable[data-dragging] > .movable__lift {
   scale: 1.03;
-}
-
-.movable[data-dragging] > .movable__lift::before {
-  opacity: 1;
+  filter: drop-shadow(calc(10 * var(--movable-unit)) calc(18 * var(--movable-unit)) calc(10 * var(--movable-unit)) rgb(10 5 2 / 0.45));
 }
 
 @media (prefers-reduced-motion: reduce) {
   .movable,
-  .movable__lift,
-  .movable__lift::before {
+  .movable__lift {
     transition: none;
   }
 }

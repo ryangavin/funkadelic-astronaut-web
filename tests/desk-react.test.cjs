@@ -137,6 +137,15 @@ test('Movable is picked up by its body, follows the pointer in surface units, an
   assert.match(behavior, /host\.current\?\.setPointerCapture\(start\.id\)/);
   assert.match(behavior, /onMove\(\{ x: Math\.round\(start\.x \+ dx \/ perUnit\), y: Math\.round\(start\.y \+ dy \/ perUnit\) \}\)/);
   assert.match(behavior, /element\.addEventListener\('click', swallow, \{ capture: true, once: true \}\)/);
+  // A turn: from the grip, or the body with Alt held, by the bearing from the centre; and from the bracket keys.
+  assert.match(behavior, /MOVABLE_KEY_TURN = 1/);
+  assert.match(behavior, /if \(target\.closest\('\.movable__grip'\)\) \{/);
+  assert.match(behavior, /begin\(event, event\.altKey\);/);
+  assert.match(behavior, /onMove\(\{ x: start\.x, y: start\.y, rotation: Math\.round\(\(start\.rotation \+ turned\) \* 2\) \/ 2 \}\)/);
+  assert.match(behavior, /const turns: Record<string, number> = \{ '\[': -turn, '\{': -turn, '\]': turn, '\}': turn \}/);
+  assert.match(behavior, /className="movable__grip"/);
+  assert.match(css, /\.movable\[data-movable\]:hover > \.movable__grip,\s+\.movable__grip:hover \{[\s\S]+?pointer-events: auto/);
+  assert.match(css, /\.movable__grip::before \{[\s\S]+?inset: calc\(-18 \* var\(--movable-unit\)\)/);
   // The keyboard moves the thing itself, not a control inside it.
   assert.match(behavior, /if \(!onMove \|\| event\.target !== event\.currentTarget\) return;/);
   assert.match(behavior, /tabIndex=\{onMove \? 0 : undefined\}/);
@@ -222,7 +231,7 @@ test('The promoter’s desk: everything its real size against the Walkman, the f
   // The promoter's own things are on the desk from the start, and movable.
   assert.match(page, /<Movable \{\.\.\.movable\('walkman', SIZES\.walkman\)\}>\s+<Walkman \{\.\.\.DEMO_TAPE\} finish="blue" \/>/);
   assert.match(page, /<Movable \{\.\.\.movable\('handheld', SIZES\.handheld\)\}>\s+<Handheld video=\{LIVE_SET\.video\}/);
-  assert.match(page, /<Movable \{\.\.\.movable\('mug', SIZES\.mug\)\}>/);
+  assert.match(page, /movable\('mug', SIZES\.mug/);
   assert.match(page, /<Cassette label="live at the pond" side="B"/);
   assert.match(page, /function RunSheet\(/);
   assert.match(page, /Funkadelic Astronaut · 45 min/);

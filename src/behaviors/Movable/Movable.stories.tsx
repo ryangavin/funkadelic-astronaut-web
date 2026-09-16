@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import ryan from '../../../assets/band-13.webp';
 import { Mug } from '../../components/Mug/Mug';
 import { PaperSheet } from '../../components/PaperSheet/PaperSheet';
 import { Pen } from '../../components/Pen/Pen';
 import { Polaroid } from '../../components/Polaroid/Polaroid';
 import { StickyNote } from '../../components/StickyNote/StickyNote';
-import { MOVABLE_KEY_STEP, Movable, MovableScale, type Place } from './Movable';
+import { MOVABLE_KEY_STEP, MOVABLE_KEY_TURN, Movable, MovableScale, type Place } from './Movable';
 
 const meta = {
   title: 'Behaviors/Movable',
@@ -106,6 +106,48 @@ export const OnASheet: Story = {
     await userEvent.keyboard('{ArrowLeft}{Shift>}{ArrowDown}{/Shift}');
     await expect(note.style.getPropertyValue('--movable-x')).toBe(String(START.note.x + 200 - MOVABLE_KEY_STEP));
     await expect(note.style.getPropertyValue('--movable-y')).toBe(String(START.note.y + 80 + MOVABLE_KEY_STEP * 5));
+    // The bracket keys turn it, five degrees at a time with shift.
+    await userEvent.keyboard(']]');
+    await userEvent.keyboard('{Shift>}[[{/Shift}');
+    await expect(note.style.getPropertyValue('--movable-rotation')).toBe(`${START.note.rotation! + MOVABLE_KEY_TURN * 2 - MOVABLE_KEY_TURN * 5}deg`);
+  },
+};
+
+/** Turning: drag the grip at the corner, or the body with Alt held, and the thing turns to face the pointer. */
+export const Turning: Story = {
+  render: (args) => <Things {...args} />,
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const pen = canvas.getByRole('group', { name: 'Pencil' });
+    const box = pen.getBoundingClientRect();
+    const centre = { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+    // A quarter turn of the pointer round the centre is a quarter turn of the thing.
+    const grip = pen.querySelector<HTMLElement>('.movable__grip')!;
+    pen.focus();
+    const at = (angle: number) => ({ clientX: centre.x + 160 * Math.cos(angle), clientY: centre.y + 160 * Math.sin(angle) });
+    await userEvent.pointer([
+      { keys: '[MouseLeft>]', target: grip, coords: at(0) },
+      { coords: at(Math.PI / 8) },
+      { coords: at(Math.PI / 4) },
+      { coords: at(Math.PI / 2) },
+      { keys: '[/MouseLeft]', coords: at(Math.PI / 2) },
+    ]);
+    await expect(Number.parseFloat(pen.style.getPropertyValue('--movable-rotation'))).toBeCloseTo(START.pen.rotation! + 90, 0);
+    await expect(pen.style.getPropertyValue('--movable-x')).toBe(String(START.pen.x));
+    await expect(args.onDrop).toHaveBeenCalled();
+    // With Alt held, the body turns instead of moving. The pointer is made up here, with Alt on every event.
+    const mug = canvas.getByRole('group', { name: 'Mug' });
+    const mugBox = mug.getBoundingClientRect();
+    const mugCentre = { x: mugBox.left + mugBox.width / 2, y: mugBox.top + mugBox.height / 2 };
+    const around = (angle: number) => ({ x: mugCentre.x + 120 * Math.cos(angle), y: mugCentre.y + 120 * Math.sin(angle) });
+    const press = (type: string, at: { x: number; y: number }) =>
+      mug.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 7, pointerType: 'mouse', isPrimary: true, button: 0, buttons: type === 'pointerup' ? 0 : 1, clientX: at.x, clientY: at.y, altKey: true }));
+    press('pointerdown', around(Math.PI / 2));
+    press('pointermove', around(Math.PI / 2 + 0.3));
+    press('pointermove', around(Math.PI));
+    press('pointerup', around(Math.PI));
+    await waitFor(() => expect(Number.parseFloat(mug.style.getPropertyValue('--movable-rotation'))).toBeCloseTo(START.mug.rotation! + 90, 0));
+    await expect(mug.style.getPropertyValue('--movable-x')).toBe(String(START.mug.x));
   },
 };
 
