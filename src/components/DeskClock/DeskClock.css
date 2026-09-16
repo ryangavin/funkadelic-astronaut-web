@@ -82,6 +82,7 @@
   display: grid;
   grid-template-rows: 1fr auto;
   align-items: center;
+  overflow: hidden;
   padding: calc(14 * var(--desk-clock-unit)) calc(24 * var(--desk-clock-unit));
   box-sizing: border-box;
   border-radius: calc(10 * var(--desk-clock-unit));
@@ -105,16 +106,15 @@
   justify-content: flex-start;
 }
 
-.desk-clock .segment-display {
-  height: auto;
+/* The rows are sized by height, the digits' width following; the Walkman's own display rule is outranked here. */
+.desk-clock .desk-clock__time {
+  width: auto;
+  height: calc(138 * var(--desk-clock-unit));
 }
 
-.desk-clock__time {
-  height: calc(118 * var(--desk-clock-unit));
-}
-
-.desk-clock__date {
-  height: calc(40 * var(--desk-clock-unit));
+.desk-clock .desk-clock__date {
+  width: auto;
+  height: calc(48 * var(--desk-clock-unit));
 }
 
 /* The colon blinks the seconds: on for one, off for the next. */

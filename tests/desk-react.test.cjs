@@ -70,7 +70,11 @@ test('The desk things: mug, ring, pens, sticky note and pick, each sized by its 
   assert.match(clock, /role="timer"/);
   assert.match(clock, /const wallClock = \(\) => new Date\(\);/);
   assert.match(clock, /now = wallClock, running = true/);
-  assert.match(read('src/components/DeskClock/DeskClock.css'), /aspect-ratio: 720 \/ 480/);
+  const clockCss = read('src/components/DeskClock/DeskClock.css');
+  assert.match(clockCss, /aspect-ratio: 720 \/ 480/);
+  // The rows are sized by height with a selector that outranks the Walkman's display rule, so nothing runs off the panel.
+  assert.match(clockCss, /\.desk-clock \.desk-clock__date \{\s+width: auto;\s+height: calc\(48 \* var\(--desk-clock-unit\)\)/);
+  assert.doesNotMatch(clockCss, /\.desk-clock \.segment-display \{/);
   const cradle = read('src/components/NewtonsCradle/NewtonsCradle.tsx');
   assert.match(cradle, /CRADLE_BALLS = \[140, 250, 360, 470, 580\]/);
   assert.match(cradle, /aria-label=\{swinging \? 'Stop the cradle' : 'Set the cradle going'\}/);
