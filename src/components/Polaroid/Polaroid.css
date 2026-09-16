@@ -133,6 +133,32 @@
   content: '';
 }
 
+/* A YouTube player in the window. YouTube offers no way to hide its title bar and
+   logo, so the player is sized to cover the window like a photo and given extra
+   height top and bottom, where they are drawn, which the window crops away: what is
+   left is the picture and, on hover or pause, the centre play button. YouTube draws
+   its buttons at a fixed pixel size, so the player is laid out larger by the scale
+   and scaled back down: the picture still covers the window, the buttons shrink. */
+.polaroid__embed {
+  --polaroid-chrome: 80px;
+  --polaroid-player-scale: 0.5;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  container-type: size;
+}
+
+.polaroid__player {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(max(100%, 100cqh * 16 / 9) / var(--polaroid-player-scale));
+  height: calc(max(100cqh, 100cqw * 9 / 16) / var(--polaroid-player-scale) + 2 * var(--polaroid-chrome));
+  translate: -50% -50%;
+  scale: var(--polaroid-player-scale);
+  border: 0;
+}
+
 /* A plain window shows the picture as supplied. */
 .polaroid__card[data-plain] .polaroid__photo {
   filter: none;
@@ -207,6 +233,13 @@
   text-align: right;
   white-space: nowrap;
   opacity: 0.8;
+}
+
+/* A link written on the border is underlined in the same marker. */
+.polaroid__caption a {
+  color: inherit;
+  text-decoration-thickness: from-font;
+  text-underline-offset: 0.14em;
 }
 
 /* Masking tape over the top edge: translucent, a little crooked, torn at both ends. */

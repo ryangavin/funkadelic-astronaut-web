@@ -9,6 +9,9 @@
   box-sizing: border-box;
   padding: var(--paper-sheet-surround);
   background: #121420;
+  /* The sheet's own height is in sheet units, which its own container-type cannot
+     supply: without this, a sheet placed inside a page would measure the viewport. */
+  container-type: inline-size;
 }
 
 .paper-sheet {

@@ -43,7 +43,7 @@ type Story = StoryObj<typeof meta>;
 /** The live clip printed inside the cover, stamps beneath it. */
 const cover = (
   <div style={{ width: '90%', marginLeft: '4%' }}>
-    <Polaroid src={LIVE_SET.poster} video={LIVE_SET.stream} plain format="wide" alt={LIVE_SET.alt} caption="Live set" note="8:42 · preview" tape rotation={1.5} />
+    <Polaroid video={LIVE_SET.video} plain format="wide" alt={LIVE_SET.alt} caption={LIVE_SET.caption} note={LIVE_SET.note} tape rotation={1.5} />
   </div>
 );
 

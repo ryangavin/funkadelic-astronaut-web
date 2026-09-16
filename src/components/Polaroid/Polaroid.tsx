@@ -1,16 +1,17 @@
 import type React from 'react';
 import { useEffect, useRef } from 'react';
 import '../../styles/fonts.css';
-import { attachSource } from './stream';
+import { youTubeId, youTubePreview } from './embed';
 import './Polaroid.css';
 
 export const POLAROID_FORMATS = ['square', 'wide'] as const;
 export type PolaroidFormat = (typeof POLAROID_FORMATS)[number];
 
 export type PolaroidProps = {
-  /** The photograph, or the poster frame when `video` is set. */
-  src: string;
-  /** A clip in the window instead of a still, muted and looping as a preview. A plain file or an HLS playlist. */
+  /** The photograph, or the poster frame of a video file. A YouTube print needs none. */
+  src?: string;
+  /** A clip in the window instead of a still: a video file, muted and looping as a preview, or a YouTube link,
+      which brings the player with its title bar and logo cropped away, starting muted: click the picture to play or pause. */
   video?: string;
   /** Show the picture exactly as supplied, with none of the dye-film fade, gloss or grain. */
   plain?: boolean;
@@ -60,10 +61,11 @@ export function Polaroid({
 }: PolaroidProps) {
   const hasCaption = present(caption) || present(note);
   const clip = useRef<HTMLVideoElement>(null);
+  const youTube = video ? youTubeId(video) : undefined;
 
-  // React does not reflect `muted` as an attribute, and autoplay is only allowed muted.
-  // Streams need a player attached; plain clips just need a source. A page that loads
-  // hidden, or a tab sent to the background, starts the preview once it is looked at.
+  // A video file: React does not reflect `muted` as an attribute, and autoplay is only
+  // allowed muted. A page that loads hidden, or a tab sent to the background, starts the
+  // preview once it is looked at. YouTube's player minds its own autoplay.
   useEffect(() => {
     const element = clip.current;
     if (!element || !video) return;
@@ -74,13 +76,9 @@ export function Polaroid({
     const resume = () => {
       if (!doc.hidden) play();
     };
-    const detach = attachSource(element, video, play);
     play();
     doc.addEventListener('visibilitychange', resume);
-    return () => {
-      doc.removeEventListener('visibilitychange', resume);
-      detach();
-    };
+    return () => doc.removeEventListener('visibilitychange', resume);
   }, [video]);
 
   return (
@@ -99,8 +97,20 @@ export function Polaroid({
       <figure className="polaroid__card" data-plain={plain ? '' : undefined}>
         {tape ? <span className="polaroid__tape" aria-hidden="true" /> : null}
         <div className="polaroid__window">
-          {video ? (
-            <video ref={clip} className="polaroid__photo" poster={src} muted autoPlay loop playsInline preload="metadata" aria-label={alt || undefined} />
+          {youTube ? (
+            <div className="polaroid__embed">
+              <iframe
+                className="polaroid__player"
+                src={youTubePreview(youTube)}
+                title={alt || 'Video'}
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
+            </div>
+          ) : video ? (
+            <video ref={clip} className="polaroid__photo" src={video} poster={src} muted autoPlay loop playsInline preload="metadata" aria-label={alt || undefined} />
           ) : (
             <img className="polaroid__photo" src={src} alt={alt} />
           )}

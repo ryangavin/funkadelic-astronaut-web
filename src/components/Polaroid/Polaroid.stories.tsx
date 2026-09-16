@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import festivalSketch from '../../../assets/festival-scribble-fully-shaded.png';
-import performance from '../../../assets/performance.webp';
 import { LIVE_SET } from '../../sections/BandDossier/bandMembers';
 import kevin from '../../../assets/band-22.webp';
 import ryan from '../../../assets/band-13.webp';
@@ -68,9 +67,9 @@ export const Faded: Story = {
   args: { fade: 1, rotation: 4 },
 };
 
-/** The full live set streaming in the window, muted as a preview, with none of the film treatment. */
+/** The live set embedded from YouTube, muted and looping, YouTube's title bar and logo cropped away; click the picture to play or pause. The note links to the video. */
 export const Video: Story = {
-  args: { src: performance, video: LIVE_SET.stream, alt: LIVE_SET.alt, plain: true, format: 'wide', caption: 'Live set', note: '8:42 · preview', tape: true, rotation: 1.5 },
+  args: { src: undefined, video: LIVE_SET.video, alt: LIVE_SET.alt, plain: true, format: 'wide', caption: LIVE_SET.caption, note: LIVE_SET.note, tape: true, rotation: 1.5 },
 };
 
 /** No writing, no tape: just the print. */

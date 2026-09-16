@@ -56,7 +56,8 @@
   grid-template-rows: 1fr auto;
   width: 100%;
   min-width: 0;
-  min-height: calc(540 * var(--u));
+  /* A fixed height: every pass is the same card, however much is printed on it. */
+  height: calc(540 * var(--u));
   overflow: hidden;
   transform: rotate(var(--tour-pass-rotation));
   border: 0;
@@ -152,9 +153,24 @@
 }
 
 .tour-pass__venue {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
   font: 400 calc(60 * var(--u)) / 0.85 var(--font-display);
   letter-spacing: 0;
   text-transform: none;
+}
+
+/* Longer names print smaller rather than taller. */
+.tour-pass__venue[data-fit='medium'] {
+  font-size: calc(46 * var(--u));
+}
+
+.tour-pass__venue[data-fit='long'] {
+  -webkit-line-clamp: 4;
+  font-size: calc(34 * var(--u));
+  line-height: 0.9;
 }
 
 .tour-pass__city {
@@ -170,6 +186,10 @@
 }
 
 .tour-pass__location {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
   font: 700 calc(18 * var(--u)) / 1.1 var(--font-body);
   letter-spacing: 0.04em;
   opacity: 0.8;

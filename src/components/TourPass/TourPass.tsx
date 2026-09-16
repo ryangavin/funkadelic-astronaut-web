@@ -28,6 +28,14 @@ export const DEFAULT_TOUR_PASS_COLOR: TourPassColor = 'red';
 
 export const DEFAULT_TOUR_PASS_ROTATION = -2.15;
 
+/**
+ * Every pass is the same size, so a long venue name cannot make its card taller:
+ * it steps down in size by length instead, and clamps at three lines.
+ */
+export const VENUE_FITS = ['short', 'medium', 'long'] as const;
+export type VenueFit = (typeof VENUE_FITS)[number];
+export const venueFit = (venue: string): VenueFit => (venue.length <= 12 ? 'short' : venue.length <= 22 ? 'medium' : 'long');
+
 export const OLIVES_TOUR_PASS_PROPS: TourPassProps = {
   dateTime: '2026-09-18',
   weekday: 'Fri',
@@ -116,7 +124,9 @@ export function TourPass({
           </header>
 
           <div className="tour-pass__show">
-            <p className="tour-pass__venue">{venue}</p>
+            <p className="tour-pass__venue" data-fit={venueFit(venue)}>
+              {venue}
+            </p>
             <p className="tour-pass__city">{city}</p>
             <p className="tour-pass__location">{location}</p>
             <p className="tour-pass__time">{time}</p>

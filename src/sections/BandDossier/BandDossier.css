@@ -1,25 +1,49 @@
 /* The press package on the desk. The folder does the drawing; this only places
-   what is in it: the print inside the cover, the pile and the band's packet in
-   the well, set in from the spine so the loosest card in the pile stays on the leaf. */
+   what is in it: the print and the player inside the cover, the pile and the
+   band's packet in the well, set in from the spine so the loosest card in the
+   pile stays on the leaf. The section sets the placement variables from its
+   props; the values here are the defaults. */
 
 .dossier {
+  --dossier-proof-width: 90%;
+  --dossier-proof-x: 4%;
+  --dossier-proof-y: 0%;
+  --dossier-deck-width: 62%;
+  --dossier-deck-x: 7%;
+  --dossier-deck-y: 2%;
+  --dossier-well-width: 78%;
+  --dossier-well-x: 9%;
+  --dossier-well-gap: 4%;
+  --dossier-pile-rotation: 0deg;
   display: block;
 }
 
 .dossier__proof {
-  width: 90%;
-  margin-left: 4%;
+  width: var(--dossier-proof-width);
+  margin-left: var(--dossier-proof-x);
+  margin-top: var(--dossier-proof-y);
+}
+
+/* The player lies across the bottom of the cover, just over the print's lower edge
+   and on top of the stamps, which the folder draws at z-index 1. */
+.dossier__deck {
+  position: absolute;
+  left: var(--dossier-deck-x);
+  bottom: var(--dossier-deck-y);
+  width: var(--dossier-deck-width);
+  z-index: 2;
 }
 
 .dossier__well {
-  width: 78%;
-  margin-left: 9%;
+  width: var(--dossier-well-width);
+  margin-left: var(--dossier-well-x);
   display: grid;
-  gap: 4%;
+  gap: var(--dossier-well-gap);
 }
 
 .member-pile {
   position: relative;
+  rotate: var(--dossier-pile-rotation);
 }
 
 /* Announced, not shown: the cards themselves say who is on top. */

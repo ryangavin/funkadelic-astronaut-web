@@ -1,15 +1,49 @@
+import demoTape from '../../../assets/audio/demo-tape.mp3';
 import kevin from '../../../assets/band-22.webp';
 import performance from '../../../assets/performance.webp';
 import ryan from '../../../assets/band-13.webp';
 import sam from '../../../assets/band-21.webp';
+import type { ReactNode } from 'react';
 import type { PacketProps } from '../../components/Packet/Packet';
 import { KEVIN_SIGNATURE, RYAN_SIGNATURE, SAM_SIGNATURE } from './signatures';
 
-/** The full live set as the official site streams it: 8 minutes 42, HLS on the Squarespace CDN. */
-export const LIVE_SET = {
-  stream: 'https://video.squarespace-cdn.com/content/v1/699cdab6b1fb043597f25ba7/54ea9bd4-170c-4309-8ae2-44c6bab63092/playlist.m3u8',
-  poster: performance,
-  alt: 'Funkadelic Astronaut live set, muted preview',
+export type LiveSet = {
+  /** A video file, or a YouTube link. */
+  video: string;
+  alt: string;
+  caption?: ReactNode;
+  note?: ReactNode;
+};
+
+export type Tape = {
+  /** An audio file. */
+  src: string;
+  /** Spelled out on the player's display. */
+  title: string;
+  /** Handwritten on the cassette label. */
+  label?: string;
+  side?: 'A' | 'B';
+};
+
+/** The tape left in the player: a synthesised bass loop standing in until a real track goes in. */
+export const DEMO_TAPE: Tape = {
+  src: demoTape,
+  title: 'Spacewalk (demo)',
+  label: 'spacewalk demo',
+};
+
+const WHAT_TO_DO = 'https://www.youtube.com/watch?v=iVZmXA27KfA';
+
+/** The live set as the band's YouTube channel has it: "What to Do" at Barrier Brewing Co., 8 minutes 43. */
+export const LIVE_SET: LiveSet = {
+  video: WHAT_TO_DO,
+  alt: 'Funkadelic Astronaut playing “What to Do” at Barrier Brewing Co., muted preview',
+  caption: 'What to Do',
+  note: (
+    <a href={WHAT_TO_DO} target="_blank" rel="noreferrer">
+      watch on YouTube
+    </a>
+  ),
 };
 
 /** The band's own packet: the live contact proof clipped to the summary card. */

@@ -26,6 +26,14 @@ test('React tour pass preserves the complete Olive’s artist pass', () => {
   assert.match(component, /<header className="tour-pass__headline">/);
   assert.match(component, /className="tour-pass__tier-band"/);
   assert.match(component, /className="tour-pass__venue-image"/);
+  // Every pass is one size: the card has a fixed height and long venue names step down instead of wrapping it taller.
+  assert.match(component, /export const venueFit = \(venue: string\): VenueFit => \(venue\.length <= 12 \? 'short' : venue\.length <= 22 \? 'medium' : 'long'\)/);
+  assert.match(component, /<p className="tour-pass__venue" data-fit=\{venueFit\(venue\)\}>/);
+  const passCss = read('src/components/TourPass/TourPass.css');
+  assert.match(passCss, /\.tour-pass \{[\s\S]+?height: calc\(540 \* var\(--u\)\);/);
+  assert.doesNotMatch(passCss, /min-height: calc\(540/);
+  assert.match(passCss, /\.tour-pass__venue\[data-fit='long'\] \{\s+-webkit-line-clamp: 4;\s+font-size: calc\(34 \* var\(--u\)\);/);
+  assert.match(passCss, /\.tour-pass__venue \{[\s\S]+?-webkit-line-clamp: 3;/);
   assert.match(component, /actionHref \? \([\s\S]+?<a[\s\S]+?: \([\s\S]+?<span/);
   assert.match(css, /\.tour-pass::before[\s\S]+?border-radius: 50%/);
   assert.match(component, /function Barcode/);
