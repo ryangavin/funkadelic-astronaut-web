@@ -1,0 +1,114 @@
+/*
+  A Newton's cradle from above, 720 units by 600. The end balls swing along
+  the row: out, rising toward the eye, and back. Seen from above a lifted
+  ball moves outward and grows a little, and its shadow slides out from
+  under it and fades. The whole thing is one button.
+*/
+
+.newtons-cradle {
+  --cradle-rotation: 0deg;
+  --cradle-period: 1300ms;
+  --cradle-swings: 8;
+  display: block;
+  width: 100%;
+  aspect-ratio: 720 / 600;
+  rotate: var(--cradle-rotation);
+}
+
+.newtons-cradle__push {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  appearance: none;
+  cursor: pointer;
+  border-radius: 6%;
+}
+
+.newtons-cradle__push:focus-visible {
+  outline: 3px solid #f2b134;
+  outline-offset: 6px;
+}
+
+.newtons-cradle__push svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.newtons-cradle__string {
+  stroke: rgb(235 238 242 / 0.85);
+  stroke-width: 2;
+}
+
+.newtons-cradle__shadow {
+  fill: rgb(0 0 0 / 0.45);
+  filter: blur(3px);
+}
+
+.newtons-cradle__ball {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* The end balls: each swings out from the row's line about its own centre. */
+.newtons-cradle[data-swinging] .newtons-cradle__ball[data-end='left'] {
+  animation: cradle-swing-left var(--cradle-period) linear var(--cradle-swings);
+}
+
+.newtons-cradle[data-swinging] .newtons-cradle__ball[data-end='right'] {
+  animation: cradle-swing-right var(--cradle-period) linear var(--cradle-swings);
+}
+
+/* Out with a pendulum's ease, back the same, met with a click, then the other side's turn. */
+@keyframes cradle-swing-left {
+  0% {
+    translate: 0 0;
+    scale: 1;
+  }
+  25% {
+    translate: -95px 0;
+    scale: 1.14;
+    animation-timing-function: ease-in;
+  }
+  50% {
+    translate: 0 0;
+    scale: 1;
+  }
+  100% {
+    translate: 0 0;
+    scale: 1;
+  }
+}
+
+@keyframes cradle-swing-right {
+  0%,
+  50% {
+    translate: 0 0;
+    scale: 1;
+    animation-timing-function: ease-out;
+  }
+  75% {
+    translate: 95px 0;
+    scale: 1.14;
+    animation-timing-function: ease-in;
+  }
+  100% {
+    translate: 0 0;
+    scale: 1;
+  }
+}
+
+.newtons-cradle__ball[data-end='left'] {
+  animation-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .newtons-cradle[data-swinging] .newtons-cradle__ball {
+    animation-duration: 1ms;
+  }
+}

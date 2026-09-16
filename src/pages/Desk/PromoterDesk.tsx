@@ -1,15 +1,18 @@
 import type React from 'react';
 import { useRef, useState } from 'react';
+import festivalMap from '../../../assets/festival-map.webp';
 import { MovableScale, Movable, type Place } from '../../behaviors/Movable/Movable';
 import { Spill, Spilled } from '../../behaviors/Spill/Spill';
 import { Weathered } from '../../behaviors/Weathered/Weathered';
 import { AdmissionTicket, TOUR_ADMISSION_TICKET_PROPS } from '../../components/AdmissionTicket/AdmissionTicket';
 import { DESK_WIDTH, Desk, type DeskWood } from '../../components/Desk/Desk';
+import { DeskClock } from '../../components/DeskClock/DeskClock';
 import { Folder } from '../../components/Folder/Folder';
 import { GuitarPick } from '../../components/GuitarPick/GuitarPick';
 import { Handheld } from '../../components/Handheld/Handheld';
 import { CoffeeRing } from '../../components/Mug/CoffeeRing';
 import { Mug } from '../../components/Mug/Mug';
+import { NewtonsCradle } from '../../components/NewtonsCradle/NewtonsCradle';
 import { OneSheet } from '../../components/OneSheet/OneSheet';
 import { Packet } from '../../components/Packet/Packet';
 import { Pen } from '../../components/Pen/Pen';
@@ -35,16 +38,18 @@ import './PromoterDesk.css';
 
 /**
  * Everything on the desk is sized from one reference: the Walkman, 112
- * millimetres across, is 300 desk units. So one unit is 0.37 mm, the desk's
- * 1440 units are 537 mm of desktop, and every other thing is its real size
- * in the same scale: a letter folder, a Sharpie, a mug, a quarter-sheet
- * handbill, a 4 x 6 card.
+ * millimetres across, is 224 desk units. So one unit is half a millimetre,
+ * the desk's 1440 units are 720 mm of desktop, and every other thing is its
+ * real size in the same scale: a letter folder, a Sharpie, a mug, a
+ * quarter-sheet handbill, a 4 x 6 card. The frame is 16 x 9, and an open
+ * letter folder is 306 mm tall, so this is about as big as the Walkman can
+ * be with the folder lying open inside the frame and room left around it.
  */
-export const REFERENCE = { object: 'Walkman', millimetres: 112, units: 300 } as const;
+export const REFERENCE = { object: 'Walkman', millimetres: 112, units: 224 } as const;
 export const mm = (millimetres: number) => Math.round((millimetres * REFERENCE.units) / REFERENCE.millimetres);
 
-/** The desk's design size: 1440 across, 1760 deep: 537 by 657 mm of desktop. */
-export const DESK_HEIGHT = 1760;
+/** The desk's design size: 1440 by 810, a 16 x 9 frame: 720 by 405 mm of desktop. */
+export const DESK_HEIGHT = 810;
 
 /** Real widths, in millimetres, of what lies on the desk. Each component's box is measured across the thing itself. */
 export const REAL_WIDTHS = {
@@ -80,6 +85,12 @@ export const REAL_WIDTHS = {
   print: 108,
   /** A 4 x 6 index card, with the print clipped to it. */
   packet: 152,
+  /** The wedge LCD desk clock. */
+  clock: 90,
+  /** A small Newton's cradle. */
+  cradle: 120,
+  /** The festival site plan, printed on a letter sheet. */
+  plan: 216,
 } as const;
 
 /** The same, in desk units. */
@@ -90,7 +101,7 @@ const FOLDER_RATIO = 915 / 1440;
 /** The tab on the folder's edge, from the Folder component: 9% down the leaf, 52% of its height, 58 units wide, set 44 out past the edge. */
 const TAB = { top: 9, height: 52, width: 58, out: 44 };
 
-export type DeskThingId = 'walkman' | 'cassette' | 'handheld' | 'mug' | 'sheet' | 'ballpoint' | 'marker' | 'pick';
+export type DeskThingId = 'walkman' | 'cassette' | 'handheld' | 'mug' | 'sheet' | 'plan' | 'ballpoint' | 'marker' | 'pick' | 'clock' | 'cradle';
 export type SpilledThingId = 'live' | 'print' | 'ryan' | 'kevin' | 'sam' | 'oneSheet' | 'handbill' | 'zine' | 'ticket' | 'pass';
 export type ThingId = DeskThingId | SpilledThingId;
 
@@ -102,35 +113,40 @@ export type ThingId = DeskThingId | SpilledThingId;
  * moved stays where they put it.
  */
 export const DESK_LAYOUT = {
-  folder: { x: 100, y: 80, rotation: -1.5 },
+  folder: { x: 410, y: 40, rotation: -1 },
   things: {
-    walkman: { closed: { x: 770, y: 520, rotation: -6 }, open: { x: 40, y: 1320, rotation: -8 } },
-    cassette: { closed: { x: 60, y: 400, rotation: 12 }, open: { x: 380, y: 1400, rotation: 14 } },
-    handheld: { closed: { x: 200, y: 560, rotation: 3 }, open: { x: 600, y: 1340, rotation: 2 } },
-    mug: { closed: { x: 40, y: 40, rotation: 34 }, open: { x: 1080, y: 1330, rotation: 34 } },
-    sheet: { closed: { x: 300, y: 120, rotation: -4 }, open: { x: 30, y: 1150, rotation: -3 } },
-    ballpoint: { closed: { x: 320, y: 400, rotation: -12 }, open: { x: 1000, y: 1620, rotation: -6 } },
-    marker: { closed: { x: 40, y: 300, rotation: -15 }, open: { x: 40, y: 20, rotation: -15 } },
-    pick: { closed: { x: 640, y: 470, rotation: 40 }, open: { x: 1340, y: 1500, rotation: 40 } },
+    walkman: { closed: { x: 910, y: 380, rotation: -6 }, open: { x: 30, y: 250, rotation: -8 } },
+    cassette: { closed: { x: 60, y: 330, rotation: 10 }, open: { x: 240, y: 300, rotation: 12 } },
+    handheld: { closed: { x: 240, y: 560, rotation: 3 }, open: { x: 30, y: 480, rotation: 2 } },
+    mug: { closed: { x: 200, y: 10, rotation: 210 }, open: { x: 200, y: 10, rotation: 210 } },
+    sheet: { closed: { x: 560, y: 60, rotation: -4 }, open: { x: 0, y: 200, rotation: -3 } },
+    plan: { closed: { x: 520, y: 10, rotation: -6 }, open: { x: 520, y: 10, rotation: -6 } },
+    ballpoint: { closed: { x: 600, y: 250, rotation: -14 }, open: { x: 930, y: 24, rotation: 3 } },
+    marker: { closed: { x: 30, y: 260, rotation: -12 }, open: { x: 20, y: 440, rotation: -6 } },
+    pick: { closed: { x: 760, y: 460, rotation: 40 }, open: { x: 860, y: 700, rotation: 40 } },
+    clock: { closed: { x: 40, y: 640, rotation: -3 }, open: { x: 40, y: 650, rotation: -3 } },
+    cradle: { closed: { x: 0, y: 20, rotation: 0 }, open: { x: 0, y: 20, rotation: 0 } },
   } satisfies Record<DeskThingId, { closed: Place; open: Place }>,
+  /* What was inside lands over both leaves: the prints, the one-sheet, the handbill and the
+     ticket on the cover, the members' cards, the pass and the zine in the well. */
   spilled: {
-    live: { x: 180, y: 330, rotation: -3 },
-    print: { x: 400, y: 560, rotation: 6 },
-    ryan: { x: 760, y: 110, rotation: -4 },
-    kevin: { x: 900, y: 360, rotation: 5 },
-    sam: { x: 1000, y: 560, rotation: -6 },
-    oneSheet: { x: 700, y: 640, rotation: -2 },
-    handbill: { x: 60, y: 940, rotation: -9 },
-    zine: { x: 400, y: 980, rotation: 4 },
-    ticket: { x: 700, y: 1000, rotation: 3 },
-    pass: { x: 1120, y: 960, rotation: 8 },
+    live: { x: 450, y: 80, rotation: -3 },
+    print: { x: 630, y: 300, rotation: 6 },
+    oneSheet: { x: 440, y: 440, rotation: -2 },
+    ticket: { x: 430, y: 560, rotation: 3 },
+    ryan: { x: 920, y: 70, rotation: -4 },
+    kevin: { x: 990, y: 240, rotation: 5 },
+    sam: { x: 1060, y: 410, rotation: -6 },
+    pass: { x: 1190, y: 90, rotation: 8 },
+    handbill: { x: 690, y: 40, rotation: -9 },
+    zine: { x: 910, y: 470, rotation: 4 },
   } satisfies Record<SpilledThingId, Place>,
-  /** The ring stays where the mug was set down last night; the stickers are stuck to the wood. */
-  ring: { x: 200, y: 260, rotation: 20 },
+  /** The ring stays where the mug was set down last night; the stickers are stuck to the wood along the front edge. */
+  ring: { x: 110, y: 230, rotation: 20 },
   socials: [
-    { x: 0, y: 600, rotation: -8 },
-    { x: 6, y: 730, rotation: 6 },
-    { x: 0, y: 860, rotation: -3 },
+    { x: 1100, y: 690, rotation: -8 },
+    { x: 1190, y: 684, rotation: 6 },
+    { x: 1280, y: 690, rotation: -3 },
   ],
 };
 
@@ -138,8 +154,8 @@ export const DESK_LAYOUT = {
 export type LayerId = ThingId | 'folder';
 
 /** What lies on top of what, to begin with: first is underneath. Picking a thing up brings it to the top. */
-const STACKING: LayerId[] = ['sheet', 'folder', 'ballpoint', 'marker', 'pick', 'cassette', 'mug', 'handheld', 'walkman', 'live', 'print', 'ryan', 'kevin', 'sam', 'oneSheet', 'handbill', 'zine', 'ticket', 'pass'];
-const SPILL_ORDER: SpilledThingId[] = ['live', 'print', 'ryan', 'kevin', 'sam', 'oneSheet', 'handbill', 'zine', 'ticket', 'pass'];
+const STACKING: LayerId[] = ['plan', 'sheet', 'folder', 'ballpoint', 'marker', 'pick', 'cassette', 'clock', 'cradle', 'mug', 'handheld', 'walkman', 'live', 'print', 'oneSheet', 'ticket', 'ryan', 'kevin', 'sam', 'pass', 'handbill', 'zine'];
+const SPILL_ORDER: SpilledThingId[] = ['live', 'print', 'oneSheet', 'ticket', 'ryan', 'kevin', 'sam', 'pass', 'handbill', 'zine'];
 
 const LABELS: Record<ThingId, string> = {
   walkman: 'Walkman',
@@ -147,6 +163,9 @@ const LABELS: Record<ThingId, string> = {
   handheld: 'Handheld',
   mug: 'Mug',
   sheet: 'Running order',
+  plan: 'Festival site plan',
+  clock: 'Desk clock',
+  cradle: 'Newton’s cradle',
   ballpoint: 'Ballpoint',
   marker: 'Marker',
   pick: 'Guitar pick',
@@ -174,7 +193,7 @@ export type PromoterDeskProps = Pick<StageProps, 'minScale' | 'maxScale'> & {
   style?: React.CSSProperties;
 };
 
-/** The promoter's running order for the day, a draft off the office printer, with the band's slot pencilled in. */
+/** The label's running order for the festival day, a draft off the office printer on its letterhead, with the band's slot pencilled in. */
 function RunSheet() {
   return (
     <Weathered className="run-sheet" grain wear={0.25}>
@@ -182,6 +201,10 @@ function RunSheet() {
         <Distressed className="run-sheet__stamp">
           <span className="run-sheet__stamp-ink">Draft</span>
         </Distressed>
+        <p className="run-sheet__letterhead">
+          <span className="run-sheet__label">Mission Control</span>
+          <span className="run-sheet__label-line">records · management · events</span>
+        </p>
         <h2 className="run-sheet__title">Nyack Neighborhood Music &amp; Arts Festival</h2>
         <p className="run-sheet__meta">Main stage · Saturday, September 26, 2026 · running order v3</p>
         <table className="run-sheet__slots">
@@ -221,9 +244,26 @@ function RunSheet() {
   );
 }
 
+/** The festival's site plan: the map from the poster, run off on a letter sheet and marked up. */
+function SitePlan() {
+  return (
+    <Weathered className="site-plan" grain wear={0.2}>
+      <div className="site-plan__page">
+        <p className="site-plan__head">
+          <span className="run-sheet__label">Mission Control</span>
+          <span>Nyack Neighborhood Music &amp; Arts Festival · site plan · v2</span>
+        </p>
+        <img className="site-plan__map" src={festivalMap} alt="Site plan of the festival grounds: the stages, the camp and the pond, drawn as a map" />
+      </div>
+    </Weathered>
+  );
+}
+
 /**
- * The promoter's desk, the way a visitor first sees the site: 537 by 657 mm
- * of wooden desktop with the band's press package lying closed on it, their
+ * The desk of someone at the Mission Control label who is producing the
+ * festival, the way a visitor first sees the site: a 16 x 9 frame on 720
+ * by 405 mm of wooden desktop, the band's press package lying closed on
+ * it, their
  * name across the cover, and the promoter's own things on and around it: a
  * Walkman with the demo in it, a games console with the live set on the
  * disc, the running order for the day half under the folder, coffee, pens.
@@ -272,15 +312,16 @@ export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange,
     onDrop: drop,
   });
 
-  /* What is stuck to the outside of the cover: the band's name on two strips, a typed
-     label, the streaming stickers, the promoter's note to themself, and a coffee ring. */
+  /* What is stuck to the outside of the cover: the band's name on two strips sized to the
+     cover, a typed label, the streaming stickers, the promoter's note to themself, and a coffee ring. */
+  const brand = Math.round(folderWidth / 16);
   const cover = (
     <div className="promoter-desk__cover">
       <div className="promoter-desk__brand">
-        <Wordmark fontSize={82} letterSpacing="0.05em" outlineWidth={3} shadowX={4} shadowY={5} paddingX={16} paddingY={6} jitter>
+        <Wordmark fontSize={brand} letterSpacing="0.05em" outlineWidth={3} shadowX={4} shadowY={5} paddingX={14} paddingY={5} jitter>
           FUNKADELIC
         </Wordmark>
-        <Wordmark fontSize={72} letterSpacing="0.05em" outlineWidth={3} shadowX={4} shadowY={5} paddingX={16} paddingY={6} inkColor="#639ec8" jitter>
+        <Wordmark fontSize={Math.round(brand * 0.88)} letterSpacing="0.05em" outlineWidth={3} shadowX={4} shadowY={5} paddingX={14} paddingY={5} inkColor="#639ec8" jitter>
           ASTRONAUT
         </Wordmark>
       </div>
@@ -293,7 +334,7 @@ export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange,
       <div className="promoter-desk__note" style={{ width: SIZES.note }}>
         <StickyNote color="canary" rotation={4} size={80}>
           <p>Sept 26 — the 6pm slot?</p>
-          <p>Listen to the tape!!</p>
+          <p>Listen to the tape!! — M.C.</p>
         </StickyNote>
       </div>
       <div className="promoter-desk__ring" style={{ width: SIZES.ring }}>
@@ -341,10 +382,13 @@ export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange,
                 onClick={toggle}
                 style={{ '--tab-top': `${TAB.top}%`, '--tab-height': `${TAB.height}%`, '--tab-width': `${TAB.width}`, '--tab-out': `${TAB.out}` } as React.CSSProperties}
               />
-              <Folder label="Press Package – Funkadelic Astronaut" tab="side" open={open} stamps={['Booking', 'Received']} stampsAt="bottom" sticker={cover} />
+              <Folder label="Press Package – Funkadelic Astronaut" tab="side" open={open} stamps={['Mission Control', 'Received']} stampsAt="bottom" sticker={cover} />
             </div>
 
             {/* The promoter's own things, shoved aside when the folder opens. */}
+            <Movable {...movable('plan', SIZES.plan)}>
+              <SitePlan />
+            </Movable>
             <Movable {...movable('sheet', SIZES.sheet)}>
               <RunSheet />
             </Movable>
@@ -361,6 +405,12 @@ export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange,
               <div className="promoter-desk__tape">
                 <Cassette label="live at the pond" side="B" progress={0.35} />
               </div>
+            </Movable>
+            <Movable {...movable('clock', SIZES.clock)}>
+              <DeskClock finish="black" />
+            </Movable>
+            <Movable {...movable('cradle', SIZES.cradle, 'anywhere')}>
+              <NewtonsCradle />
             </Movable>
             <Movable {...movable('mug', SIZES.mug)}>
               <Mug glaze="#e9e1cf" coffee={0.65} rotation={0} />
@@ -408,7 +458,7 @@ export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange,
             <p className="promoter-desk__status" role="status" aria-live="polite" aria-label="Press package">
               {open
                 ? 'The press package is open and its contents are out on the desk: the members’ cards, the one-sheet, two prints, the handbill, the zine, the tour ticket and the festival pass. Everything on the desk can be moved.'
-                : 'The Funkadelic Astronaut press package is closed on the desk.'}
+                : 'The Funkadelic Astronaut press package is closed on the Mission Control desk.'}
             </p>
           </Desk>
         </Stage>

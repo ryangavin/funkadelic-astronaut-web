@@ -18,20 +18,22 @@ const meta = {
     height: { control: { type: 'range', min: 300, max: 1600, step: 10 } },
     boards: { control: { type: 'range', min: 1, max: 6, step: 1 } },
     light: { control: { type: 'range', min: 0, max: 1, step: 0.05 } },
+    edge: { control: { type: 'range', min: 0, max: 60, step: 1 } },
   },
-  args: { wood: 'walnut', height: 720, boards: 3, light: 1 },
+  args: { wood: 'walnut', height: 810, boards: 1, light: 1, edge: 22 },
 } satisfies Meta<typeof Desk>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** The bare top, filling the width it is shown at; the grain and the light are drawn, not photographed. */
+/** The bare top, 16 x 9, filling the width it is shown at; the figure, the light and the front edge are drawn, not photographed. */
 export const Bare: Story = {
   play: async ({ canvasElement }) => {
     const desk = canvasElement.querySelector<HTMLElement>('.desk__top')!;
     // The height follows the width, in desk units.
-    await expect(desk.getBoundingClientRect().height / desk.getBoundingClientRect().width).toBeCloseTo(720 / 1440, 2);
-    await expect(canvasElement.querySelectorAll('.desk__board')).toHaveLength(3);
+    await expect(desk.getBoundingClientRect().height / desk.getBoundingClientRect().width).toBeCloseTo(810 / 1440, 2);
+    await expect(canvasElement.querySelectorAll('.desk__board')).toHaveLength(1);
+    await expect(canvasElement.querySelector('.desk__edge')).toBeInTheDocument();
   },
 };
 
@@ -65,7 +67,12 @@ export const WithThings: Story = {
   },
 };
 
-/** The three timbers. */
+/** Glued up from boards instead of one slab. */
+export const Boards: Story = {
+  args: { boards: 4 },
+};
+
+/** The four timbers. */
 export const Woods: Story = {
   render: (args) => (
     <div style={{ display: 'grid', gap: 24, padding: 24, background: '#1a120c' }}>

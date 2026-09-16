@@ -5,7 +5,7 @@ import { DESK_LAYOUT, PromoterDesk, REAL_WIDTHS, SIZES } from './PromoterDesk';
 
 const viewports = {
   laptop: { name: 'Laptop 1280', styles: { width: '1280px', height: '800px' }, type: 'desktop' },
-  design: { name: 'Design 1440', styles: { width: '1440px', height: '900px' }, type: 'desktop' },
+  design: { name: 'Design 1440 x 810', styles: { width: '1440px', height: '810px' }, type: 'desktop' },
   wide: { name: 'Wide 1920', styles: { width: '1920px', height: '1080px' }, type: 'desktop' },
   tablet: { name: 'Tablet 834', styles: { width: '834px', height: '1194px' }, type: 'tablet' },
   phone: { name: 'Phone 390', styles: { width: '390px', height: '844px' }, type: 'mobile' },
@@ -43,12 +43,14 @@ export const Closed: Story = {
     const folder = canvasElement.querySelector<HTMLElement>('.folder')!;
     const walkman = canvasElement.querySelector<HTMLElement>('.walkman')!;
     await expect(folder.offsetWidth / walkman.offsetWidth).toBeCloseTo(REAL_WIDTHS.folder / REAL_WIDTHS.walkman, 1);
-    await expect(SIZES.walkman).toBe(300);
+    await expect(SIZES.walkman).toBe(224);
     // The streaming stickers on the cover are links, reachable through the folder.
     await expect(canvas.getByRole('link', { name: 'Funkadelic Astronaut on Spotify' })).toBeInTheDocument();
     // The loose things are packed away, out of sight.
     const spilled = canvasElement.querySelectorAll<HTMLElement>('.spilled');
     await expect(spilled).toHaveLength(10);
+    await expect(canvas.getByRole('timer')).toBeInTheDocument();
+    await expect(canvas.getByRole('button', { name: 'Set the cradle going' })).toBeInTheDocument();
     for (const item of spilled) await expect(getComputedStyle(item).visibility).toBe('hidden');
     await expect(canvas.getByRole('status', { name: 'Press package' }).textContent).toContain('closed');
   },
@@ -75,7 +77,7 @@ export const Opening: Story = {
     await userEvent.click(close);
     await expect(args.onToggle).toHaveBeenCalledWith(false);
     await expect(cornerOf(walkman)).toEqual({ x: DESK_LAYOUT.things.walkman.closed.x, y: DESK_LAYOUT.things.walkman.closed.y });
-    await waitFor(() => expect(getComputedStyle(spilled[9]).visibility).toBe('hidden'), { timeout: 3000 });
+    await waitFor(() => expect(getComputedStyle(spilled[spilled.length - 1]).visibility).toBe('hidden'), { timeout: 3000 });
     // Open it again and leave it that way, so the story shows what the click does.
     await userEvent.click(canvas.getByRole('button', { name: 'Open the Funkadelic Astronaut press package' }));
   },
@@ -117,7 +119,7 @@ export const Spilled: Story = {
   },
 };
 
-/** At the design width itself: one desk unit is one screen pixel. */
+/** At the design size itself, 16 x 9: one desk unit is one screen pixel and the desk fills the frame. */
 export const AtDesignWidth: Story = {
   globals: { viewport: { value: 'design' } },
 };

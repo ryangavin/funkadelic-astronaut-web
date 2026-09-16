@@ -10,10 +10,12 @@ test('Desk is a wooden top in sheet units whose surface measures against the des
   const component = read('src/components/Desk/Desk.tsx');
   const css = read('src/components/Desk/Desk.css');
 
-  assert.match(component, /DESK_WOODS = \['walnut', 'oak', 'ebony'\]/);
+  assert.match(component, /DESK_WOODS = \['walnut', 'oak', 'ebony', 'cherry'\]/);
+  assert.match(component, /boards = 1, light = 1, edge = 22/);
+  assert.match(component, /className="desk__edge"/);
   assert.match(component, /DESK_WIDTH = 1440/);
   // The grain is drawn: bands of tone bent by turbulence, pores over them.
-  assert.match(component, /<feTurbulence type="fractalNoise" baseFrequency="0\.0022 0\.03"/);
+  assert.match(component, /<feTurbulence type="fractalNoise" baseFrequency="0\.0016 0\.012"/);
   assert.match(component, /<feDisplacementMap in="SourceGraphic" in2="wave"/);
   assert.match(component, /className="desk__board"/);
   assert.match(component, /className="desk__pores"/);
@@ -25,6 +27,7 @@ test('Desk is a wooden top in sheet units whose surface measures against the des
   assert.match(css, /\.desk\[data-wood='oak'\] \{/);
   assert.match(css, /\.desk__bands \{[\s\S]+?mix-blend-mode: soft-light/);
   assert.match(css, /\.desk__light \{[\s\S]+?radial-gradient/);
+  assert.match(css, /\.desk__edge \{[\s\S]+?height: calc\(var\(--desk-edge\) \* var\(--sheet-unit\)\)/);
 });
 
 test('The desk things: mug, ring, pens, sticky note and pick, each sized by its parent', () => {
@@ -60,6 +63,21 @@ test('The desk things: mug, ring, pens, sticky note and pick, each sized by its 
   assert.match(noteCss, /--sticky-note-unit: calc\(100cqw \/ 720\)/);
   assert.match(noteCss, /\.sticky-note\[data-curl='right'\] \.sticky-note__paper \{\s+clip-path: polygon/);
   assert.match(noteCss, /\.sticky-note \{[\s\S]+?font-family: var\(--font-handwritten/);
+
+  const clock = read('src/components/DeskClock/DeskClock.tsx');
+  assert.match(clock, /export function readout\(at: Date, hours: 12 \| 24\)/);
+  assert.match(clock, /<SegmentDisplay className="desk-clock__time" text=\{time\} kind="digit" \/>/);
+  assert.match(clock, /role="timer"/);
+  assert.match(clock, /const wallClock = \(\) => new Date\(\);/);
+  assert.match(clock, /now = wallClock, running = true/);
+  assert.match(read('src/components/DeskClock/DeskClock.css'), /aspect-ratio: 720 \/ 480/);
+  const cradle = read('src/components/NewtonsCradle/NewtonsCradle.tsx');
+  assert.match(cradle, /CRADLE_BALLS = \[140, 250, 360, 470, 580\]/);
+  assert.match(cradle, /aria-label=\{swinging \? 'Stop the cradle' : 'Set the cradle going'\}/);
+  assert.match(cradle, /band\.type = 'bandpass'/);
+  const cradleCss = read('src/components/NewtonsCradle/NewtonsCradle.css');
+  assert.match(cradleCss, /@keyframes cradle-swing-left \{[\s\S]+?translate: -95px 0;\s+scale: 1\.14/);
+  assert.match(cradleCss, /@keyframes cradle-swing-right \{[\s\S]+?translate: 95px 0/);
 
   const pick = read('src/components/GuitarPick/GuitarPick.tsx');
   assert.match(pick, /viewBox="0 0 100 116"/);
@@ -133,19 +151,27 @@ test('The promoter’s desk: everything its real size against the Walkman, the f
   const css = read('src/pages/Desk/PromoterDesk.css');
 
   // One reference: the Walkman, 112 mm, is 300 units; everything else is its real width in that scale.
-  assert.match(page, /REFERENCE = \{ object: 'Walkman', millimetres: 112, units: 300 \}/);
+  assert.match(page, /REFERENCE = \{ object: 'Walkman', millimetres: 112, units: 224 \}/);
   assert.match(page, /export const mm = \(millimetres: number\) => Math\.round\(\(millimetres \* REFERENCE\.units\) \/ REFERENCE\.millimetres\)/);
   for (const [thing, width] of [['folder', 482], ['cassette', 100], ['handheld', 170], ['sheet', 216], ['handbill', 108], ['packet', 152], ['pick', 25]]) {
     assert.match(page, new RegExp(`^  ${thing}: ${width},$`, 'm'), thing);
   }
-  assert.match(page, /DESK_HEIGHT = 1760/);
+  assert.match(page, /DESK_HEIGHT = 810/);
   // The promoter's things have a place while the folder is closed and another once it is open; the contents only land.
-  assert.match(page, /walkman: \{ closed: \{ x: 770, y: 520, rotation: -6 \}, open: \{ x: 40, y: 1320, rotation: -8 \} \}/);
+  assert.match(page, /walkman: \{ closed: \{ x: 910, y: 380, rotation: -6 \}, open: \{ x: 30, y: 250, rotation: -8 \} \}/);
+  assert.match(page, /const brand = Math\.round\(folderWidth \/ 16\);/);
+  // The label's desk: its letterhead on the running order and the site plan, its stamp inside the folder, its clock and its cradle.
+  assert.match(page, /className="run-sheet__label">Mission Control</);
+  assert.match(page, /function SitePlan\(/);
+  assert.match(page, /<img className="site-plan__map" src=\{festivalMap\}/);
+  assert.match(page, /stamps=\{\['Mission Control', 'Received'\]\}/);
+  assert.match(page, /<Movable \{\.\.\.movable\('clock', SIZES\.clock\)\}>\s+<DeskClock/);
+  assert.match(page, /<Movable \{\.\.\.movable\('cradle', SIZES\.cradle, 'anywhere'\)\}>\s+<NewtonsCradle/);
   assert.match(page, /\} satisfies Record<DeskThingId, \{ closed: Place; open: Place \}>/);
   assert.match(page, /\} satisfies Record<SpilledThingId, Place>/);
   assert.match(page, /placed\[id\] \?\? \(isSpilled\(id\) \? DESK_LAYOUT\.spilled\[id\] : open \? DESK_LAYOUT\.things\[id\]\.open : DESK_LAYOUT\.things\[id\]\.closed\)/);
   // Picking a thing up brings it to the top; the folder is a layer of its own over the running order.
-  assert.match(page, /const STACKING: LayerId\[\] = \['sheet', 'folder', 'ballpoint'/);
+  assert.match(page, /const STACKING: LayerId\[\] = \['plan', 'sheet', 'folder', 'ballpoint'/);
   assert.match(page, /const zOf = \(id: LayerId\) => 10 \+ stacking\.indexOf\(id\)/);
   assert.match(page, /'--promoter-desk-folder-z': zOf\('folder'\)/);
   // The pointer's travel is scaled by the desk's rendered width, since the Stage zooms it.
@@ -159,7 +185,7 @@ test('The promoter’s desk: everything its real size against the Walkman, the f
   assert.match(page, /function RunSheet\(/);
   assert.match(page, /Funkadelic Astronaut · 45 min/);
   // A plain folder with the band's name on the cover, the streaming stickers and the note, and a button beneath it.
-  assert.match(page, /<Folder label="Press Package – Funkadelic Astronaut" tab="side" open=\{open\} stamps=\{\['Booking', 'Received'\]\} stampsAt="bottom" sticker=\{cover\} \/>/);
+  assert.match(page, /<Folder label="Press Package – Funkadelic Astronaut" tab="side" open=\{open\} stamps=\{\['Mission Control', 'Received'\]\} stampsAt="bottom" sticker=\{cover\} \/>/);
   assert.match(page, /FUNKADELIC\s+<\/Wordmark>/);
   assert.match(page, /ASTRONAUT\s+<\/Wordmark>/);
   assert.match(page, /LISTEN_LINKS\.map\(/);
@@ -181,6 +207,8 @@ test('The promoter’s desk: everything its real size against the Walkman, the f
   assert.match(css, /\.promoter-desk__folder \{[\s\S]+?z-index: var\(--promoter-desk-folder-z, 10\)/);
   // The cover's own label becomes the whole face.
   assert.match(css, /\.promoter-desk \.folder__sticker \{[\s\S]+?inset: 0;/);
+  // The desk sits in the room with a margin round it, never taller than the window.
+  assert.match(css, /\.promoter-desk-stage > \.stage \{\s+width: min\(100%, calc\(\(100vh - 2 \* var\(--promoter-desk-margin\)\) \* 16 \/ 9\)\)/);
   // The running order's print measures against the sheet, one level in.
   assert.match(css, /\.run-sheet__page \{[\s\S]+?padding: calc\(52 \* var\(--run-sheet-unit\)\)/);
 });
