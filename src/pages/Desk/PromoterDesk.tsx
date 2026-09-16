@@ -33,7 +33,7 @@ import { MiniZine } from '../../experiments/BandIntro/MiniZine';
 import { BAND_ZINE_PAGES } from '../../experiments/BandIntro/MiniZine.band';
 import { Distressed } from '../../foundations/Distressed/Distressed';
 import { BAND_MEMBER_PACKETS, BAND_ONE_SHEET, BAND_PACKET, DEMO_TAPE, LIVE_SET } from '../../sections/BandDossier/BandDossier';
-import { LISTEN_INKS, LISTEN_LINKS, SOCIAL_LINKS } from '../Home/Home';
+import { LISTEN_LINKS, SOCIAL_LINKS } from '../Home/Home';
 import '../../styles/fonts.css';
 import './PromoterDesk.css';
 
@@ -340,7 +340,7 @@ export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange,
       <span className="promoter-desk__typed">Press kit · fall 2026</span>
       <div className="promoter-desk__streams">
         {LISTEN_LINKS.map(({ platform, href, label }, index) => (
-          <SocialSticker key={platform} platform={platform} href={href} label={label} ink={LISTEN_INKS[platform]} size={SIZES.sticker} rotation={index % 2 ? 5 : -6} target="_blank" rel="noreferrer" />
+          <SocialSticker key={platform} platform={platform} href={href} label={label} size={SIZES.sticker} rotation={index % 2 ? 5 : -6} target="_blank" rel="noreferrer" />
         ))}
       </div>
       <div className="promoter-desk__note" style={{ width: SIZES.note }}>
@@ -364,11 +364,11 @@ export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange,
             <Pin {...DESK_LAYOUT.glow} width={SIZES.glow * 2}>
               <LampLight on={lamp} />
             </Pin>
-            {/* Stuck to the desk itself, so they stay reachable whatever lies on top. */}
+            {/* The band's stickers, loose on their liners, so they stay reachable whatever lies on top. */}
             <nav aria-label="Socials" className="promoter-desk__socials">
               {SOCIAL_LINKS.map(({ platform, href, label }, index) => (
                 <Pin key={platform} {...DESK_LAYOUT.socials[index]}>
-                  <SocialSticker platform={platform} href={href} label={label} ink="purple" size={SIZES.sticker} peel={index === 1 ? 2.4 : true} target="_blank" rel="noreferrer" />
+                  <SocialSticker platform={platform} href={href} label={label} size={SIZES.sticker} backing peel={index === 1 ? 2.4 : true} target="_blank" rel="noreferrer" />
                 </Pin>
               ))}
             </nav>

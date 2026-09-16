@@ -9,8 +9,8 @@ export { SOCIAL_PLATFORMS, SOCIAL_PLATFORM_NAMES, type SocialPlatform } from './
 
 export type SocialIconProps = {
   platform: SocialPlatform;
-  /** Ink the mark is printed in. Any CSS colour. */
-  ink?: SocialIconInk | (string & {});
+  /** Ink the mark is printed in: one of the site's inks, `brand` for the platform's own colour, or any CSS colour. */
+  ink?: SocialIconInk | 'brand' | (string & {});
   /** Rendered width and height. Any CSS length. */
   size?: number | string;
   /** Skip the worn-ink texture, for very small marks or when many are on screen. */
@@ -40,9 +40,10 @@ export function SocialIcon({ platform, ink = 'red', size = 28, worn = true, prin
   const uid = useId().replace(/:/g, '');
   const clipId = `social-icon-clip-${uid}`;
   const inkId = `social-icon-ink-${uid}`;
-  const { label: platformLabel, silhouette, glyph } = SOCIAL_PLATFORMS[platform];
+  const { label: platformLabel, silhouette, glyph, brand } = SOCIAL_PLATFORMS[platform];
+  const gradient = ink === 'brand' && 'gradient' in SOCIAL_PLATFORMS[platform] ? (SOCIAL_PLATFORMS[platform] as { gradient: readonly string[] }).gradient : undefined;
   const name = label ?? platformLabel;
-  const color = ink in SOCIAL_ICON_INKS ? SOCIAL_ICON_INKS[ink as SocialIconInk] : ink;
+  const color = ink === 'brand' ? brand : ink in SOCIAL_ICON_INKS ? SOCIAL_ICON_INKS[ink as SocialIconInk] : ink;
 
   if (print === 'flat') {
     return (
@@ -55,9 +56,18 @@ export function SocialIcon({ platform, ink = 'red', size = 28, worn = true, prin
         style={{ '--social-icon-size': typeof size === 'number' ? `${size}px` : size, '--social-icon-ink': color, '--social-icon-paper': paper } as React.CSSProperties}
       >
         <svg className="social-icon__mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          {gradient && (
+            <defs>
+              <linearGradient id={`${uid}-brand`} x1="0" y1="1" x2="1" y2="0">
+                {gradient.map((stop, index) => (
+                  <stop key={stop} offset={index / (gradient.length - 1)} stopColor={stop} />
+                ))}
+              </linearGradient>
+            </defs>
+          )}
           {/* Paper beneath, so the counters of the mark read as unprinted; the ink over it, clean-edged. */}
           <path className="social-icon__paper" d={silhouette} />
-          <path className="social-icon__ink" d={glyph} fillRule="evenodd" />
+          <path className="social-icon__ink" d={glyph} fillRule="evenodd" style={gradient ? { fill: `url(#${uid}-brand)` } : undefined} />
         </svg>
       </span>
     );

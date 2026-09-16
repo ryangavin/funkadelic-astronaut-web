@@ -96,6 +96,20 @@ test('The desk things: mug, ring, pens, sticky note and pick, each sized by its 
   assert.match(lamp, /export function LampLight\(/);
   assert.match(read('src/components/DeskLamp/DeskLamp.css'), /\.lamp-light \{[\s\S]+?mix-blend-mode: screen/);
 
+  // Each platform carries its own colour, and a sticker wears it unless told otherwise.
+  const platforms = read('src/components/SocialIcon/platforms.ts');
+  for (const [platform, brand] of [['facebook', '#1877f2'], ['spotify', '#1db954'], ['youtube', '#ff0000'], ['bandcamp', '#1da0c3']]) {
+    assert.match(platforms, new RegExp(`${platform}: \\{\\n    label: '[^']+',\\n    brand: '${brand}',`), platform);
+  }
+  assert.match(platforms, /gradient: \['#f9ce34', '#ee2a7b', '#6228d7'\]/);
+  assert.match(read('src/components/Sticker/SocialSticker.tsx'), /ink = 'brand', worn = false, print = 'flat'/);
+  assert.match(read('src/components/SocialIcon/SocialIcon.tsx'), /const color = ink === 'brand' \? brand :/);
+  // A keyline round the print, and a liner to lie on.
+  const sticker = read('src/components/Sticker/Sticker.tsx');
+  assert.match(sticker, /border = 1\.3,\s+keyline = 0\.4,\s+backing = false,/);
+  assert.match(sticker, /const DEFAULT_LINER = 2\.4;/);
+  assert.match(sticker, /\{keyline > 0 && <use href=\{outline\} fill="none" stroke="#121420" strokeWidth=\{2 \* keyline\} \/>\}/);
+  assert.match(sticker, /className="sticker__sheet"/);
   // A flat social print draws past its square, so the wide marks fill the vinyl cut for them.
   assert.match(read('src/components/SocialIcon/SocialIcon.css'), /\.social-icon--flat \.social-icon__mark \{\s+overflow: visible;/);
 
