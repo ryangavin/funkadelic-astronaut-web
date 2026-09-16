@@ -1,4 +1,5 @@
 import type React from 'react';
+import { Weathered } from '../../behaviors/Weathered/Weathered';
 import { Distressed } from '../../foundations/Distressed/Distressed';
 import '../../styles/fonts.css';
 import './IndexCard.css';
@@ -21,6 +22,37 @@ export type IndexCardNote = {
   size?: number;
 };
 
+export const INDEX_CARD_STAMP_POSITIONS = ['top-right', 'bottom-left', 'bottom-right', 'signature'] as const;
+export type IndexCardStampPosition = (typeof INDEX_CARD_STAMP_POSITIONS)[number];
+
+export type IndexCardSignature = {
+  /** The signer's name. Read by assistive technology; shown only when there is no scrawl. */
+  text: string;
+  /** A scrawl: SVG path data drawn in `box`. Real signatures are illegible, so this beats any font. */
+  path?: string;
+  /** The scrawl's own coordinate space, width then height. */
+  box?: [number, number];
+  /** Width of the scrawl in 720ths of the card width. */
+  width?: number;
+  /** For a legible hand instead: a CSS font-family. Defaults to the site's handwritten face. */
+  font?: string;
+  /** Size of a legible hand in 720ths of the card width. */
+  size?: number;
+  weight?: number;
+  rotation?: number;
+  ink?: string;
+};
+
+export type IndexCardAside = {
+  /** A column of writing placed by the caller, e.g. under a clipped print. */
+  content: React.ReactNode;
+  /** Top edge and width, in 720ths of the card width; it hangs from the right margin. */
+  top: number;
+  width: number;
+  /** Pen colour. Defaults to the card's blue-black. */
+  ink?: string;
+};
+
 export type IndexCardClearance = {
   /** Which side something is clipped over the card. */
   side: 'left' | 'right';
@@ -38,8 +70,14 @@ export type IndexCardProps = {
   children?: React.ReactNode;
   /** Pen annotations laid over the card. */
   notes?: IndexCardNote[];
-  /** A rubber stamp in the top-right corner. */
+  /** A rubber stamp. */
   stamp?: React.ReactNode;
+  /** Which corner the stamp lands in. `signature` sets it beside the signature as a sign-off. */
+  stampAt?: IndexCardStampPosition;
+  /** Signed in the bottom-right corner. */
+  signature?: IndexCardSignature;
+  /** A column of writing hung from the right margin at a given height. */
+  aside?: IndexCardAside;
   size?: IndexCardSize;
   ruling?: IndexCardRuling;
   /** Keeps the typed lines clear of something clipped over a corner. */
@@ -62,6 +100,9 @@ export function IndexCard({
   children,
   notes = [],
   stamp,
+  stampAt = 'top-right',
+  signature,
+  aside,
   size = '4x6',
   ruling = 'ruled',
   clearance,
@@ -76,7 +117,7 @@ export function IndexCard({
       data-ruling={ruling}
       style={{ '--index-card-rotation': `${rotation}deg`, ...style } as React.CSSProperties}
     >
-      <div className="index-card__sheet">
+      <Weathered className="index-card__sheet" grain>
         {present(title) || present(subtitle) ? (
           <header className="index-card__head">
             {present(title) ? <span className="index-card__title">{title}</span> : null}
@@ -114,12 +155,68 @@ export function IndexCard({
             {note.text}
           </span>
         ))}
-        {present(stamp) ? (
-          <Distressed className="index-card__stamp">
+        {aside ? (
+          <div
+            className="index-card__aside"
+            style={
+              {
+                top: `calc(${aside.top} * var(--index-card-unit))`,
+                width: `calc(${aside.width} * var(--index-card-unit))`,
+                ...(aside.ink ? { '--index-card-aside-ink': aside.ink } : {}),
+              } as React.CSSProperties
+            }
+          >
+            {aside.content}
+          </div>
+        ) : null}
+        {signature || (present(stamp) && stampAt === 'signature') ? (
+          <div className="index-card__signoff">
+            {present(stamp) && stampAt === 'signature' ? (
+              <Distressed className="index-card__stamp index-card__stamp--signature">
+                <span className="index-card__stamp-ink">{stamp}</span>
+              </Distressed>
+            ) : null}
+            {signature?.path ? (
+              <svg
+                className="index-card__signature index-card__signature--scrawl"
+                viewBox={`0 0 ${signature.box?.[0] ?? 320} ${signature.box?.[1] ?? 110}`}
+                role="img"
+                aria-label={`Signed, ${signature.text}`}
+                style={
+                  {
+                    '--index-card-signature-width': signature.width ?? 240,
+                    '--index-card-signature-rotation': `${signature.rotation ?? -2}deg`,
+                    ...(signature.ink ? { '--index-card-signature-ink': signature.ink } : {}),
+                  } as React.CSSProperties
+                }
+              >
+                <path d={signature.path} fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+                <path d={signature.path} fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" transform="translate(0.8 0.6)" opacity="0.7" />
+              </svg>
+            ) : signature ? (
+              <span
+                className="index-card__signature"
+                style={
+                  {
+                    '--index-card-signature-font': signature.font ?? 'var(--font-handwritten, Caveat, cursive)',
+                    '--index-card-signature-size': signature.size ?? 40,
+                    '--index-card-signature-weight': signature.weight ?? 400,
+                    '--index-card-signature-rotation': `${signature.rotation ?? -2}deg`,
+                    ...(signature.ink ? { '--index-card-signature-ink': signature.ink } : {}),
+                  } as React.CSSProperties
+                }
+              >
+                {signature.text}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+        {present(stamp) && stampAt !== 'signature' ? (
+          <Distressed className={`index-card__stamp index-card__stamp--${stampAt}`}>
             <span className="index-card__stamp-ink">{stamp}</span>
           </Distressed>
         ) : null}
-      </div>
+      </Weathered>
     </div>
   );
 }

@@ -11,8 +11,14 @@ const CARD_HEAD = 90;
 export type PacketProps = {
   /** The print clipped to the card. */
   photo: Omit<PolaroidProps, 'rotation' | 'className' | 'style'>;
-  /** The card underneath. Its typed lines wrap around the print. */
+  /** The card underneath. Its writing wraps around the print. */
   card: Omit<IndexCardProps, 'rotation' | 'className' | 'style' | 'clearance'>;
+  /** Short lines in red pen after the bio, each ticked off. */
+  facts?: React.ReactNode[];
+  /** Optional heading above the facts. None by default. */
+  factsHeading?: React.ReactNode;
+  /** The pen the facts are written in. */
+  factsInk?: string;
   /** Which top corner the print is clipped over. */
   photoSide?: 'left' | 'right';
   /** Width of the print, in 720ths of the packet width. */
@@ -21,6 +27,8 @@ export type PacketProps = {
   photoTop?: number;
   /** Tilt of the print against the card, in degrees. */
   photoRotation?: number;
+  /** Tilt of the whole packet in degrees, for one lying loose rather than in a pile. */
+  rotation?: number;
   /** Hold it all together with a gem clip. */
   clip?: boolean;
   /** Where the clip bites along the top edge, in 720ths from the packet's photo-side edge. */
@@ -40,9 +48,13 @@ export function Packet({
   photo,
   card,
   photoSide = 'right',
-  photoWidth = 220,
+  facts = [],
+  factsHeading,
+  factsInk = '#a52837',
+  photoWidth = 210,
   photoTop = 36,
   photoRotation = 5,
+  rotation = 0,
   clip = true,
   clipAt = 58,
   clipRotation = 8,
@@ -55,12 +67,24 @@ export function Packet({
     width: photoWidth - 4,
     height: Math.max(0, photoHeight + photoTop - CARD_HEAD + 18),
   };
+  const { children, ...cardProps } = card;
+  const factList = facts.length ? (
+    <div className="packet__facts" style={{ '--packet-facts-ink': factsInk } as React.CSSProperties}>
+      {factsHeading != null && factsHeading !== '' ? <span className="packet__facts-heading">{factsHeading}</span> : null}
+      <ul>
+        {facts.map((fact, index) => (
+          <li key={index}>{fact}</li>
+        ))}
+      </ul>
+    </div>
+  ) : null;
   return (
     <div
       className={`packet ${className}`}
       data-photo-side={photoSide}
       style={
         {
+          '--packet-rotation': `${rotation}deg`,
           '--packet-photo-width': photoWidth,
           '--packet-photo-top': photoTop,
           '--packet-photo-rotation': `${photoRotation}deg`,
@@ -71,7 +95,10 @@ export function Packet({
       }
     >
       <div className="packet__card">
-        <IndexCard {...card} clearance={clearance} />
+        <IndexCard {...cardProps} clearance={clearance}>
+          {children}
+          {factList}
+        </IndexCard>
       </div>
       <div className="packet__photo" data-stack-lag="">
         <Polaroid {...photo} />

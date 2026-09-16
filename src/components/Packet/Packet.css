@@ -5,7 +5,8 @@
 
 .packet {
   --packet-unit: calc(100cqw / 720);
-  --packet-photo-width: 220;
+  --packet-rotation: 0deg;
+  --packet-photo-width: 210;
   --packet-photo-top: 36;
   --packet-photo-rotation: 5deg;
   --packet-clip-at: 58;
@@ -15,6 +16,8 @@
   width: 100%;
   aspect-ratio: 720 / 480;
   container-type: inline-size;
+  rotate: var(--packet-rotation);
+  transform-origin: 50% 50%;
 }
 
 .packet__card {
@@ -56,6 +59,30 @@
 
 .packet__clip--back {
   z-index: 0;
+}
+
+/* Facts after the bio: ticked lines in red pen, keeping to the rules. */
+.packet__facts {
+  margin-top: calc(30 * var(--packet-unit));
+  color: var(--packet-facts-ink, #a52837);
+  font-size: calc(24 * var(--packet-unit));
+  text-shadow: 0 0 calc(0.5 * var(--packet-unit)) color-mix(in srgb, currentColor 35%, transparent);
+}
+
+.packet__facts-heading {
+  text-decoration: underline;
+  text-decoration-thickness: calc(1.5 * var(--packet-unit));
+  text-underline-offset: calc(3 * var(--packet-unit));
+}
+
+.packet__facts ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.packet__facts li::before {
+  content: '✓ ';
 }
 
 .packet[data-photo-side='left'] .packet__clip {

@@ -45,19 +45,7 @@
   background: linear-gradient(160deg, var(--folder-stock), var(--folder-stock-deep));
 }
 
-.folder__leaf::before,
-.folder__face::before,
-.folder__tab::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background-image: url('/assets/paper-patina.svg'), url('/assets/paper-dark-flecks.svg');
-  background-size: 900px 900px, 640px 640px;
-  mix-blend-mode: multiply;
-  opacity: 0.5;
-}
+/* Patina and flecks come from the Weathered behaviour on each leaf, face and tab. */
 
 .folder__leaf {
   top: calc(var(--folder-tab) * var(--folder-unit));
@@ -150,6 +138,32 @@
   box-sizing: border-box;
 }
 
+/* A side tab instead: cut down the right edge of the back leaf, read top to bottom. */
+.folder[data-tab='side'] {
+  --folder-tab: 0;
+}
+
+.folder[data-tab='side'] .folder__body {
+  aspect-ratio: 1440 / 915;
+}
+
+.folder[data-tab='side'] .folder__tab {
+  top: 9%;
+  left: auto;
+  right: calc(-44 * var(--folder-unit));
+  width: calc(58 * var(--folder-unit));
+  height: 52%;
+  border-radius: 0 calc(12 * var(--folder-unit)) calc(12 * var(--folder-unit)) 0;
+}
+
+.folder[data-tab='side'] .folder__label {
+  inset: calc(14 * var(--folder-unit)) calc(8 * var(--folder-unit)) calc(14 * var(--folder-unit)) auto;
+  width: calc(28 * var(--folder-unit));
+  height: auto;
+  writing-mode: vertical-rl;
+  font-size: calc(23 * var(--folder-unit));
+}
+
 /* The crease where the two leaves meet. */
 .folder__spine {
   position: absolute;
@@ -173,6 +187,13 @@
   mix-blend-mode: multiply;
   opacity: 0.8;
   pointer-events: none;
+}
+
+.folder[data-stamps='bottom'] .folder__stamp {
+  top: auto;
+  bottom: calc((36 + var(--folder-stamp-index, 0) * 74) * var(--folder-unit));
+  left: calc((48 + var(--folder-stamp-index, 0) * 52) * var(--folder-unit));
+  rotate: calc(-7deg + var(--folder-stamp-index, 0) * 6deg);
 }
 
 .folder__stamp-ink {

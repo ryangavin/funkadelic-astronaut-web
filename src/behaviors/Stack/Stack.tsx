@@ -1,4 +1,4 @@
-import { Children, useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react';
+import { Children, useLayoutEffect, useRef, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
 import { PACKET_RATIO } from '../../components/Packet/Packet';
 import { DEFAULT_SIFT_MS, depthOf, movesBetween, sift, slotFor } from './sift';
 import './Stack.css';
@@ -18,16 +18,22 @@ export type StackProps = {
   duration?: number;
   /** Which way the hand swings a packet out: 1 is to the right. */
   side?: 1 | -1;
+  /** Makes the pile clickable: a peeking packet is brought to the front, the top one is sent under. */
+  onSelect?: (item: number) => void;
+  /** Accessible name for each packet's button, given its position in the pile. */
+  itemLabel?: (item: number, depth: number) => string;
   className?: string;
   style?: CSSProperties;
 };
 
 /**
- * A pile of packets being sifted through. Each child rests in a slot by depth;
- * when `index` changes, the top packet is lifted and dropped under the pile,
- * or the wanted one is pulled out from under and landed on top.
+ * A pile of packets being sifted through. Each child rests in a slot by depth,
+ * staggered upward so every name shows; when `index` changes, the top packet is
+ * lifted and dropped under the pile, or the wanted one is pulled out from under
+ * and landed on top. With `onSelect`, the pile itself is the control. The pile
+ * reserves headroom above the front card for the staggered ones.
  */
-export function Stack({ index, children, ratio = PACKET_RATIO, spread = 1, duration = DEFAULT_SIFT_MS, side = 1, className = '', style }: StackProps) {
+export function Stack({ index, children, ratio = PACKET_RATIO, spread = 1, duration = DEFAULT_SIFT_MS, side = 1, onSelect, itemLabel, className = '', style }: StackProps) {
   const host = useRef<HTMLDivElement>(null);
   const shown = useRef(index);
   const items = Children.toArray(children);
@@ -57,13 +63,38 @@ export function Stack({ index, children, ratio = PACKET_RATIO, spread = 1, durat
     return () => cancels.forEach((cancel) => cancel());
   }, [index, count, spread, duration, side]);
 
+  // Headroom for the deepest card's stagger, as a share of the width (percent margins resolve against width).
+  const [ratioWidth, ratioHeight] = ratio.split('/').map((part) => Number(part.trim()));
+  const headroom = count > 1 ? (-slotFor(0, count - 1, count, spread).dy * (ratioHeight / ratioWidth || 0.667)) : 0;
+  const select = (item: number) => onSelect?.(item);
+  const onKey = (item: number) => (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      select(item);
+    }
+  };
+
   return (
-    <div ref={host} className={`stack ${className}`} style={{ aspectRatio: ratio, ...style }}>
-      {items.map((child, item) => (
-        <div key={(child as { key?: string | null }).key ?? item} className="stack__item">
-          {child}
-        </div>
-      ))}
+    <div ref={host} className={`stack ${className}`} data-selectable={onSelect ? '' : undefined} style={{ aspectRatio: ratio, marginTop: `${headroom.toFixed(2)}%`, ...style }}>
+      {items.map((child, item) => {
+        const depth = depthOf(item, index, count);
+        const side = Math.sign(slotFor(item, depth, count, spread).dx) || 1;
+        return (
+          <div
+            key={(child as { key?: string | null }).key ?? item}
+            className="stack__item"
+            data-depth={depth}
+            style={{ '--stack-depth': depth, '--stack-side': side } as CSSProperties}
+            role={onSelect ? 'button' : undefined}
+            tabIndex={onSelect ? 0 : undefined}
+            aria-label={onSelect ? itemLabel?.(item, depth) : undefined}
+            onClick={onSelect ? () => select(item) : undefined}
+            onKeyDown={onSelect ? onKey(item) : undefined}
+          >
+            {child}
+          </div>
+        );
+      })}
     </div>
   );
 }

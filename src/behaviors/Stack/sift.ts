@@ -9,6 +9,21 @@ export const DEFAULT_SIFT_MS = 900;
 /** Resting tilt per packet, in degrees, so the pile never looks squared up. */
 export const STACK_TILTS = [-2.4, 1.9, -1.1, 2.8, -3.2, 1.4];
 
+/** Sideways lean per packet, as a percentage of its width: each card keeps its own
+    lean wherever it sits in the pile, so the pile zigzags a little. */
+export const STACK_SHIFTS = [2.5, -3.5, 3, -2.5, 3.5, -3];
+
+/** How the packet at each depth lies: staggered upward by a head row each, so the
+    name on every card shows above the card in front of it, with a slight tilt so the pile still reads as handled. Offsets are percentages, tilt degrees. */
+export const STACK_MESS = [
+  { dy: 0, rotate: 0 },
+  { dy: -21, rotate: 0.8 },
+  { dy: -42, rotate: -0.9 },
+  { dy: -63, rotate: 1 },
+  { dy: -84, rotate: -1.1 },
+  { dy: -105, rotate: 1.2 },
+];
+
 export type StackSlot = {
   depth: number;
   /** Offsets as percentages of the packet's own size. */
@@ -32,12 +47,14 @@ export function depthOf(item: number, index: number, count: number) {
   return (((item - index) % count) + count) % count;
 }
 
-/** Where an item rests at a given depth. Deeper packets peek out alternately left and right. */
+/** Where an item rests at a given depth. Deeper packets sit higher, each showing its
+    name above the one in front, so the pile plainly holds more than one. */
 export function slotFor(item: number, depth: number, count: number, spread = 1): StackSlot {
-  const side = item % 2 ? -1 : 1;
-  const dx = side * depth * 1.6 * spread;
-  const dy = -depth * 1.4 * spread;
-  const rotate = STACK_TILTS[item % STACK_TILTS.length] * (depth === 0 ? 0.5 : 1);
+  const mess = STACK_MESS[Math.min(depth, STACK_MESS.length - 1)];
+  const dx = STACK_SHIFTS[item % STACK_SHIFTS.length] * spread;
+  const dy = mess.dy * spread;
+  // Tilts stay small in the pile: a raised corner would cover the name on the card behind.
+  const rotate = STACK_TILTS[item % STACK_TILTS.length] * (depth === 0 ? 0.5 : 0.35) + mess.rotate * spread;
   const scale = 1 - depth * 0.012;
   return { depth, dx, dy, rotate, scale, zIndex: count - depth, transform: transform(dx, dy, rotate, scale) };
 }

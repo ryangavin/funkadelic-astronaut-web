@@ -1,4 +1,5 @@
 import type React from 'react';
+import { Weathered } from '../../behaviors/Weathered/Weathered';
 import { ShapedPaper, type PaperShape } from './ShapedPaper';
 import '../../styles/fonts.css';
 import '../../styles/torn-edge.css';
@@ -79,11 +80,19 @@ export function PaperSheet({
       className="paper-sheet-surround"
       style={{ '--paper-sheet-surround': `${surround}px` } as React.CSSProperties}
     >
-      <section className="paper-sheet torn-edge" data-stock={stock} style={sheetStyle}>
+      <Weathered
+        as="section"
+        className="paper-sheet torn-edge"
+        data-stock={stock}
+        style={sheetStyle}
+        tone={stock === 'ink' ? 'light' : 'dark'}
+        patina={stock !== 'ink'}
+        flecks
+        wear={stock !== 'ink'}
+      >
         {image}
         <div className="paper-sheet__stage">{children}</div>
-        <div className="paper-sheet__wear" aria-hidden="true" />
-      </section>
+      </Weathered>
     </div>
   );
 }

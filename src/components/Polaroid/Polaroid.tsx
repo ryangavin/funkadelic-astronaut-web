@@ -1,13 +1,19 @@
 import type React from 'react';
+import { useEffect, useRef } from 'react';
 import '../../styles/fonts.css';
+import { attachSource } from './stream';
 import './Polaroid.css';
 
 export const POLAROID_FORMATS = ['square', 'wide'] as const;
 export type PolaroidFormat = (typeof POLAROID_FORMATS)[number];
 
 export type PolaroidProps = {
-  /** The photograph. */
+  /** The photograph, or the poster frame when `video` is set. */
   src: string;
+  /** A clip in the window instead of a still, muted and looping as a preview. A plain file or an HLS playlist. */
+  video?: string;
+  /** Show the picture exactly as supplied, with none of the dye-film fade, gloss or grain. */
+  plain?: boolean;
   /** What the photo shows. Leave empty for a purely decorative print. */
   alt?: string;
   /** Where the photo is anchored when the window crops it, as a CSS object-position. */
@@ -39,6 +45,8 @@ const present = (node: React.ReactNode) => node != null && node !== '' && node !
  */
 export function Polaroid({
   src,
+  video,
+  plain = false,
   alt = '',
   focus = '50% 50%',
   format = 'square',
@@ -51,6 +59,30 @@ export function Polaroid({
   style,
 }: PolaroidProps) {
   const hasCaption = present(caption) || present(note);
+  const clip = useRef<HTMLVideoElement>(null);
+
+  // React does not reflect `muted` as an attribute, and autoplay is only allowed muted.
+  // Streams need a player attached; plain clips just need a source. A page that loads
+  // hidden, or a tab sent to the background, starts the preview once it is looked at.
+  useEffect(() => {
+    const element = clip.current;
+    if (!element || !video) return;
+    const doc = element.ownerDocument;
+    element.muted = true;
+    element.defaultMuted = true;
+    const play = () => element.play().catch(() => {});
+    const resume = () => {
+      if (!doc.hidden) play();
+    };
+    const detach = attachSource(element, video, play);
+    play();
+    doc.addEventListener('visibilitychange', resume);
+    return () => {
+      doc.removeEventListener('visibilitychange', resume);
+      detach();
+    };
+  }, [video]);
+
   return (
     <div
       className={`polaroid ${className}`}
@@ -64,13 +96,21 @@ export function Polaroid({
         } as React.CSSProperties
       }
     >
-      <figure className="polaroid__card">
+      <figure className="polaroid__card" data-plain={plain ? '' : undefined}>
         {tape ? <span className="polaroid__tape" aria-hidden="true" /> : null}
         <div className="polaroid__window">
-          <img className="polaroid__photo" src={src} alt={alt} />
-          <span className="polaroid__fade" aria-hidden="true" />
-          <span className="polaroid__gloss" aria-hidden="true" />
-          <span className="polaroid__wear" aria-hidden="true" />
+          {video ? (
+            <video ref={clip} className="polaroid__photo" poster={src} muted autoPlay loop playsInline preload="metadata" aria-label={alt || undefined} />
+          ) : (
+            <img className="polaroid__photo" src={src} alt={alt} />
+          )}
+          {plain ? null : (
+            <>
+              <span className="polaroid__fade" aria-hidden="true" />
+              <span className="polaroid__gloss" aria-hidden="true" />
+              <span className="polaroid__wear" aria-hidden="true" />
+            </>
+          )}
         </div>
         {hasCaption ? (
           <figcaption className="polaroid__caption">

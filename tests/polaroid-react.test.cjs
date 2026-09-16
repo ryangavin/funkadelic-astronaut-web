@@ -11,7 +11,16 @@ test('Polaroid is a captioned figure with the two instant-film formats', () => {
   const css = read('src/components/Polaroid/Polaroid.css');
 
   assert.match(component, /POLAROID_FORMATS = \['square', 'wide'\]/);
-  assert.match(component, /<figure className="polaroid__card">/);
+  assert.match(component, /<figure className="polaroid__card" data-plain=/);
+  assert.match(component, /video\?: string/);
+  assert.match(component, /<video ref=\{clip\} className="polaroid__photo" poster=\{src\} muted autoPlay loop playsInline/);
+  assert.match(component, /attachSource\(element, video, play\)/);
+  const stream = read('src/components/Polaroid/stream.ts');
+  assert.match(stream, /hls\.min\.js\?url/);
+  assert.match(stream, /application\/vnd\.apple\.mpegurl/);
+  assert.match(read('src/sections/BandDossier/bandMembers.tsx'), /LIVE_SET = \{\s+stream: 'https:\/\/video\.squarespace-cdn\.com\/[^']+playlist\.m3u8'/);
+  assert.match(component, /element\.muted = true/);
+  assert.match(read('src/components/Polaroid/Polaroid.css'), /\.polaroid__card\[data-plain\] \.polaroid__photo \{\s+filter: none/);
   assert.match(component, /<img className="polaroid__photo" src=\{src\} alt=\{alt\} \/>/);
   assert.match(component, /<figcaption className="polaroid__caption">/);
 

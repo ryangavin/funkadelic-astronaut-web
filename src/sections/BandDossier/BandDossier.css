@@ -1,0 +1,33 @@
+/* The press package on the desk. The folder does the drawing; this only places
+   what is in it: the print inside the cover, the pile and the band's packet in
+   the well, set in from the spine so the loosest card in the pile stays on the leaf. */
+
+.dossier {
+  display: block;
+}
+
+.dossier__proof {
+  width: 90%;
+  margin-left: 4%;
+}
+
+.dossier__well {
+  width: 78%;
+  margin-left: 9%;
+  display: grid;
+  gap: 4%;
+}
+
+.member-pile {
+  position: relative;
+}
+
+/* Announced, not shown: the cards themselves say who is on top. */
+.member-pile__status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

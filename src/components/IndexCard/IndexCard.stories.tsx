@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { RYAN_SIGNATURE } from '../../sections/BandDossier/signatures';
 import { INDEX_CARD_RULINGS, INDEX_CARD_SIZES, IndexCard } from './IndexCard';
 
 const meta = {
@@ -17,7 +18,9 @@ const meta = {
   args: {
     title: 'Ryan Gavin',
     subtitle: 'Keys · since 2012',
-    stamp: 'On file',
+    stamp: 'Since 2012',
+    stampAt: 'signature',
+    signature: { text: 'Ryan Gavin', path: RYAN_SIGNATURE, width: 250 },
     size: '4x6',
     ruling: 'ruled',
     rotation: -1.5,
@@ -52,6 +55,8 @@ export const Summary: Story = {
     title: 'Funkadelic Astronaut',
     subtitle: 'New Jersey · Future rock',
     stamp: 'Booking',
+    stampAt: 'top-right',
+    signature: undefined,
     notes: [{ text: 'keys / drums / bass / vox', x: 50, y: 78, rotation: -2, size: 30 }],
     children: (
       <>
@@ -70,6 +75,7 @@ export const BlankNote: Story = {
     title: undefined,
     subtitle: undefined,
     stamp: undefined,
+    signature: undefined,
     children: undefined,
     rotation: 2,
     notes: [

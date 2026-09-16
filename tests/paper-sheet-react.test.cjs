@@ -12,6 +12,8 @@ test('PaperSheet reuses the site torn edge and positions against a 1440 referenc
   const edge = read('src/styles/torn-edge.css');
 
   assert.match(sheet, /className="paper-sheet torn-edge"/);
+  assert.match(sheet, /<Weathered\s+as="section"/);
+  assert.match(sheet, /wear=\{stock !== 'ink'\}/);
   assert.match(sheet, /PAPER_SHEET_REFERENCE_WIDTH = 1440/);
   assert.match(sheetCss, /--sheet-unit: calc\(100cqw \/ 1440\)/);
 
@@ -38,6 +40,6 @@ test('PaperSheet prints an optional image onto the stock underneath the content'
   assert.match(sheet, /const image = imageSrc \? \([\s\S]+?className="paper-sheet__image"/);
   assert.match(sheet, /\{image\}\s+<div className="paper-sheet__stage"/);
   assert.match(sheetCss, /\.paper-sheet__image \{[\s\S]+?mix-blend-mode: multiply/);
-  assert.match(sheetCss, /\.paper-sheet__image \{[\s\S]+?z-index: 0/);
+  assert.match(sheetCss, /\.paper-sheet__image \{[\s\S]+?z-index: -2/);
   assert.match(sheetCss, /\.paper-sheet__stage \{[\s\S]+?z-index: 1/);
 });
