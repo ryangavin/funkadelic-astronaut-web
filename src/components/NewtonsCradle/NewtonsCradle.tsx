@@ -9,6 +9,16 @@ export const CRADLE_SWINGS = 8;
 /** The balls' centres, in 720ths of the frame's width, and their radius. */
 export const CRADLE_BALLS = [140, 250, 360, 470, 580] as const;
 export const CRADLE_RADIUS = 52;
+/** Where the rails run, and where the balls hang at rest, in the same units. */
+export const CRADLE_RAILS = [90, 510] as const;
+export const CRADLE_REST = 300;
+/** How far an end ball swings out, in the same units. */
+export const CRADLE_SWING = 95;
+/** The string's turn and stretch at the end of a swing: from the rail down to the ball at rest, then out to where it has gone. */
+export const CRADLE_STRING = {
+  angle: (Math.atan(CRADLE_SWING / (CRADLE_REST - CRADLE_RAILS[0])) * 180) / Math.PI,
+  stretch: Math.hypot(CRADLE_SWING, CRADLE_REST - CRADLE_RAILS[0]) / (CRADLE_REST - CRADLE_RAILS[0]),
+};
 
 export type NewtonsCradleProps = {
   /** Tilt on the desk, in degrees. */
@@ -50,12 +60,13 @@ function clack(context: AudioContext) {
 }
 
 /**
- * A Newton's cradle seen from above: five steel balls in a row hung from
- * two rails on a polished base. Click it and the end ball is lifted and let
- * go; from above it slides out along the row, rising toward you, and drops
- * back to meet the others with a click, and the ball at the far end pops
- * out in its turn, back and forth until it settles. Measured in 720ths of
- * its width, 120 by 100 millimetres.
+ * A Newton's cradle seen from above: five steel balls in a row, each hung
+ * from the two rails on a polished base. Click it and the end ball is lifted
+ * and let go; from above it slides out along the row, rising toward you,
+ * its strings staying tied to the rails and leaning after it, and drops back
+ * to meet the others with a click, and the ball at the far end pops out in
+ * its turn, back and forth until it settles. Measured in 720ths of its
+ * width, 120 by 100 millimetres.
  */
 export function NewtonsCradle({ rotation = 0, sound = true, swinging: initiallySwinging = false, onSwing, className = '', style }: NewtonsCradleProps) {
   const [swinging, setSwinging] = useState(initiallySwinging);
@@ -101,7 +112,11 @@ export function NewtonsCradle({ rotation = 0, sound = true, swinging: initiallyS
   };
 
   return (
-    <div className={`newtons-cradle ${className}`} data-swinging={swinging ? '' : undefined} style={{ '--cradle-rotation': `${rotation}deg`, '--cradle-period': `${CRADLE_PERIOD_MS}ms`, '--cradle-swings': CRADLE_SWINGS, ...style } as React.CSSProperties}>
+    <div
+      className={`newtons-cradle ${className}`}
+      data-swinging={swinging ? '' : undefined}
+      style={{ '--cradle-rotation': `${rotation}deg`, '--cradle-period': `${CRADLE_PERIOD_MS}ms`, '--cradle-swings': CRADLE_SWINGS, '--cradle-swing': `${CRADLE_SWING}px`, '--cradle-string-angle': `${CRADLE_STRING.angle.toFixed(2)}deg`, '--cradle-string-stretch': CRADLE_STRING.stretch.toFixed(4), ...style } as React.CSSProperties}
+    >
       <button type="button" className="newtons-cradle__push" aria-label={swinging ? 'Stop the cradle' : 'Set the cradle going'} aria-pressed={swinging} onClick={push} onAnimationEnd={settle}>
         <svg viewBox="0 0 720 600" aria-hidden="true" focusable="false">
           <defs>
@@ -133,7 +148,7 @@ export function NewtonsCradle({ rotation = 0, sound = true, swinging: initiallyS
           <rect x="20" y="30" width="680" height="540" rx="34" fill="none" stroke="rgb(255 255 255 / 0.12)" strokeWidth="2" />
 
           {/* The frame: two rails on four posts. */}
-          {[90, 510].map((y) => (
+          {CRADLE_RAILS.map((y) => (
             <g key={y}>
               <rect x="70" y={y - 7} width="580" height="14" rx="7" fill="url(#cradle-rail)" />
               <circle cx="70" cy={y} r="16" fill="url(#cradle-rail)" />
@@ -141,15 +156,18 @@ export function NewtonsCradle({ rotation = 0, sound = true, swinging: initiallyS
             </g>
           ))}
 
-          {/* The balls, first and last on their own swings, each on two strings up to the rails. */}
+          {/* Each ball hangs on two strings, one to each rail. The end balls swing: the ball itself
+              slides out and rises, and its strings stay tied to the rails, pivoting and stretching after it. */}
           {CRADLE_BALLS.map((cx, index) => (
-            <g key={cx} className="newtons-cradle__ball" data-end={index === 0 ? 'left' : index === CRADLE_BALLS.length - 1 ? 'right' : undefined} style={{ '--cradle-x': `${cx}px` } as React.CSSProperties}>
-              <line className="newtons-cradle__string" x1={cx} y1="90" x2={cx} y2="300" />
-              <line className="newtons-cradle__string" x1={cx} y1="510" x2={cx} y2="300" />
-              <ellipse className="newtons-cradle__shadow" cx={cx + 10} cy="318" rx={CRADLE_RADIUS + 2} ry={CRADLE_RADIUS * 0.7} />
-              <g className="newtons-cradle__steel">
-                <circle cx={cx} cy="300" r={CRADLE_RADIUS} fill="url(#cradle-ball)" />
-                <circle cx={cx - 14} cy="282" r="9" fill="#fff" opacity="0.7" />
+            <g key={cx} className="newtons-cradle__hanger" data-end={index === 0 ? 'left' : index === CRADLE_BALLS.length - 1 ? 'right' : undefined}>
+              <line className="newtons-cradle__string newtons-cradle__string--top" x1={cx} y1={CRADLE_RAILS[0]} x2={cx} y2={CRADLE_REST} style={{ transformOrigin: `${cx}px ${CRADLE_RAILS[0]}px` }} />
+              <line className="newtons-cradle__string newtons-cradle__string--bottom" x1={cx} y1={CRADLE_RAILS[1]} x2={cx} y2={CRADLE_REST} style={{ transformOrigin: `${cx}px ${CRADLE_RAILS[1]}px` }} />
+              <g className="newtons-cradle__ball">
+                <ellipse className="newtons-cradle__shadow" cx={cx + 10} cy={CRADLE_REST + 18} rx={CRADLE_RADIUS + 2} ry={CRADLE_RADIUS * 0.7} />
+                <g className="newtons-cradle__steel">
+                  <circle cx={cx} cy={CRADLE_REST} r={CRADLE_RADIUS} fill="url(#cradle-ball)" />
+                  <circle cx={cx - 14} cy={CRADLE_REST - 18} r="9" fill="#fff" opacity="0.7" />
+                </g>
               </g>
             </g>
           ))}

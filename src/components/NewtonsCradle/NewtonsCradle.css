@@ -55,13 +55,35 @@
   transform-origin: center;
 }
 
-/* The end balls: each swings out from the row's line about its own centre. */
-.newtons-cradle[data-swinging] .newtons-cradle__ball[data-end='left'] {
+/* The strings turn about their rail ends, in the drawing's own units. */
+.newtons-cradle__string {
+  transform-box: view-box;
+}
+
+/* The end balls: each swings out from the row's line about its own centre, and its two strings
+   lean after it from the rails, stretching a little as the ball gets further from them. */
+.newtons-cradle[data-swinging] [data-end='left'] .newtons-cradle__ball {
   animation: cradle-swing-left var(--cradle-period) linear var(--cradle-swings);
 }
 
-.newtons-cradle[data-swinging] .newtons-cradle__ball[data-end='right'] {
+.newtons-cradle[data-swinging] [data-end='right'] .newtons-cradle__ball {
   animation: cradle-swing-right var(--cradle-period) linear var(--cradle-swings);
+}
+
+.newtons-cradle[data-swinging] [data-end='left'] .newtons-cradle__string--top {
+  animation: cradle-string-left-top var(--cradle-period) linear var(--cradle-swings);
+}
+
+.newtons-cradle[data-swinging] [data-end='left'] .newtons-cradle__string--bottom {
+  animation: cradle-string-left-bottom var(--cradle-period) linear var(--cradle-swings);
+}
+
+.newtons-cradle[data-swinging] [data-end='right'] .newtons-cradle__string--top {
+  animation: cradle-string-right-top var(--cradle-period) linear var(--cradle-swings);
+}
+
+.newtons-cradle[data-swinging] [data-end='right'] .newtons-cradle__string--bottom {
+  animation: cradle-string-right-bottom var(--cradle-period) linear var(--cradle-swings);
 }
 
 /* Out with a pendulum's ease, back the same, met with a click, then the other side's turn. */
@@ -69,16 +91,14 @@
   0% {
     translate: 0 0;
     scale: 1;
+    animation-timing-function: ease-out;
   }
   25% {
-    translate: -95px 0;
+    translate: calc(-1 * var(--cradle-swing)) 0;
     scale: 1.14;
     animation-timing-function: ease-in;
   }
-  50% {
-    translate: 0 0;
-    scale: 1;
-  }
+  50%,
   100% {
     translate: 0 0;
     scale: 1;
@@ -93,7 +113,7 @@
     animation-timing-function: ease-out;
   }
   75% {
-    translate: 95px 0;
+    translate: var(--cradle-swing) 0;
     scale: 1.14;
     animation-timing-function: ease-in;
   }
@@ -103,12 +123,70 @@
   }
 }
 
-.newtons-cradle__ball[data-end='left'] {
-  animation-timing-function: ease-out;
+/* A string from the top rail hangs down to the ball; turned clockwise its far end goes left. From the bottom rail it hangs up, so the turn is the other way. */
+@keyframes cradle-string-left-top {
+  0% {
+    transform: rotate(0deg) scaleY(1);
+    animation-timing-function: ease-out;
+  }
+  25% {
+    transform: rotate(var(--cradle-string-angle)) scaleY(var(--cradle-string-stretch));
+    animation-timing-function: ease-in;
+  }
+  50%,
+  100% {
+    transform: rotate(0deg) scaleY(1);
+  }
+}
+
+@keyframes cradle-string-left-bottom {
+  0% {
+    transform: rotate(0deg) scaleY(1);
+    animation-timing-function: ease-out;
+  }
+  25% {
+    transform: rotate(calc(-1 * var(--cradle-string-angle))) scaleY(var(--cradle-string-stretch));
+    animation-timing-function: ease-in;
+  }
+  50%,
+  100% {
+    transform: rotate(0deg) scaleY(1);
+  }
+}
+
+@keyframes cradle-string-right-top {
+  0%,
+  50% {
+    transform: rotate(0deg) scaleY(1);
+    animation-timing-function: ease-out;
+  }
+  75% {
+    transform: rotate(calc(-1 * var(--cradle-string-angle))) scaleY(var(--cradle-string-stretch));
+    animation-timing-function: ease-in;
+  }
+  100% {
+    transform: rotate(0deg) scaleY(1);
+  }
+}
+
+@keyframes cradle-string-right-bottom {
+  0%,
+  50% {
+    transform: rotate(0deg) scaleY(1);
+    animation-timing-function: ease-out;
+  }
+  75% {
+    transform: rotate(var(--cradle-string-angle)) scaleY(var(--cradle-string-stretch));
+    animation-timing-function: ease-in;
+  }
+  100% {
+    transform: rotate(0deg) scaleY(1);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .newtons-cradle[data-swinging] .newtons-cradle__ball {
+  .newtons-cradle[data-swinging] .newtons-cradle__ball,
+  .newtons-cradle[data-swinging] .newtons-cradle__string {
     animation-duration: 1ms;
   }
 }

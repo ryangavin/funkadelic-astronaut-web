@@ -80,9 +80,15 @@ test('The desk things: mug, ring, pens, sticky note and pick, each sized by its 
   assert.match(cradle, /CRADLE_BALLS = \[140, 250, 360, 470, 580\]/);
   assert.match(cradle, /aria-label=\{swinging \? 'Stop the cradle' : 'Set the cradle going'\}/);
   assert.match(cradle, /band\.type = 'bandpass'/);
+  // The strings stay tied to the rails: each turns about its rail end and stretches after the ball, which alone slides out and grows.
+  assert.match(cradle, /CRADLE_RAILS = \[90, 510\]/);
+  assert.match(cradle, /angle: \(Math\.atan\(CRADLE_SWING \/ \(CRADLE_REST - CRADLE_RAILS\[0\]\)\) \* 180\) \/ Math\.PI/);
+  assert.match(cradle, /<line className="newtons-cradle__string newtons-cradle__string--top" x1=\{cx\} y1=\{CRADLE_RAILS\[0\]\} x2=\{cx\} y2=\{CRADLE_REST\} style=\{\{ transformOrigin: `\$\{cx\}px \$\{CRADLE_RAILS\[0\]\}px` \}\} \/>/);
   const cradleCss = read('src/components/NewtonsCradle/NewtonsCradle.css');
-  assert.match(cradleCss, /@keyframes cradle-swing-left \{[\s\S]+?translate: -95px 0;\s+scale: 1\.14/);
-  assert.match(cradleCss, /@keyframes cradle-swing-right \{[\s\S]+?translate: 95px 0/);
+  assert.match(cradleCss, /\.newtons-cradle__string \{\s+transform-box: view-box;/);
+  assert.match(cradleCss, /@keyframes cradle-swing-left \{[\s\S]+?translate: calc\(-1 \* var\(--cradle-swing\)\) 0;\s+scale: 1\.14/);
+  assert.match(cradleCss, /@keyframes cradle-string-left-top \{[\s\S]+?transform: rotate\(var\(--cradle-string-angle\)\) scaleY\(var\(--cradle-string-stretch\)\)/);
+  assert.match(cradleCss, /@keyframes cradle-string-right-bottom \{[\s\S]+?transform: rotate\(var\(--cradle-string-angle\)\) scaleY\(var\(--cradle-string-stretch\)\)/);
 
   const lamp = read('src/components/DeskLamp/DeskLamp.tsx');
   assert.match(lamp, /DESK_LAMP_SHADE = \{ x: 200, y: 420, radius: 130 \}/);
