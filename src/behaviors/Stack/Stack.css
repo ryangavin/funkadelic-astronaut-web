@@ -1,0 +1,11 @@
+.stack {
+  position: relative;
+  width: 100%;
+}
+
+.stack__item {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 58%;
+  will-change: transform;
+}
