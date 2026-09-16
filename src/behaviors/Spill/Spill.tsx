@@ -1,8 +1,8 @@
 import { createContext, useContext, type CSSProperties, type ReactNode } from 'react';
+import { Movable, type MovableProps, type Place } from '../Movable/Movable';
 import './Spill.css';
 
-/** Where a thing lies: its top-left corner in the container's units, and its tilt. */
-export type Placement = { x: number; y: number; rotation?: number };
+export type { Place } from '../Movable/Movable';
 
 /** How long one item's flight takes, in milliseconds. */
 export const SPILL_FLIGHT_MS = 900;
@@ -14,12 +14,14 @@ export type SpillProps = {
   open: boolean;
   /** Where the items lie packed, as the point their centres gather on. Defaults to the container's own centre. */
   from?: { x: number; y: number };
-  /** How far, in units, the packed items are turned from their landed tilt: they come out at odd angles and settle. */
+  /** How far, in degrees, the packed items are turned from their landed tilt: they come out at odd angles and settle. */
   scatter?: number;
   /** Length of one item's flight, in milliseconds. */
   duration?: number;
   /** Delay between one item and the next, in milliseconds. */
   stagger?: number;
+  /** How long after opening the first item leaves, in milliseconds: time for a lid or a cover to get out of the way. */
+  delay?: number;
   /** What one unit is. Defaults to the sheet unit, so items are placed like Pins. */
   unit?: string;
   children?: ReactNode;
@@ -40,11 +42,12 @@ const Context = createContext<SpillContext>({ open: true, stagger: SPILL_STAGGER
  * the same units as a Pin, so it can sit inside a folder's well or anywhere
  * else on a sheet. Reduced motion places everything without a flight.
  */
-export function Spill({ open, from, scatter = 12, duration = SPILL_FLIGHT_MS, stagger = SPILL_STAGGER_MS, unit, children, className = '', style }: SpillProps) {
+export function Spill({ open, from, scatter = 12, duration = SPILL_FLIGHT_MS, stagger = SPILL_STAGGER_MS, delay = 0, unit, children, className = '', style }: SpillProps) {
   const vars = {
     '--spill-from-x': from ? `${from.x}` : undefined,
     '--spill-from-y': from ? `${from.y}` : undefined,
     '--spill-flight': `${duration}ms`,
+    '--spill-delay': `${delay}ms`,
     '--spill-unit': unit,
     ...style,
   } as CSSProperties;
@@ -57,28 +60,22 @@ export function Spill({ open, from, scatter = 12, duration = SPILL_FLIGHT_MS, st
   );
 }
 
-export type SpilledProps = Placement & {
-  /** Width in container units. 0 lets the child size itself. */
-  width?: number;
-  /** Where in the order it comes out. Later items leave later and land on top. */
+export type SpilledProps = Omit<MovableProps, 'unit'> & {
+  /** Where in the order it comes out. Later items leave later and land on top, unless `z` says otherwise. */
   order?: number;
   /** Its own packed placement, if not at the pile's point. */
-  from?: Placement;
-  children?: ReactNode;
-  className?: string;
-  style?: CSSProperties;
+  from?: Place;
 };
 
-/** One thing in the spill, and where it lands. */
-export function Spilled({ x, y, rotation = 0, width = 0, order = 0, from, children, className = '', style }: SpilledProps) {
+/**
+ * One thing in the spill, and where it lands. It is a Movable, so with
+ * `onMove` it can be picked up and moved once it is out.
+ */
+export function Spilled({ x, y, rotation = 0, order = 0, from, className = '', style, ...movable }: SpilledProps) {
   const { stagger, scatter } = useContext(Context);
   /* Packed, each item lies turned a different way from its landed tilt, alternating sides, so the pile looks handled. */
   const turn = rotation + (order % 2 ? -1 : 1) * scatter * (1 + (order % 3) / 3);
   const vars = {
-    '--spilled-x': x,
-    '--spilled-y': y,
-    '--spilled-rotation': `${rotation}deg`,
-    '--spilled-width': width > 0 ? `calc(${width} * var(--spill-unit, var(--sheet-unit, 1px)))` : 'auto',
     '--spilled-delay': `${order * stagger}ms`,
     '--spilled-order': order,
     '--spilled-from-x': from ? `${from.x}` : undefined,
@@ -86,9 +83,5 @@ export function Spilled({ x, y, rotation = 0, width = 0, order = 0, from, childr
     '--spilled-from-rotation': `${from?.rotation ?? turn}deg`,
     ...style,
   } as CSSProperties;
-  return (
-    <div className={`spilled ${className}`} data-from={from ? 'own' : 'pile'} style={vars}>
-      <div className="spilled__lift">{children}</div>
-    </div>
-  );
+  return <Movable {...movable} x={x} y={y} rotation={rotation} unit="var(--spill-unit)" className={`spilled ${className}`} data-from={from ? 'own' : 'pile'} style={vars} />;
 }

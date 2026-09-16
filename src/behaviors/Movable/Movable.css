@@ -1,0 +1,77 @@
+/*
+  A thing on a surface that can be picked up. Placed by its corner in the
+  surface's units, it slides when its place changes; dragged, it follows the
+  pointer at once, lifted a little off the surface with its shadow spread
+  beneath it, and settles when it is put down.
+*/
+
+.movable {
+  --movable-unit: var(--sheet-unit, 1px);
+  --movable-x: 0;
+  --movable-y: 0;
+  --movable-rotation: 0deg;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--movable-width, auto);
+  z-index: var(--movable-z, auto);
+  translate: calc(var(--movable-x) * var(--movable-unit)) calc(var(--movable-y) * var(--movable-unit));
+  rotate: var(--movable-rotation);
+  transition:
+    translate 700ms cubic-bezier(0.25, 0.7, 0.25, 1),
+    rotate 700ms cubic-bezier(0.25, 0.7, 0.25, 1);
+}
+
+.movable[data-movable] {
+  cursor: grab;
+  touch-action: pan-y;
+  -webkit-user-drag: none;
+}
+
+.movable[data-movable]:focus-visible {
+  outline: 3px solid #f2b134;
+  outline-offset: 8px;
+  border-radius: 6px;
+}
+
+.movable[data-dragging] {
+  cursor: grabbing;
+  user-select: none;
+  transition: none;
+}
+
+.movable__lift {
+  position: relative;
+  transition: scale 220ms cubic-bezier(0.3, 0.6, 0.3, 1);
+}
+
+/* The shadow of a lifted thing, laid beneath it. */
+.movable__lift::before {
+  content: '';
+  position: absolute;
+  inset: 3% 2%;
+  z-index: -1;
+  border-radius: 2%;
+  background: rgb(10 5 2 / 0.4);
+  filter: blur(calc(10 * var(--movable-unit)));
+  translate: calc(10 * var(--movable-unit)) calc(18 * var(--movable-unit));
+  opacity: 0;
+  transition: opacity 220ms cubic-bezier(0.3, 0.6, 0.3, 1);
+  pointer-events: none;
+}
+
+.movable[data-dragging] > .movable__lift {
+  scale: 1.03;
+}
+
+.movable[data-dragging] > .movable__lift::before {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .movable,
+  .movable__lift,
+  .movable__lift::before {
+    transition: none;
+  }
+}

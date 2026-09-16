@@ -1,14 +1,15 @@
 /*
   Things spilling out of a container. The container is a positioned point
-  that takes no room; each item is placed absolutely in it, in the same
-  units as a Pin. Packed, the items gather on the `from` point, turned
-  every which way; open, each slides to its own place with a delay in its
-  order, lifting on the way. Hidden once packed and settled, so nothing
-  peeks out from under whatever closed over them.
+  that takes no room; each item is a Movable placed in it, in the same units
+  as a Pin. Packed, the items gather on the `from` point, turned every which
+  way; open, each slides to its own place with a delay in its order, lifting
+  on the way. Hidden once packed and settled, so nothing peeks out from under
+  whatever closed over them.
 */
 
 .spill {
   --spill-flight: 900ms;
+  --spill-delay: 0ms;
   --spill-unit: var(--sheet-unit, 1px);
   position: absolute;
   left: 0;
@@ -18,26 +19,23 @@
   pointer-events: none;
 }
 
-.spilled {
-  --spilled-x: 0;
-  --spilled-y: 0;
-  --spilled-rotation: 0deg;
+.spill .spilled {
   --spilled-delay: 0ms;
   --spilled-order: 0;
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: var(--spilled-width, auto);
-  z-index: calc(1 + var(--spilled-order));
+  --spilled-wait: calc(var(--spill-delay) + var(--spilled-delay));
+  z-index: var(--movable-z, calc(1 + var(--spilled-order)));
   pointer-events: auto;
-  translate: calc(var(--spilled-x) * var(--spill-unit)) calc(var(--spilled-y) * var(--spill-unit));
-  rotate: var(--spilled-rotation);
   transition:
-    translate var(--spill-flight) cubic-bezier(0.22, 0.75, 0.25, 1) var(--spilled-delay),
-    rotate var(--spill-flight) cubic-bezier(0.22, 0.75, 0.25, 1) var(--spilled-delay),
-    left var(--spill-flight) cubic-bezier(0.22, 0.75, 0.25, 1) var(--spilled-delay),
-    top var(--spill-flight) cubic-bezier(0.22, 0.75, 0.25, 1) var(--spilled-delay),
-    visibility 0s linear 0s;
+    translate var(--spill-flight) cubic-bezier(0.22, 0.75, 0.25, 1) var(--spilled-wait),
+    rotate var(--spill-flight) cubic-bezier(0.22, 0.75, 0.25, 1) var(--spilled-wait),
+    left var(--spill-flight) cubic-bezier(0.22, 0.75, 0.25, 1) var(--spilled-wait),
+    top var(--spill-flight) cubic-bezier(0.22, 0.75, 0.25, 1) var(--spilled-wait),
+    visibility 0s linear var(--spill-delay);
+}
+
+/* Once out, a move is a move: it follows the pointer, or slides without the flight's wait. */
+.spill[data-open='true'] .spilled[data-dragging] {
+  transition: none;
 }
 
 /* Packed: gathered on the pile's point, or the container's centre, and turned.
@@ -69,31 +67,15 @@
 }
 
 /* The lift: the item rises a little on its way, its shadow spreading beneath it, and drops flat where it lands. */
-.spilled__lift {
-  position: relative;
+.spill[data-open='true'] .spilled:not([data-dragging]) > .movable__lift {
+  animation: spilled-lift var(--spill-flight) cubic-bezier(0.3, 0.6, 0.3, 1) var(--spilled-wait) both;
 }
 
-.spilled__lift::before {
-  content: '';
-  position: absolute;
-  inset: 3% 2%;
-  z-index: -1;
-  border-radius: 2%;
-  background: rgb(10 5 2 / 0.4);
-  filter: blur(calc(10 * var(--spill-unit)));
-  translate: calc(10 * var(--spill-unit)) calc(18 * var(--spill-unit));
-  opacity: 0;
+.spill[data-open='true'] .spilled:not([data-dragging]) > .movable__lift::before {
+  animation: spilled-shadow var(--spill-flight) cubic-bezier(0.3, 0.6, 0.3, 1) var(--spilled-wait) both;
 }
 
-.spill[data-open='true'] .spilled__lift {
-  animation: spilled-lift var(--spill-flight) cubic-bezier(0.3, 0.6, 0.3, 1) var(--spilled-delay) both;
-}
-
-.spill[data-open='true'] .spilled__lift::before {
-  animation: spilled-shadow var(--spill-flight) cubic-bezier(0.3, 0.6, 0.3, 1) var(--spilled-delay) both;
-}
-
-.spill[data-open='false'] .spilled__lift {
+.spill[data-open='false'] .spilled > .movable__lift {
   animation: spilled-lift calc(var(--spill-flight) * 0.8) cubic-bezier(0.3, 0.6, 0.3, 1) var(--spilled-delay) both reverse;
 }
 
@@ -122,13 +104,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .spilled,
+  .spill .spilled,
   .spill[data-open='false'] .spilled {
     transition: none;
   }
 
-  .spill .spilled__lift,
-  .spill .spilled__lift::before {
+  .spill .spilled > .movable__lift,
+  .spill .spilled > .movable__lift::before {
     animation: none;
   }
 }

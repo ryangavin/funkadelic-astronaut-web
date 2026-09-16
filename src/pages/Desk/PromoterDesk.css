@@ -15,7 +15,12 @@
 /* --- The folder as the control --------------------------------------- */
 
 .promoter-desk__folder {
-  position: relative;
+  position: absolute;
+  left: calc(var(--promoter-desk-folder-x) * var(--sheet-unit, 1px));
+  top: calc(var(--promoter-desk-folder-y) * var(--sheet-unit, 1px));
+  width: calc(var(--promoter-desk-folder-width) * var(--sheet-unit, 1px));
+  z-index: var(--promoter-desk-folder-z, 10);
+  rotate: var(--promoter-desk-folder-rotation, 0deg);
 }
 
 /* Closed, the whole folder is the button: it lies beneath the folder, which lets
@@ -62,20 +67,20 @@
   pointer-events: none;
 }
 
-.promoter-desk[data-open='false'] .dossier {
+.promoter-desk[data-open='false'] .folder {
   pointer-events: none;
 }
 
-.promoter-desk[data-open='false'] .dossier .sticker {
+.promoter-desk[data-open='false'] .folder .sticker {
   pointer-events: auto;
 }
 
-.promoter-desk .dossier {
+.promoter-desk .folder {
   transition: translate 260ms ease;
 }
 
 @media (hover: hover) {
-  .promoter-desk[data-open='false'] .promoter-desk__folder:has(.promoter-desk__open:hover) .dossier {
+  .promoter-desk[data-open='false'] .promoter-desk__folder:has(.promoter-desk__open:hover) .folder {
     translate: 0 -5px;
   }
 }
@@ -100,16 +105,16 @@
 
 .promoter-desk__brand {
   position: absolute;
-  left: calc(58 * var(--folder-unit));
-  top: calc(118 * var(--folder-unit));
+  left: calc(48 * var(--folder-unit));
+  top: calc(100 * var(--folder-unit));
   display: grid;
-  gap: 4px;
+  gap: 6px;
   justify-items: start;
   rotate: -2deg;
 }
 
 .promoter-desk__brand > :nth-child(2) {
-  margin-left: 30px;
+  margin-left: 44px;
   rotate: 1.5deg;
 }
 
@@ -117,7 +122,7 @@
 .promoter-desk__typed {
   position: absolute;
   left: calc(84 * var(--folder-unit));
-  top: calc(392 * var(--folder-unit));
+  top: calc(400 * var(--folder-unit));
   padding: calc(10 * var(--folder-unit)) calc(20 * var(--folder-unit));
   border-radius: calc(4 * var(--folder-unit));
   background: rgb(250 246 236 / 0.94);
@@ -133,38 +138,26 @@
 
 .promoter-desk__streams {
   position: absolute;
-  left: calc(56 * var(--folder-unit));
-  bottom: calc(84 * var(--folder-unit));
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.promoter-desk__note {
-  position: absolute;
-  right: calc(58 * var(--folder-unit));
-  bottom: calc(230 * var(--folder-unit));
-  width: 168px;
-}
-
-.promoter-desk__ring {
-  position: absolute;
-  right: calc(28 * var(--folder-unit));
-  top: calc(40 * var(--folder-unit));
-  width: 200px;
-}
-
-/* --- On the desk ------------------------------------------------------ */
-
-.promoter-desk__socials-row {
+  left: calc(40 * var(--folder-unit));
+  bottom: calc(40 * var(--folder-unit));
   display: flex;
   align-items: center;
   gap: 14px;
 }
 
-.promoter-desk__socials-row > :nth-child(2) {
-  translate: 0 22px;
+.promoter-desk__note {
+  position: absolute;
+  right: calc(40 * var(--folder-unit));
+  bottom: calc(150 * var(--folder-unit));
 }
+
+.promoter-desk__ring {
+  position: absolute;
+  right: calc(28 * var(--folder-unit));
+  top: calc(30 * var(--folder-unit));
+}
+
+/* --- On the desk ------------------------------------------------------ */
 
 /* A spare tape out of the player: the cassette drawn as in the Walkman, lying on its own. */
 .promoter-desk__tape {
@@ -183,15 +176,9 @@
   filter: drop-shadow(2px 4px 3px rgb(10 5 2 / 0.5));
 }
 
-/* The one-sheet pulled open lies over whatever spilled beneath it. */
-.promoter-desk .one-sheet[data-open='true'] {
-  z-index: 20;
-}
-
 /* --- The running order ------------------------------------------------ */
 
 .run-sheet {
-  --run-sheet-rotation: 0deg;
   --run-sheet-unit: calc(100cqw / 720);
   position: relative;
   width: 100%;
@@ -203,7 +190,6 @@
   box-shadow:
     1px 2px 0 rgb(18 20 32 / 0.2),
     5px 8px 10px rgb(18 20 32 / 0.3);
-  rotate: var(--run-sheet-rotation);
 }
 
 /* The page's units are the sheet's own width, which the sheet itself cannot measure: the print sits one level in. */

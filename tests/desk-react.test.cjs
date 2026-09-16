@@ -67,6 +67,34 @@ test('The desk things: mug, ring, pens, sticky note and pick, each sized by its 
   assert.match(read('src/components/GuitarPick/GuitarPick.css'), /aspect-ratio: 100 \/ 116/);
 });
 
+test('Movable is picked up by its body, follows the pointer in surface units, and never ends a drag in a click', () => {
+  const behavior = read('src/behaviors/Movable/Movable.tsx');
+  const css = read('src/behaviors/Movable/Movable.css');
+
+  assert.match(behavior, /MOVABLE_DRAG_THRESHOLD = 5/);
+  assert.match(behavior, /MOVABLE_KEY_STEP = 10/);
+  assert.match(behavior, /export const MovableScale = createContext<\(\) => number>/);
+  // A press on a control is the control's; a thing grabbed anywhere still leaves sliders and frames alone.
+  assert.match(behavior, /const CONTROLS = 'button, a, input, select, textarea, iframe, video, \[role="slider"\], \[role="button"\]'/);
+  assert.match(behavior, /const HELD_CONTROLS = 'input, select, textarea, iframe, video, \[role="slider"\]'/);
+  assert.match(behavior, /closest\(grab === 'anywhere' \? HELD_CONTROLS : CONTROLS\)/);
+  // The pointer is captured once the press has travelled, and its travel is scaled to units.
+  assert.match(behavior, /if \(Math\.hypot\(dx, dy\) < MOVABLE_DRAG_THRESHOLD\) return;/);
+  assert.match(behavior, /host\.current\?\.setPointerCapture\(start\.id\)/);
+  assert.match(behavior, /onMove\(\{ x: Math\.round\(start\.x \+ dx \/ perUnit\), y: Math\.round\(start\.y \+ dy \/ perUnit\) \}\)/);
+  assert.match(behavior, /element\.addEventListener\('click', swallow, \{ capture: true, once: true \}\)/);
+  // The keyboard moves the thing itself, not a control inside it.
+  assert.match(behavior, /if \(!onMove \|\| event\.target !== event\.currentTarget\) return;/);
+  assert.match(behavior, /tabIndex=\{onMove \? 0 : undefined\}/);
+  assert.match(behavior, /aria-roledescription=\{onMove \? 'movable' : undefined\}/);
+  assert.match(behavior, /onDragStart=\{\(event\) => event\.preventDefault\(\)\}/);
+  // Placed like a Pin, sliding when moved, and following at once while dragged.
+  assert.match(css, /\.movable \{[\s\S]+?translate: calc\(var\(--movable-x\) \* var\(--movable-unit\)\) calc\(var\(--movable-y\) \* var\(--movable-unit\)\)/);
+  assert.match(css, /\.movable\[data-dragging\] \{[\s\S]+?transition: none/);
+  assert.match(css, /\.movable\[data-movable\] \{\s+cursor: grab;/);
+  assert.match(css, /\.movable\[data-dragging\] > \.movable__lift \{\s+scale: 1\.03/);
+});
+
 test('Spill packs loose things on a point and sends them out in order when opened', () => {
   const behavior = read('src/behaviors/Spill/Spill.tsx');
   const css = read('src/behaviors/Spill/Spill.css');
@@ -77,19 +105,22 @@ test('Spill packs loose things on a point and sends them out in order when opene
   assert.match(behavior, /export function Spilled\(/);
   assert.match(behavior, /data-open=\{open \? 'true' : 'false'\}/);
   assert.match(behavior, /data-from=\{from \? 'point' : 'centre'\}/);
-  // Later items leave later and land on top.
+  // A spilled thing is a Movable, so it can be dragged once it is out.
+  assert.match(behavior, /return <Movable \{\.\.\.movable\} x=\{x\} y=\{y\} rotation=\{rotation\} unit="var\(--spill-unit\)" className=\{`spilled \$\{className\}`\}/);
+  // Later items leave later and land on top; a delay lets a cover get out of the way first.
   assert.match(behavior, /'--spilled-delay': `\$\{order \* stagger\}ms`/);
-  assert.match(css, /\.spilled \{[\s\S]+?z-index: calc\(1 \+ var\(--spilled-order\)\)/);
-  // Placed like a Pin: the unit defaults to the sheet's.
+  assert.match(behavior, /'--spill-delay': `\$\{delay\}ms`/);
+  assert.match(css, /--spilled-wait: calc\(var\(--spill-delay\) \+ var\(--spilled-delay\)\)/);
+  assert.match(css, /z-index: var\(--movable-z, calc\(1 \+ var\(--spilled-order\)\)\)/);
   assert.match(css, /--spill-unit: var\(--sheet-unit, 1px\)/);
-  assert.match(css, /\.spilled \{[\s\S]+?translate: calc\(var\(--spilled-x\) \* var\(--spill-unit\)\) calc\(var\(--spilled-y\) \* var\(--spill-unit\)\)/);
   // Packed: on the point, turned, and hidden once the flight back has ended.
   assert.match(css, /\.spill\[data-open='false'\] \.spilled \{[\s\S]+?rotate: var\(--spilled-from-rotation\);\s+visibility: hidden;/);
   assert.match(css, /visibility 0s linear calc\(var\(--spilled-delay\) \+ var\(--spill-flight\) \* 0\.8\)/);
   assert.match(css, /\.spill\[data-open='false'\]\[data-from='point'\] \.spilled\[data-from='pile'\] \{\s+translate: calc\(var\(--spill-from-x\) \* var\(--spill-unit\) - 50%\)/);
-  // The lift on the way, and none of it for reduced motion.
+  // The lift on the way, none of it while dragged, and none of it for reduced motion.
   assert.match(css, /@keyframes spilled-lift \{[\s\S]+?scale: 1\.07/);
-  assert.match(css, /prefers-reduced-motion: reduce\) \{\s+\.spilled,\s+\.spill\[data-open='false'\] \.spilled \{\s+transition: none/);
+  assert.match(css, /\.spill\[data-open='true'\] \.spilled\[data-dragging\] \{\s+transition: none/);
+  assert.match(css, /prefers-reduced-motion: reduce\) \{\s+\.spill \.spilled,\s+\.spill\[data-open='false'\] \.spilled \{\s+transition: none/);
 
   // The dossier takes loose things in its well, which is their containing block.
   const dossier = read('src/sections/BandDossier/BandDossier.tsx');
@@ -97,51 +128,59 @@ test('Spill packs loose things on a point and sends them out in order when opene
   assert.match(dossier, /<OneSheet \{\.\.\.oneSheet\} rotation=\{bandRotation\} \/>\s+\{children\}/);
 });
 
-test('The promoter’s desk: the package closed on the wood, opened by a click, its loose things spilling out', () => {
+test('The promoter’s desk: everything its real size against the Walkman, the folder a button, its contents spilling out, all of it movable', () => {
   const page = read('src/pages/Desk/PromoterDesk.tsx');
   const css = read('src/pages/Desk/PromoterDesk.css');
 
-  assert.match(page, /DESK_HEIGHT = 1200/);
-  assert.match(page, /<Stage className=\{`promoter-desk-stage \$\{className\}`\}[^>]+height=\{DESK_HEIGHT\}/);
-  assert.match(page, /<Desk className="promoter-desk" wood=\{wood\} height=\{DESK_HEIGHT\} data-open=/);
-  // The promoter's own things are on the desk from the start.
-  assert.match(page, /<Walkman \{\.\.\.DEMO_TAPE\} finish="blue"/);
-  assert.match(page, /<Handheld video=\{LIVE_SET\.video\}/);
-  assert.match(page, /<Mug glaze=/);
+  // One reference: the Walkman, 112 mm, is 300 units; everything else is its real width in that scale.
+  assert.match(page, /REFERENCE = \{ object: 'Walkman', millimetres: 112, units: 300 \}/);
+  assert.match(page, /export const mm = \(millimetres: number\) => Math\.round\(\(millimetres \* REFERENCE\.units\) \/ REFERENCE\.millimetres\)/);
+  for (const [thing, width] of [['folder', 482], ['cassette', 100], ['handheld', 170], ['sheet', 216], ['handbill', 108], ['packet', 152], ['pick', 25]]) {
+    assert.match(page, new RegExp(`^  ${thing}: ${width},$`, 'm'), thing);
+  }
+  assert.match(page, /DESK_HEIGHT = 1760/);
+  // The promoter's things have a place while the folder is closed and another once it is open; the contents only land.
+  assert.match(page, /walkman: \{ closed: \{ x: 770, y: 520, rotation: -6 \}, open: \{ x: 40, y: 1320, rotation: -8 \} \}/);
+  assert.match(page, /\} satisfies Record<DeskThingId, \{ closed: Place; open: Place \}>/);
+  assert.match(page, /\} satisfies Record<SpilledThingId, Place>/);
+  assert.match(page, /placed\[id\] \?\? \(isSpilled\(id\) \? DESK_LAYOUT\.spilled\[id\] : open \? DESK_LAYOUT\.things\[id\]\.open : DESK_LAYOUT\.things\[id\]\.closed\)/);
+  // Picking a thing up brings it to the top; the folder is a layer of its own over the running order.
+  assert.match(page, /const STACKING: LayerId\[\] = \['sheet', 'folder', 'ballpoint'/);
+  assert.match(page, /const zOf = \(id: LayerId\) => 10 \+ stacking\.indexOf\(id\)/);
+  assert.match(page, /'--promoter-desk-folder-z': zOf\('folder'\)/);
+  // The pointer's travel is scaled by the desk's rendered width, since the Stage zooms it.
+  assert.match(page, /const scale = \(\) => \(surface\.current\?\.querySelector\('\.desk__top'\)\?\.getBoundingClientRect\(\)\.width \?\? DESK_WIDTH\) \/ DESK_WIDTH/);
+  assert.match(page, /<MovableScale\.Provider value=\{scale\}>/);
+  // The promoter's own things are on the desk from the start, and movable.
+  assert.match(page, /<Movable \{\.\.\.movable\('walkman', SIZES\.walkman\)\}>\s+<Walkman \{\.\.\.DEMO_TAPE\} finish="blue" \/>/);
+  assert.match(page, /<Movable \{\.\.\.movable\('handheld', SIZES\.handheld\)\}>\s+<Handheld video=\{LIVE_SET\.video\}/);
+  assert.match(page, /<Movable \{\.\.\.movable\('mug', SIZES\.mug\)\}>/);
   assert.match(page, /<Cassette label="live at the pond" side="B"/);
-  assert.match(page, /<Pen kind="ballpoint"/);
-  assert.match(page, /<Pen kind="marker"/);
-  assert.match(page, /<GuitarPick/);
   assert.match(page, /function RunSheet\(/);
   assert.match(page, /Funkadelic Astronaut · 45 min/);
-  // The band's name is on the cover, with the streaming stickers and the note.
-  assert.match(page, /sticker=\{cover\}/);
+  // A plain folder with the band's name on the cover, the streaming stickers and the note, and a button beneath it.
+  assert.match(page, /<Folder label="Press Package – Funkadelic Astronaut" tab="side" open=\{open\} stamps=\{\['Booking', 'Received'\]\} stampsAt="bottom" sticker=\{cover\} \/>/);
   assert.match(page, /FUNKADELIC\s+<\/Wordmark>/);
   assert.match(page, /ASTRONAUT\s+<\/Wordmark>/);
   assert.match(page, /LISTEN_LINKS\.map\(/);
   assert.match(page, /<StickyNote color="canary"/);
-  // The folder is the button, and the dossier's own player stays out: the promoter's is on the desk.
-  assert.match(page, /<BandDossier open=\{open\} tape=\{null\}/);
   assert.match(page, /aria-label=\{open \? 'Close the press package' : 'Open the Funkadelic Astronaut press package'\}/);
   assert.match(page, /aria-expanded=\{open\}/);
-  // The loose things are spilled from the well, placed in desk units from the well's corner.
-  assert.match(page, /const inWell = \(x: number, y: number, rotation: number\) => \{/);
-  assert.match(page, /rotation: rotation - at\.dossierRotation,/);
-  assert.match(page, /const deskUnit = `calc\(var\(--folder-unit\) \* \$\{DESK_WIDTH \/ at\.dossierWidth\}\)`/);
-  assert.match(page, /<Spill open=\{open\} from=\{\{ x: at\.dossierWidth \/ 4, y: folderHeight \/ 2 \}\} unit=\{deskUnit\}>/);
-  for (const thing of ['Polaroid', 'TourPass', 'AdmissionTicket', 'MiniZine', 'Handbill']) {
-    assert.match(page, new RegExp(`<Spilled [^>]+>\\s+<${thing} `), thing);
-  }
+  // What is inside spills from the closed folder's centre once the cover has got out of the way; paper is grabbed anywhere.
+  assert.match(page, /const packed = \{ x: folder\.x \+ folderWidth \* 0\.75, y: folder\.y \+ folderHeight \/ 2 \}/);
+  assert.match(page, /<Spill open=\{open\} from=\{packed\} delay=\{420\}>/);
+  for (const thing of ['live', 'print', 'oneSheet', 'handbill', 'zine']) assert.match(page, new RegExp(`movable\\('${thing}', SIZES\\.\\w+, 'anywhere'\\)`), thing);
+  assert.match(page, /BAND_MEMBER_PACKETS\.map\(/);
+  assert.match(page, /<Packet \{\.\.\.packet\} rotation=\{0\} \/>/);
   assert.match(page, /role="status" aria-live="polite" aria-label="Press package"/);
 
   // Closed, the folder lets clicks through to the button beneath it, but for the stickers.
-  assert.match(css, /\.promoter-desk\[data-open='false'\] \.dossier \{\s+pointer-events: none;/);
-  assert.match(css, /\.promoter-desk\[data-open='false'\] \.dossier \.sticker \{\s+pointer-events: auto;/);
+  assert.match(css, /\.promoter-desk\[data-open='false'\] \.folder \{\s+pointer-events: none;/);
+  assert.match(css, /\.promoter-desk\[data-open='false'\] \.folder \.sticker \{\s+pointer-events: auto;/);
   assert.match(css, /\.promoter-desk\[data-open='true'\] \.promoter-desk__open \{[\s\S]+?z-index: 5/);
+  assert.match(css, /\.promoter-desk__folder \{[\s\S]+?z-index: var\(--promoter-desk-folder-z, 10\)/);
   // The cover's own label becomes the whole face.
   assert.match(css, /\.promoter-desk \.folder__sticker \{[\s\S]+?inset: 0;/);
-  // The one-sheet pulled open lies over what spilled.
-  assert.match(css, /\.promoter-desk \.one-sheet\[data-open='true'\] \{\s+z-index: 20;/);
   // The running order's print measures against the sheet, one level in.
   assert.match(css, /\.run-sheet__page \{[\s\S]+?padding: calc\(52 \* var\(--run-sheet-unit\)\)/);
 });
