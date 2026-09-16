@@ -22,9 +22,13 @@
   fill: currentColor;
 }
 
-/* A flat print: ink on paper, nothing else. */
+/* A flat print: ink on paper, nothing else. Wide marks reach past the square, so the drawing is not clipped to it. */
 .social-icon--flat {
   --social-icon-paper: #fbf8f1;
+}
+
+.social-icon--flat .social-icon__mark {
+  overflow: visible;
 }
 
 .social-icon__paper {

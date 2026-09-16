@@ -90,6 +90,9 @@ test('The desk things: mug, ring, pens, sticky note and pick, each sized by its 
   assert.match(lamp, /export function LampLight\(/);
   assert.match(read('src/components/DeskLamp/DeskLamp.css'), /\.lamp-light \{[\s\S]+?mix-blend-mode: screen/);
 
+  // A flat social print draws past its square, so the wide marks fill the vinyl cut for them.
+  assert.match(read('src/components/SocialIcon/SocialIcon.css'), /\.social-icon--flat \.social-icon__mark \{\s+overflow: visible;/);
+
   const pick = read('src/components/GuitarPick/GuitarPick.tsx');
   assert.match(pick, /viewBox="0 0 100 116"/);
   assert.match(pick, /print = 'FA'/);
