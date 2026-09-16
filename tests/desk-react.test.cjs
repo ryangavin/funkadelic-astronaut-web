@@ -198,7 +198,7 @@ test('The promoter’s desk: everything its real size against the Walkman, the f
   // One reference: the Walkman, 112 mm, is 300 units; everything else is its real width in that scale.
   assert.match(page, /REFERENCE = \{ object: 'Walkman', millimetres: 112, units: 224 \}/);
   assert.match(page, /export const mm = \(millimetres: number\) => Math\.round\(\(millimetres \* REFERENCE\.units\) \/ REFERENCE\.millimetres\)/);
-  for (const [thing, width] of [['folder', 482], ['cassette', 100], ['handheld', 170], ['sheet', 216], ['handbill', 108], ['packet', 152], ['pick', 25]]) {
+  for (const [thing, width] of [['folder', 482], ['cassette', 100], ['handheld', 204], ['sheet', 216], ['handbill', 108], ['packet', 152], ['pick', 25]]) {
     assert.match(page, new RegExp(`^  ${thing}: ${width},$`, 'm'), thing);
   }
   assert.match(page, /DESK_HEIGHT = 810/);

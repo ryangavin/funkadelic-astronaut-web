@@ -59,8 +59,8 @@ export const REAL_WIDTHS = {
   walkman: 112,
   /** A compact cassette. */
   cassette: 100,
-  /** The widescreen handheld. */
-  handheld: 170,
+  /** The widescreen handheld: a fifth over the PSP's 170, because a console reads small at its true size beside the paper. */
+  handheld: 204,
   /** A mug's box holds the body, 82 mm across, and the handle. */
   mug: 140,
   /** The ring a mug's base leaves, with its drips. */
@@ -122,7 +122,7 @@ export const DESK_LAYOUT = {
   things: {
     walkman: { closed: { x: 910, y: 380, rotation: -6 }, open: { x: 30, y: 250, rotation: -8 } },
     cassette: { closed: { x: 60, y: 330, rotation: 10 }, open: { x: 240, y: 300, rotation: 12 } },
-    handheld: { closed: { x: 240, y: 560, rotation: 3 }, open: { x: 30, y: 480, rotation: 2 } },
+    handheld: { closed: { x: 240, y: 560, rotation: 3 }, open: { x: 30, y: 462, rotation: 2 } },
     mug: { closed: { x: 200, y: 10, rotation: 210 }, open: { x: 200, y: 10, rotation: 210 } },
     sheet: { closed: { x: 560, y: 120, rotation: -4 }, open: { x: 0, y: 200, rotation: -3 } },
     plan: { closed: { x: 520, y: 10, rotation: -6 }, open: { x: 520, y: 10, rotation: -6 } },
