@@ -3,6 +3,7 @@ node_modules/
 output/
 _site/
 dist/
+storybook-static/
 .DS_Store
 .env
 .env.*

@@ -425,9 +425,10 @@
 .live-content { padding-bottom: 90px; }
 .scene.footer-scene {
   --wave: 64px;
-  z-index: 5;
+  z-index: 10002;
   background: var(--petrol);
 }
+html:has(.launch-footer)::after { z-index: 10003; }
 /* Compact white ink stamps, grouped into social and music links. */
 .launch-footer {
   display: grid;
@@ -592,39 +593,33 @@
   transform: none;
 }
 
-/* Tour moves to the lower-right pond, bassist and astronaut-on-rocks scene. */
+/* Tour moves to the lower-right pond, bassist and astronaut-on-rocks scene.
+   Lift this section above the poster-wide wear layers so its new laminate stays clean. */
+.scene.live { z-index: 10001; }
 .live { background: var(--cream); }
 .festival-world-tour {
   z-index: -2;
   background-size: auto 265%;
-  background-position: 8% 96%;
-  filter: url(#tour-posterize) contrast(1.28) saturate(.86);
+  background-position: 68% 94%;
+  filter: contrast(1.08) saturate(1.02);
+  opacity: .94;
 }
-.festival-world-tour::before,
 .festival-world-tour::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
-.festival-world-tour::before {
-  background-image: url("../assets/festival-scribble-fully-shaded.png");
-  background-repeat: no-repeat;
-  background-size: inherit;
-  background-position: inherit;
-  filter: grayscale(1) contrast(3.5) brightness(.76);
-  mix-blend-mode: multiply;
-  opacity: .34;
-}
 .festival-world-tour::after {
-  background: radial-gradient(circle, rgb(18 20 32 / .72) 0 .7px, transparent .9px) 0 0 / 4px 4px;
-  mix-blend-mode: multiply;
-  opacity: .22;
+  background:
+    linear-gradient(90deg, rgb(234 211 167 / .18), transparent 42%, rgb(234 211 167 / .08)),
+    linear-gradient(180deg, rgb(234 211 167 / .08), transparent 58%);
+  mix-blend-mode: screen;
 }
 .live .tint {
   background:
-    linear-gradient(180deg, rgb(18 20 32 / .36), rgb(18 20 32 / .68)),
-    linear-gradient(90deg, rgb(18 20 32 / .62), rgb(18 20 32 / .26));
+    linear-gradient(180deg, rgb(18 20 32 / .18), rgb(18 20 32 / .42)),
+    linear-gradient(90deg, rgb(18 20 32 / .36), rgb(18 20 32 / .1));
 }
 
 @media (max-width: 760px) {
@@ -638,10 +633,10 @@
   }
   .festival-world-tour {
     background-size: auto 285%;
-    background-position: 6% 98%;
+    background-position: 66% 96%;
   }
   .live .tint {
-    background: linear-gradient(180deg, rgb(18 20 32 / .52), rgb(18 20 32 / .76));
+    background: linear-gradient(180deg, rgb(18 20 32 / .28), rgb(18 20 32 / .52));
   }
 }
 
@@ -1181,13 +1176,15 @@
 /* Tour is a small festival timetable, built for the band's usual two or three
    dates. The semantic table remains the data surface; its rows become day cards. */
 .live-content {
+  --tour-blue: #315d9d;
+  --tour-purple: #714485;
   position: relative;
   padding-top: calc(160 * var(--composition-unit));
   padding-bottom: calc(112 * var(--composition-unit));
 }
 .tour-header {
   display: grid;
-  grid-template-columns: minmax(0, calc(780 * var(--composition-unit))) calc(260 * var(--composition-unit));
+  grid-template-columns: minmax(0, calc(718 * var(--composition-unit))) calc(322 * var(--composition-unit));
   align-items: center;
   justify-content: space-between;
   gap: calc(42 * var(--composition-unit));
@@ -1198,109 +1195,101 @@
   filter: none;
   text-shadow: none;
 }
-.tour-wristband {
+.tour-admission-ticket {
   position: relative;
   display: block;
   width: 100%;
-  aspect-ratio: 720 / 214;
-  rotate: -1.2deg;
-  transform: perspective(780px) rotateX(9deg) rotateY(-3deg) skewX(-.5deg);
-  transform-origin: 42% 50%;
-  filter:
-    drop-shadow(calc(4 * var(--composition-unit)) calc(6 * var(--composition-unit)) 0 rgb(18 20 32 / .7))
-    drop-shadow(calc(13 * var(--composition-unit)) calc(17 * var(--composition-unit)) calc(12 * var(--composition-unit)) rgb(18 20 32 / .28));
+  aspect-ratio: 720 / 276;
 }
-.wristband-shape {
+.tour-ticket-shape {
   position: absolute;
+  z-index: 2;
   inset: 0;
   width: 100%;
   height: 100%;
   overflow: visible;
+  filter:
+    drop-shadow(calc(4 * var(--composition-unit)) calc(6 * var(--composition-unit)) 0 rgb(18 20 32 / .34))
+    drop-shadow(calc(10 * var(--composition-unit)) calc(15 * var(--composition-unit)) calc(13 * var(--composition-unit)) rgb(18 20 32 / .24));
 }
-.wristband-cast { fill: rgb(18 20 32 / .55); }
-.wristband-stock {
-  fill: url(#wristband-stock-depth);
-  stroke: var(--ink-black);
-  stroke-width: 3;
-  vector-effect: non-scaling-stroke;
+.tour-ticket-stock {
+  fill: url(#tour-ticket-paper);
 }
-.wristband-fold { fill: rgb(72 42 12 / .3); }
-.wristband-fold-highlight { fill: rgb(255 240 161 / .2); }
-.wristband-rim {
-  fill: none;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
+.tour-ticket-offset-edge {
+  --cutout-edge-color: #121420;
 }
-.wristband-rim-top { stroke: rgb(255 245 181 / .72); stroke-width: 3; }
-.wristband-rim-bottom { stroke: rgb(71 42 14 / .58); stroke-width: 5; }
-.wristband-crease,
-.wristband-perf {
-  fill: none;
-  stroke: rgb(18 20 32 / .56);
-  stroke-width: 2;
-  stroke-dasharray: 5 5;
-  vector-effect: non-scaling-stroke;
-}
-.wristband-holes { fill: var(--ink-black); opacity: .72; }
-.tour-wristband::before,
-.tour-wristband::after {
-  content: "";
-  position: absolute;
-  z-index: 1;
-  pointer-events: none;
-  clip-path: polygon(1.3% 17%, 14% 8%, 35% 10%, 52% 13%, 70% 14%, 88% 8%, 98.7% 3%, 99% 74%, 85% 86%, 65% 91%, 48% 87%, 29% 84%, 12% 88%, 2% 93%);
-}
-.tour-wristband::before {
-  inset: 5% 1.2% 10%;
-  background:
-    repeating-linear-gradient(96deg, transparent 0 3px, rgb(255 249 219 / .2) 3.5px 4.5px, transparent 5px 9px),
-    repeating-linear-gradient(4deg, rgb(87 60 25 / .12) 0 1px, transparent 1px 5px);
+.tour-ticket-fiber-layer {
+  fill: url(#tour-ticket-fibers);
   mix-blend-mode: multiply;
-  opacity: .8;
 }
-.tour-wristband::after {
-  inset: 8% 1.5% 12%;
-  background:
-    repeating-linear-gradient(101deg, transparent 0 6px, rgb(255 252 231 / .42) 7px 8px, transparent 9px 15px),
-    linear-gradient(180deg, rgb(255 255 240 / .27), transparent 38%, rgb(82 48 17 / .13));
-  mix-blend-mode: screen;
-  opacity: .72;
+.tour-ticket-age-wash {
+  fill: url(#tour-ticket-age-wash);
+  mix-blend-mode: multiply;
 }
-.wristband-title {
-  fill: var(--ink-black);
+.tour-ticket-weathering-layer {
+  fill: url(#tour-ticket-weathering);
+  opacity: .52;
+  mix-blend-mode: multiply;
+}
+.tour-ticket-stub { fill: rgb(247 211 180 / .56); }
+.tour-ticket-rail {
+  fill: #dc5127;
+  opacity: .9;
+  filter: url(#printed-ink);
+}
+.tour-ticket-perf,
+.tour-ticket-rule {
+  fill: none;
   stroke: var(--ink-black);
-  stroke-width: 2.2;
-  paint-order: stroke fill;
-  font: 400 88px/1 Modak, Georgia, serif;
-  letter-spacing: -2px;
+  vector-effect: non-scaling-stroke;
 }
-.wristband-kicker,
-.wristband-serial {
+.tour-ticket-perf { stroke-width: 1.8; stroke-dasharray: 4 5; opacity: .56; }
+.tour-ticket-rule {
+  stroke-width: 2;
+}
+.tour-ticket-star {
   fill: var(--ink-black);
-  font: 700 22px/1 var(--body-face);
-  letter-spacing: 1.6px;
+  filter: url(#printed-ink);
+}
+.tour-ticket-presenter,
+.tour-ticket-presents,
+.tour-ticket-subtitle,
+.tour-ticket-season-label,
+.tour-ticket-location,
+.tour-ticket-detail,
+.tour-ticket-stub-copy,
+.tour-ticket-rail-copy,
+.tour-ticket-price-copy {
+  fill: var(--ink-black);
+  font-family: var(--body-face);
+  font-weight: 700;
   text-transform: uppercase;
 }
-.wristband-serial { font-size: 17px; letter-spacing: 2.2px; }
+.tour-ticket-presenter { font-size: 17px; letter-spacing: .8px; }
+.tour-ticket-presents { font-size: 12px; letter-spacing: 2px; }
+.tour-ticket-title {
+  fill: var(--ink-black);
+  font: 700 73px/.9 Georgia, serif;
+  letter-spacing: -3px;
+  filter: url(#printed-ink);
+}
+.tour-ticket-subtitle { font-size: 18px; letter-spacing: 1.4px; }
+.tour-ticket-season-year { fill: var(--ink-black); font: 700 48px/.8 Georgia, serif; letter-spacing: -2px; }
+.tour-ticket-season-label { font-size: 15px; letter-spacing: 3.5px; }
+.tour-ticket-location { font-size: 19px; letter-spacing: .4px; }
+.tour-ticket-detail { font-size: 15px; letter-spacing: 1.1px; }
+.tour-ticket-stub-label { font-size: 13px; letter-spacing: 1.4px; }
+.tour-ticket-stub-stamp { fill: var(--tour-purple); font: 700 19px/1 Caveat, cursive; letter-spacing: 1px; }
+.tour-ticket-stub-serial { font-size: 16px; letter-spacing: 2px; }
+.tour-ticket-rail-copy { fill: #ffe0c2; font: 700 10px/1 var(--body-face); letter-spacing: 1.5px; }
+.tour-ticket-price-field { fill: rgb(255 239 217 / .7); }
+.tour-ticket-price-label { fill: #e54b1e; font-size: 11px; letter-spacing: 2px; }
+.tour-ticket-price { fill: var(--tour-purple); font: 700 21px/1 Caveat, cursive; letter-spacing: 1.2px; }
+.tour-ticket-price-serial { fill: var(--ink-black); font-size: 12px; letter-spacing: 1.4px; }
 
-.tour-board-heading {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: calc(24 * var(--composition-unit));
-  margin-top: calc(34 * var(--composition-unit));
-  margin-bottom: calc(18 * var(--composition-unit));
-}
-.live-content .tour-label { margin: 0; }
-.tour-board-note {
-  margin: 0 0 calc(4 * var(--composition-unit));
-  font: 700 calc(15 * var(--composition-unit))/1.1 var(--body-face);
-  letter-spacing: .12em;
-  text-transform: uppercase;
-}
 .tour-schedule {
   display: table;
-  margin: 0;
+  margin: calc(58 * var(--composition-unit)) 0 0;
   border-collapse: separate;
   border-spacing: 0;
 }
@@ -1325,17 +1314,59 @@
   display: grid;
   min-width: 0;
   min-height: calc(438 * var(--composition-unit));
-  background: transparent;
+  overflow: visible;
+  border: 2px solid var(--pass-ink, var(--ink-black));
+  border-radius: calc(8 * var(--composition-unit));
+  background: var(--pass-stock, var(--cream));
   color: var(--ink-black);
-  box-shadow: none;
+  box-shadow:
+    calc(4 * var(--composition-unit)) calc(5 * var(--composition-unit)) 0 rgb(18 20 32 / .38),
+    calc(7 * var(--composition-unit)) calc(9 * var(--composition-unit)) calc(5 * var(--composition-unit)) rgb(18 20 32 / .12);
   filter: none;
 }
-.tour-schedule tbody > tr > .paper-cutout {
-  --paper-shadow:
-    drop-shadow(0 calc(3 * var(--composition-unit)) 0 rgb(18 20 32 / .42))
-    drop-shadow(0 calc(12 * var(--composition-unit)) calc(13 * var(--composition-unit)) rgb(18 20 32 / .26));
+.tour-day::before {
+  content: "";
+  position: absolute;
+  z-index: 4;
+  top: calc(-46 * var(--composition-unit));
+  left: 50%;
+  width: calc(66 * var(--composition-unit));
+  height: calc(52 * var(--composition-unit));
+  background: linear-gradient(90deg, var(--ink-black) 0 13%, var(--pass-ink) 14% 43%, transparent 44% 56%, var(--pass-ink) 57% 86%, var(--ink-black) 87% 100%);
+  clip-path: polygon(4% 0, 35% 0, 47% 76%, 53% 76%, 65% 0, 96% 0, 67% 100%, 33% 100%);
+  translate: -50% 0;
+  filter: drop-shadow(0 2px 0 rgb(18 20 32 / .5));
+}
+.tour-schedule tbody > tr::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  border-radius: calc(7 * var(--composition-unit));
+  background: linear-gradient(116deg, rgb(255 255 255 / .52) 0 9%, rgb(255 255 255 / .08) 17% 62%, rgb(255 255 255 / .32) 70% 77%, transparent 86%);
+  box-shadow: inset 0 0 0 3px rgb(255 255 255 / .3);
+}
+.tour-pass-artist {
+  --pass-ink: var(--red);
+  --pass-stock: linear-gradient(145deg, #ffd6d9, #fff4df 58%, #ffc8cf);
+}
+.tour-pass-ga {
+  --pass-ink: var(--tour-blue);
+  --pass-stock: linear-gradient(145deg, #d9eaff, #fff6db 58%, #c7e0ff);
+}
+.tour-pass-vip {
+  --pass-ink: var(--tour-purple);
+  --pass-stock: linear-gradient(145deg, #eadcff, #fff2df 58%, #ddc8fb);
+}
+.tour-day :is(p, span, strong, time, a) {
+  -webkit-text-stroke: 0;
+  text-shadow: none !important;
+  filter: none;
 }
 .tour-schedule tbody > tr > td {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-rows: auto 1fr auto;
   min-width: 0;
@@ -1345,6 +1376,15 @@
 .tour-schedule tbody > .tour-day {
   grid-template-rows: auto 1fr auto;
 }
+.tour-schedule tbody > .tour-day:nth-child(1) {
+  transform: translateY(calc(20 * var(--composition-unit))) rotate(-2.15deg);
+}
+.tour-schedule tbody > .tour-day:nth-child(2) {
+  transform: translateY(calc(-5 * var(--composition-unit))) rotate(.45deg);
+}
+.tour-schedule tbody > .tour-day:nth-child(3) {
+  transform: translateY(calc(34 * var(--composition-unit))) rotate(1.35deg);
+}
 .tour-day > .tour-date-cell,
 .tour-day > .tour-show-cell,
 .tour-day > .tour-action-cell {
@@ -1353,8 +1393,30 @@
 }
 .tour-day > .tour-date-cell {
   position: relative;
-  padding-top: calc(23 * var(--composition-unit));
-  padding-bottom: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: 1fr 1fr;
+  align-items: center;
+  column-gap: calc(13 * var(--composition-unit));
+  min-height: calc(112 * var(--composition-unit));
+  padding-top: calc(30 * var(--composition-unit));
+  padding-bottom: calc(13 * var(--composition-unit));
+  border-bottom: 2px solid color-mix(in srgb, var(--pass-ink) 72%, transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--pass-ink) 15%, transparent), transparent 78%);
+}
+.tour-day > .tour-date-cell::before {
+  content: "";
+  position: absolute;
+  z-index: 5;
+  top: calc(9 * var(--composition-unit));
+  left: 50%;
+  width: calc(50 * var(--composition-unit));
+  height: calc(11 * var(--composition-unit));
+  border: 2px solid var(--pass-ink);
+  border-radius: 999px;
+  background: var(--ink-black);
+  box-shadow: inset 0 2px 2px rgb(0 0 0 / .65), 0 1px 0 rgb(255 255 255 / .7);
+  translate: -50% 0;
 }
 .tour-day > .tour-show-cell {
   display: grid;
@@ -1373,12 +1435,14 @@
   padding-bottom: calc(25 * var(--composition-unit));
 }
 .tour-day-date {
+  grid-column: 1;
+  grid-row: 1 / 3;
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: calc(12 * var(--composition-unit));
-  align-items: center;
-  padding-bottom: calc(15 * var(--composition-unit));
-  border-bottom: 2px dashed rgb(18 20 32 / .44);
+  grid-template-columns: min-content auto;
+  gap: calc(10 * var(--composition-unit));
+  align-items: end;
+  padding: 0;
+  border: 0;
 }
 .tour-day-date strong,
 .tour-empty-date strong {
@@ -1390,30 +1454,48 @@
 .tour-empty-date span,
 .live-content .tour-set-time,
 .live-content .tour-stage-label {
-  font: 700 calc(14 * var(--composition-unit))/1.05 var(--body-face);
-  letter-spacing: .12em;
+  font: 700 calc(18 * var(--composition-unit))/.95 Caveat, cursive;
+  letter-spacing: .04em;
   text-transform: uppercase;
 }
 .tour-day-status {
-  position: absolute;
-  top: calc(17 * var(--composition-unit));
-  right: calc(23 * var(--composition-unit));
-  max-width: 48%;
-  padding: calc(5 * var(--composition-unit)) calc(7 * var(--composition-unit));
-  border: 1px solid currentColor;
-  color: var(--red);
-  font: 700 calc(10 * var(--composition-unit))/1 var(--body-face);
-  letter-spacing: .09em;
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: stretch;
+  min-width: calc(104 * var(--composition-unit));
+  padding: calc(6 * var(--composition-unit)) calc(9 * var(--composition-unit));
+  border: 2px solid currentColor;
+  border-radius: calc(3 * var(--composition-unit));
+  color: var(--pass-ink);
+  font: 700 calc(15 * var(--composition-unit))/1 Caveat, cursive;
+  letter-spacing: .04em;
+  text-align: center;
   text-transform: uppercase;
   rotate: 0deg;
 }
+.tour-pass-tier {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  min-width: calc(104 * var(--composition-unit));
+  padding: calc(5 * var(--composition-unit)) calc(9 * var(--composition-unit));
+  border-radius: calc(3 * var(--composition-unit));
+  background: var(--pass-ink);
+  color: white;
+  font: 700 calc(20 * var(--composition-unit))/.9 Caveat, cursive;
+  letter-spacing: .06em;
+  text-align: center;
+  text-transform: uppercase;
+}
 .tour-day[data-show-status="verified"] .tour-day-status {
   background: var(--ink-black);
-  color: var(--cream);
+  color: white;
   rotate: 0deg;
 }
 .live-content .tour-stage-label {
-  color: var(--red);
+  color: var(--pass-ink);
   margin: 0;
 }
 .live-content .tour-venue {
@@ -1421,7 +1503,7 @@
   align-content: start;
   gap: calc(5 * var(--composition-unit));
   margin: 0;
-  font: 700 calc(20 * var(--composition-unit))/1.15 var(--body-face);
+  font: 700 calc(23 * var(--composition-unit))/1.05 Caveat, cursive;
 }
 .live-content :is(.tour-city, .tour-address, .tour-set-time) {
   display: grid;
@@ -1431,48 +1513,75 @@
 }
 .tour-field-label {
   color: rgb(18 20 32 / .62);
-  font: 700 calc(10 * var(--composition-unit))/1 var(--body-face);
-  letter-spacing: .14em;
+  font: 700 calc(13 * var(--composition-unit))/1 Caveat, cursive;
+  letter-spacing: .08em;
   text-transform: uppercase;
 }
-.live-content .tour-city { font-size: calc(17 * var(--composition-unit)); line-height: 1.15; }
+.live-content .tour-city { font: 600 calc(20 * var(--composition-unit))/1 Caveat, cursive; }
 .live-content .tour-address {
-  font-size: calc(14 * var(--composition-unit));
-  line-height: 1.15;
-  opacity: .76;
+  font: 600 calc(17 * var(--composition-unit))/1 Caveat, cursive;
+  opacity: .88;
 }
-.live-content .tour-set-time { align-self: stretch; padding-top: 0; font-size: calc(15 * var(--composition-unit)); }
-.tour-ticket {
+.live-content .tour-set-time { align-self: stretch; padding-top: 0; font: 700 calc(18 * var(--composition-unit))/1 Caveat, cursive; }
+.tour-pass-action {
   position: relative;
+  display: flex;
+  align-items: end;
+  width: 100%;
+  min-height: calc(82 * var(--composition-unit));
+  margin: calc(12 * var(--composition-unit)) 0 0;
+}
+.tour-action-portrait {
+  position: absolute;
+  z-index: 1;
+  left: calc(-8 * var(--composition-unit));
+  bottom: calc(-10 * var(--composition-unit));
+  width: auto;
+  height: calc(96 * var(--composition-unit));
+  filter: drop-shadow(calc(2 * var(--composition-unit)) calc(3 * var(--composition-unit)) 0 rgb(18 20 32 / .7));
+  rotate: -3deg;
+}
+.tour-speech-bubble {
+  position: relative;
+  z-index: 2;
   display: grid;
   place-items: center;
-  width: 100%;
-  min-height: calc(54 * var(--composition-unit));
-  margin: calc(12 * var(--composition-unit)) 0 0;
-  padding: calc(12 * var(--composition-unit)) calc(18 * var(--composition-unit));
-  background: var(--red);
-  color: var(--cream);
-  clip-path: polygon(0 0, 92% 2%, 100% 15%, 96% 28%, 100% 41%, 96% 54%, 100% 67%, 96% 80%, 100% 94%, 91% 100%, 0 97%);
-  font: 700 calc(17 * var(--composition-unit))/1 var(--body-face);
-  letter-spacing: .1em;
+  width: calc(100% - calc(58 * var(--composition-unit)));
+  min-height: calc(64 * var(--composition-unit));
+  margin-left: calc(58 * var(--composition-unit));
+  padding: calc(12 * var(--composition-unit)) calc(13 * var(--composition-unit));
+  border: 3px solid var(--pass-ink);
+  border-radius:
+    calc(24 * var(--composition-unit)) calc(31 * var(--composition-unit))
+    calc(27 * var(--composition-unit)) calc(18 * var(--composition-unit));
+  background: linear-gradient(145deg, white, #fff8e9);
+  color: var(--pass-ink);
+  font: 700 calc(19 * var(--composition-unit))/.9 Caveat, cursive;
+  letter-spacing: .05em;
+  text-align: center;
   text-transform: uppercase;
   text-decoration: none;
-  filter: drop-shadow(3px 4px 0 var(--ink-black));
+  box-shadow: calc(3 * var(--composition-unit)) calc(4 * var(--composition-unit)) 0 var(--ink-black);
   transition: transform 160ms ease, filter 160ms ease;
 }
-.tour-ticket::before {
+.tour-speech-bubble::before {
   content: "";
   position: absolute;
-  inset: 0 auto 0 calc(12 * var(--composition-unit));
-  width: calc(5 * var(--composition-unit));
-  background: radial-gradient(circle, var(--cream) 0 1.2px, transparent 1.5px) center / 4px 8px repeat-y;
-  opacity: .85;
+  left: calc(-10 * var(--composition-unit));
+  bottom: calc(11 * var(--composition-unit));
+  width: calc(20 * var(--composition-unit));
+  height: calc(20 * var(--composition-unit));
+  border-left: 3px solid var(--pass-ink);
+  border-bottom: 3px solid var(--pass-ink);
+  background: var(--cream);
+  clip-path: polygon(0 100%, 100% 0, 100% 100%);
+  transform: rotate(-8deg);
 }
-.tour-ticket:not(.tour-ticket-disabled):is(:hover, :focus-visible) { transform: translateY(-3px) rotate(-1deg); filter: drop-shadow(5px 7px 0 var(--ink-black)); }
-.tour-ticket-disabled {
+.tour-speech-bubble:not(.tour-speech-disabled):is(:hover, :focus-visible) { transform: translateY(-3px) rotate(-1deg); }
+.tour-speech-bubble:focus-visible { outline: 3px solid var(--ink-black); outline-offset: 3px; }
+.tour-speech-disabled {
   cursor: default;
-  opacity: .62;
-  filter: drop-shadow(2px 3px 0 var(--ink-black));
+  opacity: .76;
 }
 
 .tour-empty-day { grid-column: 1 / -1; min-height: calc(286 * var(--composition-unit)); }
@@ -1517,12 +1626,13 @@
   min-height: calc(82 * var(--composition-unit));
   padding: calc(18 * var(--composition-unit)) calc(22 * var(--composition-unit));
   color: var(--ink-black);
-  font: 700 calc(17 * var(--composition-unit))/1.18 var(--body-face);
-  letter-spacing: .04em;
+  font: 700 calc(13 * var(--composition-unit))/1.18 var(--body-face);
+  letter-spacing: .025em;
   text-decoration: none;
   text-transform: uppercase;
   rotate: 1.2deg;
 }
+.tour-follow-link { white-space: nowrap; }
 .tour-follow-link > .paper-cutout {
   --paper-shadow:
     drop-shadow(0 calc(3 * var(--composition-unit)) 0 rgb(18 20 32 / .48))
@@ -1554,30 +1664,31 @@
     gap: calc(10 * var(--composition-unit));
   }
   .tour-follow-link {
-    width: calc(242 * var(--composition-unit));
+    width: min(100%, calc(320 * var(--composition-unit)));
     min-height: calc(64 * var(--composition-unit));
     justify-self: end;
     padding: calc(13 * var(--composition-unit)) calc(18 * var(--composition-unit));
-    font-size: calc(15 * var(--composition-unit));
+    font-size: calc(13 * var(--composition-unit));
     rotate: .7deg;
   }
   .tour-follow-link::after { right: calc(40 * var(--composition-unit)); }
-  .tour-wristband { rotate: -1.4deg; }
-  .tour-board-heading {
-    display: block;
-    margin-top: calc(24 * var(--composition-unit));
-    margin-bottom: calc(15 * var(--composition-unit));
-  }
-  .tour-board-note { margin-top: calc(5 * var(--composition-unit)); font-size: calc(10 * var(--composition-unit)); }
+  .tour-schedule { margin-top: calc(56 * var(--composition-unit)); }
   .tour-schedule tbody,
-  .tour-schedule tbody:has(> .tour-day:nth-child(2):last-child) { grid-template-columns: 1fr; gap: calc(18 * var(--composition-unit)); }
+  .tour-schedule tbody:has(> .tour-day:nth-child(2):last-child) { grid-template-columns: 1fr; gap: calc(64 * var(--composition-unit)); }
   .tour-schedule tbody > tr,
   .tour-empty-day { min-height: calc(430 * var(--composition-unit)); translate: none; }
+  .tour-schedule tbody > .tour-day:nth-child(1) { transform: translateY(calc(3 * var(--composition-unit))) rotate(-.42deg); }
+  .tour-schedule tbody > .tour-day:nth-child(2) { transform: translateY(calc(-2 * var(--composition-unit))) rotate(.14deg); }
+  .tour-schedule tbody > .tour-day:nth-child(3) { transform: translateY(calc(6 * var(--composition-unit))) rotate(.31deg); }
   .tour-schedule tbody > tr > td { padding: calc(19 * var(--composition-unit)); }
   .tour-day > .tour-date-cell,
   .tour-day > .tour-show-cell,
   .tour-day > .tour-action-cell { padding-inline: calc(19 * var(--composition-unit)); }
-  .tour-day > .tour-date-cell { padding-top: calc(19 * var(--composition-unit)); padding-bottom: 0; }
+  .tour-day > .tour-date-cell {
+    min-height: calc(104 * var(--composition-unit));
+    padding-top: calc(28 * var(--composition-unit));
+    padding-bottom: calc(11 * var(--composition-unit));
+  }
   .tour-day > .tour-show-cell {
     grid-template-rows: auto;
     row-gap: calc(12 * var(--composition-unit));
@@ -1593,9 +1704,9 @@
   .tour-empty-date { gap: calc(11 * var(--composition-unit)); }
   .tour-empty-date strong { font-size: calc(40 * var(--composition-unit)); }
   .tour-empty-date span,
-  .tour-day-date span,
+  .tour-day-date span { font-size: calc(16 * var(--composition-unit)); }
   .live-content .tour-set-time,
-  .live-content .tour-stage-label { font-size: calc(10 * var(--composition-unit)); }
+  .live-content .tour-stage-label { font-size: calc(15 * var(--composition-unit)); }
   .tour-empty-copy { padding: calc(12 * var(--composition-unit)) 0; }
   .tour-empty-copy .empty-title { font-size: calc(28 * var(--composition-unit)); }
   .tour-empty-copy .empty-title + p { font-size: calc(16 * var(--composition-unit)); line-height: 1.35; }
@@ -1606,17 +1717,20 @@
     border-left: 0;
   }
   .tour-day-date strong { font-size: calc(58 * var(--composition-unit)); }
-  .tour-day-status { top: calc(15 * var(--composition-unit)); right: calc(18 * var(--composition-unit)); font-size: calc(9 * var(--composition-unit)); }
+  .tour-day-status { min-width: calc(96 * var(--composition-unit)); font-size: calc(14 * var(--composition-unit)); }
+  .tour-pass-tier { min-width: calc(96 * var(--composition-unit)); font-size: calc(18 * var(--composition-unit)); }
   .live-content .tour-venue { font-size: calc(24 * var(--composition-unit)); }
-  .live-content .tour-city { font-size: calc(16 * var(--composition-unit)); }
-  .live-content .tour-address { font-size: calc(13 * var(--composition-unit)); }
-  .tour-field-label { font-size: calc(10 * var(--composition-unit)); }
+  .live-content .tour-city { font-size: calc(19 * var(--composition-unit)); }
+  .live-content .tour-address { font-size: calc(16 * var(--composition-unit)); }
+  .tour-field-label { font-size: calc(12 * var(--composition-unit)); }
   .live-content .tour-set-time { margin-top: 0; padding-top: 0; }
-  .tour-ticket { width: 100%; min-height: calc(52 * var(--composition-unit)); font-size: calc(16 * var(--composition-unit)); }
+  .tour-pass-action { min-height: calc(88 * var(--composition-unit)); }
+  .tour-action-portrait { height: calc(94 * var(--composition-unit)); }
+  .tour-speech-bubble { min-height: calc(66 * var(--composition-unit)); font-size: calc(13 * var(--composition-unit)); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tour-ticket { transition: none; }
-  .tour-ticket:not(.tour-ticket-disabled):is(:hover, :focus-visible) { transform: none; }
+  .tour-speech-bubble { transition: none; }
+  .tour-speech-bubble:not(.tour-speech-disabled):is(:hover, :focus-visible) { transform: none; }
   .tour-follow-link:is(:hover, :focus-visible) { transform: none; }
 }

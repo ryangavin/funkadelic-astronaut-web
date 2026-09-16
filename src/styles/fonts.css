@@ -1,0 +1,37 @@
+@font-face {
+  font-family: 'Balsamiq Sans';
+  src: url('/assets/fonts/balsamiq-sans/BalsamiqSans-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Balsamiq Sans';
+  src: url('/assets/fonts/balsamiq-sans/BalsamiqSans-Bold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Modak';
+  src: url('/assets/fonts/modak/Modak-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Caveat';
+  src: url('/assets/fonts/caveat/Caveat-Variable.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+:root {
+  --font-body: 'Balsamiq Sans', 'Comic Sans MS', 'Comic Sans', cursive;
+  --font-display: 'Modak', Georgia, serif;
+  --font-handwritten: 'Caveat', cursive;
+}
