@@ -70,8 +70,8 @@ export function ShapedPaper({ shape, stock, children }: {
             <feTurbulence type="fractalNoise" baseFrequency={.28 / detailScale} numOctaves="2" seed="47" result="fibers" />
             <feDisplacementMap in="ragged" in2="fibers" scale={3 * detailScale} xChannelSelector="R" yChannelSelector="G" />
           </filter>
-          <mask id={`${id}-outside`} maskUnits="userSpaceOnUse" x={-width / 4} y={-height / 4} width={width * 1.5} height={height * 1.5}>
-            <rect x={-width / 4} y={-height / 4} width={width * 1.5} height={height * 1.5} fill="white" />
+          <mask id={`${id}-outside`} maskUnits="userSpaceOnUse" x={-width / 2} y={-height / 2} width={width * 2} height={height * 2}>
+            <rect x={-width / 2} y={-height / 2} width={width * 2} height={height * 2} fill="white" />
             <use href={`#${id}-shape`} fill="black" stroke="black" strokeWidth="3" />
           </mask>
           <pattern id={`${id}-speckles`} patternUnits="userSpaceOnUse" width={tile} height={tile}>

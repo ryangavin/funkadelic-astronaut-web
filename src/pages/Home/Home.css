@@ -39,6 +39,12 @@
   gap: 28px;
 }
 
+/* The one-sheet, pulled open, hangs out of the folder over the tour ticket and
+   passes pinned below it, so the dossier's pin comes to the top while it is open. */
+.home main > .pin:has(.one-sheet[data-open='true']) {
+  z-index: 2;
+}
+
 /* A scaled piece hugs its content, so its zoom scales it about the pin's corner. */
 .home__scaled {
   display: block;

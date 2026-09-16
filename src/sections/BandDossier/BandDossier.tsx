@@ -1,15 +1,18 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { Stack, type StackProps } from '../../behaviors/Stack/Stack';
 import { Folder, type FolderStock } from '../../components/Folder/Folder';
-import { Packet, type PacketProps } from '../../components/Packet/Packet';
+import { OneSheet, type OneSheetContent } from '../../components/OneSheet/OneSheet';
+import { Packet } from '../../components/Packet/Packet';
 import { Polaroid } from '../../components/Polaroid/Polaroid';
 import { Walkman } from '../../components/Walkman/Walkman';
-import { BAND_MEMBER_PACKETS, BAND_PACKET, DEMO_TAPE, LIVE_SET, type LiveSet, type MemberPacket, type Tape } from './bandMembers';
+import { BAND_MEMBER_PACKETS, DEMO_TAPE, LIVE_SET, type LiveSet, type MemberPacket, type Tape } from './bandMembers';
+import { BAND_ONE_SHEET } from './bandOneSheet';
 import './BandDossier.css';
 
 export { BAND_MEMBER_PACKETS, BAND_PACKET, DEMO_TAPE, LIVE_SET, type LiveSet, type MemberPacket, type Tape } from './bandMembers';
+export { BAND_ONE_SHEET } from './bandOneSheet';
 
-export type MemberPileProps = Pick<StackProps, 'spread' | 'duration' | 'side'> & {
+export type MemberPileProps = Pick<StackProps, 'spread' | 'spreadX' | 'duration' | 'side'> & {
   /** The members, in filing order. */
   members?: MemberPacket[];
   /** Which member starts on top. */
@@ -22,7 +25,7 @@ export type MemberPileProps = Pick<StackProps, 'spread' | 'duration' | 'side'> &
  * out to bring that card up, click the top card to send it under. Which card is
  * on top is announced for assistive technology.
  */
-export function MemberPile({ members = BAND_MEMBER_PACKETS, initial = 0, spread, duration, side, className = '' }: MemberPileProps) {
+export function MemberPile({ members = BAND_MEMBER_PACKETS, initial = 0, spread, spreadX, duration, side, className = '' }: MemberPileProps) {
   const [index, setIndex] = useState(initial);
   const count = members.length;
   return (
@@ -30,6 +33,7 @@ export function MemberPile({ members = BAND_MEMBER_PACKETS, initial = 0, spread,
       <Stack
         index={index}
         spread={spread}
+        spreadX={spreadX}
         duration={duration}
         side={side}
         onSelect={(item) => setIndex(item === index ? (index + 1) % count : item)}
@@ -48,8 +52,8 @@ export function MemberPile({ members = BAND_MEMBER_PACKETS, initial = 0, spread,
 
 export type BandDossierProps = {
   members?: MemberPacket[];
-  /** The band's own packet, filed under the pile. */
-  band?: PacketProps;
+  /** The band's press one-sheet, folded under the pile. Click it to unfold it. */
+  oneSheet?: OneSheetContent;
   /** The footage printed inside the cover, playing muted: a video file or a YouTube link, captioned. */
   liveSet?: LiveSet;
   /** The cassette player left in the cover under the print, with a tape in it. `null` leaves it out. */
@@ -67,6 +71,8 @@ export type BandDossierProps = {
   initial?: number;
   /** How loosely the pile is stacked. */
   spread?: number;
+  /** How far the members' cards lean sideways out of the pile. Follows `spread` unless given. */
+  spreadX?: number;
   /** Length of one sift, in milliseconds. */
   duration?: number;
   /** Placement of the print in the cover: width and inset from the left as percentages of the pocket, drop from the top, tilt in degrees. */
@@ -83,9 +89,13 @@ export type BandDossierProps = {
   wellWidth?: number;
   wellX?: number;
   wellGap?: number;
-  /** Tilt of the whole pile, and of the band's packet beneath it, in degrees. */
+  /** Nudge of the pile sideways, as a percentage of the well, to keep the tab clear. */
+  pileX?: number;
+  /** Tilt of the whole pile, and of the one-sheet beneath it, in degrees. */
   pileRotation?: number;
   bandRotation?: number;
+  /** Anything else loose in the well, laid over the pile and the one-sheet. It positions itself: the well is its containing block. */
+  children?: ReactNode;
   className?: string;
   style?: CSSProperties;
 };
@@ -103,6 +113,7 @@ export const DOSSIER_PLACEMENT = {
   wellWidth: 110,
   wellX: -1,
   wellGap: 0,
+  pileX: -9,
   pileRotation: 5,
   bandRotation: -4,
 } as const;
@@ -110,12 +121,12 @@ export const DOSSIER_PLACEMENT = {
 /**
  * The band section: a booking agent's press package lying open on the desk.
  * The live set plays inside the cover with a cassette player left under it;
- * the members' packets sit in a pile in the well, the band's own packet filed
- * beneath them.
+ * the members' packets sit in a pile in the well, the band's press one-sheet
+ * folded beneath them.
  */
 export function BandDossier({
   members,
-  band = BAND_PACKET,
+  oneSheet = BAND_ONE_SHEET,
   liveSet = LIVE_SET,
   tape = DEMO_TAPE,
   label = 'Press Package – Funkadelic Astronaut',
@@ -126,6 +137,7 @@ export function BandDossier({
   rotation = -1,
   initial,
   spread = 1.1,
+  spreadX,
   duration,
   proofWidth = DOSSIER_PLACEMENT.proofWidth,
   proofX = DOSSIER_PLACEMENT.proofX,
@@ -138,8 +150,10 @@ export function BandDossier({
   wellWidth = DOSSIER_PLACEMENT.wellWidth,
   wellX = DOSSIER_PLACEMENT.wellX,
   wellGap = DOSSIER_PLACEMENT.wellGap,
+  pileX = DOSSIER_PLACEMENT.pileX,
   pileRotation = DOSSIER_PLACEMENT.pileRotation,
   bandRotation = DOSSIER_PLACEMENT.bandRotation,
+  children,
   className = '',
   style,
 }: BandDossierProps) {
@@ -153,6 +167,7 @@ export function BandDossier({
     '--dossier-well-width': `${wellWidth}%`,
     '--dossier-well-x': `${wellX}%`,
     '--dossier-well-gap': `${wellGap}%`,
+    '--dossier-pile-x': `${pileX}%`,
     '--dossier-pile-rotation': `${pileRotation}deg`,
   } as CSSProperties;
   return (
@@ -188,8 +203,9 @@ export function BandDossier({
         }
       >
         <div className="dossier__well">
-          <MemberPile members={members} initial={initial} spread={spread} duration={duration} />
-          <Packet {...band} rotation={bandRotation} />
+          <MemberPile members={members} initial={initial} spread={spread} spreadX={spreadX} duration={duration} />
+          <OneSheet {...oneSheet} rotation={bandRotation} />
+          {children}
         </div>
       </Folder>
     </section>

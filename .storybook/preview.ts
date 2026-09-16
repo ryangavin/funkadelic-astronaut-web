@@ -13,11 +13,10 @@ const preview: Preview = {
     },
 
     backgrounds: {
-      default: 'paper',
-      values: [
-        { name: 'paper', value: '#ead3a7' },
-        { name: 'ink', value: '#121420' },
-      ],
+      options: {
+        paper: { name: 'paper', value: '#ead3a7' },
+        ink: { name: 'ink', value: '#121420' }
+      }
     },
 
     a11y: {
@@ -27,6 +26,12 @@ const preview: Preview = {
       test: 'todo'
     }
   },
+
+  initialGlobals: {
+    backgrounds: {
+      value: 'paper'
+    }
+  }
 };
 
 export default preview;

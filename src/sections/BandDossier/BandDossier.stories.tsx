@@ -25,6 +25,7 @@ const meta = {
     rotation: { control: { type: 'range', min: -6, max: 6, step: 0.5 } },
     initial: { control: { type: 'range', min: 0, max: 2, step: 1 } },
     spread: { control: { type: 'range', min: 0.5, max: 1.4, step: 0.05 } },
+    spreadX: { control: { type: 'range', min: 0, max: 4, step: 0.1 }, description: 'Sideways lean of the cards, on its own. Follows spread until set.' },
     duration: { control: { type: 'range', min: 200, max: 2400, step: 50 } },
     proofWidth: percent('Print', 40, 120),
     proofX: percent('Print', -20, 40),
@@ -37,10 +38,11 @@ const meta = {
     wellWidth: percent('Well', 40, 125),
     wellX: percent('Well', -10, 40),
     wellGap: percent('Well', 0, 20),
+    pileX: percent('Well', -25, 25),
     pileRotation: degrees('Well'),
     bandRotation: degrees('Well'),
   },
-  args: { open: true, rotation: -1, initial: 0, spread: 1.1, duration: 900, ...DOSSIER_PLACEMENT },
+  args: { open: true, rotation: -1, initial: 0, spread: 1.1, spreadX: 1.1, duration: 900, ...DOSSIER_PLACEMENT },
 } satisfies Meta<typeof BandDossier>;
 
 export default meta;
@@ -51,6 +53,14 @@ const topItem = (root: HTMLElement) =>
 
 /** The section as it will sit on the site: the package open on the sketched desk. */
 export const OnDesk: Story = {
+  args: {
+    spreadX: 2,
+    wellX: -2,
+    pileX: -6,
+    pileRotation: 3,
+    bandRotation: -3
+  },
+
   render: (args) => (
     <PaperSheet height={0} imageSrc={festivalSketch} imageSize="118% auto" imagePosition="center top" imageOpacity={0.9} imageContrast={1.28}>
       <div style={{ padding: '10% 13% 23% 8%' }}>

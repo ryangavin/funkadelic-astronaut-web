@@ -1,0 +1,217 @@
+import { useId, type ComponentProps, type CSSProperties, type HTMLAttributes } from 'react';
+import type { PaperStock } from '../PaperSheet/PaperSheet';
+import './Sticker.css';
+
+export type StickerShape = {
+  /** The printed artwork's outline, in artwork units. The vinyl is cut a border's width outside it. */
+  path: string;
+  /** The artwork's nominal canvas, in artwork units. */
+  width: number;
+  height: number;
+};
+
+export type StickerProps = HTMLAttributes<HTMLElement> &
+  Pick<ComponentProps<'a'>, 'href' | 'target' | 'rel' | 'download' | 'hrefLang'> & {
+    /** Artwork width in CSS pixels. The cut border adds to it. */
+    size?: number;
+    rotation?: number;
+    /** Colour of the vinyl showing in the border. */
+    stock?: PaperStock;
+    /** Width of the border the die leaves around the artwork, in artwork units. */
+    border?: number;
+    /** Clear laminate over the whole sticker, border included. */
+    glossy?: boolean;
+    /** A corner lifting off the surface: `true` for a small curl, or its depth in artwork units. Links curl further under the pointer. */
+    peel?: boolean | number;
+    /** Which corner of the artwork lifts, in artwork coordinates. */
+    peelTip?: { x: number; y: number };
+    /** Outline of the artwork. Defaults to a rounded square. */
+    shape?: StickerShape;
+    /** How far the artwork extends past its nominal canvas on each side, in artwork units, for wide marks. */
+    overhang?: number;
+};
+
+const ROUNDED_SQUARE: StickerShape = {
+  width: 24,
+  height: 24,
+  path: 'M5 0H19Q24 0 24 5V19Q24 24 19 24H5Q0 24 0 19V5Q0 0 5 0Z',
+};
+
+/** The vinyl each stock is printed on. */
+const VINYL: Record<PaperStock, string> = { white: '#fbf8f1', pale: '#f5e9cf', wheat: '#ead3a7', ink: '#15151d' };
+
+const DEFAULT_PEEL = 1.6;
+const LIFT = 1;
+
+type Point = { x: number; y: number };
+
+const fix = (value: number) => Number(value.toFixed(3));
+
+/**
+ * The geometry of a corner peeling back. The corner beyond the fold is lifted
+ * and turned over, so that part of the sticker is gone from the surface and its
+ * mirror image, underside up, lies inside the fold. Under the pointer the fold
+ * moves further in; a fold shifted inward by δ moves the mirror image by 2δ.
+ */
+function peelGeometry(tip: Point, centre: Point, depth: number) {
+  const dx = centre.x - tip.x;
+  const dy = centre.y - tip.y;
+  const length = Math.hypot(dx, dy) || 1;
+  const inward = { x: dx / length, y: dy / length };
+  const along = { x: -inward.y, y: inward.x };
+  const fold = { x: tip.x + inward.x * depth, y: tip.y + inward.y * depth };
+  const a = 2 * along.x * along.x - 1;
+  const b = 2 * along.x * along.y;
+  const d = 2 * along.y * along.y - 1;
+  const reflect = `matrix(${fix(a)} ${fix(b)} ${fix(b)} ${fix(d)} ${fix(fold.x - a * fold.x - b * fold.y)} ${fix(fold.y - b * fold.x - d * fold.y)})`;
+  return { inward, along, fold, reflect };
+}
+
+/**
+ * A die-cut vinyl sticker: the artwork printed on coloured vinyl, cut a border's
+ * width outside its outline, laminated clear over the whole face, and stuck
+ * flat, so it casts almost no shadow. A corner can be peeling: that corner is
+ * off the surface and turned over, its underside showing inside the fold.
+ * With an `href` it is a link, and the corner curls further under the pointer.
+ */
+export function Sticker({
+  size = 72,
+  rotation = 0,
+  stock = 'white',
+  border = 2.2,
+  glossy = true,
+  peel = true,
+  peelTip = { x: 22.5, y: 22.5 },
+  shape = ROUNDED_SQUARE,
+  overhang = 0,
+  children,
+  href,
+  className = '',
+  style,
+  ...props
+}: StickerProps) {
+  const id = useId().replace(/:/g, '');
+  const { width, height, path } = shape;
+  const unit = size / width;
+  // The vinyl's box: the artwork, its overhang, the border and room for the shadow.
+  const margin = border + 1.6;
+  const box = { x: -overhang - margin, y: -margin, width: width + 2 * overhang + 2 * margin, height: height + 2 * margin };
+  const percent = ({ x, y }: Point) => `${fix(((x - box.x) / box.width) * 100)}% ${fix(((y - box.y) / box.height) * 100)}%`;
+
+  const depth = peel === true ? DEFAULT_PEEL : peel === false ? 0 : peel;
+  const centre = { x: width / 2, y: height / 2 };
+  const rest = depth > 0 ? peelGeometry(peelTip, centre, depth) : null;
+  const shift = depth * LIFT;
+  /** Everything on the inner side of a fold placed `offset` further in than the resting one, as a clip polygon. */
+  const kept = (offset: number) => {
+    if (!rest) return 'none';
+    const reach = 4 * Math.max(box.width, box.height);
+    const at = { x: rest.fold.x + rest.inward.x * offset, y: rest.fold.y + rest.inward.y * offset };
+    const corners = [
+      { x: at.x - rest.along.x * reach, y: at.y - rest.along.y * reach },
+      { x: at.x + rest.along.x * reach, y: at.y + rest.along.y * reach },
+      { x: at.x + rest.along.x * reach + rest.inward.x * reach, y: at.y + rest.along.y * reach + rest.inward.y * reach },
+      { x: at.x - rest.along.x * reach + rest.inward.x * reach, y: at.y - rest.along.y * reach + rest.inward.y * reach },
+    ];
+    return `polygon(${corners.map(percent).join(', ')})`;
+  };
+
+  const vars = {
+    '--sticker-width': `${fix(box.width * unit)}px`,
+    '--sticker-height': `${fix(box.height * unit)}px`,
+    '--sticker-art-left': `${fix((overhang + margin) * unit)}px`,
+    '--sticker-art-top': `${fix(margin * unit)}px`,
+    '--sticker-art-size': `${size}px`,
+    '--sticker-rotation': `${rotation}deg`,
+    '--sticker-cut': kept(0),
+    '--sticker-cut-lifted': kept(shift),
+    // The flap moves with its own box, so its clip is set back by the same distance it travels.
+    '--sticker-flap-cut': kept(0),
+    '--sticker-flap-cut-lifted': kept(-shift),
+    '--sticker-flap-shift': rest ? `${fix(rest.inward.x * 2 * shift * unit)}px ${fix(rest.inward.y * 2 * shift * unit)}px` : '0 0',
+    ...style,
+  } as CSSProperties;
+
+  const viewBox = `${fix(box.x)} ${fix(box.y)} ${fix(box.width)} ${fix(box.height)}`;
+  const outline = `#${id}-outline`;
+  const Tag = href === undefined ? 'div' : 'a';
+  const vinyl = VINYL[stock];
+  // The underside shades from the fold out to the tip. It is painted inside the mirrored
+  // group, so it is laid out along the corner's original, outward direction.
+  const backingFrom = rest ? rest.fold : centre;
+  const backingTo = rest ? { x: rest.fold.x - rest.inward.x * (depth + border), y: rest.fold.y - rest.inward.y * (depth + border) } : centre;
+
+  return (
+    <Tag {...props} href={href} className={`sticker ${className}`} data-peel={rest ? '' : undefined} data-stock={stock} style={vars}>
+      {/* The vinyl on the surface: cut, printed and laminated. The lifted corner is cut away here. */}
+      <span className="sticker__vinyl">
+        <svg className="sticker__layer" viewBox={viewBox} aria-hidden="true" focusable="false">
+          <defs>
+            <path id={`${id}-outline`} d={path} strokeLinejoin="round" />
+          </defs>
+          {/* Stuck flat, the whole sticker is one thin layer: the faintest shadow at its cut edge. */}
+          <use href={outline} fill="#121420" stroke="#121420" strokeWidth={2 * border} opacity="0.28" filter={`url(#${id}-shadow)`} />
+          <filter id={`${id}-shadow`} x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="0.3" />
+            <feOffset dy="0.25" />
+          </filter>
+          {/* The cut edge, then the vinyl. */}
+          <use href={outline} fill="#5b4a33" stroke="#5b4a33" strokeWidth={2 * border + 0.36} opacity="0.35" />
+          <use href={outline} fill={vinyl} stroke={vinyl} strokeWidth={2 * border} />
+        </svg>
+        <span className="sticker__artwork">{children}</span>
+        {glossy && (
+          <svg className="sticker__layer" viewBox={viewBox} aria-hidden="true" focusable="false">
+            <defs>
+              <mask id={`${id}-face`} maskUnits="userSpaceOnUse" x={box.x} y={box.y} width={box.width} height={box.height}>
+                <use href={outline} fill="white" stroke="white" strokeWidth={2 * border} />
+              </mask>
+              <linearGradient id={`${id}-gloss`} x1="0" y1="0" x2="0.85" y2="1">
+                <stop offset="0" stopColor="white" stopOpacity="0.5" />
+                <stop offset="0.3" stopColor="white" stopOpacity="0.06" />
+                <stop offset="0.4" stopColor="white" stopOpacity="0.3" />
+                <stop offset="0.47" stopColor="white" stopOpacity="0.02" />
+                <stop offset="0.9" stopColor="white" stopOpacity="0.02" />
+                <stop offset="1" stopColor="white" stopOpacity="0.18" />
+              </linearGradient>
+            </defs>
+            {/* The laminate: one sheen across vinyl and print alike, and a bright rim where it meets the cut. */}
+            <g mask={`url(#${id}-face)`}>
+              <rect x={box.x} y={box.y} width={box.width} height={box.height} fill={`url(#${id}-gloss)`} />
+              <use href={outline} fill="none" stroke="white" strokeOpacity="0.5" strokeWidth={2 * border + 0.5} style={{ mixBlendMode: 'soft-light' }} />
+              <use href={outline} fill="none" stroke="white" strokeOpacity="0.55" strokeWidth={2 * border - 0.4} />
+              <use href={outline} fill="none" stroke={vinyl} strokeWidth={2 * border - 0.9} />
+              <rect x={box.x} y={box.y} width={box.width} height={box.height} fill={`url(#${id}-gloss)`} opacity="0.6" />
+            </g>
+          </svg>
+        )}
+      </span>
+      {/* The lifted corner, turned over: the sticker's mirror image inside the fold, underside up. */}
+      {rest && (
+        <svg className="sticker__layer sticker__flap" viewBox={viewBox} aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id={`${id}-underside`} gradientUnits="userSpaceOnUse" x1={backingFrom.x} y1={backingFrom.y} x2={backingTo.x} y2={backingTo.y}>
+              <stop offset="0" stopColor="#a9a59b" />
+              <stop offset="0.3" stopColor="#e4e1d8" />
+              <stop offset="0.72" stopColor="#ffffff" />
+              <stop offset="1" stopColor="#efece5" />
+            </linearGradient>
+            <filter id={`${id}-lift`} x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="0.45" />
+              <feOffset dx="0.3" dy="0.55" />
+            </filter>
+          </defs>
+          {/* The shadow is cast outside the mirrored group, so it falls down and to the right like every other. */}
+          <g filter={`url(#${id}-lift)`} opacity="0.4">
+            <use href={outline} transform={rest.reflect} fill="#121420" stroke="#121420" strokeWidth={2 * border} />
+          </g>
+          <g transform={rest.reflect}>
+            <use href={outline} fill={`url(#${id}-underside)`} stroke={`url(#${id}-underside)`} strokeWidth={2 * border} />
+            <use href={outline} fill="none" stroke="#c9c5bb" strokeWidth={2 * border + 0.2} style={{ mixBlendMode: 'multiply' }} opacity="0.5" />
+            <use href={outline} fill="none" stroke={`url(#${id}-underside)`} strokeWidth={2 * border} />
+          </g>
+        </svg>
+      )}
+    </Tag>
+  );
+}

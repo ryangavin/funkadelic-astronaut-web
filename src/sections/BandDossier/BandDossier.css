@@ -1,6 +1,6 @@
 /* The press package on the desk. The folder does the drawing; this only places
    what is in it: the print and the player inside the cover, the pile and the
-   band's packet in the well. Enlarged cards fan across the edges of the leaf
+   band's one-sheet in the well. Enlarged cards fan across the edges of the leaf
    with opposing tilts. The section sets the placement variables from its
    props; the values here are the defaults. */
 
@@ -14,6 +14,7 @@
   --dossier-well-width: 110%;
   --dossier-well-x: -1%;
   --dossier-well-gap: 0%;
+  --dossier-pile-x: -9%;
   --dossier-pile-rotation: 5deg;
   display: block;
 }
@@ -41,8 +42,11 @@
   gap: var(--dossier-well-gap);
 }
 
+/* The pile is nudged sideways rather than resized, so the cards keep their
+   size while the tab on the leaf's edge stays clear of them. */
 .member-pile {
   position: relative;
+  translate: var(--dossier-pile-x) 0;
   rotate: var(--dossier-pile-rotation);
 }
 
@@ -65,5 +69,6 @@
 }
 
 .dossier .folder[data-open='false'] .member-pile {
+  translate: 0 0;
   rotate: 0deg;
 }

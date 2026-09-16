@@ -1,0 +1,123 @@
+/*
+  A wooden desktop from above. 1440 units across, like a sheet, so Pins work
+  on it. The top is glued up from boards; each board carries bands of tone
+  that a turbulence filter bends into grain, with pores over that and the
+  room's light on top of everything but what is laid on the desk.
+*/
+
+.desk {
+  --sheet-unit: calc(100cqw / 1440);
+  --desk-height: 1000;
+  --desk-light: 1;
+  --desk-boards: 3;
+  /* Walnut: the dark, warm top a booking office has had for years. */
+  --desk-stock: #5a3a25;
+  --desk-stock-deep: #3d2616;
+  --desk-stock-light: #7b5334;
+  --desk-seam: rgb(20 10 4 / 0.55);
+  display: block;
+  width: 100%;
+  /* The top's height is in desk units, which its own container-type cannot supply:
+     the surface inside measures against this element. */
+  container-type: inline-size;
+  color: #121420;
+}
+
+.desk__top {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: calc(var(--desk-height) * var(--sheet-unit));
+  overflow: clip;
+  background: var(--desk-stock);
+}
+
+.desk[data-wood='oak'] {
+  --desk-stock: #b8905c;
+  --desk-stock-deep: #8f6a3c;
+  --desk-stock-light: #d3ac78;
+  --desk-seam: rgb(70 45 20 / 0.5);
+}
+
+.desk[data-wood='ebony'] {
+  --desk-stock: #2b2320;
+  --desk-stock-deep: #171210;
+  --desk-stock-light: #3e332e;
+  --desk-seam: rgb(0 0 0 / 0.7);
+}
+
+.desk__filters {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.desk__boards {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-auto-rows: 1fr;
+}
+
+/* Each board is its own plank: a seam along its lower edge, a slightly different cast. */
+.desk__board {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--desk-stock-light), var(--desk-stock) 30%, var(--desk-stock-deep));
+  box-shadow: inset 0 calc(-2 * var(--sheet-unit)) 0 var(--desk-seam), inset 0 calc(1.5 * var(--sheet-unit)) 0 rgb(255 240 220 / 0.08);
+}
+
+.desk__board:nth-child(even) {
+  filter: brightness(0.94) saturate(1.06);
+}
+
+.desk__board:nth-child(3n) {
+  filter: brightness(1.05) saturate(0.95);
+}
+
+/* Bands of tone along the board, three periods laid over each other so the
+   spacing never repeats, then bent by the grain filter. Overscanned so the
+   displacement has something to pull in at the edges. */
+.desk__bands {
+  position: absolute;
+  inset: -12%;
+  background-image:
+    repeating-linear-gradient(180deg, rgb(255 225 190 / 0.12) 0 calc(3 * var(--sheet-unit)), transparent calc(3 * var(--sheet-unit)) calc(11 * var(--sheet-unit)), rgb(20 8 2 / 0.16) calc(11 * var(--sheet-unit)) calc(13 * var(--sheet-unit)), transparent calc(13 * var(--sheet-unit)) calc(29 * var(--sheet-unit))),
+    repeating-linear-gradient(179deg, transparent 0 calc(17 * var(--sheet-unit)), rgb(20 8 2 / 0.2) calc(17 * var(--sheet-unit)) calc(21 * var(--sheet-unit)), transparent calc(21 * var(--sheet-unit)) calc(47 * var(--sheet-unit))),
+    repeating-linear-gradient(181deg, rgb(255 230 200 / 0.07) 0 calc(9 * var(--sheet-unit)), transparent calc(9 * var(--sheet-unit)) calc(73 * var(--sheet-unit)), rgb(20 8 2 / 0.12) calc(73 * var(--sheet-unit)) calc(90 * var(--sheet-unit)), transparent calc(90 * var(--sheet-unit)) calc(131 * var(--sheet-unit)));
+  background-position: 0 calc(var(--desk-board) * 137 * var(--sheet-unit)), 0 calc(var(--desk-board) * 61 * var(--sheet-unit)), 0 calc(var(--desk-board) * 211 * var(--sheet-unit));
+  mix-blend-mode: soft-light;
+}
+
+.desk__pores {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  mix-blend-mode: multiply;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.desk[data-wood='ebony'] .desk__pores {
+  opacity: 0.35;
+}
+
+/* The room's light: a sheen from the upper left, shade gathering in the corners and along the far edge. */
+.desk__light {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--desk-light);
+  background:
+    radial-gradient(90% 70% at 22% 12%, rgb(255 236 205 / 0.16), transparent 62%),
+    linear-gradient(180deg, rgb(255 240 220 / 0.05), transparent 30%, transparent 70%, rgb(0 0 0 / 0.16)),
+    radial-gradient(130% 110% at 50% 45%, transparent 52%, rgb(0 0 0 / 0.5));
+}
+
+.desk__things {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+}

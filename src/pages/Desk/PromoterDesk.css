@@ -1,0 +1,315 @@
+/*
+  The promoter's desk. The Desk draws the wood and the Pins place things on
+  it; this places what is stuck to the folder's cover, works the folder as a
+  button, and keeps the loose things in their order once they are out.
+*/
+
+.promoter-desk-stage {
+  background: #1a120c;
+}
+
+.promoter-desk {
+  font-family: var(--font-body);
+}
+
+/* --- The folder as the control --------------------------------------- */
+
+.promoter-desk__folder {
+  position: relative;
+}
+
+/* Closed, the whole folder is the button: it lies beneath the folder, which lets
+   pointer events through to it, but for the stickers, which are links. Open, the
+   button is the tab on the edge of the back leaf, and it sits on top. */
+.promoter-desk__open {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 50%;
+  height: var(--promoter-desk-folder-height);
+  --folder-unit: var(--promoter-desk-folder-unit, 0.6px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: calc(14 * var(--folder-unit, 0.6px));
+  background: transparent;
+  appearance: none;
+  cursor: pointer;
+}
+
+.promoter-desk[data-open='true'] .promoter-desk__open {
+  left: calc(100% + (var(--tab-out) - var(--tab-width)) * var(--folder-unit, 0.6px));
+  top: var(--tab-top);
+  width: calc(var(--tab-width) * var(--folder-unit, 0.6px));
+  height: var(--tab-height);
+  z-index: 5;
+  border-radius: 0 calc(12 * var(--folder-unit, 0.6px)) calc(12 * var(--folder-unit, 0.6px)) 0;
+}
+
+.promoter-desk__open:focus-visible {
+  outline: 3px solid #f2b134;
+  outline-offset: 6px;
+}
+
+/* Closed, the button is under the folder, so its ring is drawn around the folder instead. */
+.promoter-desk[data-open='false'] .promoter-desk__folder:has(.promoter-desk__open:focus-visible)::after {
+  content: '';
+  position: absolute;
+  z-index: 6;
+  inset: -8px -8px calc(-8px + 100% - var(--promoter-desk-folder-height)) calc(50% - 8px);
+  border-radius: 20px;
+  outline: 3px solid #f2b134;
+  pointer-events: none;
+}
+
+.promoter-desk[data-open='false'] .dossier {
+  pointer-events: none;
+}
+
+.promoter-desk[data-open='false'] .dossier .sticker {
+  pointer-events: auto;
+}
+
+.promoter-desk .dossier {
+  transition: translate 260ms ease;
+}
+
+@media (hover: hover) {
+  .promoter-desk[data-open='false'] .promoter-desk__folder:has(.promoter-desk__open:hover) .dossier {
+    translate: 0 -5px;
+  }
+}
+
+/* --- What is stuck to the cover --------------------------------------- */
+
+/* The folder's own typed label becomes the whole face: what is placed in it lays itself out. */
+.promoter-desk .folder__sticker {
+  display: block;
+  inset: 0;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  rotate: 0deg;
+  font: inherit;
+}
+
+.promoter-desk__cover {
+  position: absolute;
+  inset: 0;
+}
+
+.promoter-desk__brand {
+  position: absolute;
+  left: calc(58 * var(--folder-unit));
+  top: calc(118 * var(--folder-unit));
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  rotate: -2deg;
+}
+
+.promoter-desk__brand > :nth-child(2) {
+  margin-left: 30px;
+  rotate: 1.5deg;
+}
+
+/* The typed label, as on the folder's own sticker. */
+.promoter-desk__typed {
+  position: absolute;
+  left: calc(84 * var(--folder-unit));
+  top: calc(392 * var(--folder-unit));
+  padding: calc(10 * var(--folder-unit)) calc(20 * var(--folder-unit));
+  border-radius: calc(4 * var(--folder-unit));
+  background: rgb(250 246 236 / 0.94);
+  box-shadow: 0 0 0 1px rgb(80 60 40 / 0.14), calc(2 * var(--folder-unit)) calc(3 * var(--folder-unit)) 0 rgb(18 20 32 / 0.2);
+  color: var(--folder-ink);
+  font-family: var(--font-handwritten, Caveat, cursive);
+  font-size: calc(30 * var(--folder-unit));
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+  rotate: -1deg;
+}
+
+.promoter-desk__streams {
+  position: absolute;
+  left: calc(56 * var(--folder-unit));
+  bottom: calc(84 * var(--folder-unit));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.promoter-desk__note {
+  position: absolute;
+  right: calc(58 * var(--folder-unit));
+  bottom: calc(230 * var(--folder-unit));
+  width: 168px;
+}
+
+.promoter-desk__ring {
+  position: absolute;
+  right: calc(28 * var(--folder-unit));
+  top: calc(40 * var(--folder-unit));
+  width: 200px;
+}
+
+/* --- On the desk ------------------------------------------------------ */
+
+.promoter-desk__socials-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.promoter-desk__socials-row > :nth-child(2) {
+  translate: 0 22px;
+}
+
+/* A spare tape out of the player: the cassette drawn as in the Walkman, lying on its own. */
+.promoter-desk__tape {
+  --walkman-label-band: #c9432f;
+  --walkman-label-ink: #2b3a6b;
+  --walkman-unit: calc(100cqw / 720);
+  display: block;
+  width: 100%;
+  container-type: inline-size;
+}
+
+.promoter-desk__tape .cassette {
+  position: static;
+  width: 100%;
+  translate: 0 0;
+  filter: drop-shadow(2px 4px 3px rgb(10 5 2 / 0.5));
+}
+
+/* The one-sheet pulled open lies over whatever spilled beneath it. */
+.promoter-desk .one-sheet[data-open='true'] {
+  z-index: 20;
+}
+
+/* --- The running order ------------------------------------------------ */
+
+.run-sheet {
+  --run-sheet-rotation: 0deg;
+  --run-sheet-unit: calc(100cqw / 720);
+  position: relative;
+  width: 100%;
+  aspect-ratio: 8.5 / 11;
+  container-type: inline-size;
+  background: #fbfaf5;
+  color: #262424;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  box-shadow:
+    1px 2px 0 rgb(18 20 32 / 0.2),
+    5px 8px 10px rgb(18 20 32 / 0.3);
+  rotate: var(--run-sheet-rotation);
+}
+
+/* The page's units are the sheet's own width, which the sheet itself cannot measure: the print sits one level in. */
+.run-sheet__page {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  padding: calc(52 * var(--run-sheet-unit)) calc(56 * var(--run-sheet-unit));
+}
+
+.run-sheet__title {
+  margin: 0 0 calc(8 * var(--run-sheet-unit));
+  font-size: calc(40 * var(--run-sheet-unit));
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.run-sheet__meta {
+  margin: 0 0 calc(24 * var(--run-sheet-unit));
+  padding-bottom: calc(12 * var(--run-sheet-unit));
+  border-bottom: calc(3 * var(--run-sheet-unit)) solid #262424;
+  font-size: calc(18 * var(--run-sheet-unit));
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.run-sheet__slots {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: calc(27 * var(--run-sheet-unit));
+  line-height: 1.2;
+}
+
+.run-sheet__slots th,
+.run-sheet__slots td {
+  padding: calc(20 * var(--run-sheet-unit)) 0;
+  border-bottom: 1px solid rgb(0 0 0 / 0.18);
+  text-align: left;
+  vertical-align: baseline;
+}
+
+.run-sheet__slots th {
+  width: 28%;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.run-sheet__slot--band td {
+  font-weight: 700;
+}
+
+.run-sheet__stamp {
+  position: absolute;
+  top: calc(120 * var(--run-sheet-unit));
+  right: calc(40 * var(--run-sheet-unit));
+  rotate: 12deg;
+  mix-blend-mode: multiply;
+  opacity: 0.75;
+}
+
+.run-sheet__stamp-ink {
+  display: inline-block;
+  padding: calc(6 * var(--run-sheet-unit)) calc(16 * var(--run-sheet-unit));
+  border: calc(4 * var(--run-sheet-unit)) solid currentColor;
+  border-radius: calc(6 * var(--run-sheet-unit));
+  color: #b3352b;
+  font-family: var(--font-body);
+  font-size: calc(34 * var(--run-sheet-unit));
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* Pen on the print: the band's slot ringed, a note in the margin. */
+.run-sheet__pen {
+  position: absolute;
+  left: calc(380 * var(--run-sheet-unit));
+  top: calc(586 * var(--run-sheet-unit));
+  color: #2c4fa3;
+  font-family: var(--font-handwritten, Caveat, cursive);
+  font-size: calc(40 * var(--run-sheet-unit));
+  font-weight: 600;
+  white-space: nowrap;
+  rotate: -6deg;
+}
+
+.run-sheet__circle {
+  position: absolute;
+  left: calc(30 * var(--run-sheet-unit));
+  top: calc(432 * var(--run-sheet-unit));
+  width: calc(640 * var(--run-sheet-unit));
+  height: calc(84 * var(--run-sheet-unit));
+  border: calc(3.5 * var(--run-sheet-unit)) solid #2c4fa3;
+  border-radius: 48% 52% 50% 50% / 60% 55% 45% 40%;
+  rotate: -1deg;
+  opacity: 0.85;
+}
+
+/* Said, not shown. */
+.promoter-desk__status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

@@ -14,6 +14,8 @@ export type StackProps = {
   ratio?: string;
   /** How far the deeper packets peek out. 1 is a loosely handled pile. */
   spread?: number;
+  /** How far the packets lean sideways, on its own. Follows `spread` unless given. */
+  spreadX?: number;
   /** Length of one sift, in milliseconds. */
   duration?: number;
   /** Which way the hand swings a packet out: 1 is to the right. */
@@ -33,7 +35,7 @@ export type StackProps = {
  * and landed on top. With `onSelect`, the pile itself is the control. The pile
  * reserves headroom above the front card for the staggered ones.
  */
-export function Stack({ index, children, ratio = PACKET_RATIO, spread = 1, duration = DEFAULT_SIFT_MS, side = 1, onSelect, itemLabel, className = '', style }: StackProps) {
+export function Stack({ index, children, ratio = PACKET_RATIO, spread = 1, spreadX = spread, duration = DEFAULT_SIFT_MS, side = 1, onSelect, itemLabel, className = '', style }: StackProps) {
   const host = useRef<HTMLDivElement>(null);
   const shown = useRef(index);
   const items = Children.toArray(children);
@@ -49,10 +51,10 @@ export function Stack({ index, children, ratio = PACKET_RATIO, spread = 1, durat
     const moves = reduced ? [] : movesBetween(from, index, count);
     const cancels: (() => void)[] = [];
     nodes.forEach((node, item) => {
-      const slot = slotFor(item, depthOf(item, index, count), count, spread);
+      const slot = slotFor(item, depthOf(item, index, count), count, spread, spreadX);
       const move = moves.find((candidate) => candidate.item === item);
       if (move) {
-        cancels.push(sift(node, move.kind, slotFor(item, depthOf(item, from, count), count, spread), slot, { duration, side }));
+        cancels.push(sift(node, move.kind, slotFor(item, depthOf(item, from, count), count, spread, spreadX), slot, { duration, side }));
         return;
       }
       const settling = from !== index && !reduced;
@@ -61,7 +63,7 @@ export function Stack({ index, children, ratio = PACKET_RATIO, spread = 1, durat
       node.style.zIndex = String(slot.zIndex);
     });
     return () => cancels.forEach((cancel) => cancel());
-  }, [index, count, spread, duration, side]);
+  }, [index, count, spread, spreadX, duration, side]);
 
   // Headroom for the deepest card's stagger, as a share of the width (percent margins resolve against width).
   const [ratioWidth, ratioHeight] = ratio.split('/').map((part) => Number(part.trim()));
@@ -78,7 +80,7 @@ export function Stack({ index, children, ratio = PACKET_RATIO, spread = 1, durat
     <div ref={host} className={`stack ${className}`} data-selectable={onSelect ? '' : undefined} style={{ aspectRatio: ratio, marginTop: `${headroom.toFixed(2)}%`, ...style }}>
       {items.map((child, item) => {
         const depth = depthOf(item, index, count);
-        const side = Math.sign(slotFor(item, depth, count, spread).dx) || 1;
+        const side = Math.sign(slotFor(item, depth, count, spread, spreadX).dx) || 1;
         return (
           <div
             key={(child as { key?: string | null }).key ?? item}

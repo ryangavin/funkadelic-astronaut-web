@@ -68,7 +68,7 @@ test('Packet clips a Polaroid over an IndexCard and marks the print for the stac
   assert.match(read('src/components/Packet/Packet.css'), /\.packet__clip--back \{\s+z-index: 0;/);
 });
 
-test('BandDossier is the band section: the live set in the cover, the pile and band packet in the well', () => {
+test('BandDossier is the band section: the live set in the cover, the pile and the folded one-sheet in the well', () => {
   const section = read('src/sections/BandDossier/BandDossier.tsx');
   const css = read('src/sections/BandDossier/BandDossier.css');
 
@@ -87,14 +87,15 @@ test('BandDossier is the band section: the live set in the cover, the pile and b
   assert.match(read('src/sections/BandDossier/bandMembers.tsx'), /export const DEMO_TAPE: Tape = \{\s+src: demoTape,/);
   assert.match(css, /\.dossier__deck \{\s+position: absolute;\s+left: var\(--dossier-deck-x\);\s+bottom: var\(--dossier-deck-y\);\s+width: var\(--dossier-deck-width\);\s+z-index: 2;/);
   assert.match(css, /--dossier-deck-width: 94%;\s+--dossier-deck-x: -4%;\s+--dossier-deck-y: -14%;/);
-  assert.match(section, /<MemberPile members=\{members\} initial=\{initial\} spread=\{spread\} duration=\{duration\} \/>\s+<Packet \{\.\.\.band\} rotation=\{bandRotation\} \/>/);
+  assert.match(section, /<MemberPile members=\{members\} initial=\{initial\} spread=\{spread\} spreadX=\{spreadX\} duration=\{duration\} \/>\s+<OneSheet \{\.\.\.oneSheet\} rotation=\{bandRotation\} \/>/);
+  assert.match(section, /oneSheet = BAND_ONE_SHEET,/);
   // Placement is a set of props the stories expose as controls, written to variables the stylesheet defaults.
   assert.match(section, /export const DOSSIER_PLACEMENT = \{\s+proofWidth: 108,/);
   assert.match(section, /'--dossier-deck-x': `\$\{deckX\}%`/);
   assert.match(section, /rotation=\{proofRotation\}/);
   assert.match(css, /\.dossier \{\s+--dossier-proof-width: 108%;/);
   assert.match(css, /\.dossier__proof \{\s+width: var\(--dossier-proof-width\);\s+margin-left: var\(--dossier-proof-x\)/);
-  assert.match(css, /\.member-pile \{\s+position: relative;\s+rotate: var\(--dossier-pile-rotation\)/);
+  assert.match(css, /\.member-pile \{\s+position: relative;\s+translate: var\(--dossier-pile-x\) 0;\s+rotate: var\(--dossier-pile-rotation\)/);
   assert.match(read('src/sections/BandDossier/BandDossier.stories.tsx'), /\.\.\.DOSSIER_PLACEMENT \}/);
   assert.match(css, /\.member-pile__status \{[\s\S]+?clip-path: inset\(50%\)/);
   assert.doesNotMatch(read('styles/sections.css'), /\.dossier\b(?!-)/, 'the legacy stylesheet must not style the React section');
@@ -114,6 +115,10 @@ test('Stack maths: depth wraps, slots layer by depth, and one packet flies per s
   assert.equal(bottom.zIndex, 1);
   assert.equal(top.dx, STACK_SHIFTS[0]);
   assert.equal(slotFor(0, 2, 3).dx, STACK_SHIFTS[0]);
+  // The sideways lean has its own dial, which follows the overall spread unless set.
+  assert.equal(slotFor(0, 0, 3, 2).dx, STACK_SHIFTS[0] * 2);
+  assert.equal(slotFor(0, 1, 3, 2, 0.5).dx, STACK_SHIFTS[0] * 0.5);
+  assert.equal(slotFor(0, 1, 3, 2, 0.5).dy, slotFor(0, 1, 3, 2).dy);
   const middle = slotFor(1, 1, 3);
   assert.ok(Math.sign(bottom.dx) !== Math.sign(middle.dx) && bottom.dy < middle.dy && bottom.scale < 1);
   assert.ok(Math.sign(bottom.rotate - slotFor(2, 0, 3).rotate) !== Math.sign(middle.rotate - slotFor(1, 0, 3).rotate));

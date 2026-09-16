@@ -48,10 +48,12 @@ export function depthOf(item: number, index: number, count: number) {
 }
 
 /** Where an item rests at a given depth. Deeper packets sit higher, each showing its
-    name above the one in front, so the pile plainly holds more than one. */
-export function slotFor(item: number, depth: number, count: number, spread = 1): StackSlot {
+    name above the one in front, so the pile plainly holds more than one. `spread`
+    loosens the whole pile; `spreadX` scales only the sideways lean, and follows
+    `spread` unless given. */
+export function slotFor(item: number, depth: number, count: number, spread = 1, spreadX = spread): StackSlot {
   const mess = STACK_MESS[Math.min(depth, STACK_MESS.length - 1)];
-  const dx = STACK_SHIFTS[item % STACK_SHIFTS.length] * spread;
+  const dx = STACK_SHIFTS[item % STACK_SHIFTS.length] * spreadX;
   const dy = mess.dy * spread;
   // Tilts stay small in the pile: a raised corner would cover the name on the card behind.
   const rotate = STACK_TILTS[item % STACK_TILTS.length] * (depth === 0 ? 0.5 : 0.35) + mess.rotate * spread;

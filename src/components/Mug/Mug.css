@@ -1,0 +1,103 @@
+/*
+  A mug from above, drawn 240 units square with the body centred a little to
+  the left so the handle fits. It is the tallest thing on a desk, so it throws
+  the longest shadow. The ring it leaves is a separate thing, laid on paper.
+*/
+
+.mug {
+  --mug-rotation: 30deg;
+  --mug-glaze: #e8dfcc;
+  --mug-drink: #3a2113;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  rotate: var(--mug-rotation);
+}
+
+.mug__art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.mug__shadow {
+  fill: rgb(10 5 2 / 0.5);
+  stroke: rgb(10 5 2 / 0.5);
+}
+
+.mug__handle path:first-child,
+.mug__body,
+.mug__inside {
+  fill: var(--mug-glaze);
+}
+
+.mug__handle path:first-child {
+  fill: none;
+  stroke: var(--mug-glaze);
+}
+
+.mug__rim {
+  stroke: rgb(0 0 0 / 0.22);
+}
+
+.mug__inside {
+  filter: brightness(0.9);
+}
+
+.mug__drink {
+  fill: var(--mug-drink);
+}
+
+.mug__window {
+  fill: #fff;
+  opacity: 0.16;
+}
+
+.mug__bubbles {
+  fill: #d9b28a;
+  opacity: 0.55;
+}
+
+.mug__bottom {
+  fill: var(--mug-glaze);
+  filter: brightness(0.82);
+}
+
+.mug__dregs {
+  stroke: var(--mug-drink);
+  opacity: 0.4;
+}
+
+.mug__glint {
+  stroke: #fff;
+  opacity: 0.55;
+}
+
+.coffee-ring {
+  --coffee-ring-strength: 0.45;
+  --coffee-ring-rotation: 0deg;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  rotate: var(--coffee-ring-rotation);
+  opacity: var(--coffee-ring-strength);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.coffee-ring svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: blur(0.4px);
+}
+
+.coffee-ring circle {
+  stroke: #5a3116;
+}
+
+.coffee-ring__drips {
+  fill: #5a3116;
+}
