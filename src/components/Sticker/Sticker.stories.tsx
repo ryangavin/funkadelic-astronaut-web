@@ -49,7 +49,7 @@ export const AllPlatforms: Story = {
     const gradient = canvasElement.querySelector('.social-icon[data-platform="instagram"] linearGradient');
     await expect(gradient).toBeInTheDocument();
     const facebook = canvasElement.querySelector<HTMLElement>('.social-icon[data-platform="facebook"]')!;
-    await expect(facebook.style.getPropertyValue('--social-icon-ink')).toBe('#1877f2');
+    await expect(facebook.style.getPropertyValue('--social-icon-ink')).toBe('#4a78b8');
   },
 };
 
@@ -70,9 +70,14 @@ export const Peeling: Story = {
 
 /** Still on its liner: the sheet of backing paper it came on, lying loose on the desk. */
 export const OnLiner: Story = {
-  args: { platform: 'spotify', backing: true, rotation: 6, size: 96 },
+  args: { platform: 'spotify', backing: true, rotation: 6, size: 96, peel: 3 },
   play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector('.sticker__sheet')).toBeInTheDocument();
+    const sheet = canvasElement.querySelector<HTMLElement>('.sticker__sheet')!;
+    await expect(sheet).toBeInTheDocument();
+    // The liner keeps its corner: only the vinyl is cut by the peel.
+    const win = canvasElement.ownerDocument.defaultView!;
+    await expect(win.getComputedStyle(sheet).clipPath).toBe('none');
+    await expect(win.getComputedStyle(canvasElement.querySelector('.sticker__vinyl')!).clipPath).toMatch(/^polygon/);
   },
 };
 

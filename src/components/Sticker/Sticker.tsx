@@ -157,15 +157,11 @@ export function Sticker({
 
   return (
     <Tag {...props} href={href} className={`sticker ${className}`} data-peel={rest ? '' : undefined} data-stock={stock} style={vars}>
-      {/* The vinyl on the surface: cut, printed and laminated. The lifted corner is cut away here. */}
-      <span className="sticker__vinyl">
-        <svg className="sticker__layer" viewBox={viewBox} aria-hidden="true" focusable="false">
+      {/* On its liner: a sheet of glossy backing paper lying on the desk, the sticker kiss-cut on it.
+          It stays down when the corner is peeled: that is what is being peeled off. */}
+      {liner > 0 && (
+        <svg className="sticker__layer sticker__sheet" viewBox={viewBox} aria-hidden="true" focusable="false">
           <defs>
-            <path id={`${id}-outline`} d={path} strokeLinejoin="round" />
-            <filter id={`${id}-shadow`} x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="0.25" />
-              <feOffset dy="0.2" />
-            </filter>
             <filter id={`${id}-sheet-shadow`} x="-20%" y="-20%" width="140%" height="140%">
               <feGaussianBlur stdDeviation="0.5" />
               <feOffset dx="0.4" dy="0.7" />
@@ -176,14 +172,23 @@ export function Sticker({
               <stop offset="1" stopColor="#e6e1d6" />
             </linearGradient>
           </defs>
-          {/* On its liner: a sheet of glossy backing paper lying on the desk, the sticker kiss-cut on it. */}
-          {liner > 0 && (
-            <g className="sticker__sheet">
-              <rect x={sheet.x} y={sheet.y} width={sheet.width} height={sheet.height} rx="0.8" fill="#121420" opacity="0.35" filter={`url(#${id}-sheet-shadow)`} />
-              <rect x={sheet.x} y={sheet.y} width={sheet.width} height={sheet.height} rx="0.8" fill={`url(#${id}-sheet)`} />
-              <rect x={sheet.x} y={sheet.y} width={sheet.width} height={sheet.height} rx="0.8" fill="none" stroke="#121420" strokeOpacity="0.12" strokeWidth="0.12" />
-            </g>
-          )}
+          <rect x={sheet.x} y={sheet.y} width={sheet.width} height={sheet.height} rx="0.8" fill="#121420" opacity="0.35" filter={`url(#${id}-sheet-shadow)`} />
+          <rect x={sheet.x} y={sheet.y} width={sheet.width} height={sheet.height} rx="0.8" fill={`url(#${id}-sheet)`} />
+          <rect x={sheet.x} y={sheet.y} width={sheet.width} height={sheet.height} rx="0.8" fill="none" stroke="#121420" strokeOpacity="0.12" strokeWidth="0.12" />
+          {/* The kiss-cut, scored through the vinyl into the liner: it shows where the sticker has lifted. */}
+          <use href={`#${id}-outline`} fill="none" stroke="#121420" strokeOpacity="0.14" strokeWidth={2 * border + 0.2} />
+        </svg>
+      )}
+      {/* The vinyl on the surface: cut, printed and laminated. The lifted corner is cut away here. */}
+      <span className="sticker__vinyl">
+        <svg className="sticker__layer" viewBox={viewBox} aria-hidden="true" focusable="false">
+          <defs>
+            <path id={`${id}-outline`} d={path} strokeLinejoin="round" />
+            <filter id={`${id}-shadow`} x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="0.25" />
+              <feOffset dy="0.2" />
+            </filter>
+          </defs>
           {/* Stuck flat, the whole sticker is one thin layer: the faintest shadow at its cut edge, and the
               hairline of the vinyl's own thickness, which on a liner is the kiss-cut. */}
           {liner === 0 && <use href={outline} fill="#121420" stroke="#121420" strokeWidth={2 * border} opacity="0.22" filter={`url(#${id}-shadow)`} />}
