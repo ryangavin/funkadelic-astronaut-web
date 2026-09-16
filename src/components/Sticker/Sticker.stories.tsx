@@ -16,10 +16,11 @@ const meta = {
     stock: { control: 'select', options: PAPER_STOCKS },
     size: { control: { type: 'range', min: 28, max: 160, step: 2 } },
     rotation: { control: { type: 'range', min: -20, max: 20, step: 1 } },
-    border: { control: { type: 'range', min: 0.5, max: 5, step: 0.1 } },
+    border: { control: { type: 'range', min: 0.3, max: 4, step: 0.1 } },
     peel: { control: { type: 'range', min: 0, max: 6, step: 0.1 }, description: 'Depth of the lifted corner in artwork units; 0 leaves it stuck down.' },
+    print: { control: 'inline-radio', options: ['flat', 'cutout'] },
   },
-  args: { platform: 'applemusic', size: 72, rotation: -4, stock: 'white', border: 2.2, worn: true, glossy: true, peel: 1.6 },
+  args: { platform: 'applemusic', size: 72, rotation: -4, stock: 'white', border: 1.1, worn: false, print: 'flat', glossy: true, peel: 1.2 },
 } satisfies Meta<typeof SocialSticker>;
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -49,6 +50,11 @@ export const Sizes: Story = {
 /** Peeled well back, to see the underside and how the fold moves. */
 export const Peeling: Story = {
   args: { platform: 'youtube', peel: 4, size: 128, rotation: 0 },
+};
+
+/** The poster's worn cutout print on vinyl instead of the clean job. */
+export const Cutout: Story = {
+  args: { platform: 'instagram', print: 'cutout', worn: true, rotation: 2 },
 };
 
 /** Stuck down flat and unlaminated: a matte paper sticker. */

@@ -17,7 +17,8 @@ export type StickerProps = HTMLAttributes<HTMLElement> &
     rotation?: number;
     /** Colour of the vinyl showing in the border. */
     stock?: PaperStock;
-    /** Width of the border the die leaves around the artwork, in artwork units. */
+    /** Width of the border the die leaves around the artwork, in artwork units: 1.1 on a 24-unit mark is about a
+        millimetre and a half on a 40 mm sticker. */
     border?: number;
     /** Clear laminate over the whole sticker, border included. */
     glossy?: boolean;
@@ -40,7 +41,7 @@ const ROUNDED_SQUARE: StickerShape = {
 /** The vinyl each stock is printed on. */
 const VINYL: Record<PaperStock, string> = { white: '#fbf8f1', pale: '#f5e9cf', wheat: '#ead3a7', ink: '#15151d' };
 
-const DEFAULT_PEEL = 1.6;
+const DEFAULT_PEEL = 1.2;
 const LIFT = 1;
 
 type Point = { x: number; y: number };
@@ -68,9 +69,9 @@ function peelGeometry(tip: Point, centre: Point, depth: number) {
 }
 
 /**
- * A die-cut vinyl sticker: the artwork printed on coloured vinyl, cut a border's
- * width outside its outline, laminated clear over the whole face, and stuck
- * flat, so it casts almost no shadow. A corner can be peeling: that corner is
+ * A die-cut vinyl sticker: the artwork printed clean on white vinyl, cut a
+ * millimetre or two outside its outline, laminated clear over the whole face
+ * with one soft sheen, and stuck flat, so it casts almost no shadow. A corner can be peeling: that corner is
  * off the surface and turned over, its underside showing inside the fold.
  * With an `href` it is a link, and the corner curls further under the pointer.
  */
@@ -78,7 +79,7 @@ export function Sticker({
   size = 72,
   rotation = 0,
   stock = 'white',
-  border = 2.2,
+  border = 1.1,
   glossy = true,
   peel = true,
   peelTip = { x: 22.5, y: 22.5 },
@@ -148,16 +149,17 @@ export function Sticker({
         <svg className="sticker__layer" viewBox={viewBox} aria-hidden="true" focusable="false">
           <defs>
             <path id={`${id}-outline`} d={path} strokeLinejoin="round" />
+            <filter id={`${id}-shadow`} x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="0.25" />
+              <feOffset dy="0.2" />
+            </filter>
           </defs>
-          {/* Stuck flat, the whole sticker is one thin layer: the faintest shadow at its cut edge. */}
-          <use href={outline} fill="#121420" stroke="#121420" strokeWidth={2 * border} opacity="0.28" filter={`url(#${id}-shadow)`} />
-          <filter id={`${id}-shadow`} x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="0.3" />
-            <feOffset dy="0.25" />
-          </filter>
-          {/* The cut edge, then the vinyl. */}
-          <use href={outline} fill="#5b4a33" stroke="#5b4a33" strokeWidth={2 * border + 0.36} opacity="0.35" />
+          {/* Stuck flat, the whole sticker is one thin layer: the faintest shadow at its cut edge, and the
+              hairline of the vinyl's own thickness. */}
+          <use href={outline} fill="#121420" stroke="#121420" strokeWidth={2 * border} opacity="0.22" filter={`url(#${id}-shadow)`} />
           <use href={outline} fill={vinyl} stroke={vinyl} strokeWidth={2 * border} />
+          <use href={outline} fill="none" stroke="#121420" strokeOpacity="0.16" strokeWidth={2 * border + 0.2} style={{ mixBlendMode: 'multiply' }} />
+          <use href={outline} fill="none" stroke={vinyl} strokeWidth={2 * border - 0.06} />
         </svg>
         <span className="sticker__artwork">{children}</span>
         {glossy && (
@@ -166,22 +168,17 @@ export function Sticker({
               <mask id={`${id}-face`} maskUnits="userSpaceOnUse" x={box.x} y={box.y} width={box.width} height={box.height}>
                 <use href={outline} fill="white" stroke="white" strokeWidth={2 * border} />
               </mask>
-              <linearGradient id={`${id}-gloss`} x1="0" y1="0" x2="0.85" y2="1">
-                <stop offset="0" stopColor="white" stopOpacity="0.5" />
-                <stop offset="0.3" stopColor="white" stopOpacity="0.06" />
-                <stop offset="0.4" stopColor="white" stopOpacity="0.3" />
-                <stop offset="0.47" stopColor="white" stopOpacity="0.02" />
-                <stop offset="0.9" stopColor="white" stopOpacity="0.02" />
-                <stop offset="1" stopColor="white" stopOpacity="0.18" />
+              <linearGradient id={`${id}-gloss`} x1="0" y1="0" x2="0.8" y2="1">
+                <stop offset="0" stopColor="white" stopOpacity="0.42" />
+                <stop offset="0.36" stopColor="white" stopOpacity="0.05" />
+                <stop offset="0.42" stopColor="white" stopOpacity="0.16" />
+                <stop offset="0.5" stopColor="white" stopOpacity="0" />
+                <stop offset="1" stopColor="white" stopOpacity="0" />
               </linearGradient>
             </defs>
-            {/* The laminate: one sheen across vinyl and print alike, and a bright rim where it meets the cut. */}
+            {/* The laminate: one soft sheen from the upper left across vinyl and print alike. */}
             <g mask={`url(#${id}-face)`}>
               <rect x={box.x} y={box.y} width={box.width} height={box.height} fill={`url(#${id}-gloss)`} />
-              <use href={outline} fill="none" stroke="white" strokeOpacity="0.5" strokeWidth={2 * border + 0.5} style={{ mixBlendMode: 'soft-light' }} />
-              <use href={outline} fill="none" stroke="white" strokeOpacity="0.55" strokeWidth={2 * border - 0.4} />
-              <use href={outline} fill="none" stroke={vinyl} strokeWidth={2 * border - 0.9} />
-              <rect x={box.x} y={box.y} width={box.width} height={box.height} fill={`url(#${id}-gloss)`} opacity="0.6" />
             </g>
           </svg>
         )}

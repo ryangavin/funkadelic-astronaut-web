@@ -21,3 +21,16 @@
 .social-icon__mark .cutout-ink__fill {
   fill: currentColor;
 }
+
+/* A flat print: ink on paper, nothing else. */
+.social-icon--flat {
+  --social-icon-paper: #fbf8f1;
+}
+
+.social-icon__paper {
+  fill: var(--social-icon-paper);
+}
+
+.social-icon__ink {
+  fill: var(--social-icon-ink);
+}
