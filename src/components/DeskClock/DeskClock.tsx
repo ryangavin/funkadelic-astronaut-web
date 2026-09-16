@@ -40,7 +40,7 @@ export type DeskClockProps = {
 };
 
 /**
- * A digital desk clock, the wedge-shaped LCD kind, 90 by 60 millimetres,
+ * A digital desk clock, the wedge-shaped LCD kind, 90 by 70 millimetres,
  * seen from above: the top of the case with its three small buttons, and
  * the face tilted up toward whoever is sitting at the desk, with the hours
  * and minutes in big seven-segment digits, the colon blinking the seconds,

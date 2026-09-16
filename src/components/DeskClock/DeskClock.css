@@ -1,7 +1,9 @@
 /*
-  A wedge LCD desk clock from above, 720 units wide by 480. The top of the
+  A wedge LCD desk clock from above, 720 units wide by 560. The top of the
   case is the strip along the back with the buttons on it; the face leans
   up toward the viewer and fills the rest, with the panel recessed in it.
+  The digits span the panel: the time across the top row beside its flags,
+  the date across the bottom, and the case is as tall as that needs.
 */
 
 .desk-clock {
@@ -15,7 +17,7 @@
   --walkman-lcd-ghost: rgb(20 30 25 / 0.085);
   display: block;
   width: 100%;
-  aspect-ratio: 720 / 480;
+  aspect-ratio: 720 / 560;
   container-type: inline-size;
   rotate: var(--desk-clock-rotation);
 }
@@ -50,7 +52,7 @@
 .desk-clock__top {
   position: absolute;
   inset: 0 0 auto;
-  height: calc(112 * var(--desk-clock-unit));
+  height: calc(96 * var(--desk-clock-unit));
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -71,19 +73,20 @@
 
 .desk-clock__face {
   position: absolute;
-  inset: calc(112 * var(--desk-clock-unit)) 0 0;
+  inset: calc(96 * var(--desk-clock-unit)) 0 0;
   background: linear-gradient(180deg, rgb(255 255 255 / 0.08), transparent 30%);
 }
 
 /* The panel, recessed behind a bezel, greenish grey like every LCD of the era. */
 .desk-clock__lcd {
   position: absolute;
-  inset: calc(38 * var(--desk-clock-unit)) calc(48 * var(--desk-clock-unit)) calc(66 * var(--desk-clock-unit));
+  inset: calc(30 * var(--desk-clock-unit)) calc(40 * var(--desk-clock-unit)) calc(44 * var(--desk-clock-unit));
   display: grid;
-  grid-template-rows: 1fr auto;
-  align-items: center;
+  grid-template-rows: auto auto;
+  align-content: center;
+  gap: calc(10 * var(--desk-clock-unit));
   overflow: hidden;
-  padding: calc(14 * var(--desk-clock-unit)) calc(24 * var(--desk-clock-unit));
+  padding: calc(18 * var(--desk-clock-unit)) calc(20 * var(--desk-clock-unit));
   box-sizing: border-box;
   border-radius: calc(10 * var(--desk-clock-unit));
   background:
@@ -95,26 +98,24 @@
     0 calc(1 * var(--desk-clock-unit)) 0 rgb(255 255 255 / 0.25);
 }
 
+/* The time row: the flags in their column, the digits filling the rest. */
 .desk-clock__row {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: center;
-  justify-content: flex-end;
-  gap: calc(10 * var(--desk-clock-unit));
+  gap: calc(12 * var(--desk-clock-unit));
 }
 
 .desk-clock__row--date {
-  justify-content: flex-start;
+  grid-template-columns: 1fr;
 }
 
-/* The rows are sized by height, the digits' width following; the Walkman's own display rule is outranked here. */
-.desk-clock .desk-clock__time {
-  width: auto;
-  height: calc(138 * var(--desk-clock-unit));
-}
-
+/* Both rows are sized by width, the height following the digits' own proportion;
+   the Walkman's display rule is outranked here. */
+.desk-clock .desk-clock__time,
 .desk-clock .desk-clock__date {
-  width: auto;
-  height: calc(48 * var(--desk-clock-unit));
+  width: 100%;
+  height: auto;
 }
 
 /* The colon blinks the seconds: on for one, off for the next. */

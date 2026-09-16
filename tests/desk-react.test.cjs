@@ -71,9 +71,10 @@ test('The desk things: mug, ring, pens, sticky note and pick, each sized by its 
   assert.match(clock, /const wallClock = \(\) => new Date\(\);/);
   assert.match(clock, /now = wallClock, running = true/);
   const clockCss = read('src/components/DeskClock/DeskClock.css');
-  assert.match(clockCss, /aspect-ratio: 720 \/ 480/);
-  // The rows are sized by height with a selector that outranks the Walkman's display rule, so nothing runs off the panel.
-  assert.match(clockCss, /\.desk-clock \.desk-clock__date \{\s+width: auto;\s+height: calc\(48 \* var\(--desk-clock-unit\)\)/);
+  assert.match(clockCss, /aspect-ratio: 720 \/ 560/);
+  // The digits span the panel: both rows sized by width, with a selector that outranks the Walkman's display rule.
+  assert.match(clockCss, /\.desk-clock \.desk-clock__time,\s+\.desk-clock \.desk-clock__date \{\s+width: 100%;\s+height: auto;/);
+  assert.match(clockCss, /\.desk-clock__row \{\s+display: grid;\s+grid-template-columns: auto 1fr;/);
   assert.doesNotMatch(clockCss, /\.desk-clock \.segment-display \{/);
   const cradle = read('src/components/NewtonsCradle/NewtonsCradle.tsx');
   assert.match(cradle, /CRADLE_BALLS = \[140, 250, 360, 470, 580\]/);
