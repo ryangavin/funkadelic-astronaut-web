@@ -94,9 +94,20 @@
 
 .folder__well {
   position: absolute;
-  inset: 0;
+  top: calc(var(--folder-tab) * var(--folder-unit));
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  z-index: 4;
   padding: calc(44 * var(--folder-unit)) calc(44 * var(--folder-unit)) calc(44 * var(--folder-unit)) calc(40 * var(--folder-unit));
   box-sizing: border-box;
+}
+
+/* Contents cross the crease above both leaves while open. Keep them outside
+   the filtered, isolated back leaf so animated cards can escape that layer.
+   The closing cover must still pass over the packed contents. */
+.folder[data-open='false'] .folder__well {
+  z-index: 1;
 }
 
 /* The front cover swings around the spine. Its two faces carry their own shadow

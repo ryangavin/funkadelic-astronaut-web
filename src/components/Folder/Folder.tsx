@@ -70,8 +70,8 @@ export function Folder({
               <span className="folder__label">{label}</span>
             </Weathered>
           ) : null}
-          <div className="folder__well">{children}</div>
         </Weathered>
+        <div className="folder__well">{children}</div>
         <div className="folder__cover">
           <Weathered className="folder__face folder__face--inside" patina={0.5} flecks={0.5}>
             {stamps.slice(0, 3).map((stamp, index) => (

@@ -53,7 +53,7 @@
   --edge: calc(26 * var(--u));
   position: relative;
   display: grid;
-  grid-template-rows: 1fr auto;
+  grid-template-rows: minmax(0, 1fr) auto;
   width: 100%;
   min-width: 0;
   /* A fixed height: every pass is the same card, however much is printed on it. */
@@ -143,8 +143,9 @@
 
 /* Where: venue, city, time, address, in that order */
 .tour-pass__show {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 0;
   gap: calc(6 * var(--u));
   max-width: calc(330 * var(--u));
   padding: calc(14 * var(--u)) var(--edge) calc(10 * var(--u));
@@ -152,45 +153,49 @@
   text-shadow: 0 0 calc(6 * var(--u)) #fff, 0 0 calc(2 * var(--u)) #fff;
 }
 
+/* Only the venue details flex to fit; time and the action retain their size. */
+.tour-pass__copy {
+  min-height: 0;
+}
+
+.tour-pass__details {
+  --copy-scale: 1;
+  display: flex;
+  flex-direction: column;
+  gap: calc(6 * var(--u));
+  overflow-wrap: anywhere;
+}
+
 .tour-pass__venue {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  overflow: hidden;
-  font: 400 calc(60 * var(--u)) / 0.85 var(--font-display);
+  font: 400 calc(60 * var(--u) * var(--copy-scale)) / 0.85 var(--font-display);
   letter-spacing: 0;
   text-transform: none;
 }
 
 /* Longer names print smaller rather than taller. */
 .tour-pass__venue[data-fit='medium'] {
-  font-size: calc(46 * var(--u));
+  font-size: calc(46 * var(--u) * var(--copy-scale));
 }
 
 .tour-pass__venue[data-fit='long'] {
-  -webkit-line-clamp: 4;
-  font-size: calc(34 * var(--u));
+  font-size: calc(34 * var(--u) * var(--copy-scale));
   line-height: 0.9;
 }
 
 .tour-pass__city {
-  font: 700 calc(26 * var(--u)) / 1 var(--font-body);
+  font: 700 calc(26 * var(--u) * var(--copy-scale)) / 1 var(--font-body);
   letter-spacing: 0.03em;
 }
 
 .tour-pass__show .tour-pass__time {
-  margin-top: auto;
+  margin-top: 0;
   padding-top: calc(16 * var(--u));
   font: 700 calc(17 * var(--u)) / 1.1 var(--font-body);
   letter-spacing: 0.02em;
 }
 
 .tour-pass__location {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  font: 700 calc(18 * var(--u)) / 1.1 var(--font-body);
+  font: 700 calc(18 * var(--u) * var(--copy-scale)) / 1.1 var(--font-body);
   letter-spacing: 0.04em;
   opacity: 0.8;
 }
@@ -202,7 +207,8 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
   margin: calc(48 * var(--u)) calc(20 * var(--u)) calc(18 * var(--u));
   padding-top: var(--sheet-border);
   overflow: hidden;

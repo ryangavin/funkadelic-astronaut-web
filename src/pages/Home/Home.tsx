@@ -8,7 +8,7 @@ import { Pin } from '../../components/Pin/Pin';
 import { Ribbon } from '../../components/Ribbon/Ribbon';
 import { SocialIcon, type SocialPlatform } from '../../components/SocialIcon/SocialIcon';
 import { STAGE_WIDTH, Stage, type StageProps } from '../../components/Stage/Stage';
-import { OLIVES_TOUR_PASS_PROPS, TourPass, type TourPassColor, type TourPassProps } from '../../components/TourPass/TourPass';
+import { TourPasses, TOUR_PASSES_LAYOUT } from '../../sections/TourPasses/TourPasses';
 import { Wordmark } from '../../components/Wordmark/Wordmark';
 import { BandDossier } from '../../sections/BandDossier/BandDossier';
 import '../../styles/fonts.css';
@@ -44,41 +44,7 @@ export const LISTEN_INKS: Partial<Record<SocialPlatform, string>> = { applemusic
 
 export const BOOKING_HREF = 'mailto:samluba1@gmail.com?subject=Funkadelic%20Astronaut%20Booking';
 
-/** The upcoming dates as on the site's tour section: one pass each, in its own ink. */
-export const TOUR_DATES: (TourPassProps & { color: TourPassColor })[] = [
-  { ...OLIVES_TOUR_PASS_PROPS, color: 'red' },
-  {
-    dateTime: '2026-09-26',
-    weekday: 'Sat',
-    month: 'Sep',
-    day: '26',
-    tierLabel: 'GA pass',
-    venue: 'Nyack Neighborhood Music & Arts Festival',
-    city: 'Nyack, New York',
-    location: '5 First Avenue',
-    time: '6:00 PM',
-    venueImageSrc: '/assets/performance.webp',
-    actionLabel: 'Event details',
-    actionHref: 'https://www.bandsintown.com/a/1180868',
-    actionAriaLabel: 'Event details for the Nyack Neighborhood Music & Arts Festival',
-    color: 'blue',
-  },
-  {
-    dateTime: '2026-10-03',
-    weekday: 'Sat',
-    month: 'Oct',
-    day: '03',
-    tierLabel: 'VIP pass',
-    venue: 'Saturn Lanes',
-    city: 'Hackensack, New Jersey',
-    location: 'A bowling-alley gig from the design universe',
-    time: 'Doors 8:30 PM · set 9:30 PM',
-    venueImageSrc: '/assets/performance.webp',
-    actionLabel: 'Mock ticket',
-    actionAriaLabel: 'Mock ticket, a fictional preview',
-    color: 'purple',
-  },
-];
+export { TOUR_DATES } from '../../components/TourPass/TourPass.data';
 
 /**
  * Where everything is pinned, in design pixels from the poster's top left, with
@@ -128,18 +94,11 @@ export const HOME_LAYOUT = {
   ticketY: 1170,
   ticketRotation: -2,
   ticketWidth: 600,
-  olivesX: 70,
-  olivesY: 1380,
-  olivesRotation: -2.15,
-  olivesWidth: 400,
-  nyackX: 520,
-  nyackY: 1360,
-  nyackRotation: 1.5,
-  nyackWidth: 400,
-  saturnX: 970,
-  saturnY: 1385,
-  saturnRotation: -1,
-  saturnWidth: 400,
+  passesX: 70,
+  passesY: 1360,
+  passesRotation: 0,
+  passesWidth: 1300,
+  ...TOUR_PASSES_LAYOUT,
 };
 export type HomeLayout = typeof HOME_LAYOUT;
 
@@ -177,11 +136,6 @@ export function Home({ mapOpacity = 1, minScale, maxScale, className = '', style
   const at: HomeLayout = { ...HOME_LAYOUT, ...Object.fromEntries(Object.entries(pins).filter(([, value]) => value !== undefined)) };
   // Pieces without a width of their own are scaled with zoom, so their pixels scale like everything else.
   const scaled = (scale: number) => ({ className: 'home__scaled', style: { zoom: scale } as React.CSSProperties });
-  const passes = [
-    { key: 'olives', x: at.olivesX, y: at.olivesY, rotation: at.olivesRotation, width: at.olivesWidth },
-    { key: 'nyack', x: at.nyackX, y: at.nyackY, rotation: at.nyackRotation, width: at.nyackWidth },
-    { key: 'saturn', x: at.saturnX, y: at.saturnY, rotation: at.saturnRotation, width: at.saturnWidth },
-  ];
 
   return (
     <Stage className={`home ${className}`} style={style} height={HOME_HEIGHT} minScale={minScale} maxScale={maxScale}>
@@ -266,11 +220,13 @@ export function Home({ mapOpacity = 1, minScale, maxScale, className = '', style
             <Pin x={at.ticketX} y={at.ticketY} width={at.ticketWidth} rotation={at.ticketRotation}>
               <AdmissionTicket {...TOUR_ADMISSION_TICKET_PROPS} rotation={0} />
             </Pin>
-            {TOUR_DATES.map(({ color, ...pass }, index) => (
-              <Pin key={passes[index].key} x={passes[index].x} y={passes[index].y} width={passes[index].width} rotation={passes[index].rotation}>
-                <TourPass {...pass} color={color} rotation={0} />
-              </Pin>
-            ))}
+            <Pin x={at.passesX} y={at.passesY} width={at.passesWidth} rotation={at.passesRotation}>
+              <TourPasses
+                olivesX={at.olivesX} olivesY={at.olivesY} olivesWidth={at.olivesWidth} olivesRotation={at.olivesRotation}
+                nyackX={at.nyackX} nyackY={at.nyackY} nyackWidth={at.nyackWidth} nyackRotation={at.nyackRotation}
+                saturnX={at.saturnX} saturnY={at.saturnY} saturnWidth={at.saturnWidth} saturnRotation={at.saturnRotation}
+              />
+            </Pin>
           </section>
         </main>
 

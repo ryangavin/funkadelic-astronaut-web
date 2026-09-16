@@ -28,13 +28,13 @@ test('Home is one 11 x 17 poster on a Stage: the festival map edge to edge, ever
   assert.match(page, /<Stage className=\{`home \$\{className\}`\} style=\{style\} height=\{HOME_HEIGHT\}/);
   assert.match(page, /<PaperSheet height=\{HOME_HEIGHT\} surround=\{0\} imageSrc=\{festivalMap\} imageSize="cover" imagePosition="center"/);
   assert.match(page, /<h1 className="home__title">/);
-  assert.match(page, /export const HOME_LAYOUT = \{[\s\S]+?astronautX: 1112,[\s\S]+?saturnWidth: 400,\n\};/);
+  assert.match(page, /export const HOME_LAYOUT = \{[\s\S]+?astronautX: 1112,[\s\S]+?\.\.\.TOUR_PASSES_LAYOUT,/);
   for (const piece of ['pressKit', 'band', 'tour', 'booking', 'funk', 'astro', 'listen']) for (const axis of ['X', 'Y', 'Rotation', 'Scale']) assert.match(page, new RegExp(`  ${piece}${axis}: -?[\\d.]+,`));
-  for (const piece of ['astronaut', 'dossier', 'ticket', 'olives', 'nyack', 'saturn']) for (const axis of ['X', 'Y', 'Rotation', 'Width']) assert.match(page, new RegExp(`  ${piece}${axis}: -?[\\d.]+,`));
+  for (const piece of ['astronaut', 'dossier', 'ticket', 'passes']) for (const axis of ['X', 'Y', 'Rotation', 'Width']) assert.match(page, new RegExp(`  ${piece}${axis}: -?[\\d.]+,`));
   assert.match(page, /<PaperStrip paddingX=\{22\} paddingY=\{12\}>\s+<div className="home__stamps home__stamps--hero">/);
-  assert.match(page, /export const TOUR_DATES: \(TourPassProps & \{ color: TourPassColor \}\)\[\] = \[\s+\{ \.\.\.OLIVES_TOUR_PASS_PROPS, color: 'red' \}/);
+  assert.match(read('src/components/TourPass/TourPass.data.ts'), /export const TOUR_DATES: \(TourPassProps & \{ color: TourPassColor \}\)\[\] = \[\s+\{ \.\.\.OLIVES_TOUR_PASS_PROPS, color: 'red' \}/);
   assert.match(page, /<AdmissionTicket \{\.\.\.TOUR_ADMISSION_TICKET_PROPS\} rotation=\{0\} \/>/);
-  assert.match(page, /<TourPass \{\.\.\.pass\} color=\{color\} rotation=\{0\} \/>/);
+  assert.match(page, /<Pin x=\{at.passesX\} y=\{at.passesY\} width=\{at.passesWidth\} rotation=\{at.passesRotation\}>\s+<TourPasses/);
   assert.match(page, /<Pin x=\{at\.astronautX\} y=\{at\.astronautY\} width=\{at\.astronautWidth\} rotation=\{at\.astronautRotation\}>\s+<Astronaut \/>/);
   assert.match(read('src/pages/Home/Home.stories.tsx'), /args: \{ \.\.\.HOME_LAYOUT, mapOpacity: 1 \}/);
   assert.match(page, /<Pin x=\{at\.dossierX\} y=\{at\.dossierY\} width=\{at\.dossierWidth\}>/);

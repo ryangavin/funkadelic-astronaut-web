@@ -26,21 +26,21 @@ const meta = {
     initial: { control: { type: 'range', min: 0, max: 2, step: 1 } },
     spread: { control: { type: 'range', min: 0.5, max: 1.4, step: 0.05 } },
     duration: { control: { type: 'range', min: 200, max: 2400, step: 50 } },
-    proofWidth: percent('Print', 40, 100),
-    proofX: percent('Print', -10, 40),
-    proofY: percent('Print', -10, 40),
+    proofWidth: percent('Print', 40, 120),
+    proofX: percent('Print', -20, 40),
+    proofY: percent('Print', -20, 40),
     proofRotation: degrees('Print'),
     deckWidth: percent('Player', 30, 100),
-    deckX: percent('Player', -10, 60),
-    deckY: percent('Player', -10, 60),
+    deckX: percent('Player', -20, 60),
+    deckY: percent('Player', -20, 60),
     deckRotation: degrees('Player'),
-    wellWidth: percent('Well', 40, 100),
+    wellWidth: percent('Well', 40, 125),
     wellX: percent('Well', -10, 40),
     wellGap: percent('Well', 0, 20),
     pileRotation: degrees('Well'),
     bandRotation: degrees('Well'),
   },
-  args: { open: true, rotation: -1, initial: 0, spread: 0.9, duration: 900, ...DOSSIER_PLACEMENT },
+  args: { open: true, rotation: -1, initial: 0, spread: 1.1, duration: 900, ...DOSSIER_PLACEMENT },
 } satisfies Meta<typeof BandDossier>;
 
 export default meta;
@@ -51,21 +51,9 @@ const topItem = (root: HTMLElement) =>
 
 /** The section as it will sit on the site: the package open on the sketched desk. */
 export const OnDesk: Story = {
-  args: {
-    deckWidth: 90,
-    deckX: -3,
-    deckY: -10,
-    deckRotation: 3.5,
-    wellWidth: 86,
-    wellX: 1.5,
-    wellGap: 1.5,
-    pileRotation: 2,
-    bandRotation: 0.5
-  },
-
   render: (args) => (
     <PaperSheet height={0} imageSrc={festivalSketch} imageSize="118% auto" imagePosition="center top" imageOpacity={0.9} imageContrast={1.28}>
-      <div style={{ padding: '6% 7% 6% 5%' }}>
+      <div style={{ padding: '10% 13% 23% 8%' }}>
         <BandDossier {...args} />
       </div>
     </PaperSheet>
@@ -103,4 +91,58 @@ export const Closed: Story = {
       </div>
     </div>
   ),
+};
+
+/** Exercises the whole flight across the crease, including Kevin's leftward pull. */
+export const SpineCrossing: Story = {
+  ...OnDesk,
+  args: { duration: 900 },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const doc = canvasElement.ownerDocument;
+    const win = doc.defaultView!;
+    const cover = canvasElement.querySelector('.folder__cover')!;
+    const spine = canvasElement.querySelector('.folder__spine')!;
+    const well = canvasElement.querySelector('.folder__well')!;
+    await expect(Number(win.getComputedStyle(well).zIndex)).toBeGreaterThan(Number(win.getComputedStyle(spine).zIndex));
+
+    const flights = [
+      { name: 'Sam Luba', next: 'Sam Luba', toBack: false },
+      { name: 'Kevin O’Neill', next: 'Kevin O’Neill', toBack: false },
+      { name: 'Ryan Gavin', next: 'Ryan Gavin', toBack: false },
+      { name: 'Ryan Gavin', next: 'Kevin O’Neill', toBack: true },
+      { name: 'Kevin O’Neill', next: 'Sam Luba', toBack: true },
+      { name: 'Sam Luba', next: 'Ryan Gavin', toBack: true },
+    ];
+    for (const { name, next, toBack } of flights) {
+      const card = canvas.getByRole('button', { name: toBack ? `${name}, on top. Show the next card` : `Bring ${name} to the front` });
+      await userEvent.click(card);
+      let crossings = 0;
+      let occlusions = 0;
+      const start = win.performance.now();
+      // Sample every rendered frame through the flight, not just the final slot.
+      await new Promise<void>((resolve) => {
+        const sample = () => {
+          const bounds = card.getBoundingClientRect();
+          const x = spine.getBoundingClientRect().left - 8;
+          for (let y = Math.max(0, bounds.top) + 8; y < Math.min(win.innerHeight, bounds.bottom); y += 12) {
+            const layers = doc.elementsFromPoint(x, y);
+            const cardAt = layers.indexOf(card);
+            if (cardAt < 0) continue;
+            crossings++;
+            const coverAt = layers.findIndex((element) => cover.contains(element));
+            if (coverAt >= 0 && coverAt < cardAt) occlusions++;
+          }
+          if (win.performance.now() - start < 1000) win.requestAnimationFrame(sample);
+          else resolve();
+        };
+        win.requestAnimationFrame(sample);
+      });
+      if (!toBack && !win.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        await expect(crossings, `${name} crosses the spine during the flight`).toBeGreaterThan(0);
+      }
+      await expect(occlusions, `${name} stays above the cover throughout the flight`).toBe(0);
+      await expect(topItem(canvasElement).textContent).toContain(next);
+    }
+  },
 };

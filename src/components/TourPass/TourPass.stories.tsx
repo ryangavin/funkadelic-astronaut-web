@@ -6,6 +6,7 @@ import {
   TOUR_PASS_COLORS,
   TourPass,
 } from './TourPass';
+import { NYACK_FESTIVAL_TOUR_PASS_PROPS, SATURN_LANES_TOUR_PASS_PROPS } from './TourPass.data';
 
 const meta = {
   title: 'Components/Tour Pass',
@@ -22,6 +23,12 @@ const meta = {
   ],
   tags: ['autodocs'],
   argTypes: {
+    venue: { control: 'text' },
+    city: { control: 'text' },
+    location: { control: 'text' },
+    time: { control: 'text' },
+    actionLabel: { control: 'text' },
+    actionHref: { control: 'text' },
     rotation: { control: { type: 'range', min: -10, max: 10, step: 0.25 } },
     color: { control: 'inline-radio', options: TOUR_PASS_COLORS },
   },
@@ -33,9 +40,17 @@ type Story = StoryObj<typeof meta>;
 
 export const OlivesArtistPass: Story = {};
 
+export const NyackNeighborhoodMusicArtsFestival: Story = {
+  name: 'Nyack Neighborhood Music & Arts Festival',
+  args: { ...NYACK_FESTIVAL_TOUR_PASS_PROPS, rotation: 1.5 },
+};
+
+export const SaturnLanes: Story = {
+  args: { ...SATURN_LANES_TOUR_PASS_PROPS, rotation: -1 },
+};
+
 export const AnnouncedTickets: Story = {
   args: {
-    location: '118 Main Street',
     time: 'Doors 7:00 PM · set 8:00 PM',
     actionLabel: 'Get tickets',
     actionHref: '#tickets',

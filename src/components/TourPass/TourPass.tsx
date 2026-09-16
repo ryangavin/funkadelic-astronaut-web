@@ -1,4 +1,4 @@
-import type React from 'react';
+import { useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import './TourPass.css';
 
 export type TourPassProps = {
@@ -30,7 +30,7 @@ export const DEFAULT_TOUR_PASS_ROTATION = -2.15;
 
 /**
  * Every pass is the same size, so a long venue name cannot make its card taller:
- * it steps down in size by length instead, and clamps at three lines.
+ * its initial type size follows name length, then the complete details fit the available space.
  */
 export const VENUE_FITS = ['short', 'medium', 'long'] as const;
 export type VenueFit = (typeof VENUE_FITS)[number];
@@ -44,7 +44,7 @@ export const OLIVES_TOUR_PASS_PROPS: TourPassProps = {
   tierLabel: 'Artist pass',
   venue: 'Olive’s',
   city: 'Nyack, New York',
-  location: 'Address to be announced',
+  location: '118A Main Street',
   time: 'Doors + set · TBD',
   venueImageSrc: '/assets/performance.webp',
   actionLabel: 'Ticket TBD',
@@ -53,7 +53,7 @@ export const OLIVES_TOUR_PASS_PROPS: TourPassProps = {
 
 /** Deterministic bar pattern seeded from the pass date, so every date gets its own barcode. */
 function Barcode({ seed }: { seed: string }) {
-  const bars: React.ReactNode[] = [];
+  const bars: ReactNode[] = [];
   let x = 0;
   let hash = 7;
   for (let i = 0; i < 52; i += 1) {
@@ -88,6 +88,42 @@ export function TourPass({
   rotation = DEFAULT_TOUR_PASS_ROTATION,
   color = DEFAULT_TOUR_PASS_COLOR,
 }: TourPassProps) {
+  const copyRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const copy = copyRef.current!;
+    const details = copy.firstElementChild as HTMLElement;
+    let active = true;
+    const fit = () => {
+      if (!active) return;
+      // Measure natural wrapping, including after fonts load or the pass resizes.
+      // Leave short content at its original size; never truncate event details.
+      const fits = (scale: number) => {
+        details.style.setProperty('--copy-scale', String(scale));
+        return details.offsetHeight <= copy.clientHeight;
+      };
+      if (fits(1)) return;
+      let low = 0;
+      let high = 1;
+      for (let i = 0; i < 12; i += 1) {
+        const mid = (low + high) / 2;
+        if (fits(mid)) low = mid;
+        else high = mid;
+      }
+      fits(low);
+    };
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(copy);
+    void document.fonts.ready.then(fit);
+    document.fonts.addEventListener('loadingdone', fit);
+    return () => {
+      active = false;
+      observer.disconnect();
+      document.fonts.removeEventListener('loadingdone', fit);
+    };
+  }, [venue, city, location, time, actionLabel]);
+
   const passId = dateTime.replace(/\D/g, '') || dateTime;
 
   const action = actionHref ? (
@@ -104,7 +140,7 @@ export function TourPass({
     <div
       className="tour-pass-frame"
       data-color={color}
-      style={{ '--tour-pass-rotation': `${rotation}deg` } as React.CSSProperties}
+      style={{ '--tour-pass-rotation': `${rotation}deg` } as CSSProperties}
     >
       <article className="tour-pass" aria-label={`${venue} ${tierLabel}`}>
         <div className="tour-pass__sheet">
@@ -124,11 +160,15 @@ export function TourPass({
           </header>
 
           <div className="tour-pass__show">
-            <p className="tour-pass__venue" data-fit={venueFit(venue)}>
-              {venue}
-            </p>
-            <p className="tour-pass__city">{city}</p>
-            <p className="tour-pass__location">{location}</p>
+            <div className="tour-pass__copy" ref={copyRef}>
+              <div className="tour-pass__details">
+                <p className="tour-pass__venue" data-fit={venueFit(venue)}>
+                  {venue}
+                </p>
+                <p className="tour-pass__city">{city}</p>
+                <p className="tour-pass__location">{location}</p>
+              </div>
+            </div>
             <p className="tour-pass__time">{time}</p>
           </div>
 

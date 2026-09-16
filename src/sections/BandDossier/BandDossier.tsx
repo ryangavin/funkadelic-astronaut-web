@@ -92,19 +92,19 @@ export type BandDossierProps = {
 
 /** Where everything lies by default, for the stories' controls. */
 export const DOSSIER_PLACEMENT = {
-  proofWidth: 90,
-  proofX: 4,
-  proofY: 0,
-  proofRotation: 1.5,
-  deckWidth: 62,
-  deckX: 7,
-  deckY: 2,
-  deckRotation: 3,
-  wellWidth: 78,
-  wellX: 9,
-  wellGap: 4,
-  pileRotation: 0,
-  bandRotation: 0,
+  proofWidth: 108,
+  proofX: -9,
+  proofY: -14,
+  proofRotation: -3,
+  deckWidth: 94,
+  deckX: -4,
+  deckY: -14,
+  deckRotation: 4,
+  wellWidth: 110,
+  wellX: -1,
+  wellGap: 0,
+  pileRotation: 5,
+  bandRotation: -4,
 } as const;
 
 /**
@@ -125,7 +125,7 @@ export function BandDossier({
   open = true,
   rotation = -1,
   initial,
-  spread = 0.9,
+  spread = 1.1,
   duration,
   proofWidth = DOSSIER_PLACEMENT.proofWidth,
   proofX = DOSSIER_PLACEMENT.proofX,
@@ -176,7 +176,6 @@ export function BandDossier({
                 alt={liveSet.alt}
                 caption={liveSet.caption ?? 'Live set'}
                 note={liveSet.note}
-                tape
                 rotation={proofRotation}
               />
             </div>

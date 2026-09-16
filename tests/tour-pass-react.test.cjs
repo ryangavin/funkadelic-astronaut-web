@@ -15,7 +15,7 @@ test('React tour pass preserves the complete Olive’s artist pass', () => {
     'Artist pass',
     'Olive’s',
     'Nyack, New York',
-    'Address to be announced',
+    '118A Main Street',
     'Doors + set · TBD',
     '/assets/performance.webp',
     'Ticket TBD',
@@ -32,8 +32,6 @@ test('React tour pass preserves the complete Olive’s artist pass', () => {
   const passCss = read('src/components/TourPass/TourPass.css');
   assert.match(passCss, /\.tour-pass \{[\s\S]+?height: calc\(540 \* var\(--u\)\);/);
   assert.doesNotMatch(passCss, /min-height: calc\(540/);
-  assert.match(passCss, /\.tour-pass__venue\[data-fit='long'\] \{\s+-webkit-line-clamp: 4;\s+font-size: calc\(34 \* var\(--u\)\);/);
-  assert.match(passCss, /\.tour-pass__venue \{[\s\S]+?-webkit-line-clamp: 3;/);
   assert.match(component, /actionHref \? \([\s\S]+?<a[\s\S]+?: \([\s\S]+?<span/);
   assert.match(css, /\.tour-pass::before[\s\S]+?border-radius: 50%/);
   assert.match(component, /function Barcode/);
