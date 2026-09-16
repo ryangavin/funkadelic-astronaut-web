@@ -7,14 +7,21 @@
 .promoter-desk-stage {
   --promoter-desk-margin: clamp(12px, 3vmin, 48px);
   box-sizing: border-box;
-  min-height: 100vh;
   padding: var(--promoter-desk-margin);
+}
+
+/* The room the desk stands in: the page behind it, filling the window and centring the frame. */
+.promoter-desk-room {
+  min-height: 100vh;
+  display: grid;
+  align-content: center;
   background: radial-gradient(120% 100% at 50% 0%, #2a1d15, #120c08 70%);
 }
 
-/* The desk sits in the room with a margin round it, and never taller than the window: at 16 x 9 it is scaled to fit either way. */
+/* The desk is a 16 x 9 frame with a margin round it, and never taller than the window: it is scaled to fit either way. */
 .promoter-desk-stage > .stage {
   width: min(100%, calc((100vh - 2 * var(--promoter-desk-margin)) * 16 / 9));
+  aspect-ratio: 16 / 9;
   margin: 0 auto;
   border-radius: 6px;
   box-shadow: 0 30px 80px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.04);
@@ -23,6 +30,49 @@
 
 .promoter-desk {
   font-family: var(--font-body);
+}
+
+/* --- The lamp ----------------------------------------------------------- */
+
+/* Without the lamp the room is dim: a wash over everything, lifted where the lamp's light falls. */
+.promoter-desk__night {
+  position: absolute;
+  inset: 0;
+  z-index: 300;
+  background: rgb(8 4 14 / 0.42);
+  opacity: 0;
+  transition: opacity 420ms ease;
+  pointer-events: none;
+}
+
+.promoter-desk[data-lamp='off'] .promoter-desk__night {
+  opacity: 1;
+}
+
+/* The pool again over the papers, at a whisper. */
+.promoter-desk__glow {
+  z-index: 310;
+}
+
+.promoter-desk .pin:has(> .promoter-desk__glow) {
+  z-index: 310;
+  pointer-events: none;
+}
+
+.promoter-desk__glow[data-on] {
+  opacity: 0.16;
+}
+
+/* The lamp is the highest thing on the desk. */
+.promoter-desk__lamp {
+  position: absolute;
+  inset: 0;
+  z-index: 400;
+  pointer-events: none;
+}
+
+.promoter-desk__lamp .desk-lamp__switch {
+  pointer-events: auto;
 }
 
 /* --- The folder as the control --------------------------------------- */

@@ -21,7 +21,18 @@ const meta = {
     minScale: { control: { type: 'range', min: 0, max: 1, step: 0.05 } },
     maxScale: { control: { type: 'range', min: 0.5, max: 3, step: 0.05 } },
   },
-  args: { wood: 'walnut', open: false, onToggle: fn(), onArrange: fn() },
+  args: { wood: 'walnut', open: false, lamp: true, onToggle: fn(), onArrange: fn(), onLamp: fn() },
+  decorators: [
+    /* The page is the desk in its room; the docs show just the frame, at its own 16 x 9. */
+    (Story, context) =>
+      context.viewMode === 'docs' ? (
+        <Story />
+      ) : (
+        <div className="promoter-desk-room">
+          <Story />
+        </div>
+      ),
+  ],
 } satisfies Meta<typeof PromoterDesk>;
 
 export default meta;
@@ -32,7 +43,7 @@ const cornerOf = (element: HTMLElement) => ({ x: Number(element.style.getPropert
 
 /** As a visitor lands on it: the package closed with the promoter's things on and around it, the band's name across the cover. Click it. */
 export const Closed: Story = {
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByRole('button', { name: 'Open the Funkadelic Astronaut press package' })).toHaveAttribute('aria-expanded', 'false');
     // The promoter's things are already out, the Walkman lying on the folder.
@@ -51,6 +62,13 @@ export const Closed: Story = {
     await expect(spilled).toHaveLength(10);
     await expect(canvas.getByRole('timer')).toBeInTheDocument();
     await expect(canvas.getByRole('button', { name: 'Set the cradle going' })).toBeInTheDocument();
+    // The frame is 16 x 9 whatever the window, and the lamp lights it.
+    const stage = canvasElement.querySelector<HTMLElement>('.stage')!;
+    await expect(stage.getBoundingClientRect().width / stage.getBoundingClientRect().height).toBeCloseTo(16 / 9, 1);
+    await userEvent.click(canvas.getByRole('button', { name: 'Turn the lamp off' }));
+    await expect(args.onLamp).toHaveBeenCalledWith(false);
+    await expect(canvasElement.querySelector('.desk')).toHaveAttribute('data-lamp', 'off');
+    await userEvent.click(canvas.getByRole('button', { name: 'Turn the lamp on' }));
     for (const item of spilled) await expect(getComputedStyle(item).visibility).toBe('hidden');
     await expect(canvas.getByRole('status', { name: 'Press package' }).textContent).toContain('closed');
   },
@@ -142,4 +160,9 @@ export const Phone: Story = {
 /** The lighter timber. */
 export const Oak: Story = {
   args: { wood: 'oak', open: true },
+};
+
+/** Late: the lamp off, the room dim. */
+export const LampOff: Story = {
+  args: { lamp: false, open: true },
 };

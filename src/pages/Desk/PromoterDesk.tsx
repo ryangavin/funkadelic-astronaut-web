@@ -7,6 +7,7 @@ import { Weathered } from '../../behaviors/Weathered/Weathered';
 import { AdmissionTicket, TOUR_ADMISSION_TICKET_PROPS } from '../../components/AdmissionTicket/AdmissionTicket';
 import { DESK_WIDTH, Desk, type DeskWood } from '../../components/Desk/Desk';
 import { DeskClock } from '../../components/DeskClock/DeskClock';
+import { DeskLamp, LampLight } from '../../components/DeskLamp/DeskLamp';
 import { Folder } from '../../components/Folder/Folder';
 import { GuitarPick } from '../../components/GuitarPick/GuitarPick';
 import { Handheld } from '../../components/Handheld/Handheld';
@@ -91,6 +92,10 @@ export const REAL_WIDTHS = {
   cradle: 120,
   /** The festival site plan, printed on a letter sheet. */
   plan: 216,
+  /** The desk lamp's box: base, arm and shade. */
+  lamp: 480,
+  /** The pool of light the lamp throws. */
+  glow: 450,
 } as const;
 
 /** The same, in desk units. */
@@ -119,7 +124,7 @@ export const DESK_LAYOUT = {
     cassette: { closed: { x: 60, y: 330, rotation: 10 }, open: { x: 240, y: 300, rotation: 12 } },
     handheld: { closed: { x: 240, y: 560, rotation: 3 }, open: { x: 30, y: 480, rotation: 2 } },
     mug: { closed: { x: 200, y: 10, rotation: 210 }, open: { x: 200, y: 10, rotation: 210 } },
-    sheet: { closed: { x: 560, y: 60, rotation: -4 }, open: { x: 0, y: 200, rotation: -3 } },
+    sheet: { closed: { x: 560, y: 120, rotation: -4 }, open: { x: 0, y: 200, rotation: -3 } },
     plan: { closed: { x: 520, y: 10, rotation: -6 }, open: { x: 520, y: 10, rotation: -6 } },
     ballpoint: { closed: { x: 600, y: 250, rotation: -14 }, open: { x: 930, y: 24, rotation: 3 } },
     marker: { closed: { x: 30, y: 260, rotation: -12 }, open: { x: 20, y: 440, rotation: -6 } },
@@ -141,6 +146,9 @@ export const DESK_LAYOUT = {
     handbill: { x: 690, y: 40, rotation: -9 },
     zine: { x: 910, y: 470, rotation: 4 },
   } satisfies Record<SpilledThingId, Place>,
+  /** The lamp is clamped to the back edge of the desk: only the shade comes into the frame, and its light falls across the middle. */
+  lamp: { x: 470, y: -620, rotation: 0 },
+  glow: { x: 290, y: -60, rotation: 0 },
   /** The ring stays where the mug was set down last night; the stickers are stuck to the wood along the front edge. */
   ring: { x: 110, y: 230, rotation: 20 },
   socials: [
@@ -188,6 +196,9 @@ export type PromoterDeskProps = Pick<StageProps, 'minScale' | 'maxScale'> & {
   onToggle?: (open: boolean) => void;
   /** Called whenever the visitor puts something down, with where everything lies. */
   onArrange?: (placement: Record<ThingId, Place>) => void;
+  /** Whether the desk lamp starts on. Clicking its shade switches it, and the room dims without it. */
+  lamp?: boolean;
+  onLamp?: (on: boolean) => void;
   wood?: DeskWood;
   className?: string;
   style?: React.CSSProperties;
@@ -274,9 +285,10 @@ function SitePlan() {
  * about, and the thing picked up comes to the top. Click the tab to put it
  * all back. Everything is its real size against the Walkman.
  */
-export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange, wood = 'walnut', minScale, maxScale, className = '', style }: PromoterDeskProps) {
+export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange, lamp: lampOn = true, onLamp, wood = 'walnut', minScale, maxScale, className = '', style }: PromoterDeskProps) {
   const surface = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(initiallyOpen);
+  const [lamp, setLamp] = useState(lampOn);
   const [placed, setPlaced] = useState<Partial<Record<ThingId, Place>>>({});
   const [stacking, setStacking] = useState<LayerId[]>(STACKING);
 
@@ -347,7 +359,11 @@ export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange,
     <div ref={surface} className={`promoter-desk-stage ${className}`} style={style}>
       <MovableScale.Provider value={scale}>
         <Stage height={DESK_HEIGHT} minScale={minScale} maxScale={maxScale}>
-          <Desk className="promoter-desk" wood={wood} height={DESK_HEIGHT} data-open={open ? 'true' : 'false'}>
+          <Desk className="promoter-desk" wood={wood} height={DESK_HEIGHT} light={lamp ? 1 : 0.55} data-open={open ? 'true' : 'false'} data-lamp={lamp ? 'on' : 'off'}>
+            {/* The lamp's pool on the wood, under everything. */}
+            <Pin {...DESK_LAYOUT.glow} width={SIZES.glow * 2}>
+              <LampLight on={lamp} />
+            </Pin>
             {/* Stuck to the desk itself, so they stay reachable whatever lies on top. */}
             <nav aria-label="Socials" className="promoter-desk__socials">
               {SOCIAL_LINKS.map(({ platform, href, label }, index) => (
@@ -454,6 +470,24 @@ export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange,
                 <TourPass {...NYACK_FESTIVAL_TOUR_PASS_PROPS} rotation={0} />
               </Spilled>
             </Spill>
+
+            {/* Over everything: the room going dark without the lamp, the lamp's light on the papers, and the lamp itself. */}
+            <div className="promoter-desk__night" aria-hidden="true" />
+            <Pin {...DESK_LAYOUT.glow} width={SIZES.glow * 2}>
+              <LampLight on={lamp} className="promoter-desk__glow" />
+            </Pin>
+            <div className="promoter-desk__lamp">
+              <Pin {...DESK_LAYOUT.lamp} width={SIZES.lamp}>
+                <DeskLamp
+                  on={lamp}
+                  enamel="red"
+                  onToggle={(next) => {
+                    setLamp(next);
+                    onLamp?.(next);
+                  }}
+                />
+              </Pin>
+            </div>
 
             <p className="promoter-desk__status" role="status" aria-live="polite" aria-label="Press package">
               {open

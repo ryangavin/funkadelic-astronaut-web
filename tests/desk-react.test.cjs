@@ -79,6 +79,12 @@ test('The desk things: mug, ring, pens, sticky note and pick, each sized by its 
   assert.match(cradleCss, /@keyframes cradle-swing-left \{[\s\S]+?translate: -95px 0;\s+scale: 1\.14/);
   assert.match(cradleCss, /@keyframes cradle-swing-right \{[\s\S]+?translate: 95px 0/);
 
+  const lamp = read('src/components/DeskLamp/DeskLamp.tsx');
+  assert.match(lamp, /DESK_LAMP_SHADE = \{ x: 200, y: 420, radius: 130 \}/);
+  assert.match(lamp, /aria-label=\{on \? 'Turn the lamp off' : 'Turn the lamp on'\}/);
+  assert.match(lamp, /export function LampLight\(/);
+  assert.match(read('src/components/DeskLamp/DeskLamp.css'), /\.lamp-light \{[\s\S]+?mix-blend-mode: screen/);
+
   const pick = read('src/components/GuitarPick/GuitarPick.tsx');
   assert.match(pick, /viewBox="0 0 100 116"/);
   assert.match(pick, /print = 'FA'/);
@@ -167,6 +173,12 @@ test('The promoter’s desk: everything its real size against the Walkman, the f
   assert.match(page, /stamps=\{\['Mission Control', 'Received'\]\}/);
   assert.match(page, /<Movable \{\.\.\.movable\('clock', SIZES\.clock\)\}>\s+<DeskClock/);
   assert.match(page, /<Movable \{\.\.\.movable\('cradle', SIZES\.cradle, 'anywhere'\)\}>\s+<NewtonsCradle/);
+  // The lamp at the back edge: its pool under everything and again over it, the lamp itself highest, and the room dim without it.
+  assert.match(page, /lamp: \{ x: 470, y: -620, rotation: 0 \}/);
+  assert.match(page, /light=\{lamp \? 1 : 0\.55\} data-open=/);
+  assert.match(page, /<LampLight on=\{lamp\} \/>/);
+  assert.match(page, /<LampLight on=\{lamp\} className="promoter-desk__glow" \/>/);
+  assert.match(page, /className="promoter-desk__night"/);
   assert.match(page, /\} satisfies Record<DeskThingId, \{ closed: Place; open: Place \}>/);
   assert.match(page, /\} satisfies Record<SpilledThingId, Place>/);
   assert.match(page, /placed\[id\] \?\? \(isSpilled\(id\) \? DESK_LAYOUT\.spilled\[id\] : open \? DESK_LAYOUT\.things\[id\]\.open : DESK_LAYOUT\.things\[id\]\.closed\)/);
@@ -207,7 +219,12 @@ test('The promoter’s desk: everything its real size against the Walkman, the f
   assert.match(css, /\.promoter-desk__folder \{[\s\S]+?z-index: var\(--promoter-desk-folder-z, 10\)/);
   // The cover's own label becomes the whole face.
   assert.match(css, /\.promoter-desk \.folder__sticker \{[\s\S]+?inset: 0;/);
-  // The desk sits in the room with a margin round it, never taller than the window.
+  assert.match(css, /\.promoter-desk__lamp \{[\s\S]+?z-index: 400/);
+  assert.match(css, /\.promoter-desk\[data-lamp='off'\] \.promoter-desk__night \{\s+opacity: 1;/);
+  // The frame is 16 x 9 with a margin round it, never taller than the window; the room is the story's, not the frame's.
+  assert.match(css, /\.promoter-desk-stage > \.stage \{[\s\S]+?aspect-ratio: 16 \/ 9/);
+  assert.match(css, /\.promoter-desk-room \{\s+min-height: 100vh;/);
+  assert.doesNotMatch(css, /\.promoter-desk-stage \{[^}]*min-height/);
   assert.match(css, /\.promoter-desk-stage > \.stage \{\s+width: min\(100%, calc\(\(100vh - 2 \* var\(--promoter-desk-margin\)\) \* 16 \/ 9\)\)/);
   // The running order's print measures against the sheet, one level in.
   assert.match(css, /\.run-sheet__page \{[\s\S]+?padding: calc\(52 \* var\(--run-sheet-unit\)\)/);
