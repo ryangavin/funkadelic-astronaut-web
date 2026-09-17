@@ -1,3 +1,6 @@
+import { HANDHELD_SILHOUETTE } from './silhouette';
+import { checkDeskStudy } from '../../../behaviors/Perspective/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../behaviors/Perspective/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import festivalSketch from '../../../../assets/festival-scribble-fully-shaded.png';
@@ -102,7 +105,7 @@ export const Finishes: Story = {
 };
 
 /** Left on the desk on the festival sketch, where the print used to lie. */
-export const OnDesk: Story = {
+export const OnFestivalPaper: Story = {
   parameters: { composition: true, layout: 'fullscreen' },
   args: { rotation: -4 },
   render: (args) => (
@@ -114,4 +117,11 @@ export const OnDesk: Story = {
       </div>
     </PaperSheet>
   ),
+};
+
+export const OnDesk: Story = {
+  play: checkDeskStudy,
+  name: 'On desk',
+  parameters: { layout: 'fullscreen', composition: true },
+  render: (args) => <DeskObjectStudy name="Handheld" widthMm={204} depthRatio={327/720} heightMm={23} sideColors={args.finish === 'silver' ? ['#bbbec4', '#a4a7ae', '#747780'] : args.finish === 'white' ? ['#d8d4cb', '#bbb6ac', '#898277'] : ['#17181b', '#141519', '#090a0d']} shapes={[{ path: HANDHELD_SILHOUETTE }]} note="Estimated height; depth and shadow follow the rounded shell and both shoulder buttons."><Handheld {...args} rotation={0} /></DeskObjectStudy>,
 };

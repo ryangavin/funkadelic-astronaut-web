@@ -315,6 +315,11 @@ export function LabelMaker({
           onClick={() => emboss(selected)}
         >
         </button>
+
+        {/* The pin both halves of the handle turn on. Drawn after the lever and
+            over the body, because the lever goes under the body and the pin
+            head is the one part of the joint you can see from up here. */}
+        <span className="label-maker__pin" aria-hidden="true" />
       </div>
 
       <span className="label-maker__status" role="status" aria-live="polite">

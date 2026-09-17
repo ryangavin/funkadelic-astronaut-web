@@ -1,3 +1,5 @@
+import { checkDeskStudy } from '../../../behaviors/Perspective/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../behaviors/Perspective/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import { DESK_CLOCK_FINISHES, DeskClock, readout } from './DeskClock';
@@ -15,7 +17,7 @@ const meta = {
   },
   args: { hours: 12, finish: 'black', rotation: -3, running: true },
   decorators: [
-    (Story) => (
+    (Story, context) => context.parameters.composition ? <Story /> : (
       <div style={{ padding: 56, background: '#6e4a2f' }}>
         <div style={{ width: 300 }}>
           <Story />
@@ -57,4 +59,11 @@ export const Finishes: Story = {
       ))}
     </div>
   ),
+};
+
+export const OnDesk: Story = {
+  play: checkDeskStudy,
+  name: 'On desk',
+  parameters: { layout: 'fullscreen', composition: true },
+  render: (args) => <DeskObjectStudy name="Desk clock" widthMm={90} depthRatio={560/720} heightMm={45} ><DeskClock {...args} rotation={0} /></DeskObjectStudy>,
 };

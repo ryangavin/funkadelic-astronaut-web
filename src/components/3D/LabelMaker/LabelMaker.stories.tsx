@@ -1,3 +1,5 @@
+import { checkDeskStudy } from '../../../behaviors/Perspective/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../behaviors/Perspective/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
@@ -234,4 +236,11 @@ export const OnATiltedDesk: Story = {
     await waitFor(() => expect(Number(body.style.getPropertyValue('--solid-rise'))).toBeGreaterThan(0));
     await expect(STANDING_VIEW).toBeLessThan(PLAN_VIEW);
   },
+};
+
+export const OnDesk: Story = {
+  play: checkDeskStudy,
+  name: 'On desk',
+  parameters: { layout: 'fullscreen', composition: true },
+  render: (args) => <DeskObjectStudy name="Label maker" widthMm={180} depthRatio={600/720} heightMm={32} solid={{ height: LABEL_MAKER_HEIGHT, foot: LABEL_MAKER_FOOT }} shapes={[{ path: "M34 0C64 -2 77 20 69 42L91 76Q99 98 73 100L46 62Q20 66 15 42C6 20 13 3 34 0Z" }]}><LabelMaker {...args} rotation={0} /></DeskObjectStudy>,
 };

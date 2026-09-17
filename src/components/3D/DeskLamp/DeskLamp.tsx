@@ -1,5 +1,7 @@
 import type React from 'react';
-import { useId } from 'react';
+import { useContext, useId, useMemo, useRef, useState } from 'react';
+import { MovableProject } from '../../../behaviors/Movable/Movable';
+import { articulateLamp, type LampPoint } from './articulation';
 import './DeskLamp.css';
 import { projectElevation } from '../../../behaviors/Perspective/elevation';
 import { DEFAULT_SHADOW_STRENGTH, useRegisterDeskLight } from '../../../behaviors/DeskLighting/DeskLighting';
@@ -11,12 +13,15 @@ export type DeskLampEnamel = (typeof DESK_LAMP_ENAMELS)[number];
 export const DESK_LAMP_SHADE = { x: 200, y: 420, radius: 130 } as const;
 
 export type DeskLampProps = {
+  /** Controlled shade position in the 720×600 artwork; otherwise the lamp keeps its own position. */
+  head?: LampPoint;
+  onHeadChange?: (head: LampPoint) => void;
   /** Shared camera for physically elevated artwork; requires lightPosition. */
   camera?: Parameters<typeof projectElevation>[3];
   /** Darkness of shadows this light casts on the desk, from 0 (none) to 1 (strongest). */
   shadowStrength?: number;
   /** Opt in to scene lighting: lamp box placement and bulb elevation in desk units. */
-  lightPosition?: { x: number; y: number; width: number; height: number };
+  lightPosition?: { x: number; y: number; width: number; height: number; rotation?: number };
   /** Whether it is switched on. Clicking the shade switches it. */
   on?: boolean;
   onToggle?: (on: boolean) => void;
@@ -36,10 +41,22 @@ export type DeskLampProps = {
  * drawn separately, by `LampLight`, beneath whatever lies in it. The shade is
  * the switch. Measured in 720ths of the box, which is 480 by 400 mm.
  */
-export function DeskLamp({ camera, shadowStrength = DEFAULT_SHADOW_STRENGTH, lightPosition, on = true, onToggle, enamel = 'red', rotation = 0, className = '', style }: DeskLampProps) {
+export function DeskLamp({ head: controlledHead, onHeadChange, camera, shadowStrength = DEFAULT_SHADOW_STRENGTH, lightPosition, on = true, onToggle, enamel = 'red', rotation = 0, className = '', style }: DeskLampProps) {
   const id = `lamp-${useId().replace(/:/g, '')}`;
-  const { x, y, radius } = DESK_LAMP_SHADE;
-  const turn = rotation * Math.PI / 180;
+  const [ownHead, setOwnHead] = useState<LampPoint>(DESK_LAMP_SHADE);
+  const arm = articulateLamp(controlledHead ?? ownHead);
+  const { x, y } = arm.head;
+  const { radius } = DESK_LAMP_SHADE;
+  const svg = useRef<SVGSVGElement>(null);
+  const project = useContext(MovableProject);
+  const drag = useRef<{ id: number; px: number; py: number; pointer: LampPoint; head: LampPoint; moved: boolean } | null>(null);
+  const suppressClick = useRef(false);
+  const turn = (rotation + (lightPosition?.rotation ?? 0)) * Math.PI / 180;
+  const changeHead = (next: LampPoint) => {
+    const bounded = articulateLamp(next).head;
+    setOwnHead(bounded);
+    onHeadChange?.(bounded);
+  };
   const dx = (x - 360) / 720;
   const dy = (y - 300) / 720;
   const elevated = !!(camera && lightPosition);
@@ -55,21 +72,73 @@ export function DeskLamp({ camera, shadowStrength = DEFAULT_SHADOW_STRENGTH, lig
   };
   const bulbHeight = lightPosition?.height ?? 700;
   const base = point(600, 110, 50);
-  const elbow = point(420, 250, 460);
+  const elbow = point(arm.elbow.x, arm.elbow.y, 460);
   const neck = point(x + 60, y - 40, bulbHeight + 100);
   const shade = point(x, y, bulbHeight + 100);
   const rim = point(x, y, bulbHeight);
   const layer = (p: { x: number; y: number; scale: number }, cx: number, cy: number) => `translate(${p.x} ${p.y}) scale(${p.scale}) translate(${-cx} ${-cy})`;
+  const lampGeometry = useMemo(() => {
+    if (!lightPosition) return undefined;
+    const unit = lightPosition.width / 720;
+    const world = (px: number, py: number, height: number, radius: number) => ({
+      x: lightPosition.x + unit * (360 + (px - 360) * Math.cos(turn) - (py - 300) * Math.sin(turn)),
+      y: lightPosition.y + unit * (300 + (px - 360) * Math.sin(turn) + (py - 300) * Math.cos(turn)),
+      height, radius: radius * unit,
+    });
+    return { base: world(600, 110, 50, 110), elbow: world(arm.elbow.x, arm.elbow.y, 460, 12), neck: world(x + 60, y - 40, bulbHeight + 100, 11) };
+  }, [lightPosition?.x, lightPosition?.y, lightPosition?.width, turn, arm.elbow.x, arm.elbow.y, x, y, bulbHeight]);
   useRegisterDeskLight(lightPosition ? {
     x: lightPosition.x + lightPosition.width * (0.5 + dx * Math.cos(turn) - dy * Math.sin(turn)),
     y: lightPosition.y + lightPosition.width * (300 / 720 + dx * Math.sin(turn) + dy * Math.cos(turn)),
     height: lightPosition.height,
+    lamp: lampGeometry,
     shadowStrength: Number.isFinite(shadowStrength) ? Math.min(1, Math.max(0, shadowStrength)) : DEFAULT_SHADOW_STRENGTH,
     on,
   } : null);
+  // Map the pointer back through the surface camera, then through the shade's elevation and rotation.
+  const pointer = (clientX: number, clientY: number): LampPoint => {
+    if (project && camera && lightPosition) {
+      const surface = project(clientX, clientY);
+      const unit = lightPosition.width / 720;
+      const tilt = (90 - camera.angle) * Math.PI / 180;
+      const k = projectElevation(0, 0, bulbHeight + 100, camera).scale;
+      const wx = camera.width / 2 + (surface.x - camera.width / 2) / k;
+      const wy = camera.surfaceHeight + (surface.y - camera.surfaceHeight) / k + (bulbHeight + 100) * Math.tan(tilt);
+      const ox = wx - lightPosition.x - 360 * unit, oy = wy - lightPosition.y - 300 * unit;
+      return { x: 360 + (ox * Math.cos(turn) + oy * Math.sin(turn)) / unit, y: 300 + (-ox * Math.sin(turn) + oy * Math.cos(turn)) / unit };
+    }
+    const matrix = svg.current?.getScreenCTM();
+    const local = matrix ? new DOMPoint(clientX, clientY).matrixTransform(matrix.inverse()) : { x: clientX, y: clientY };
+    return { x: local.x, y: local.y };
+  };
+  const beginHead = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (event.button !== 0) return;
+    event.stopPropagation();
+    suppressClick.current = false;
+    drag.current = { id: event.pointerId, px: event.clientX, py: event.clientY, pointer: pointer(event.clientX, event.clientY), head: { x, y }, moved: false };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const moveHead = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const start = drag.current;
+    if (!start || start.id !== event.pointerId) return;
+    event.stopPropagation();
+    if (!start.moved && Math.hypot(event.clientX - start.px, event.clientY - start.py) < 5) return;
+    start.moved = true;
+    const at = pointer(event.clientX, event.clientY);
+    changeHead({ x: start.head.x + at.x - start.pointer.x, y: start.head.y + at.y - start.pointer.y });
+  };
+  const endHead = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const start = drag.current;
+    if (!start || start.id !== event.pointerId) return;
+    event.stopPropagation();
+    suppressClick.current = start.moved;
+    drag.current = null;
+    if (event.type === 'pointercancel') changeHead(start.head);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+  };
   return (
     <div className={`desk-lamp ${elevated ? 'desk-lamp--elevated' : ''} ${className}`} data-on={on ? '' : undefined} data-enamel={enamel} style={{ '--desk-lamp-rotation': `${rotation}deg`, ...style } as React.CSSProperties}>
-      <svg viewBox="0 0 720 600" aria-hidden="true" focusable="false">
+      <svg ref={svg} viewBox="0 0 720 600" aria-hidden="true" focusable="false">
         <defs>
           <radialGradient id={`${id}-shade`} cx="0.38" cy="0.32" r="0.72">
             <stop offset="0" stopColor="#fff" stopOpacity="0.5" />
@@ -93,13 +162,6 @@ export function DeskLamp({ camera, shadowStrength = DEFAULT_SHADOW_STRENGTH, lig
             <feGaussianBlur stdDeviation="22" />
           </filter>
         </defs>
-
-        {/* Shadows, long and soft: the shade and the arm are high above the desk. */}
-        <g className="desk-lamp__shadow" filter={`url(#${id}-soft)`}>
-          <circle cx={x + 80} cy={y + 110} r={radius} />
-          <path d={`M ${x + 120} ${y + 60} L 500 330 L 680 210`} fill="none" strokeWidth="26" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="640" cy="150" r="112" />
-        </g>
 
         {/* The base, and the arm on its elbow. */}
         <g className="desk-lamp__base" transform={layer(base, 600, 110)}>
@@ -129,7 +191,16 @@ export function DeskLamp({ camera, shadowStrength = DEFAULT_SHADOW_STRENGTH, lig
           <circle className="desk-lamp__cap" cx={x} cy={y} r="22" fill={`url(#${id}-arm)`} />
         </g>
       </svg>
-      <button type="button" className="desk-lamp__switch" aria-label={on ? 'Turn the lamp off' : 'Turn the lamp on'} aria-pressed={on} onClick={() => onToggle?.(!on)} style={{ left: `${((shade.x - radius * shade.scale) / 720) * 100}%`, top: `${((shade.y - radius * shade.scale) / 600) * 100}%`, width: `${((2 * radius * shade.scale) / 720) * 100}%`, height: `${((2 * radius * shade.scale) / 600) * 100}%` }} />
+      <span className="desk-lamp__base-handle" aria-hidden="true" style={{ left: `${(base.x - 110 * base.scale) / 720 * 100}%`, top: `${(base.y - 110 * base.scale) / 600 * 100}%`, width: `${220 * base.scale / 720 * 100}%`, height: `${220 * base.scale / 600 * 100}%` }} />
+      <button type="button" className="desk-lamp__switch"
+        title="Drag to aim the lamp. Click to switch it. Arrow keys move the head."
+        onPointerDown={beginHead} onPointerMove={moveHead} onPointerUp={endHead} onPointerCancel={endHead} onLostPointerCapture={endHead}
+        onKeyDown={(event) => {
+          const step = event.shiftKey ? 30 : 6;
+          const offsets: Record<string, LampPoint> = { ArrowLeft: { x: -step, y: 0 }, ArrowRight: { x: step, y: 0 }, ArrowUp: { x: 0, y: -step }, ArrowDown: { x: 0, y: step } };
+          const offset = offsets[event.key];
+          if (offset) { event.preventDefault(); event.stopPropagation(); changeHead({ x: x + offset.x, y: y + offset.y }); }
+        }} aria-label={on ? 'Turn the lamp off' : 'Turn the lamp on'} aria-pressed={on} onClick={(event) => { if (suppressClick.current && event.detail !== 0) { suppressClick.current = false; return; } onToggle?.(!on); }} style={{ left: `${((shade.x - radius * shade.scale) / 720) * 100}%`, top: `${((shade.y - radius * shade.scale) / 600) * 100}%`, width: `${((2 * radius * shade.scale) / 720) * 100}%`, height: `${((2 * radius * shade.scale) / 600) * 100}%` }} />
     </div>
   );
 }

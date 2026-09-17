@@ -1,3 +1,5 @@
+import { checkDeskStudy } from '../../../behaviors/Perspective/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../behaviors/Perspective/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, within } from 'storybook/test';
 import demoTape from '../../../../assets/audio/demo-tape.mp3';
@@ -89,7 +91,7 @@ export const Finishes: Story = {
 };
 
 /** Left on the desk beside the dossier, on the festival sketch. */
-export const OnDesk: Story = {
+export const OnFestivalPaper: Story = {
   parameters: { composition: true, layout: 'fullscreen' },
   args: { rotation: -4 },
   render: (args) => (
@@ -101,4 +103,11 @@ export const OnDesk: Story = {
       </div>
     </PaperSheet>
   ),
+};
+
+export const OnDesk: Story = {
+  play: checkDeskStudy,
+  name: 'On desk',
+  parameters: { layout: 'fullscreen', composition: true },
+  render: (args) => <DeskObjectStudy name="Walkman" widthMm={112} depthRatio={590/720} heightMm={30} ><Walkman {...args} rotation={0} /></DeskObjectStudy>,
 };

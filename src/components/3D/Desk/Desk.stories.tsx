@@ -1,3 +1,5 @@
+import { checkDeskStudy } from '../../../behaviors/Perspective/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../behaviors/Perspective/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import { Mug } from '../Mug/Mug';
@@ -81,4 +83,11 @@ export const Woods: Story = {
       ))}
     </div>
   ),
+};
+
+export const OnDesk: Story = {
+  play: checkDeskStudy,
+  name: 'On desk',
+  parameters: { layout: 'fullscreen', composition: true },
+  render: () => <DeskObjectStudy name="Desk" bare />,
 };

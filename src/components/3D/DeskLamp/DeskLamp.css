@@ -37,10 +37,7 @@
   overflow: visible;
 }
 
-.desk-lamp__shadow {
-  fill: rgb(10 5 2 / 0.38);
-  stroke: rgb(10 5 2 / 0.38);
-}
+
 
 .desk-lamp__base circle:first-child {
   fill: #1c1c20;
@@ -114,3 +111,9 @@
 /* A shallow enamel skirt connects the elevated shade to its lower opening. */
 .desk-lamp__side { fill: var(--desk-lamp-enamel-deep); }
 .desk-lamp--elevated[data-on] .desk-lamp__spill { opacity: 0.22; }
+
+/* Only the base moves the assembly; the shade owns its articulation gesture. */
+.desk-lamp { pointer-events: none; }
+.desk-lamp__base-handle { position: absolute; border-radius: 50%; pointer-events: auto; cursor: grab; touch-action: none; }
+.desk-lamp__switch { pointer-events: auto; touch-action: none; cursor: grab; }
+.desk-lamp__switch:active { cursor: grabbing; }

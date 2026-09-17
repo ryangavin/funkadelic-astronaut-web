@@ -125,6 +125,9 @@
   position: absolute;
   inset: 0;
   z-index: 1;
+  /* It covers the whole box and nothing in it is interactive, so it must not
+     take the clicks meant for the lever lying underneath it. */
+  pointer-events: none;
   filter: var(--label-maker-extrude);
 }
 
@@ -433,25 +436,34 @@
 }
 
 /* The squeeze lever. Same moulding colour as the body but a separate part, so
-   it has an edge all the way round, and it stands open at the front by the few
-   degrees that closing it is worth. */
+   it has an edge all the way round.
+
+   It hangs off the pin, and the pin is the origin it turns about, so that one
+   point never moves however far the lever swings — which is what a pin is. The
+   pin sits up inside the grip rather than out in the air below it, so the heel
+   of the lever is swallowed by the body and only the pin head shows at the
+   joint. That leaves the lever at an angle, open toward the nose by the few
+   degrees that closing it is worth: squeezing brings the front up to the body,
+   not away from it. */
 .label-maker__trigger {
   position: absolute;
-  left: calc(266 * var(--label-maker-unit));
-  top: calc(458 * var(--label-maker-unit));
+  left: calc(265 * var(--label-maker-unit));
+  top: calc(343 * var(--label-maker-unit));
   width: calc(428 * var(--label-maker-unit));
   height: calc(106 * var(--label-maker-unit));
-  z-index: 4;
+  /* Under the body: the heel disappears beneath the grip and only the part
+     forward of it shows, which is what you see looking down at the real one. */
+  z-index: 0;
   margin: 0;
   padding: 0;
   border: 0;
-  border-radius: calc(46 * var(--label-maker-unit)) calc(20 * var(--label-maker-unit)) calc(30 * var(--label-maker-unit))
+  border-radius: calc(46 * var(--label-maker-unit)) calc(53 * var(--label-maker-unit)) calc(53 * var(--label-maker-unit))
     calc(53 * var(--label-maker-unit));
   background: var(--label-maker-shell);
   box-shadow: inset 0 0 0 1px var(--label-maker-seam);
   cursor: pointer;
-  transform-origin: 95% 22%;
-  rotate: 4deg;
+  transform-origin: calc(375 * var(--label-maker-unit)) calc(53 * var(--label-maker-unit));
+  rotate: -22deg;
   transition: rotate 90ms ease-out;
   filter: var(--label-maker-extrude);
 }
@@ -474,21 +486,31 @@
   );
 }
 
-/* The pin the lever swings on, through both halves of the handle. */
-.label-maker__trigger::after {
-  content: '';
+/* The pin the lever swings on, through both halves of the handle. It belongs to
+   the joint rather than to either part, so it is its own thing: it sits above
+   the body where the lever sits below, and it does not turn — a pin is round,
+   and turning it would look like nothing anyway.
+
+   It stands at the centre the grip's back end is struck from. That end is a
+   true half-circle — 132 units tall, capped 66 top and bottom — so its arc has
+   one centre, (640, 396), and that is the only place a pin through it can be.
+   The lever's heel is capped on the same point at its own radius of 53, and
+   that point is the lever's transform-origin, so the two arcs stay concentric
+   however far the handle swings. */
+.label-maker__pin {
   position: absolute;
-  right: calc(14 * var(--label-maker-unit));
-  top: calc(14 * var(--label-maker-unit));
+  left: calc(626 * var(--label-maker-unit));
+  top: calc(382 * var(--label-maker-unit));
   width: calc(28 * var(--label-maker-unit));
   height: calc(28 * var(--label-maker-unit));
+  z-index: 2;
   border-radius: 50%;
   background: #6f6a5c;
   box-shadow: inset 0 0 0 calc(2 * var(--label-maker-unit)) #3f3a30;
 }
 
 .label-maker[data-squeeze] .label-maker__trigger {
-  rotate: -1.5deg;
+  rotate: -17deg;
 }
 
 .label-maker__trigger[aria-disabled='true'] {

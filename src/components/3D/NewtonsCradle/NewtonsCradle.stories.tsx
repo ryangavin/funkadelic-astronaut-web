@@ -1,3 +1,6 @@
+import { checkDeskStudy } from '../../../behaviors/Perspective/DeskObjectStudy.check';
+import { CradleRelief } from '../../../behaviors/Perspective/CradleRelief';
+import { DeskObjectStudy } from '../../../behaviors/Perspective/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { CRADLE_BALLS, NewtonsCradle } from './NewtonsCradle';
@@ -12,7 +15,7 @@ const meta = {
   },
   args: { rotation: -4, sound: true, swinging: false, onSwing: fn() },
   decorators: [
-    (Story) => (
+    (Story, context) => context.parameters.composition ? <Story /> : (
       <div style={{ padding: 56, background: '#6e4a2f' }}>
         <div style={{ width: 320 }}>
           <Story />
@@ -44,4 +47,11 @@ export const Still: Story = {
 /** Already going, with the click of the balls. */
 export const Swinging: Story = {
   args: { swinging: true },
+};
+
+export const OnDesk: Story = {
+  play: checkDeskStudy,
+  name: 'On desk',
+  parameters: { layout: 'fullscreen', composition: true },
+  render: (args) => <DeskObjectStudy name="Newton’s cradle" widthMm={120} depthRatio={600/720} heightMm={90} customRelief shapes={[{ path: "M3 5H97V95H3Z", heightMm: 8 }, { path: "M8 20H92V23H8Z M8 77H92V80H8Z M8 20H11V80H8Z M89 20H92V80H89Z", heightMm: 90 }]} note="Estimated base 8 mm, rails 90 mm, resting balls 20 mm. Rail/base shadows are approximate; swinging balls are not separate shadow casters.">{(place, camera) => <CradleRelief place={place} camera={camera} />}</DeskObjectStudy>,
 };

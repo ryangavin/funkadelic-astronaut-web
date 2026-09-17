@@ -1,3 +1,5 @@
+import { checkDeskStudy } from '../../../behaviors/Perspective/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../behaviors/Perspective/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
@@ -24,7 +26,7 @@ const meta = {
   args: { glaze: '#e8dfcc', drink: '#3a2113', coffee: 0.7, rotation: 30 },
   decorators: [
     /* The mug is shown the size a mug is held at, unless a story asks for room to move it about. */
-    (Story, { parameters }) => (
+    (Story, { parameters }) => parameters.composition ? <Story /> : (
       <div style={{ padding: 56, background: '#5a3a25' }}>
         <div style={{ width: parameters.shownAt ?? 220 }}>
           <Story />
@@ -228,4 +230,11 @@ export const Rings: Story = {
     await carry({ x: 620, y: 600 });
     await expect(crescent.isConnected).toBe(true);
   },
+};
+
+export const OnDesk: Story = {
+  play: checkDeskStudy,
+  name: 'On desk',
+  parameters: { layout: 'fullscreen', composition: true },
+  render: (args) => <DeskObjectStudy name="Mug" widthMm={140} depthRatio={1} heightMm={95} mug solid={{ height: 95/140, foot: { x: 104/240, y: 120/240 } }} note="Existing 95 mm mug height; circular body and handle silhouette."><Mug {...args} rotation={0} shadow="contact" /></DeskObjectStudy>,
 };

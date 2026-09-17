@@ -134,8 +134,6 @@
 }
 
 
-/* This study has one scene light; suppress the lamp artwork’s baked-in cast shadow. */
-.perspective--lamp-study .desk-lamp__shadow { display: none; }
 
 /* Object and scene shadow follow the same position immediately, including keyboard moves. */
 .perspective--lamp-study .movable { transition: none; }

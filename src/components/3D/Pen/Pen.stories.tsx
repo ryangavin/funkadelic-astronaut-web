@@ -1,3 +1,5 @@
+import { checkDeskStudy } from '../../../behaviors/Perspective/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../behaviors/Perspective/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect } from 'storybook/test';
 import { PEN_KINDS, Pen } from './Pen';
@@ -14,7 +16,7 @@ const meta = {
   },
   args: { kind: 'ballpoint', ink: '#2c4fa3', rotation: -8 },
   decorators: [
-    (Story) => (
+    (Story, context) => context.parameters.composition ? <Story /> : (
       <div style={{ padding: '80px 56px', background: '#5a3a25' }}>
         <div style={{ width: 420 }}>
           <Story />
@@ -59,4 +61,11 @@ export const Handful: Story = {
       </div>
     </div>
   ),
+};
+
+export const OnDesk: Story = {
+  play: checkDeskStudy,
+  name: 'On desk',
+  parameters: { layout: 'fullscreen', composition: true },
+  render: (args) => <DeskObjectStudy name="Pen" widthMm={149} depthRatio={60/720} heightMm={10} shapes={[{ path: "M0 32L9 10H90Q100 10 100 32V68Q100 90 90 90H9L0 68Z" }]}><Pen {...args} rotation={0} /></DeskObjectStudy>,
 };

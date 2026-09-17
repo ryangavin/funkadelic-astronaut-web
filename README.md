@@ -4,6 +4,8 @@ Use `npm install`, then `npm run dev` to serve the existing site at http://127.0
 
 ## React conversion
 
+**Components / 3D / Desk Lamp / Articulated** lets you drag the base to move the lamp, use its corner grip to rotate, and drag the shade to bend the two rigid arms without shifting the base. Clicking the shade still switches the light; arrow keys aim it when focused. The same interaction is available in **Foundations / Behaviors / Perspective / Gentle mug**, where the registered bulb and mug shadow follow the moving head. Arm reach is bounded; head height stays fixed at the estimated bulb elevation.
+
 Component source folders are grouped into `src/components/2D` (paper, graphics, and layout pieces) and `src/components/3D` (solid desk objects and devices). Storybook mirrors these groups under **Components / 2D** and **Components / 3D**; Wordmark and Astronaut Cutout are also grouped under **Components / 2D**. **Foundations** contains **Behaviors** for interaction and perspective, **Styles** for print and surface treatments, and **Layout** for composition primitives.
 
 The incremental React conversion lives under `src/` while the current static site remains the default entry. Storybook is the workshop for it: http://localhost:6006/ runs it with accessibility, generated documentation, and the MCP addon at `/mcp`. Compositions are written as React and mirrored by stories; there is no in-browser page editor. The Vitest addon runs every story as a browser test in headless Chromium, with each play function as its assertions: `npm run test:stories` from the terminal, or the Testing Module in the Storybook sidebar.
@@ -106,3 +108,7 @@ About and Tour use a shared `--composition-unit`: a 1440px larger-screen referen
 ### Ambient video tuning
 
 The landing scene samples the original 522-second performance at 10 displayed fps from the same muted media element used by explicit playback. A browser-native SVG levels pass renders those frames in restrained black and white. Explicit Play stops the ambient cadence, seeks the same stream to zero, and fades into unfiltered playback with audio. Open **Layout studio → Ambient video treatment** to tune brightness, contrast, black/white points, grain and cadence, or select a local clip discovered from `assets/ambient/` after refresh. Defaults stay baked in site code. See [the ambient treatment guide](docs/performance-print.md) for adding clips, static publishing, draft behavior and QA.
+
+### 3D desk previews
+
+Every 3D component has an **On desk** story (Desk remains under Foundations → Layout). The shared scene provides a movable, articulated lamp, view angle, shadow strength, and zoom controls. Move objects with dragging or arrow keys; use their rotation handles to turn them. Dimensions use two desk units per millimetre. Estimated heights and simplified shadow silhouettes are identified in each preview; these are visual review scenes, not a full lighting renderer. Existing paper compositions are retained as **On Festival Paper** stories.

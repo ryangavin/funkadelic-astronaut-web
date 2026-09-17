@@ -5,6 +5,7 @@ import { Movable, type Place } from '../Movable/Movable';
 import { Desk } from '../../components/3D/Desk/Desk';
 import { DeskClock } from '../../components/3D/DeskClock/DeskClock';
 import { MUG_FOOT, MUG_HEIGHT, MUG_WIDTH, Mug } from '../../components/3D/Mug/Mug';
+import { LampShadows } from '../../components/3D/DeskLamp/LampShadows';
 import { DeskLamp, LampLight } from '../../components/3D/DeskLamp/DeskLamp';
 import { DeskLighting, useDeskLight } from '../DeskLighting/DeskLighting';
 import { MugShadow, mugShadowProjection } from '../../components/3D/Mug/MugShadow';
@@ -37,16 +38,17 @@ function MugLighting({ foot, rotation }: { foot: { x: number; y: number }; rotat
   const poolWidth = 2 * light.height * Math.tan(35 * Math.PI / 180);
   return <>
     <LampLight on={light.on} style={{ position: 'absolute', width: `${poolWidth / 1440 * 100}%`, aspectRatio: '1', left: `${(light.x - poolWidth / 2) / 1440 * 100}%`, top: `${(light.y - poolWidth / 2) / 800 * 100}%` }} />
+    <LampShadows />
     <MugShadow {...foot} width={MUG_WIDTH} rotation={rotation} light={light} />
   </>;
 }
 
 /** The original artwork, with just a shallow ceramic side. Drag to compare it across the surface. */
 function GentleMugScene({ shadowStrength, ...args }: NonNullable<Story['args']>) {
-  const [place, setPlace] = useState<Place>({ x: 450, y: 330, rotation: 0 });
+  const [place, setPlace] = useState<Place>({ x: 180, y: 300, rotation: 0 });
   const [lampOn, setLampOn] = useState(true);
   // 480×400 mm lamp drawing; bulb elevation estimated at 350 mm. Desk units are 2/mm.
-  const lamp = { x: 700, y: -140, width: 960 };
+  const [lamp, setLamp] = useState({ x: 400, y: 40, width: 960, rotation: 0 });
   const turn = (place.rotation ?? 0) * Math.PI / 180;
   const footOffset = (MUG_FOOT.x - 0.5) * MUG_WIDTH;
   const foot = { x: place.x + MUG_WIDTH / 2 + footOffset * Math.cos(turn), y: place.y + MUG_WIDTH / 2 + footOffset * Math.sin(turn) };
@@ -54,14 +56,14 @@ function GentleMugScene({ shadowStrength, ...args }: NonNullable<Story['args']>)
     <DeskLighting><div style={{ background: '#1a1512', padding: '24px', minHeight: '100vh', boxSizing: 'border-box' }}>
       <div style={{ maxWidth: 1000, margin: '0 auto' }}>
         <p style={{ color: '#e8dfcc', font: '15px/1.5 system-ui', margin: '0 0 16px' }}>
-          Gentle mug · Drag either side of the lamp. Click its shade to switch the light. Set Angle to 90° for the overhead view.
+          Drag the lamp base to move it; use its rotation grip to turn it. Drag the shade to aim, or click to switch. Drag the mug through its light.
         </p>
         <Perspective {...args} className="perspective--lamp-study">
           <Desk height={800} edge={0}>
             <MugLighting foot={foot} rotation={20 + (place.rotation ?? 0)} />
-            <div className="perspective__lamp" style={{ position: 'absolute', left: `${lamp.x / 1440 * 100}%`, top: `${lamp.y / 800 * 100}%`, width: `${lamp.width / 1440 * 100}%` }}>
+            <Movable {...lamp} className="perspective__lamp" label="Desk lamp" onMove={(to) => setLamp((at) => ({ ...at, ...to }))}>
               <DeskLamp camera={{ angle: args.angle ?? GENTLE_VIEW, depth: args.depth ?? GENTLE_DEPTH, width: args.width ?? 1440, surfaceHeight: 800 }} shadowStrength={shadowStrength} lightPosition={{ ...lamp, height: 700 }} on={lampOn} onToggle={setLampOn} enamel="green" />
-            </div>
+            </Movable>
             <Movable {...place} width={MUG_WIDTH} label="Mug" onMove={(to) => setPlace((at) => ({ ...at, ...to }))}>
               <Solid height={MUG_HEIGHT} foot={MUG_FOOT}>
                 <Mug rotation={20} coffee={0.7} shadow="contact" />

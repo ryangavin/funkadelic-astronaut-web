@@ -1,3 +1,5 @@
+import { checkDeskStudy } from '../../../behaviors/Perspective/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../behaviors/Perspective/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import { GuitarPick } from './GuitarPick';
@@ -15,7 +17,7 @@ const meta = {
   },
   args: { color: '#9275b2', ink: '#121420', print: 'FA', rotation: 20 },
   decorators: [
-    (Story) => (
+    (Story, context) => context.parameters.composition ? <Story /> : (
       <div style={{ padding: 56, background: '#5a3a25' }}>
         <div style={{ width: 64 }}>
           <Story />
@@ -52,4 +54,11 @@ export const Pocketful: Story = {
       ))}
     </div>
   ),
+};
+
+export const OnDesk: Story = {
+  play: checkDeskStudy,
+  name: 'On desk',
+  parameters: { layout: 'fullscreen', composition: true },
+  render: (args) => <DeskObjectStudy name="Guitar pick" widthMm={25} depthRatio={116/100} heightMm={1} shapes={[{ path: "M50 0C20 0 0 9 0 27C0 50 32 100 50 100C68 100 100 50 100 27C100 9 80 0 50 0Z" }]}><GuitarPick {...args} rotation={0} /></DeskObjectStudy>,
 };

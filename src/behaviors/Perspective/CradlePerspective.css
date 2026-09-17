@@ -16,3 +16,6 @@
 .cradle-perspective-study .newtons-cradle__push > svg > g,
 .cradle-perspective-study .newtons-cradle__push > svg > rect { visibility: hidden; }
 .cradle-perspective-study .movable { transition: none; }
+
+.cradle-relief .newtons-cradle__push > svg > g,
+.cradle-relief .newtons-cradle__push > svg > rect { visibility: hidden; }

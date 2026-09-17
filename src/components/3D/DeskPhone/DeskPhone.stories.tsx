@@ -1,3 +1,5 @@
+import { checkDeskStudy } from '../../../behaviors/Perspective/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../behaviors/Perspective/DeskObjectStudy';
 import type { CSSProperties } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
@@ -311,7 +313,7 @@ export const Finishes: Story = {
 };
 
 /** Pushed to the corner of the desk, on the festival sketch, where the booking line lives. */
-export const OnDesk: Story = {
+export const OnFestivalPaper: Story = {
   parameters: { composition: true, layout: 'fullscreen' },
   args: { rotation: -5, finish: 'ivory' },
   render: (args) => (
@@ -323,4 +325,11 @@ export const OnDesk: Story = {
       </div>
     </PaperSheet>
   ),
+};
+
+export const OnDesk: Story = {
+  play: checkDeskStudy,
+  name: 'On desk',
+  parameters: { layout: 'fullscreen', composition: true },
+  render: (args) => <DeskObjectStudy name="Desk phone" widthMm={560} depthRatio={300/560} heightMm={137} solid={{ height: DESK_PHONE_HEIGHT, foot: DESK_PHONE_FOOT }} shapes={[{ path: "M20 12H46Q52 12 52 25V80Q52 88 46 88H20Q13 88 13 80V25Q13 12 20 12Z", heightMm: 137 }, { path: "M57 15H96V79H57Z", heightMm: 65 }]} note="560 mm combined drawing; phone 137 mm and answering machine 65 mm tall. Approximate separate silhouettes."><DeskPhone {...args} rotation={0} sound={false} /></DeskObjectStudy>,
 };
