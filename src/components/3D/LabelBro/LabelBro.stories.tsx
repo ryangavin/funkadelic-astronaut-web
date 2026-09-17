@@ -38,8 +38,10 @@ const meta = {
       context.parameters.composition ? (
         <Story />
       ) : (
-        <div style={{ padding: '56px 48px 56px 200px', background: DESK }}>
-          <div style={{ width: 520, maxWidth: '100%' }}>
+        // Room at the left for the tape standing out of the slot, which is
+        // outside the machine's own box and would otherwise be clipped.
+        <div style={{ padding: '48px 40px 48px 90px', background: DESK }}>
+          <div style={{ width: 460, maxWidth: '100%' }}>
             <Story />
           </div>
         </div>
@@ -241,7 +243,7 @@ export const OnATiltedDesk: Story = {
       <Perspective angle={STANDING_VIEW}>
         <div style={{ position: 'relative', width: '100%', aspectRatio: '1440 / 1020', background: DESK }}>
           <div style={{ position: 'absolute', left: '32%', top: '22%', width: '42%' }}>
-            <Solid height={LABEL_BRO_HEIGHT} foot={LABEL_BRO_FOOT}>
+            <Solid localCoordinates height={LABEL_BRO_HEIGHT} foot={LABEL_BRO_FOOT}>
               <LabelBro {...args} />
             </Solid>
           </div>

@@ -1,101 +1,145 @@
+import { useArgs } from 'storybook/preview-api';
+import { articulateLamp, lampPoseAngles } from '../../components/3D/DeskLamp/articulation';
+import { DESK_LAMP_ENAMELS } from '../../components/3D/DeskLamp/DeskLamp';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
-import { PLAN_VIEW, STANDING_VIEW } from '../../behaviors/Perspective/Perspective';
+import { GENTLE_DEPTH, GENTLE_VIEW } from '../../behaviors/Perspective/Perspective';
 import { DESK_WOODS } from '../../components/3D/Desk/Desk';
-import { DESK_DEPTH, DESK_LAYOUT, PerspectiveDesk } from './PerspectiveDesk';
+import { PerspectiveDesk } from './PerspectiveDesk';
 
-const viewports = {
-  laptop: { name: 'Laptop 1280', styles: { width: '1280px', height: '800px' }, type: 'desktop' },
-  design: { name: 'Design 1440 x 810', styles: { width: '1440px', height: '810px' }, type: 'desktop' },
-  wide: { name: 'Wide 1920', styles: { width: '1920px', height: '1080px' }, type: 'desktop' },
-  tablet: { name: 'Tablet 834', styles: { width: '834px', height: '1194px' }, type: 'tablet' },
-  phone: { name: 'Phone 390', styles: { width: '390px', height: '844px' }, type: 'mobile' },
-} as const;
+const initialAngles = lampPoseAngles(articulateLamp({ x: 200, y: 420 }));
 
 const meta = {
   title: 'Pages/Perspective Desk',
   component: PerspectiveDesk,
-  parameters: { layout: 'fullscreen', viewport: { options: viewports } },
+  parameters: { layout: 'fullscreen' },
+  render: function Render(args) {
+    const [, updateArgs] = useArgs();
+    return <PerspectiveDesk {...args} onCaptureSettings={settings => updateArgs(settings)} />;
+  },
   tags: ['autodocs'],
   argTypes: {
-    angle: { control: { type: 'range', min: 25, max: 90, step: 1 }, description: 'Degrees above the desk: 90 is straight down, 60 is standing at it.' },
-    depth: { control: { type: 'range', min: 900, max: 8000, step: 100 }, description: 'How far the eye is from the desk, in desk units.' },
-    wood: { control: 'inline-radio', options: DESK_WOODS },
-    minScale: { control: { type: 'range', min: 0, max: 1, step: 0.05 } },
-    maxScale: { control: { type: 'range', min: 0.5, max: 3, step: 0.05 } },
+    angle: { table: { category: 'Camera' }, control: { type: 'range', min: 78, max: 90, step: 1 } },
+    depth: { table: { category: 'Camera' }, control: { type: 'range', min: 4000, max: 12000, step: 100 } },
+    wood: { table: { category: 'Desktop' }, control: 'inline-radio', options: DESK_WOODS },
+    shadowStrength: { table: { category: 'Lighting' }, control: { type: 'range', min: 0, max: 1, step: .01 } },
+    lamp: { control: 'boolean', table: { category: 'Lighting' } },
+    lampX: { control: { type: 'number', step: 1 }, table: { category: 'Lamp placement' } },
+    lampY: { control: { type: 'number', step: 1 }, table: { category: 'Lamp placement' } },
+    lampRotation: { control: { type: 'range', min: -180, max: 180, step: .1 }, table: { category: 'Lamp placement' } },
+    lampWidth: { control: { type: 'range', min: 240, max: 1440, step: 1 }, table: { category: 'Lamp appearance' } },
+    lampEnamel: { control: 'inline-radio', options: DESK_LAMP_ENAMELS, table: { category: 'Lamp appearance' } },
+    lampLowerAngle: { control: { type: 'range', min: -180, max: 180, step: .1 }, description: 'Lower arm angle in the lamp’s local drawing. Use Sync story controls to capture the current dragged pose.', table: { category: 'Lamp articulation' } },
+    lampUpperAngle: { control: { type: 'range', min: -180, max: 180, step: .1 }, description: 'Upper arm angle; stored separately to preserve the exact elbow bend.', table: { category: 'Lamp articulation' } },
+    objectPlacements: { control: 'object', table: { category: 'Desk objects' } },
+    showObjects: { control: 'boolean', table: { category: 'Desk objects' } },
+    showSettings: { control: 'boolean', table: { category: 'Layout tools' } },
+    onCaptureSettings: { table: { disable: true } },
+    children: { table: { disable: true } },
+    onArrange: { table: { disable: true } },
+    onArticulate: { table: { disable: true } },
+    onLamp: { table: { disable: true } },
   },
-  args: { angle: STANDING_VIEW, wood: 'walnut', lamp: true, onArrange: fn(), onLamp: fn() },
-  decorators: [
-    /* The page is the desk in its room; the docs show just the frame, at its own 16 x 9. */
-    (Story, context) =>
-      context.viewMode === 'docs' ? (
-        <Story />
-      ) : (
-        <div className="perspective-desk-room">
-          <Story />
-        </div>
-      ),
-  ],
+  args: { angle: GENTLE_VIEW, depth: GENTLE_DEPTH, wood: 'walnut', lamp: true, shadowStrength: .36, lampX: 770, lampY: 100, lampRotation: 0, lampWidth: 576, lampEnamel: 'green', lampLowerAngle: initialAngles.lower, lampUpperAngle: initialAngles.upper, onArrange: fn(), onArticulate: fn(), onLamp: fn() },
 } satisfies Meta<typeof PerspectiveDesk>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Where a movable thing's corner is, in desk units, read back from its own style. */
-const cornerOf = (element: HTMLElement) => ({ x: Number(element.style.getPropertyValue('--movable-x')), y: Number(element.style.getPropertyValue('--movable-y')) });
+/** The starting point for the main desk: a clear surface and an articulated lamp. */
+export const Desk: Story = {
+  args: {
+    angle: 78,
+    depth: 5700,
+    lampX: 396,
+    lampY: 17,
+    lampLowerAngle: -148.01516538847474,
+    lampUpperAngle: 107.8561580784906,
 
-/**
- * The desk as you would stand at it. The wall shows above the far edge, the
- * desk's own front edge runs along the bottom, and everything on it is the
- * same drawing as ever, foreshortened with the surface it lies on.
- */
-export const Standing: Story = {
-  play: async ({ canvasElement, args }) => {
-    const canvas = within(canvasElement);
-    // The frame is 16 x 9 whatever the window.
-    const stage = canvasElement.querySelector<HTMLElement>('.stage')!;
-    const frame = stage.getBoundingClientRect();
-    await expect(frame.width / frame.height).toBeCloseTo(16 / 9, 1);
-    // The desktop is deeper than the frame, because depth foreshortens; drawn, it fits inside it.
-    const plane = canvasElement.querySelector<HTMLElement>('.perspective__plane')!;
-    const perUnit = plane.getBoundingClientRect().width / 1440;
-    await expect(DESK_DEPTH).toBeGreaterThan(810);
-    await expect(plane.getBoundingClientRect().height).toBeLessThan(DESK_DEPTH * perUnit);
-    // The near edge is not foreshortened at all: it is still the desk's full width.
-    await expect(plane.getBoundingClientRect().width).toBeCloseTo(canvasElement.querySelector<HTMLElement>('.desk__top')!.getBoundingClientRect().width, 0);
+    objectPlacements: {
+      "dossier": {
+        "rotation": -9,
+        "x": -294,
+        "y": 298
+      },
 
-    // A thing dragged follows the pointer across the desk, not across the screen: down the screen buys more desk than it would seen from above.
-    const note = canvas.getByRole('group', { name: 'Sticky note' });
-    const box = note.getBoundingClientRect();
-    const from = { x: box.left + box.width / 2, y: box.top + box.height / 2 };
-    const travel = 100 * perUnit;
-    await userEvent.pointer([
-      { keys: '[MouseLeft>]', target: note, coords: { clientX: from.x, clientY: from.y } },
-      { coords: { clientX: from.x, clientY: from.y + 20 } },
-      { coords: { clientX: from.x, clientY: from.y + travel } },
-      { keys: '[/MouseLeft]', coords: { clientX: from.x, clientY: from.y + travel } },
-    ]);
-    await expect(cornerOf(note).y - DESK_LAYOUT.things.note.y).toBeGreaterThan(100);
-    await expect(args.onArrange).toHaveBeenCalled();
+      "clock": {
+        "rotation": 5.5,
+        "x": 823,
+        "y": 193
+      },
 
-    // The lamp still switches, through the tilt.
-    await userEvent.click(canvas.getByRole('button', { name: 'Turn the lamp off' }));
-    await expect(args.onLamp).toHaveBeenCalledWith(false);
-    await expect(canvasElement.querySelector('.perspective-desk__scene')).toHaveAttribute('data-lamp', 'off');
+      "cradle": {
+        "rotation": -19,
+        "x": 39,
+        "y": 58
+      },
+
+      "mug": {
+        "rotation": -15,
+        "x": 67,
+        "y": 185
+      },
+
+      "rolodex": {
+        "rotation": 9,
+        "x": 1245,
+        "y": 55
+      },
+
+      "handheld": {
+        "rotation": -5,
+        "x": 460,
+        "y": 220
+      },
+
+      "labelBro": {
+        "rotation": 3.5,
+        "x": 995,
+        "y": 52
+      },
+
+      "pen": {
+        "rotation": 8,
+        "x": 1117,
+        "y": 314
+      },
+
+      "walkman": {
+        "rotation": -6,
+        "x": 113,
+        "y": 525
+      },
+
+      "phone": {
+        "rotation": 0,
+        "x": 172,
+        "y": -56
+      }
+    },
+
+    showObjects: true
   },
-};
 
-/** Straight down, the way every drawing on the desk was made. The same page with the tilt taken out. */
-export const FromAbove: Story = {
-  args: { angle: PLAN_VIEW },
-};
-
-/** Lower still, and closer: nearly across the desk, with the far edge falling away. */
-export const LowAndClose: Story = {
-  args: { angle: 42, depth: 1800 },
-};
-
-/** The office dark but for the lamp. */
-export const LampOff: Story = {
-  args: { lamp: false },
+  play: async ({ canvasElement, args }) => {
+    if (import.meta.env.MODE !== 'test') return;
+    const canvas = within(canvasElement);
+    const lamp = canvas.getByRole('group', { name: 'Desk lamp' });
+    const before = lamp.getAttribute('style');
+    lamp.focus();
+    await userEvent.keyboard('{ArrowLeft}');
+    await expect(lamp.getAttribute('style')).not.toBe(before);
+    await expect(args.onArrange).toHaveBeenCalled();
+    const head = canvas.getByRole('button', { name: 'Turn the lamp off' });
+    const shade = canvasElement.querySelector('.desk-lamp__shade')!;
+    const pose = shade.getAttribute('transform');
+    head.focus();
+    await userEvent.keyboard('{ArrowRight}');
+    await expect(shade.getAttribute('transform')).not.toBe(pose);
+    await userEvent.click(head);
+    await expect(args.onLamp).toHaveBeenCalledWith(false);
+    await expect(canvasElement.querySelector('.lamp-cast-shadow__light')).toHaveAttribute('opacity', '0');
+    await userEvent.click(canvas.getByRole('button', { name: 'Turn the lamp on' }));
+    head.blur();
+  }
 };

@@ -19,7 +19,7 @@ export type DeskObjectStudyProps = {
   heightMm?: number;
   note?: string;
   shapes?: StudyShape[];
-  solid?: { height: number; foot: Foot };
+  solid?: { height: number; foot: Foot; localCoordinates?: boolean };
   mug?: boolean;
   bare?: boolean;
   customRelief?: boolean;
@@ -28,7 +28,7 @@ export type DeskObjectStudyProps = {
 };
 
 /** One scene-owned silhouette, composited once so overlapping layers never darken each other. */
-function StudyLighting({ place, width, depth, shapes, heightMm, mug, surfaceHeight }: { surfaceHeight: number; place: Place; width: number; depth: number; shapes: StudyShape[]; heightMm: number; mug?: boolean }) {
+export function StudyLighting({ place, width, depth, shapes, heightMm, mug, surfaceHeight, shadowOnly = false }: { shadowOnly?: boolean; surfaceHeight: number; place: Place; width: number; depth: number; shapes: StudyShape[]; heightMm: number; mug?: boolean }) {
   const light = useDeskLight();
   const id = `study-shadow-${useId().replace(/:/g, '')}`;
   if (!light) return null;
@@ -38,8 +38,8 @@ function StudyLighting({ place, width, depth, shapes, heightMm, mug, surfaceHeig
   const local = `translate(${cx} ${cy}) rotate(${place.rotation ?? 0}) translate(${-width / 2} ${-depth / 2}) scale(${width / 100} ${depth / 100})`;
   const intensity = light.on ? (light.shadowStrength ?? DEFAULT_SHADOW_STRENGTH) / (1 + (Math.hypot(cx - light.x, cy - light.y) / 1000) ** 2) : 0;
   return <>
-    <LampLight on={light.on} style={{ position: 'absolute', width: `${pool / 1440 * 100}%`, aspectRatio: '1', left: `${(light.x - pool / 2) / 1440 * 100}%`, top: `${(light.y - pool / 2) / surfaceHeight * 100}%` }} />
-    <LampShadows surfaceHeight={surfaceHeight} />
+    {!shadowOnly && <LampLight on={light.on} style={{ position: 'absolute', width: `${pool / 1440 * 100}%`, aspectRatio: '1', left: `${(light.x - pool / 2) / 1440 * 100}%`, top: `${(light.y - pool / 2) / surfaceHeight * 100}%` }} />}
+    {!shadowOnly && <LampShadows surfaceHeight={surfaceHeight} />}
     {mug ? <MugShadow x={cx - width / 15 * Math.cos(turn)} y={cy - width / 15 * Math.sin(turn)} width={width} rotation={place.rotation ?? 0} light={light} deskHeight={surfaceHeight} /> :
       <svg className="desk-study__shadow" viewBox={`0 0 1440 ${surfaceHeight}`} aria-hidden="true">
         <defs><filter id={id} x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="5" /></filter></defs>
@@ -56,7 +56,7 @@ function StudyLighting({ place, width, depth, shapes, heightMm, mug, surfaceHeig
   </>;
 }
 
-function Relief({ children, place, camera, width, depth, heightMm, path, sideColors }: { sideColors?: readonly [string, string, string]; children: ReactNode; place: Place; camera: StudyCamera; width: number; depth: number; heightMm: number; path: string }) {
+export function Relief({ children, place, camera, width, depth, heightMm, path, sideColors }: { sideColors?: readonly [string, string, string]; children: ReactNode; place: Place; camera: StudyCamera; width: number; depth: number; heightMm: number; path: string }) {
   // Shade through the physical thickness, not across the full artwork footprint.
   // Match the shell at the top, then blend smoothly into its underside.
   const steps = sideColors ? 33 : 9;

@@ -37,11 +37,11 @@
 */
 
 .desk-phone {
-  --desk-phone-unit: calc(100cqw / 560);
+  --desk-phone-unit: calc(100cqw / 320);
   --desk-phone-rotation: 0deg;
   /* What a Solid's two numbers are worth here, as lengths in this drawing. */
-  --desk-phone-rise: calc(var(--solid-rise, 0) * 560 * var(--desk-phone-unit));
-  --desk-phone-splay: calc(var(--solid-splay, 0) * 560 * var(--desk-phone-unit));
+  --desk-phone-rise: calc(var(--solid-rise, 0) * 320 * var(--desk-phone-unit));
+  --desk-phone-splay: calc(var(--solid-splay, 0) * 320 * var(--desk-phone-unit));
   /* The machine is 65 millimetres against the set's 137, so it lifts by that much of it. */
   --desk-phone-machine-share: calc(65 / 137);
   /* The machine's own colours, fixed: beige plastic, brown print, a red LED. */
@@ -59,7 +59,7 @@
   display: block;
   position: relative;
   width: 100%;
-  aspect-ratio: 560 / 300;
+  aspect-ratio: 320 / 300;
   container-type: inline-size;
   rotate: var(--desk-phone-rotation);
   transform-origin: 50% 50%;
@@ -217,7 +217,7 @@
   top: calc(149.5 * var(--desk-phone-unit));
   height: calc(1 * var(--desk-phone-unit));
   transform-origin: 50% 100%;
-  transform: matrix(1, 0, calc(var(--solid-splay, 0) * -560), calc(var(--solid-rise, 0) * 560), 0, 0);
+  transform: matrix(1, 0, calc(var(--solid-splay, 0) * -560), calc(var(--solid-rise, 0) * 320), 0, 0);
 }
 
 .desk-phone__machine-foot,
@@ -243,7 +243,7 @@
     1,
     0,
     calc(var(--solid-splay, 0) * -560 * 65 / 137),
-    calc(var(--solid-rise, 0) * 560 * 65 / 137),
+    calc(var(--solid-rise, 0) * 320 * 65 / 137),
     0,
     0
   );
@@ -352,9 +352,9 @@
 .desk-phone__handset {
   position: absolute;
   left: calc(2.5 * var(--desk-phone-unit));
-  top: calc(36 * var(--desk-phone-unit));
+  top: calc(28 * var(--desk-phone-unit));
   width: calc(216 * var(--desk-phone-unit));
-  height: calc(56 * var(--desk-phone-unit));
+  height: calc(72 * var(--desk-phone-unit));
   padding: 0;
   border: 0;
   background: none;
@@ -371,6 +371,7 @@
 }
 
 .desk-phone__handset svg {
+  overflow: visible;
   display: block;
   width: 100%;
   height: 100%;
@@ -588,300 +589,6 @@
   fill: rgb(255 255 255 / 0.7);
 }
 
-/* --- The answering machine's top face ---------------------------------- */
-
-/*
-  Straight down, the wedge is a plain rounded rectangle. The slope from 65 at
-  the back to 35 at the front is a height, so it belongs to the Solid and to
-  the flank below, not to this drawing.
-*/
-.desk-phone__machine {
-  position: absolute;
-  left: calc(319 * var(--desk-phone-unit));
-  top: calc(44 * var(--desk-phone-unit));
-  width: calc(230 * var(--desk-phone-unit));
-  height: calc(200 * var(--desk-phone-unit));
-  border-radius: calc(9 * var(--desk-phone-unit)) calc(9 * var(--desk-phone-unit)) calc(14 * var(--desk-phone-unit))
-    calc(14 * var(--desk-phone-unit));
-  background: var(--desk-phone-machine);
-  box-shadow: 0 0 0 1px var(--desk-phone-machine-edge);
-  color: var(--desk-phone-machine-print);
-  translate: calc(var(--desk-phone-splay) * var(--desk-phone-machine-share))
-    calc(-1 * var(--desk-phone-rise) * var(--desk-phone-machine-share));
-}
-
-/* The lift-up door over the cassette well: a panel let into the top face, so a
-   line round it and the thumb lip at its edge. */
-.desk-phone__door {
-  position: absolute;
-  left: calc(22 * var(--desk-phone-unit));
-  top: calc(18 * var(--desk-phone-unit));
-  width: calc(130 * var(--desk-phone-unit));
-  height: calc(82 * var(--desk-phone-unit));
-  border-radius: calc(6 * var(--desk-phone-unit));
-  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.18);
-}
-
-.desk-phone__well {
-  position: absolute;
-  inset: calc(7 * var(--desk-phone-unit));
-  border-radius: calc(4 * var(--desk-phone-unit));
-  background: #221c16;
-  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.5);
-  overflow: hidden;
-}
-
-/* The smoked lid over the well: what it reflects is on its own face, and shows
-   from straight above like any other reflection. */
-.desk-phone__well::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background:
-    linear-gradient(118deg, transparent 40%, rgb(255 255 255 / 0.09) 42%, rgb(255 255 255 / 0.09) 45%, transparent 47%),
-    rgb(40 26 18 / 0.2);
-}
-
-/* A microcassette, 50 by 33 millimetres: a third the size of a compact one. */
-.desk-phone__microcassette {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: calc(90 * var(--desk-phone-unit));
-  height: auto;
-  translate: -50% -50%;
-}
-
-.desk-phone__tape-shell {
-  fill: #453b46;
-  stroke: #17131a;
-  stroke-width: 1.5;
-}
-
-.desk-phone__tape-label {
-  fill: #e3d8c1;
-}
-
-.desk-phone__tape-rule {
-  stroke: rgb(70 60 48 / 0.4);
-  stroke-width: 0.9;
-}
-
-.desk-phone__tape-pack {
-  fill: #17151b;
-}
-
-/* The spinning group carries no attribute transform of its own — a CSS rotation
-   would replace it — so it is nested inside the one that places it. */
-.desk-phone__tape-hub {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: desk-phone-spin 2.2s linear infinite;
-  animation-play-state: paused;
-}
-
-.desk-phone__tape-ring {
-  fill: #cfc7b7;
-}
-
-.desk-phone__tape-eye {
-  fill: #17151b;
-}
-
-.desk-phone__tape-tooth {
-  fill: #9a9184;
-}
-
-.desk-phone__tape-window {
-  fill: #0c0a0e;
-}
-
-.desk-phone__machine[data-playing] .desk-phone__tape-hub {
-  animation-play-state: running;
-}
-
-.desk-phone__door-lip {
-  position: absolute;
-  right: calc(8 * var(--desk-phone-unit));
-  bottom: calc(1 * var(--desk-phone-unit));
-  width: calc(26 * var(--desk-phone-unit));
-  height: calc(3 * var(--desk-phone-unit));
-  border-radius: calc(2 * var(--desk-phone-unit));
-  background: rgb(0 0 0 / 0.18);
-}
-
-/* --- The readout and the lamps ----------------------------------------- */
-
-.desk-phone__readout {
-  position: absolute;
-  left: calc(166 * var(--desk-phone-unit));
-  top: calc(20 * var(--desk-phone-unit));
-  width: calc(48 * var(--desk-phone-unit));
-  padding: calc(4 * var(--desk-phone-unit)) calc(2 * var(--desk-phone-unit)) calc(3 * var(--desk-phone-unit));
-  box-sizing: border-box;
-  border-radius: calc(3 * var(--desk-phone-unit));
-  background:
-    linear-gradient(112deg, transparent 52%, rgb(255 255 255 / 0.07) 54%, rgb(255 255 255 / 0.07) 58%, transparent 60%),
-    var(--desk-phone-led-glass);
-  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.6);
-  text-align: center;
-}
-
-.desk-phone__led {
-  display: block;
-  width: calc(34 * var(--desk-phone-unit));
-  height: auto;
-  margin: 0 auto;
-}
-
-.desk-phone__led-bar {
-  fill: var(--desk-phone-led-ghost);
-}
-
-.desk-phone__led-bar[data-lit] {
-  fill: var(--desk-phone-led);
-}
-
-.desk-phone__readout-print {
-  display: block;
-  margin-top: calc(2 * var(--desk-phone-unit));
-  font-size: calc(4.4 * var(--desk-phone-unit));
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgb(255 200 188 / 0.5);
-}
-
-.desk-phone__lamps {
-  position: absolute;
-  left: calc(166 * var(--desk-phone-unit));
-  top: calc(76 * var(--desk-phone-unit));
-  width: calc(48 * var(--desk-phone-unit));
-  display: flex;
-  justify-content: center;
-  gap: calc(12 * var(--desk-phone-unit));
-}
-
-.desk-phone__lamp {
-  width: calc(7 * var(--desk-phone-unit));
-  height: calc(7 * var(--desk-phone-unit));
-  border-radius: 50%;
-  background: rgb(0 0 0 / 0.3);
-  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.3);
-}
-
-/* A lit lamp throws light on the plastic round it, which is a thing you see
-   looking straight down at one in a dark office. */
-.desk-phone__lamp[data-lamp='power'][data-lit] {
-  background: #4fd067;
-  box-shadow:
-    inset 0 0 0 1px rgb(0 0 0 / 0.3),
-    0 0 calc(3 * var(--desk-phone-unit)) rgb(79 208 103 / 0.7);
-}
-
-.desk-phone__lamp[data-lamp='message'][data-lit] {
-  background: var(--desk-phone-led);
-  box-shadow:
-    inset 0 0 0 1px rgb(0 0 0 / 0.3),
-    0 0 calc(3 * var(--desk-phone-unit)) rgb(255 67 38 / 0.7);
-}
-
-/* Waiting messages blink, the way they always did until somebody dealt with them. */
-.desk-phone__machine[data-waiting] .desk-phone__lamp[data-lamp='message'][data-lit] {
-  animation: desk-phone-blink 1.1s steps(1) infinite;
-}
-
-/* --- The transport ----------------------------------------------------- */
-
-.desk-phone__keys {
-  position: absolute;
-  left: calc(17 * var(--desk-phone-unit));
-  top: calc(118 * var(--desk-phone-unit));
-  height: calc(42 * var(--desk-phone-unit));
-  display: flex;
-  gap: calc(8 * var(--desk-phone-unit));
-}
-
-/* A key stands a little proud of the panel, which from up here is an outline
-   and the shadow it drops on the beige. Pressed, it goes down into the panel:
-   the shadow closes up and the face darkens. It does not move on the plan,
-   because a key going down does not travel across the desk. */
-.desk-phone__key {
-  position: relative;
-  box-sizing: border-box;
-  width: calc(44 * var(--desk-phone-unit));
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: calc(3 * var(--desk-phone-unit));
-  border: 0;
-  border-radius: calc(4 * var(--desk-phone-unit));
-  background: var(--desk-phone-machine-key);
-  box-shadow:
-    0 0 0 1px rgb(0 0 0 / 0.28),
-    calc(1.5 * var(--desk-phone-unit)) calc(2 * var(--desk-phone-unit)) calc(2 * var(--desk-phone-unit)) rgb(0 0 0 / 0.3);
-  color: var(--desk-phone-machine-key-legend);
-  font: inherit;
-  font-size: calc(6 * var(--desk-phone-unit));
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition:
-    background-color 80ms ease-out,
-    box-shadow 80ms ease-out;
-}
-
-.desk-phone__key svg {
-  display: block;
-  height: calc(7 * var(--desk-phone-unit));
-  width: auto;
-  fill: currentcolor;
-}
-
-.desk-phone__key:active,
-.desk-phone__key[aria-pressed='true'] {
-  background: var(--desk-phone-machine-key-down);
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.35);
-}
-
-.desk-phone__key:disabled {
-  cursor: default;
-  opacity: 0.6;
-}
-
-.desk-phone__key:focus-visible {
-  outline: calc(2.5 * var(--desk-phone-unit)) solid var(--desk-phone-focus);
-  outline-offset: calc(2 * var(--desk-phone-unit));
-}
-
-/* Silk-screened along the front, under the keys. */
-.desk-phone__machine-print {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(170 * var(--desk-phone-unit));
-  text-align: center;
-  font-size: calc(6 * var(--desk-phone-unit));
-  line-height: 1.3;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  opacity: 0.75;
-}
-
-.desk-phone__machine-print em {
-  display: block;
-  margin-top: calc(1.5 * var(--desk-phone-unit));
-  font-style: normal;
-  font-size: calc(4.6 * var(--desk-phone-unit));
-  opacity: 0.75;
-}
-
-/* --- Spoken, not drawn ------------------------------------------------- */
-
 .desk-phone__status {
   position: absolute;
   width: 1px;
@@ -916,3 +623,6 @@
     transition: none;
   }
 }
+
+.desk-phone__cord-connector { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.desk-phone__saddle { left: calc(22 * var(--desk-phone-unit)); right: calc(22 * var(--desk-phone-unit)); height: calc(66 * var(--desk-phone-unit)); top: calc(30 * var(--desk-phone-unit)); }

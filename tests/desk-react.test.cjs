@@ -174,10 +174,10 @@ test('The office inkjet: a smaller gamut, ink into the fibre, a dither and the h
   // A flat social print draws past its square, so the wide marks fill the vinyl cut for them.
   assert.match(read('src/components/2D/SocialIcon/SocialIcon.css'), /\.social-icon--flat \.social-icon__mark \{\s+overflow: visible;/);
 
-  const pick = read('src/components/3D/GuitarPick/GuitarPick.tsx');
+  const pick = read('src/components/2D/GuitarPick/GuitarPick.tsx');
   assert.match(pick, /viewBox="0 0 100 116"/);
   assert.match(pick, /print = 'FA'/);
-  assert.match(read('src/components/3D/GuitarPick/GuitarPick.css'), /aspect-ratio: 100 \/ 116/);
+  assert.match(read('src/components/2D/GuitarPick/GuitarPick.css'), /aspect-ratio: 100 \/ 116/);
 });
 
 test('Movable is picked up by its body, follows the pointer in surface units, and never ends a drag in a click', () => {

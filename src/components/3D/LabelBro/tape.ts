@@ -64,10 +64,16 @@ export const capHeight = (width: TapeWidth) => printBand(width) * CAP_OF_BAND;
   not a monospace, so it knows every glyph's advance and adds them up before
   it prints — which is how it can tell you the length of a label you have not
   cut yet. These are those advances, as multiples of the cap height.
+
+  They are the face's real metrics and not a guess at them: a capital in a
+  grotesque advances about 0.65 of the em and a cap stands about 0.72 of it,
+  so a letter is a little wider than it is tall. Setting these short does not
+  make a tidier label, it makes the letters run into one another, because the
+  drawing spends exactly what the arithmetic costed.
 */
 const NARROW = new Set([...`iIjlt.,;:'"!|()[]/\\`]);
 const WIDE = new Set([...'MWmw@%&']);
-const ADVANCE = { narrow: 0.36, wide: 1.12, space: 0.38, normal: 0.72 };
+const ADVANCE = { narrow: 0.4, wide: 1.18, space: 0.4, normal: 0.9 };
 
 /** How far one character advances the tape, in units, on this cassette. */
 export const advance = (character: string, width: TapeWidth) => {

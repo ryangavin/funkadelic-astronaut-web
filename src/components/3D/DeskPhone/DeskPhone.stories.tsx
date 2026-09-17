@@ -9,16 +9,8 @@ import { Perspective, STANDING_VIEW, Solid } from '../../../behaviors/Perspectiv
 import { Desk } from '../Desk/Desk';
 import { PaperSheet } from '../../2D/PaperSheet/PaperSheet';
 import { Pin } from '../../2D/Pin/Pin';
-import { DESK_PHONE_FINISHES, DESK_PHONE_FOOT, DESK_PHONE_HEIGHT, DeskPhone, MACHINE_HEIGHT, SET_HEIGHT, type DeskPhoneMessage } from './DeskPhone';
+import { DESK_PHONE_FINISHES, DESK_PHONE_FOOT, DESK_PHONE_HEIGHT, DeskPhone, SET_HEIGHT } from './DeskPhone';
 import { DIAL_OFFSET, DIAL_PITCH, DIAL_SPEED, PULSE_RATE, pulsesFor, returnMs, travelFor } from './pulses';
-
-/* Three things off the tape. The band will record their own over these; all the
-   machine wants of an entry is a caller, a time and something to play. */
-const MESSAGES: DeskPhoneMessage[] = [
-  { caller: 'Marguerite at the Pond Room', time: 'Tue 9.14am', src: demoTape },
-  { caller: 'Dill — sound, Barrier Brewing', time: 'Tue 6.02pm', src: demoTape },
-  { caller: 'unknown number', time: 'Wed 1.41am', src: demoTape },
-];
 
 const meta = {
   title: 'Components/3D/DeskPhone',
@@ -32,10 +24,8 @@ const meta = {
     volume: { control: { type: 'range', min: 0, max: 1, step: 0.05 } },
     offHook: { control: 'boolean' },
     sound: { control: 'boolean' },
-    messages: { control: 'object' },
   },
   args: {
-    messages: MESSAGES,
     number: '718 555 0164',
     finish: 'black',
     rotation: -2,
@@ -45,10 +35,6 @@ const meta = {
     onPulse: fn(),
     onDigit: fn(),
     onHook: fn(),
-    onPlay: fn(),
-    onMessageEnded: fn(),
-    onStop: fn(),
-    onEnded: fn(),
   },
   decorators: [
     (Story, context) =>
@@ -56,7 +42,7 @@ const meta = {
         <Story />
       ) : (
         <div style={{ padding: 56, background: '#ead3a7' }}>
-          <div style={{ width: 760, maxWidth: '100%' }}>
+          <div style={{ width: 360, maxWidth: '100%' }}>
             <Story />
           </div>
         </div>
@@ -80,7 +66,7 @@ const parts = (canvasElement: HTMLElement) => {
   };
 };
 
-/** The booking line as it sits: handset down, three messages waiting, and every part the size it is in millimetres. */
+/** The booking line as it sits: handset down, and every part the size it is in millimetres. */
 export const BookingLine: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -88,20 +74,16 @@ export const BookingLine: Story = {
 
     await expect(canvas.getByRole('group', { name: 'Desk phone: 718 555 0164' })).toBeInTheDocument();
 
-    // The whole plan is 560 by 300 millimetres of desk.
-    await expect(root.offsetHeight / root.offsetWidth).toBeCloseTo(300 / 560, 2);
+    // The phone-only plan is 320 by 300 millimetres of desk.
+    await expect(root.offsetHeight / root.offsetWidth).toBeCloseTo(300 / 320, 2);
     // The 500's housing is 221 across and 229 deep.
-    await expect(set.offsetWidth / root.offsetWidth).toBeCloseTo(221 / 560, 2);
+    await expect(set.offsetWidth / root.offsetWidth).toBeCloseTo(221 / 320, 2);
     await expect(set.offsetHeight / set.offsetWidth).toBeCloseTo(229 / 221, 2);
     // The handset is 216 cap to cap: it very nearly spans the housing.
     await expect(handset.offsetWidth / set.offsetWidth).toBeCloseTo(216 / 221, 2);
     // The No. 9 dial is drawn in a 118-millimetre square, and is square.
     await expect(dial.offsetWidth / set.offsetWidth).toBeCloseTo(118 / 221, 2);
     await expect(dial.offsetHeight).toBe(dial.offsetWidth);
-    // The machine is 230 across and 200 deep.
-    await expect(machine.offsetWidth / root.offsetWidth).toBeCloseTo(230 / 560, 2);
-    await expect(machine.offsetHeight / machine.offsetWidth).toBeCloseTo(200 / 230, 2);
-
     // Ten finger holes, and on the cradle none of them does anything.
     await expect(canvas.getAllByRole('button', { name: /^Dial / })).toHaveLength(10);
     await expect(canvas.getByRole('button', { name: 'Dial 5 J K L' })).toBeDisabled();
@@ -146,69 +128,6 @@ export const Dialling: Story = {
   },
 };
 
-/** Play walks the tape and the counter walks with it; skip and back step between messages. */
-export const Playback: Story = {
-  play: async ({ canvasElement, args }) => {
-    const canvas = within(canvasElement);
-    const { readout, machine } = parts(canvasElement);
-    const status = within(machine).getByRole('status');
-
-    // At rest the LED shows the tally.
-    await expect(readout).toHaveAttribute('data-reading', '3');
-    await expect(status.textContent).toBe('3 messages waiting');
-
-    await userEvent.click(canvas.getByRole('button', { name: 'Play messages' }));
-    await expect(args.onPlay).toHaveBeenCalledWith(MESSAGES[0], 0);
-    // The counter stops counting the tape and starts counting through it.
-    await waitFor(() => expect(readout.getAttribute('data-reading')).toMatch(/1$/));
-
-    await userEvent.click(canvas.getByRole('button', { name: 'Skip to next message' }));
-    await expect(readout).toHaveAttribute('data-reading', '2');
-    await userEvent.click(canvas.getByRole('button', { name: 'Back one message' }));
-    await expect(readout).toHaveAttribute('data-reading', '1');
-
-    // Stop halts it; stop again winds back to the top and the tally returns.
-    await userEvent.click(canvas.getByRole('button', { name: 'Stop' }));
-    await userEvent.click(canvas.getByRole('button', { name: 'Stop' }));
-    await expect(readout).toHaveAttribute('data-reading', '3');
-    await expect(canvas.getByRole('button', { name: 'Play messages' })).toHaveAttribute('aria-pressed', 'false');
-  },
-};
-
-/** Nobody has called: the counter reads nought, the lamp is dark and the keys do nothing. */
-export const EmptyTape: Story = {
-  args: { messages: [] },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const { readout, machine } = parts(canvasElement);
-    await expect(readout).toHaveAttribute('data-reading', '0');
-    await expect(within(machine).getByRole('status').textContent).toBe('No messages');
-    await expect(canvas.getByRole('button', { name: 'Play messages' })).toBeDisabled();
-    await expect(canvas.getByRole('button', { name: 'Skip to next message' })).toBeDisabled();
-    await expect(canvas.getByRole('button', { name: 'Stop' })).toBeDisabled();
-    // The phone is still a phone.
-    await expect(canvas.getByRole('button', { name: 'Lift the handset' })).toBeEnabled();
-  },
-};
-
-/** A message whose recording is not there: the machine says so on the LED and stops rather than pretending. */
-export const BadRecording: Story = {
-  args: {
-    messages: [{ caller: 'whoever this was', time: 'Thu 11.20pm', src: '/assets/audio/nothing-here.mp3' }],
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const { readout, machine } = parts(canvasElement);
-    const status = within(machine).getByRole('status');
-    await expect(readout).toHaveAttribute('data-reading', '1');
-    await userEvent.click(canvas.getByRole('button', { name: 'Play messages' }));
-    await waitFor(() => expect(status.textContent).toBe('Message 1 would not play'), { timeout: 5000 });
-    await expect(readout).toHaveAttribute('data-reading', 'E1');
-    // The keys still work: you can walk past it.
-    await expect(canvas.getByRole('button', { name: 'Skip to next message' })).toBeEnabled();
-  },
-};
-
 /** The handset up, the plungers risen, the dial live. */
 export const OffHook: Story = {
   args: { offHook: true, rotation: 3 },
@@ -226,15 +145,15 @@ export const Raised: Story = {
   render: (args) => (
     <div style={{ display: 'grid', gap: 40, padding: 56, background: '#ead3a7', justifyItems: 'center' }}>
       {[0, 0.08, 0.17].map((rise) => (
-        <div key={rise} style={{ width: 620, maxWidth: '100%', '--solid-rise': rise, '--solid-splay': rise * 0.5 } as CSSProperties}>
+        <div key={rise} style={{ width: 465, maxWidth: '100%', '--solid-rise': rise, '--solid-splay': rise * 0.5 } as CSSProperties}>
           <DeskPhone {...args} />
         </div>
       ))}
     </div>
   ),
   play: async ({ canvasElement }) => {
-    // 137 millimetres against the 560 this drawing is wide.
-    await expect(DESK_PHONE_HEIGHT).toBeCloseTo(SET_HEIGHT / 560, 6);
+    // 137 millimetres against the 320 this drawing is wide.
+    await expect(DESK_PHONE_HEIGHT).toBeCloseTo(SET_HEIGHT / 320, 6);
 
     const sets = [...canvasElement.querySelectorAll<HTMLElement>('.desk-phone')];
     const flank = (root: HTMLElement, part: string) => root.querySelector<HTMLElement>(part)!.getBoundingClientRect().height;
@@ -242,14 +161,11 @@ export const Raised: Story = {
 
     // Straight down, a side is worth nothing at all: one millimetre of waist and no more.
     await expect(flank(flat, '.desk-phone__set-wall')).toBeLessThan(2);
-    await expect(flank(flat, '.desk-phone__machine-wall')).toBeLessThan(2);
     // Tipped, it grows, and the set's top face has gone up the surface with it.
     await expect(flank(tipped, '.desk-phone__set-wall')).toBeGreaterThan(40);
     await expect(tipped.querySelector('.desk-phone__set')!.getBoundingClientRect().top).toBeLessThan(
       tipped.querySelector('.desk-phone__set-foot')!.getBoundingClientRect().top,
     );
-    // The machine is 65 against the set's 137, so its flank is that share of the set's.
-    await expect(flank(tipped, '.desk-phone__machine-wall') / flank(tipped, '.desk-phone__set-wall')).toBeCloseTo(MACHINE_HEIGHT / SET_HEIGHT, 1);
   },
 };
 
@@ -263,7 +179,7 @@ export const OnATiltedDesk: Story = {
         {/* The top is deeper than the frame because depth foreshortens. */}
         <Desk height={1020} edge={0}>
           {/* Set down at an angle, so the turn Solid hands back is worth something. */}
-          <Pin x={400} y={470} width={660} rotation={-7}>
+          <Pin x={400} y={470} width={495} rotation={-7}>
             <Solid height={DESK_PHONE_HEIGHT} foot={DESK_PHONE_FOOT}>
               <DeskPhone {...args} />
             </Solid>
@@ -280,8 +196,6 @@ export const OnATiltedDesk: Story = {
 
     const flank = (part: string) => canvasElement.querySelector<HTMLElement>(part)!.getBoundingClientRect().height;
     await expect(flank('.desk-phone__set-wall')).toBeGreaterThan(6);
-    // The machine is less than half the set's height, so its flank is the shallower one.
-    await expect(flank('.desk-phone__machine-wall')).toBeLessThan(flank('.desk-phone__set-wall'));
 
     // Laid at an angle, the top face is turned back on to it and the flank is not:
     // the shear can only be measured the way the surface runs.
@@ -298,13 +212,13 @@ export const OnATiltedDesk: Story = {
   },
 };
 
-/** The colour range: the 1949 black, then ivory, cherry red, aqua blue and moss green. The machine stays beige. */
+/** The colour range: the 1949 black, then ivory, cherry red, aqua blue and moss green.  */
 export const Finishes: Story = {
   parameters: { composition: true },
   render: (args) => (
     <div style={{ display: 'grid', gap: 40, padding: 56, background: '#ead3a7', justifyItems: 'center' }}>
       {DESK_PHONE_FINISHES.map((finish) => (
-        <div key={finish} style={{ width: 640, maxWidth: '100%' }}>
+        <div key={finish} style={{ width: 480, maxWidth: '100%' }}>
           <DeskPhone {...args} finish={finish} rotation={0} />
         </div>
       ))}
@@ -319,7 +233,7 @@ export const OnFestivalPaper: Story = {
   render: (args) => (
     <PaperSheet height={0} imageSrc={festivalSketch} imageSize="118% auto" imagePosition="center top" imageOpacity={0.9} imageContrast={1.28}>
       <div style={{ padding: '8% 8%', display: 'flex', justifyContent: 'flex-start' }}>
-        <div style={{ width: 720, maxWidth: '100%' }}>
+        <div style={{ width: 540, maxWidth: '100%' }}>
           <DeskPhone {...args} />
         </div>
       </div>
@@ -331,5 +245,5 @@ export const OnDesk: Story = {
   play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
-  render: (args) => <DeskObjectStudy name="Desk phone" widthMm={560} depthRatio={300/560} heightMm={137} solid={{ height: DESK_PHONE_HEIGHT, foot: DESK_PHONE_FOOT }} shapes={[{ path: "M20 12H46Q52 12 52 25V80Q52 88 46 88H20Q13 88 13 80V25Q13 12 20 12Z", heightMm: 137 }, { path: "M57 15H96V79H57Z", heightMm: 65 }]} note="560 mm combined drawing; phone 137 mm and answering machine 65 mm tall. Approximate separate silhouettes."><DeskPhone {...args} rotation={0} sound={false} /></DeskObjectStudy>,
+  render: (args) => <DeskObjectStudy name="Desk phone" widthMm={240} depthRatio={300/320} heightMm={102.75} solid={{ height: DESK_PHONE_HEIGHT, foot: DESK_PHONE_FOOT }} shapes={[{ path: "M32 12H81Q92 12 92 25V80Q92 88 81 88H32Q23 88 23 80V25Q23 12 32 12Z" }]} note="Phone shown at 75% scale; handset and cord remain attached when lifted."><DeskPhone {...args} rotation={0} sound={false} /></DeskObjectStudy>,
 };

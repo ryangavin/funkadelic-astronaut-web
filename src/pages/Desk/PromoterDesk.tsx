@@ -9,7 +9,7 @@ import { DESK_WIDTH, Desk, type DeskWood } from '../../components/3D/Desk/Desk';
 import { DeskClock } from '../../components/3D/DeskClock/DeskClock';
 import { DeskLamp, LampLight } from '../../components/3D/DeskLamp/DeskLamp';
 import { Folder } from '../../components/2D/Folder/Folder';
-import { GuitarPick } from '../../components/3D/GuitarPick/GuitarPick';
+import { GuitarPick } from '../../components/2D/GuitarPick/GuitarPick';
 import { Handheld } from '../../components/3D/Handheld/Handheld';
 import { CoffeeRing } from '../../components/3D/Mug/CoffeeRing';
 import { Mug } from '../../components/3D/Mug/Mug';

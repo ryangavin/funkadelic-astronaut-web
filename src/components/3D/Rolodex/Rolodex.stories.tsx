@@ -229,5 +229,5 @@ export const OnDesk: Story = {
   play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
-  render: (args) => <DeskObjectStudy name="Rolodex" widthMm={137.05} depthRatio={624/518} heightMm={107.95} solid={{ height: 408/518, foot: { x: .5, y: 312/518 } }} note="Dimensions derived from the existing inch-scaled drawing. Simplified whole-file shadow; individual cards are not separate occluders."><Rolodex {...args} rotation={0} loose={false} /></DeskObjectStudy>,
+  render: (args) => <DeskObjectStudy name="Rolodex" widthMm={137.05} depthRatio={624/518} heightMm={107.95} solid={{ localCoordinates: true, height: 408/518, foot: { x: .5, y: 312/518 } }} note="Dimensions derived from the existing inch-scaled drawing. Simplified whole-file shadow; individual cards are not separate occluders."><Rolodex {...args} rotation={0} loose={false} /></DeskObjectStudy>,
 };

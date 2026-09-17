@@ -25,7 +25,7 @@ export function CradleRelief({ place, camera, width = 240 }: { place: Place; cam
     const ly = (y - 300) * unit;
     const cx = place.x + width / 2;
     const cy = place.y + 600 * unit / 2;
-    const projected = projectElevation(cx + lx * Math.cos(turn) - ly * Math.sin(turn), cy + lx * Math.sin(turn) + ly * Math.cos(turn), heightMm * 2, camera);
+    const projected = projectElevation(cx + lx * Math.cos(turn) - ly * Math.sin(turn), cy + lx * Math.sin(turn) + ly * Math.cos(turn), heightMm * 2 * width / 240, camera);
     const dx = projected.x - cx;
     const dy = projected.y - cy;
     return { x: 360 + (dx * Math.cos(turn) + dy * Math.sin(turn)) / unit, y: 300 + (-dx * Math.sin(turn) + dy * Math.cos(turn)) / unit, scale: projected.scale };

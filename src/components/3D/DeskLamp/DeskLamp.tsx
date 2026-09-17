@@ -13,6 +13,9 @@ export type DeskLampEnamel = (typeof DESK_LAMP_ENAMELS)[number];
 export const DESK_LAMP_SHADE = { x: 200, y: 420, radius: 130 } as const;
 
 export type DeskLampProps = {
+  /** Full controlled articulation, including the lower hinge orientation. */
+  pose?: LampPose;
+  onPoseChange?: (pose: LampPose) => void;
   /** Controlled shade position in the 720×600 artwork; otherwise the lamp keeps its own position. */
   head?: LampPoint;
   onHeadChange?: (head: LampPoint) => void;
@@ -41,11 +44,11 @@ export type DeskLampProps = {
  * drawn separately, by `LampLight`, beneath whatever lies in it. The shade is
  * the switch. Measured in 720ths of the box, which is 480 by 400 mm.
  */
-export function DeskLamp({ head: controlledHead, onHeadChange, camera, shadowStrength = DEFAULT_SHADOW_STRENGTH, lightPosition, on = true, onToggle, enamel = 'red', rotation = 0, className = '', style }: DeskLampProps) {
+export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledHead, onHeadChange, camera, shadowStrength = DEFAULT_SHADOW_STRENGTH, lightPosition, on = true, onToggle, enamel = 'red', rotation = 0, className = '', style }: DeskLampProps) {
   const id = `lamp-${useId().replace(/:/g, '')}`;
   const [ownArm, setOwnArm] = useState(() => articulateLamp(controlledHead ?? DESK_LAMP_SHADE));
-  const arm = controlledHead && (controlledHead.x !== ownArm.head.x || controlledHead.y !== ownArm.head.y)
-    ? articulateLamp(controlledHead, ownArm, 0) : ownArm;
+  const arm = controlledPose ?? (controlledHead && (controlledHead.x !== ownArm.head.x || controlledHead.y !== ownArm.head.y)
+    ? articulateLamp(controlledHead, ownArm, 0) : ownArm);
   const { x, y } = arm.head;
   const { radius } = DESK_LAMP_SHADE;
   const svg = useRef<SVGSVGElement>(null);
@@ -57,6 +60,7 @@ export function DeskLamp({ head: controlledHead, onHeadChange, camera, shadowStr
     const pose = articulateLamp(next, arm);
     setOwnArm(pose);
     onHeadChange?.(pose.head);
+    onPoseChange?.(pose);
   };
   const dx = (x - 360) / 720;
   const dy = (y - 300) / 720;
@@ -72,10 +76,11 @@ export function DeskLamp({ head: controlledHead, onHeadChange, camera, shadowStr
       y: 300 + (-(world.x - cx) * Math.sin(turn) + (world.y - cy) * Math.cos(turn)) / unit, scale: world.scale };
   };
   const bulbHeight = lightPosition?.height ?? 700;
-  const base = point(600, 110, 50);
-  const elbow = point(arm.elbow.x, arm.elbow.y, 460);
-  const neck = point(x + 60, y - 40, bulbHeight + 100);
-  const shade = point(x, y, bulbHeight + 100);
+  const constructionScale = bulbHeight / 700;
+  const base = point(600, 110, 50 * constructionScale);
+  const elbow = point(arm.elbow.x, arm.elbow.y, 460 * constructionScale);
+  const neck = point(x, y, bulbHeight + 100 * constructionScale);
+  const shade = point(x, y, bulbHeight + 100 * constructionScale);
   const rim = point(x, y, bulbHeight);
   const tubeGradient = (from: LampPoint, to: LampPoint, width: number) => {
     const length = Math.hypot(to.x - from.x, to.y - from.y) || 1;
@@ -93,7 +98,7 @@ export function DeskLamp({ head: controlledHead, onHeadChange, camera, shadowStr
       y: lightPosition.y + unit * (300 + (px - 360) * Math.sin(turn) + (py - 300) * Math.cos(turn)),
       height, radius: radius * unit,
     });
-    return { base: world(600, 110, 50, 110), elbow: world(arm.elbow.x, arm.elbow.y, 460, 12), neck: world(x + 60, y - 40, bulbHeight + 100, 11) };
+    return { base: world(600, 110, 50 * constructionScale, 110), elbow: world(arm.elbow.x, arm.elbow.y, 460 * constructionScale, 12), neck: world(x, y, bulbHeight + 100 * constructionScale, 11) };
   }, [lightPosition?.x, lightPosition?.y, lightPosition?.width, turn, arm.elbow.x, arm.elbow.y, x, y, bulbHeight]);
   useRegisterDeskLight(lightPosition ? {
     x: lightPosition.x + lightPosition.width * (0.5 + dx * Math.cos(turn) - dy * Math.sin(turn)),
@@ -109,9 +114,9 @@ export function DeskLamp({ head: controlledHead, onHeadChange, camera, shadowStr
       const surface = project(clientX, clientY);
       const unit = lightPosition.width / 720;
       const tilt = (90 - camera.angle) * Math.PI / 180;
-      const k = projectElevation(0, 0, bulbHeight + 100, camera).scale;
+      const k = projectElevation(0, 0, bulbHeight + 100 * constructionScale, camera).scale;
       const wx = camera.width / 2 + (surface.x - camera.width / 2) / k;
-      const wy = camera.surfaceHeight + (surface.y - camera.surfaceHeight) / k + (bulbHeight + 100) * Math.tan(tilt);
+      const wy = camera.surfaceHeight + (surface.y - camera.surfaceHeight) / k + (bulbHeight + 100 * constructionScale) * Math.tan(tilt);
       const ox = wx - lightPosition.x - 360 * unit, oy = wy - lightPosition.y - 300 * unit;
       return { x: 360 + (ox * Math.cos(turn) + oy * Math.sin(turn)) / unit, y: 300 + (-ox * Math.sin(turn) + oy * Math.cos(turn)) / unit };
     }
@@ -141,7 +146,7 @@ export function DeskLamp({ head: controlledHead, onHeadChange, camera, shadowStr
     event.stopPropagation();
     suppressClick.current = start.moved;
     drag.current = null;
-    if (event.type === 'pointercancel') { setOwnArm(start.pose); onHeadChange?.(start.pose.head); }
+    if (event.type === 'pointercancel') { setOwnArm(start.pose); onHeadChange?.(start.pose.head); onPoseChange?.(start.pose); }
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   };
   return (
@@ -192,8 +197,8 @@ export function DeskLamp({ head: controlledHead, onHeadChange, camera, shadowStr
         <g className="desk-lamp__arm">
           <path d={`M ${base.x} ${base.y} L ${elbow.x} ${elbow.y}`} stroke={`url(#${id}-lower-tube)`} strokeWidth="24" strokeLinecap="round" />
           <circle cx={elbow.x} cy={elbow.y} r={20 * elbow.scale} fill={`url(#${id}-arm)`} />
+          {/* Continue to the central mount beneath the opaque shade. */}
           <path d={`M ${elbow.x} ${elbow.y} L ${neck.x} ${neck.y}`} stroke={`url(#${id}-upper-tube)`} strokeWidth="22" strokeLinecap="round" />
-          <circle cx={neck.x} cy={neck.y} r={17 * neck.scale} fill={`url(#${id}-arm)`} />
         </g>
 
         {/* The light spilling round the rim, and the shade over it. */}
@@ -208,6 +213,8 @@ export function DeskLamp({ head: controlledHead, onHeadChange, camera, shadowStr
           <circle cx={x} cy={y} r={radius} />
           <circle cx={x} cy={y} r={radius} fill={`url(#${id}-shade)`} />
           <circle className="desk-lamp__rim" cx={x} cy={y} r={radius - 4} fill="none" strokeWidth="4" />
+        </g>
+        <g transform={layer(shade, x, y)}>
           <circle className="desk-lamp__cap" cx={x} cy={y} r="22" fill={`url(#${id}-arm)`} />
         </g>
       </svg>

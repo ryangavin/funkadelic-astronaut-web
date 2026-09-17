@@ -1,26 +1,16 @@
+import { Cassette } from '../Walkman/Cassette';
+import './AnsweringMachine.css';
+import '../Walkman/Walkman.css';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { beep as beepTone } from './sound';
+import { beep as beepTone } from '../DeskPhone/sound';
 
-/*
-  A microcassette answering machine in the Panasonic Easa-Phone mould: a wedge
-  of beige plastic 230 millimetres across and 200 deep, 65 high at the back and
-  35 at the front, so the whole top face tips toward whoever is sitting at the
-  desk. The lift-up door at the back left holds a microcassette — 50 by 33 by 8
-  millimetres, a third the size of a compact cassette — behind a smoked window.
-  Beside it a two-digit red LED counts the messages, with the lamps under it.
-  The four transport keys run in a row along the front: back, play, skip, stop,
-  44 millimetres each on a 52-millimetre pitch.
-
-  Underneath all of it is a plain audio element. Play walks the messages one at
-  a time and the counter steps with it, with a beep laid between one and the
-  next the way the machine lays one on the tape.
-*/
-
+/** Compact cassette answering machine, styled and scaled to accompany the Walkman.
+ * Playback walks recordings in order and preserves the message counter and transport. */
 /** How wide the machine is, in millimetres. */
-export const MACHINE_WIDTH = 230;
+export const MACHINE_WIDTH = 180;
 /** How deep, in millimetres. */
-export const MACHINE_DEPTH = 200;
+export const MACHINE_DEPTH = 120;
 
 export type DeskPhoneMessage = {
   /** Who left it, as it would go on the message pad. */
@@ -265,7 +255,7 @@ export function AnsweringMachine({
 
   return (
     <div
-      className={`desk-phone__machine ${className}`}
+      className={`answering-machine desk-phone__machine ${className}`}
       data-playing={playing ? '' : undefined}
       data-waiting={!playing && count > 0 ? '' : undefined}
       role="group"
@@ -274,32 +264,7 @@ export function AnsweringMachine({
       {/* The door: a smoked lid over the microcassette well. */}
       <div className="desk-phone__door">
         <div className="desk-phone__well">
-          <svg className="desk-phone__microcassette" viewBox="0 0 100 66" aria-hidden="true" focusable="false">
-            <rect className="desk-phone__tape-shell" x="1" y="1" width="98" height="64" rx="4" />
-            <rect className="desk-phone__tape-label" x="7" y="5" width="86" height="27" rx="2" />
-            <line className="desk-phone__tape-rule" x1="12" y1="16" x2="88" y2="16" />
-            <line className="desk-phone__tape-rule" x1="12" y1="25" x2="88" y2="25" />
-            {/* The packs of tape, and the hubs turning in them. */}
-            <circle className="desk-phone__tape-pack" cx="33" cy="47" r="13" />
-            <circle className="desk-phone__tape-pack" cx="67" cy="47" r="13" />
-            <g transform="translate(33 47)">
-              <g className="desk-phone__tape-hub">
-                <circle className="desk-phone__tape-ring" r="8" />
-                <circle className="desk-phone__tape-eye" r="3.4" />
-                <rect className="desk-phone__tape-tooth" x="-1.2" y="-8" width="2.4" height="3.4" />
-                <rect className="desk-phone__tape-tooth" x="-1.2" y="4.6" width="2.4" height="3.4" />
-              </g>
-            </g>
-            <g transform="translate(67 47)">
-              <g className="desk-phone__tape-hub">
-                <circle className="desk-phone__tape-ring" r="8" />
-                <circle className="desk-phone__tape-eye" r="3.4" />
-                <rect className="desk-phone__tape-tooth" x="-1.2" y="-8" width="2.4" height="3.4" />
-                <rect className="desk-phone__tape-tooth" x="-1.2" y="4.6" width="2.4" height="3.4" />
-              </g>
-            </g>
-            <rect className="desk-phone__tape-window" x="45" y="40" width="10" height="16" rx="1.5" />
-          </svg>
+          <Cassette className="answering-machine__cassette" label="MESSAGES" progress={count ? at / count : 0} />
         </div>
         <span className="desk-phone__door-lip" aria-hidden="true" />
       </div>
@@ -336,7 +301,7 @@ export function AnsweringMachine({
 
       <span className="desk-phone__machine-print" aria-hidden="true">
         telephone answering system
-        <em>microcassette · remote</em>
+        <em>cassette · remote</em>
       </span>
 
       <audio ref={audio} src={current?.src} preload="metadata" onEnded={ended} onError={failed} />

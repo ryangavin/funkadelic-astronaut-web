@@ -65,5 +65,5 @@ export const OnDesk: Story = {
   play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
-  render: (args) => <DeskObjectStudy name="Desk clock" widthMm={90} depthRatio={560/720} heightMm={45} ><DeskClock {...args} rotation={0} /></DeskObjectStudy>,
+  render: (args) => <DeskObjectStudy name="Desk clock" widthMm={90} depthRatio={560/720} heightMm={15} ><DeskClock {...args} rotation={0} /></DeskObjectStudy>,
 };

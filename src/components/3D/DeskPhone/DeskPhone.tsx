@@ -1,50 +1,17 @@
 import type React from 'react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import '../../../styles/fonts.css';
-import { AnsweringMachine, MACHINE_DEPTH, MACHINE_WIDTH, type DeskPhoneMessage } from './AnsweringMachine';
 import { Dial } from './Dial';
 import { click as clickTone } from './sound';
 import './DeskPhone.css';
 
 export { DIAL_DIGITS, DIAL_OFFSET, DIAL_PITCH, DIAL_SPEED, DIAL_STOP, DIAL_TRAVEL, PULSE_RATE, digitFor, pulsesFor, returnMs, travelFor } from './pulses';
-export type { DeskPhoneMessage } from './AnsweringMachine';
 export { Dial } from './Dial';
-export { AnsweringMachine } from './AnsweringMachine';
 
-/*
-  A Western Electric 500 desk set — Henry Dreyfuss, 1949 — with a microcassette
-  answering machine pushed up beside it, traced looking straight down at the
-  desk. Everything is measured in millimetres of the real objects and drawn as
-  one plan: 560 millimetres across by 300 deep.
-
-  It is a plan and nothing else. Neither object draws its own volume — the
-  machine's wedge has no sloping face here, the housing has no shaded flanks,
-  the handset has no roundness, because none of that is visible from directly
-  overhead. Height is declared instead: the set stands 137 millimetres high
-  with the handset on it and the machine 65 at its tall end, and those numbers
-  are worth nothing at all until the plane is tilted, at which point a Solid of
-  DESK_PHONE_HEIGHT hands the drawing --solid-rise and --solid-splay and the
-  sides grow out from under the top faces. See DeskPhone.css.
-
-  The 500's moulded housing is 221 wide and 229 deep and weighs four and a half
-  pounds, most of it the ringer and the network coil in the base, which is why
-  the thing never slid about. The G-type handset is 216 long with 56-millimetre
-  caps at each end; resting in the cradle it lies face down across two
-  hook-switch plungers 100 apart, covering them. Lift it and they show. The
-  handset cord leaves the left-hand side of the base and lies on the desk in
-  loose coils about 26 millimetres across. The dial is the No. 9: a
-  105-millimetre clear finger wheel over a printed plate, with a 46-millimetre
-  number card under a clear disc in the middle, and the chrome finger stop at
-  four o'clock. See pulses.ts for how it counts.
-
-  One honest cheat: the front of the 500 slopes, so from directly above the
-  dial would read as a shallow ellipse. It is drawn as a true circle instead,
-  because a dial that is going to turn under your finger has to be round. The
-  dial plate is a circle in fact, so in a plan drawing that is a small licence.
-*/
-
+/** Independent rotary desk phone. Measurements are millimetres; the artwork
+ * includes room beside the housing for the handset cord. */
 /** How wide the whole arrangement is, in millimetres. */
-export const DESK_PHONE_WIDTH = 560;
+export const DESK_PHONE_WIDTH = 320;
 /** How deep, in millimetres. */
 export const DESK_PHONE_DEPTH = 300;
 /** The 500's housing: 221 millimetres across the front. */
@@ -55,43 +22,13 @@ export const SET_DEPTH = 229;
 export const HANDSET_LENGTH = 216;
 /** How high the 500 stands with the handset on it, in millimetres. */
 export const SET_HEIGHT = 137;
-/** The machine at its tall end, in millimetres; it slopes to 35 at the front. */
-export const MACHINE_HEIGHT = 65;
-
-export { MACHINE_DEPTH, MACHINE_WIDTH };
-
 /** Where the set's footprint begins in the plan: 72 from the left edge, 36 from the back. */
 export const SET_AT = { x: 72, y: 36 };
-/** And where the machine's does. */
-export const MACHINE_AT = { x: 319, y: 44 };
-
-/**
- * How tall the set is as a multiple of the width of this drawing: 137
- * millimetres against 560. Stand the whole thing in a `Solid` of this, at
- * {@link DESK_PHONE_FOOT}, and the two top faces lift, their flanks slide out
- * beneath them, and the feet stay where the things are standing. The machine,
- * at 65, takes its own share of that lift rather than the set's.
- */
+/** Height relative to this phone-only drawing. */
 export const DESK_PHONE_HEIGHT = SET_HEIGHT / DESK_PHONE_WIDTH;
-
-/** The machine's own height, for a page that wants to stand it by itself. */
-export const ANSWERING_MACHINE_HEIGHT = MACHINE_HEIGHT / DESK_PHONE_WIDTH;
-
-/**
- * Where the set stands within this drawing: the middle of the 500's
- * footprint, in fractions of the drawing's width, written the way MUG_FOOT and
- * LABEL_MAKER_FOOT are. This is the one a `Solid` round the whole thing wants,
- * because the set is the tall half of it.
- */
 export const DESK_PHONE_FOOT = {
   x: (SET_AT.x + SET_WIDTH / 2) / DESK_PHONE_WIDTH,
   y: (SET_AT.y + SET_DEPTH / 2) / DESK_PHONE_WIDTH,
-};
-
-/** And where the machine stands, since it is its own object at its own place on the desk. */
-export const ANSWERING_MACHINE_FOOT = {
-  x: (MACHINE_AT.x + MACHINE_WIDTH / 2) / DESK_PHONE_WIDTH,
-  y: (MACHINE_AT.y + MACHINE_DEPTH / 2) / DESK_PHONE_WIDTH,
 };
 
 export const DESK_PHONE_FINISHES = ['black', 'ivory', 'red', 'aqua', 'moss'] as const;
@@ -101,56 +38,35 @@ export type DeskPhoneFinish = (typeof DESK_PHONE_FINISHES)[number];
    way you would see it looking down at the desk. The turns are 26 millimetres
    across and the coil is squashed almost flat in the view, which is what a
    coiled cord on a desk actually looks like from up here. */
-const COIL_RADIUS = 13;
-const COIL_TURNS = 13;
-const COIL_SQUASH = 0.34;
-
 function coil(): string {
-  const p0 = [70, 144];
-  const p1 = [14, 168];
-  const p2 = [76, 234];
-  const p3 = [18, 264];
-  const bezier = (t: number, a: number, b: number, c: number, d: number) => {
-    const u = 1 - t;
-    return u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d;
-  };
-  const steps = 260;
+  // A relaxed lead from the base, followed by evenly spaced coils to the handset.
+  // Keeping a straight coil axis prevents loops bunching at a tight curve.
   const points: string[] = [];
-  for (let step = 0; step <= steps; step += 1) {
-    const t = step / steps;
-    const x = bezier(t, p0[0], p1[0], p2[0], p3[0]);
-    const y = bezier(t, p0[1], p1[1], p2[1], p3[1]);
-    const ahead = Math.min(1, t + 0.004);
-    const tx = bezier(ahead, p0[0], p1[0], p2[0], p3[0]) - x;
-    const ty = bezier(ahead, p0[1], p1[1], p2[1], p3[1]) - y;
-    const length = Math.hypot(tx, ty) || 1;
-    const ux = tx / length;
-    const uy = ty / length;
-    const phase = 2 * Math.PI * COIL_TURNS * t;
-    /* Across the coil's axis the turn shows its full width; along it, almost none. */
-    const across = COIL_RADIUS * Math.cos(phase);
-    const along = COIL_RADIUS * COIL_SQUASH * Math.sin(phase);
-    points.push(`${(x - uy * across + ux * along).toFixed(2)} ${(y + ux * across + uy * along).toFixed(2)}`);
+  for (let step = 0; step <= 192; step++) {
+    const t = step / 192;
+    const phase = t * Math.PI * 2 * 8;
+    const taper = Math.min(1, t * 12, (1 - t) * 12);
+    const x = 26 + 12 * t + 5 * taper * Math.sin(phase);
+    const y = 166 - 68 * t + 1.2 * taper * Math.cos(phase);
+    points.push(`${x.toFixed(2)} ${y.toFixed(2)}`);
   }
-  return `M ${points.join(' L ')}`;
+  return `M72 144 C58 144 57 181 39 181 C29 181 26 174 26 166 L ${points.join(' L ')} `;
 }
 
 const CORD = coil();
 
 export type DeskPhoneProps = {
-  /** What is on the tape, oldest first. Each one wants a caller, a time and an audio src; anything else you hang on it is kept and ignored. */
-  messages?: DeskPhoneMessage[];
   /** What is written on the number card under the dial: this set's own number. */
   number?: string;
-  /** The moulding's colour. Black is the 1949 set; the rest came with the colour range in 1954. The machine stays beige, being thirty years younger. */
+  /** The moulding's colour. Black is the 1949 set; the rest came with the colour range in 1954.  */
   finish?: DeskPhoneFinish;
   /** How the set lies on the desk, in degrees. Negative turns it counter-clockwise. */
   rotation?: number;
   /** Whether the handset starts off the cradle. */
   offHook?: boolean;
-  /** How loud the messages play, 0 to 1. */
+  /** How loud the dial clicks play, 0 to 1. */
   volume?: number;
-  /** Whether the set makes its own noise: the dial's clicks and the beep between messages. The recordings play either way. */
+  /** Whether the set makes its own noise: the dial's clicks. */
   sound?: boolean;
   /** Every break of the line as the wheel comes back, ten a second. */
   onPulse?: (pulse: number, of: number) => void;
@@ -158,27 +74,12 @@ export type DeskPhoneProps = {
   onDigit?: (digit: number, dialled: string) => void;
   /** The handset going up or down. */
   onHook?: (offHook: boolean) => void;
-  /** A message starts playing. */
-  onPlay?: (message: DeskPhoneMessage, index: number) => void;
-  /** A message has run out. */
-  onMessageEnded?: (message: DeskPhoneMessage, index: number) => void;
-  /** The tape stopped, by the key or because a recording would not play. */
-  onStop?: () => void;
-  /** The last message has run out. */
-  onEnded?: () => void;
   className?: string;
   style?: React.CSSProperties;
 };
 
-/**
- * The booking line: a black 500 desk set with the answering machine beside it.
- * The handset lifts off the cradle and the plungers come up under it; the
- * rotary dial really turns, winds to the finger stop and comes back at
- * governor speed clicking out one pulse a digit; and the machine plays what
- * is on the tape, one message after another, through a plain audio element.
- */
+/** Rotary phone with a liftable handset and working pulse dial. */
 export function DeskPhone({
-  messages = [],
   number = '',
   finish = 'black',
   rotation = 0,
@@ -188,10 +89,6 @@ export function DeskPhone({
   onPulse,
   onDigit,
   onHook,
-  onPlay,
-  onMessageEnded,
-  onStop,
-  onEnded,
   className = '',
   style,
 }: DeskPhoneProps) {
@@ -274,7 +171,6 @@ export function DeskPhone({
         <path className="desk-phone__cord-line" d={CORD} />
         <g className="desk-phone__cast" filter={`url(#${id}-cast)`}>
           <rect x={78} y={45} width={SET_WIDTH} height={SET_DEPTH} rx={40} />
-          <rect x={324} y={52} width={MACHINE_WIDTH} height={MACHINE_DEPTH} rx={12} />
         </g>
       </svg>
 
@@ -283,12 +179,13 @@ export function DeskPhone({
       <div className="desk-phone__sides" aria-hidden="true">
         <span className="desk-phone__set-foot" />
         <span className="desk-phone__set-wall" />
-        <span className="desk-phone__machine-foot" />
-        <span className="desk-phone__machine-wall" />
       </div>
 
       {/* The housing's top face. */}
       <div className="desk-phone__set">
+        <svg className="desk-phone__cord-connector" viewBox="0 0 221 229" aria-hidden="true">
+          <path className="desk-phone__cord-line" d={offHook ? 'M-34 62 C-40 32 -34 0 -16 8' : 'M-34 62 C-34 32 -12 34 6 48'} />
+        </svg>
         <span className="desk-phone__saddle" aria-hidden="true" />
         <span className="desk-phone__plunger" data-at="left" aria-hidden="true" />
         <span className="desk-phone__plunger" data-at="right" aria-hidden="true" />
@@ -302,35 +199,25 @@ export function DeskPhone({
           aria-pressed={offHook}
           onClick={hook}
         >
-          <svg viewBox="0 0 216 56" aria-hidden="true" focusable="false">
+          <svg viewBox="0 -8 216 72" aria-hidden="true" focusable="false">
             {/* The outline goes down first in the edge colour and the moulding
                 comes back up over it, so the two caps and the bar read as one
                 piece with no seams where they meet. */}
             <g className="desk-phone__handset-edge">
-              <circle cx="28" cy="28" r="27" />
-              <circle cx="188" cy="28" r="27" />
+              <circle cx="28" cy="28" r="35" />
+              <circle cx="188" cy="28" r="35" />
               <path d="M36 11 C 64 6 84 15 108 15 C 132 15 152 6 180 11 L 180 45 C 152 50 132 41 108 41 C 84 41 64 50 36 45 Z" />
             </g>
             <g className="desk-phone__handset-body">
-              <circle cx="28" cy="28" r="27" />
-              <circle cx="188" cy="28" r="27" />
+              <circle cx="28" cy="28" r="35" />
+              <circle cx="188" cy="28" r="35" />
               <path d="M36 11 C 64 6 84 15 108 15 C 132 15 152 6 180 11 L 180 45 C 152 50 132 41 108 41 C 84 41 64 50 36 45 Z" />
             </g>
-            <circle className="desk-phone__handset-seam" cx="28" cy="28" r="21" />
-            <circle className="desk-phone__handset-seam" cx="188" cy="28" r="21" />
+            <circle className="desk-phone__handset-seam" cx="28" cy="28" r="27" />
+            <circle className="desk-phone__handset-seam" cx="188" cy="28" r="27" />
           </svg>
         </button>
       </div>
-
-      <AnsweringMachine
-        messages={messages}
-        volume={volume}
-        sound={sound}
-        onPlay={onPlay}
-        onMessageEnded={onMessageEnded}
-        onStop={onStop}
-        onEnded={onEnded}
-      />
 
       <p className="desk-phone__status" role="status" aria-live="polite">
         {status}

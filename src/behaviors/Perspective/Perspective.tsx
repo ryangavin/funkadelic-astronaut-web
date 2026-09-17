@@ -170,6 +170,8 @@ export function Perspective({ angle = GENTLE_VIEW, depth = GENTLE_DEPTH, width =
 }
 
 export type SolidProps = {
+  /** Keep rectangular artwork rotated with its object; express extrusion in its local axes. */
+  localCoordinates?: boolean;
   /** How tall the thing is, as a multiple of the width of its own drawing. */
   height: number;
   /** Where it meets the surface within its own drawing, as fractions of the drawing's width. Defaults to the middle of its bottom edge. */
@@ -206,7 +208,7 @@ export type SolidProps = {
  * All of it is nothing at all off a tilted surface, so a drawing that reads
  * them is exactly what it was when seen from straight above.
  */
-export function Solid({ height, foot = ON_ITS_BOTTOM, children, className = '', style }: SolidProps) {
+export function Solid({ localCoordinates = false, height, foot = ON_ITS_BOTTOM, children, className = '', style }: SolidProps) {
   const host = useRef<HTMLDivElement>(null);
   const stands = useRef<HTMLSpanElement>(null);
   const edge = useRef<HTMLSpanElement>(null);
@@ -222,6 +224,13 @@ export function Solid({ height, foot = ON_ITS_BOTTOM, children, className = '', 
     const measure = () => {
       const stood =
         plane && view && view.tilt > 0 ? stand(plane, view, mark.getBoundingClientRect(), side.getBoundingClientRect(), 1 - foot.x, height) : FLAT;
+      if (localCoordinates) {
+        const c = Math.cos(stood.turn), s = Math.sin(stood.turn);
+        element.style.setProperty('--solid-rise', String(stood.splay * s + stood.rise * c));
+        element.style.setProperty('--solid-splay', String(stood.splay * c - stood.rise * s));
+        element.style.setProperty('--solid-turn', '0deg');
+        return;
+      }
       element.style.setProperty('--solid-rise', String(stood.rise));
       element.style.setProperty('--solid-splay', String(stood.splay));
       element.style.setProperty('--solid-turn', `${(stood.turn * 180) / Math.PI}deg`);
