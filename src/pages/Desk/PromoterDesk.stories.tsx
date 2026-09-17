@@ -57,6 +57,12 @@ export const Closed: Story = {
     await expect(SIZES.walkman).toBe(224);
     // The streaming stickers on the cover are links, reachable through the folder.
     await expect(canvas.getByRole('link', { name: 'Funkadelic Astronaut on Spotify' })).toBeInTheDocument();
+    // The closed folder's box is twice the folder anyone can see, and its other half lies over the running
+    // order and the site plan: it catches nothing, so those can still be picked up, and the cover still opens it.
+    await expect(getComputedStyle(canvasElement.querySelector('.promoter-desk__folder')!).pointerEvents).toBe('none');
+    await expect(getComputedStyle(canvas.getByRole('button', { name: 'Open the Funkadelic Astronaut press package' })).pointerEvents).toBe('auto');
+    await expect(canvas.getByRole('group', { name: 'Running order' })).toHaveAttribute('data-movable');
+    await expect(canvas.getByRole('group', { name: 'Festival site plan' })).toHaveAttribute('data-movable');
     // The loose things are packed away, out of sight.
     const spilled = canvasElement.querySelectorAll<HTMLElement>('.spilled');
     await expect(spilled).toHaveLength(10);

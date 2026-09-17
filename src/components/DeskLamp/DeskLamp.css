@@ -110,3 +110,7 @@
     transition: none;
   }
 }
+
+/* A shallow enamel skirt connects the elevated shade to its lower opening. */
+.desk-lamp__side { fill: var(--desk-lamp-enamel-deep); }
+.desk-lamp--elevated[data-on] .desk-lamp__spill { opacity: 0.22; }

@@ -1,6 +1,8 @@
 import type React from 'react';
 import { useId } from 'react';
 import './DeskLamp.css';
+import { projectElevation } from '../../behaviors/Perspective/elevation';
+import { DEFAULT_SHADOW_STRENGTH, useRegisterDeskLight } from '../../behaviors/DeskLighting/DeskLighting';
 
 export const DESK_LAMP_ENAMELS = ['red', 'mustard', 'green', 'black'] as const;
 export type DeskLampEnamel = (typeof DESK_LAMP_ENAMELS)[number];
@@ -9,6 +11,12 @@ export type DeskLampEnamel = (typeof DESK_LAMP_ENAMELS)[number];
 export const DESK_LAMP_SHADE = { x: 200, y: 420, radius: 130 } as const;
 
 export type DeskLampProps = {
+  /** Shared camera for physically elevated artwork; requires lightPosition. */
+  camera?: Parameters<typeof projectElevation>[3];
+  /** Darkness of shadows this light casts on the desk, from 0 (none) to 1 (strongest). */
+  shadowStrength?: number;
+  /** Opt in to scene lighting: lamp box placement and bulb elevation in desk units. */
+  lightPosition?: { x: number; y: number; width: number; height: number };
   /** Whether it is switched on. Clicking the shade switches it. */
   on?: boolean;
   onToggle?: (on: boolean) => void;
@@ -28,11 +36,39 @@ export type DeskLampProps = {
  * drawn separately, by `LampLight`, beneath whatever lies in it. The shade is
  * the switch. Measured in 720ths of the box, which is 480 by 400 mm.
  */
-export function DeskLamp({ on = true, onToggle, enamel = 'red', rotation = 0, className = '', style }: DeskLampProps) {
+export function DeskLamp({ camera, shadowStrength = DEFAULT_SHADOW_STRENGTH, lightPosition, on = true, onToggle, enamel = 'red', rotation = 0, className = '', style }: DeskLampProps) {
   const id = `lamp-${useId().replace(/:/g, '')}`;
   const { x, y, radius } = DESK_LAMP_SHADE;
+  const turn = rotation * Math.PI / 180;
+  const dx = (x - 360) / 720;
+  const dy = (y - 300) / 720;
+  const elevated = !!(camera && lightPosition);
+  // Estimated construction heights: base 25 mm, elbow 230 mm, shade 50 mm above the bulb.
+  const point = (px: number, py: number, height: number) => {
+    if (!camera || !lightPosition) return { x: px, y: py, scale: 1 };
+    const unit = lightPosition.width / 720;
+    const ox = (px - 360) * unit, oy = (py - 300) * unit;
+    const cx = lightPosition.x + 360 * unit, cy = lightPosition.y + 300 * unit;
+    const world = projectElevation(cx + ox * Math.cos(turn) - oy * Math.sin(turn), cy + ox * Math.sin(turn) + oy * Math.cos(turn), height, camera);
+    return { x: 360 + ((world.x - cx) * Math.cos(turn) + (world.y - cy) * Math.sin(turn)) / unit,
+      y: 300 + (-(world.x - cx) * Math.sin(turn) + (world.y - cy) * Math.cos(turn)) / unit, scale: world.scale };
+  };
+  const bulbHeight = lightPosition?.height ?? 700;
+  const base = point(600, 110, 50);
+  const elbow = point(420, 250, 460);
+  const neck = point(x + 60, y - 40, bulbHeight + 100);
+  const shade = point(x, y, bulbHeight + 100);
+  const rim = point(x, y, bulbHeight);
+  const layer = (p: { x: number; y: number; scale: number }, cx: number, cy: number) => `translate(${p.x} ${p.y}) scale(${p.scale}) translate(${-cx} ${-cy})`;
+  useRegisterDeskLight(lightPosition ? {
+    x: lightPosition.x + lightPosition.width * (0.5 + dx * Math.cos(turn) - dy * Math.sin(turn)),
+    y: lightPosition.y + lightPosition.width * (300 / 720 + dx * Math.sin(turn) + dy * Math.cos(turn)),
+    height: lightPosition.height,
+    shadowStrength: Number.isFinite(shadowStrength) ? Math.min(1, Math.max(0, shadowStrength)) : DEFAULT_SHADOW_STRENGTH,
+    on,
+  } : null);
   return (
-    <div className={`desk-lamp ${className}`} data-on={on ? '' : undefined} data-enamel={enamel} style={{ '--desk-lamp-rotation': `${rotation}deg`, ...style } as React.CSSProperties}>
+    <div className={`desk-lamp ${elevated ? 'desk-lamp--elevated' : ''} ${className}`} data-on={on ? '' : undefined} data-enamel={enamel} style={{ '--desk-lamp-rotation': `${rotation}deg`, ...style } as React.CSSProperties}>
       <svg viewBox="0 0 720 600" aria-hidden="true" focusable="false">
         <defs>
           <radialGradient id={`${id}-shade`} cx="0.38" cy="0.32" r="0.72">
@@ -66,28 +102,34 @@ export function DeskLamp({ on = true, onToggle, enamel = 'red', rotation = 0, cl
         </g>
 
         {/* The base, and the arm on its elbow. */}
-        <g className="desk-lamp__base">
+        <g className="desk-lamp__base" transform={layer(base, 600, 110)}>
           <circle cx="600" cy="110" r="110" />
           <circle cx="600" cy="110" r="110" fill={`url(#${id}-base)`} />
           <circle cx="600" cy="110" r="30" fill={`url(#${id}-arm)`} />
         </g>
         <g className="desk-lamp__arm">
-          <path d="M 600 110 L 420 250" stroke={`url(#${id}-arm)`} strokeWidth="24" strokeLinecap="round" />
-          <circle cx="420" cy="250" r="20" fill={`url(#${id}-arm)`} />
-          <path d={`M 420 250 L ${x + 60} ${y - 40}`} stroke={`url(#${id}-arm)`} strokeWidth="22" strokeLinecap="round" />
-          <circle cx={x + 60} cy={y - 40} r="17" fill={`url(#${id}-arm)`} />
+          <path d={`M ${base.x} ${base.y} L ${elbow.x} ${elbow.y}`} stroke={`url(#${id}-arm)`} strokeWidth="24" strokeLinecap="round" />
+          <circle cx={elbow.x} cy={elbow.y} r={20 * elbow.scale} fill={`url(#${id}-arm)`} />
+          <path d={`M ${elbow.x} ${elbow.y} L ${neck.x} ${neck.y}`} stroke={`url(#${id}-arm)`} strokeWidth="22" strokeLinecap="round" />
+          <circle cx={neck.x} cy={neck.y} r={17 * neck.scale} fill={`url(#${id}-arm)`} />
         </g>
 
         {/* The light spilling round the rim, and the shade over it. */}
+        <g transform={layer(rim, x, y)}>
         <circle className="desk-lamp__spill" cx={x} cy={y} r={radius + 30} filter={`url(#${id}-glow)`} />
-        <g className="desk-lamp__shade">
+        </g>
+        {elevated && <g className="desk-lamp__side">
+          <circle cx={rim.x} cy={rim.y} r={radius * rim.scale} />
+          <path d={`M ${rim.x - radius * rim.scale} ${rim.y} L ${shade.x - radius * shade.scale} ${shade.y} L ${shade.x + radius * shade.scale} ${shade.y} L ${rim.x + radius * rim.scale} ${rim.y} Z`} />
+        </g>}
+        <g className="desk-lamp__shade" transform={layer(shade, x, y)}>
           <circle cx={x} cy={y} r={radius} />
           <circle cx={x} cy={y} r={radius} fill={`url(#${id}-shade)`} />
           <circle className="desk-lamp__rim" cx={x} cy={y} r={radius - 4} fill="none" strokeWidth="4" />
           <circle className="desk-lamp__cap" cx={x} cy={y} r="22" fill={`url(#${id}-arm)`} />
         </g>
       </svg>
-      <button type="button" className="desk-lamp__switch" aria-label={on ? 'Turn the lamp off' : 'Turn the lamp on'} aria-pressed={on} onClick={() => onToggle?.(!on)} style={{ left: `${((x - radius) / 720) * 100}%`, top: `${((y - radius) / 600) * 100}%`, width: `${((2 * radius) / 720) * 100}%`, height: `${((2 * radius) / 600) * 100}%` }} />
+      <button type="button" className="desk-lamp__switch" aria-label={on ? 'Turn the lamp off' : 'Turn the lamp on'} aria-pressed={on} onClick={() => onToggle?.(!on)} style={{ left: `${((shade.x - radius * shade.scale) / 720) * 100}%`, top: `${((shade.y - radius * shade.scale) / 600) * 100}%`, width: `${((2 * radius * shade.scale) / 720) * 100}%`, height: `${((2 * radius * shade.scale) / 600) * 100}%` }} />
     </div>
   );
 }

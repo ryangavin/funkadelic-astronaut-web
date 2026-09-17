@@ -71,10 +71,6 @@
   animation: spilled-lift var(--spill-flight) cubic-bezier(0.3, 0.6, 0.3, 1) var(--spilled-wait) both;
 }
 
-.spill[data-open='true'] .spilled:not([data-dragging]) > .movable__lift::before {
-  animation: spilled-shadow var(--spill-flight) cubic-bezier(0.3, 0.6, 0.3, 1) var(--spilled-wait) both;
-}
-
 .spill[data-open='false'] .spilled > .movable__lift {
   animation: spilled-lift calc(var(--spill-flight) * 0.8) cubic-bezier(0.3, 0.6, 0.3, 1) var(--spilled-delay) both reverse;
 }
@@ -82,24 +78,15 @@
 @keyframes spilled-lift {
   0% {
     scale: 1;
+    filter: drop-shadow(0 0 0 rgb(10 5 2 / 0));
   }
   40% {
     scale: 1.07;
+    filter: drop-shadow(calc(10 * var(--movable-unit)) calc(18 * var(--movable-unit)) calc(10 * var(--movable-unit)) rgb(10 5 2 / 0.45));
   }
   100% {
     scale: 1;
-  }
-}
-
-@keyframes spilled-shadow {
-  0% {
-    opacity: 0;
-  }
-  40% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
+    filter: drop-shadow(0 0 0 rgb(10 5 2 / 0));
   }
 }
 
@@ -109,8 +96,7 @@
     transition: none;
   }
 
-  .spill .spilled > .movable__lift,
-  .spill .spilled > .movable__lift::before {
+  .spill .spilled > .movable__lift {
     animation: none;
   }
 }

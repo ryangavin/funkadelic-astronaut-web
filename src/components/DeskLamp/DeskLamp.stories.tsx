@@ -12,10 +12,11 @@ const meta = {
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],
   argTypes: {
+    shadowStrength: { control: { type: 'range', min: 0, max: 1, step: 0.01 } },
     enamel: { control: 'inline-radio', options: DESK_LAMP_ENAMELS },
     rotation: { control: { type: 'range', min: -180, max: 180, step: 1 } },
   },
-  args: { on: true, enamel: 'red', rotation: 0, onToggle: fn() },
+  args: { shadowStrength: 0.36, on: true, enamel: 'red', rotation: 0, onToggle: fn() },
 } satisfies Meta<typeof DeskLamp>;
 
 export default meta;

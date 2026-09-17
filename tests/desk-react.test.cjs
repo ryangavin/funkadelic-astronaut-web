@@ -34,15 +34,74 @@ test('The desk things: mug, ring, pens, sticky note and pick, each sized by its 
   const mug = read('src/components/Mug/Mug.tsx');
   assert.match(mug, /coffee = 0\.7/);
   assert.match(mug, /const surface = 54 - \(1 - level\) \* 5/);
-  assert.match(mug, /className="mug__shadow"/);
+  assert.doesNotMatch(mug, /className="mug__(shadow|footing)"/);
+  assert.match(mug, /shadow = 'none'/);
   assert.match(mug, /className="mug__handle"/);
   assert.match(mug, /level > 0\.02 \? \(/);
   assert.match(mug, /className="mug__dregs"/);
   const ring = read('src/components/Mug/CoffeeRing.tsx');
   assert.match(ring, /strokeDasharray=/);
+  // The ring turns inside its box, so what was lying over the surface can be cut out of it in the box's own frame.
+  assert.match(ring, /<path d=\{cut\} clipRule="evenodd" \/>/);
+  assert.match(ring, /transform=\{`rotate\(\$\{rotation\} 100 100\)`\}/);
   const mugCss = read('src/components/Mug/Mug.css');
   assert.match(mugCss, /\.coffee-ring \{[\s\S]+?mix-blend-mode: multiply/);
+  assert.match(mugCss, /\.coffee-ring \{[\s\S]+?transition: opacity 1400ms/);
+  assert.match(mugCss, /\.stained__rings \{[\s\S]+?overflow: clip/);
   assert.match(mugCss, /\.mug \{[\s\S]+?aspect-ratio: 1/);
+});
+
+test('The mug lays its ring down as it is set down, on everything it is standing on, and the rings dry where they lie', () => {
+  const trail = read('src/components/Mug/trail.ts');
+
+  // The ring is the mug's base, which is off the centre of its box, so turning the mug swings the ring round with it.
+  assert.match(read('src/components/Mug/Mug.tsx'), /MUG_FOOT = \{ x: 104 \/ 240, y: 120 \/ 240 \}/);
+  assert.match(trail, /import \{ MUG_FOOT \} from '\.\/Mug';/);
+  assert.match(trail, /MUG_RING = 83 \/ 140/);
+  assert.match(trail, /const centreX = x \+ width \/ 2 \+ offsetX \* Math\.cos\(turn\) - offsetY \* Math\.sin\(turn\)/);
+  assert.match(trail, /offsetX = \(MUG_FOOT\.x - 0\.5\) \* width/);
+  // Fresh, drying, and dried into the wood.
+  assert.match(trail, /COFFEE_WET = 0\.7/);
+  assert.match(trail, /COFFEE_DRIES = 0\.8/);
+  assert.match(trail, /COFFEE_GONE = 0\.04/);
+  // Every surface the base overlapped catches its share, each cut where whatever lay over it covered it, and the wood always.
+  assert.match(trail, /export function stampRings/);
+  assert.match(trail, /for \(let layer = over\.length - 1; layer >= 0; layer -= 1\) stamp\(over\[layer\], over\.slice\(layer \+ 1\)\);/);
+  assert.match(trail, /stamp\(null, over\);/);
+  // The coffee goes down with the mug, so the paper can be pulled out from under it and take its half away.
+  assert.match(trail, /const lift = \(\) => \{\s+standing\.current = false;/);
+  assert.match(trail, /const settle = \(\) => \{\s+if \(standing\.current\) return;/);
+  assert.match(trail, /setTrail\(\(down\) => setDown\(down, mug\(\), over\(\)\)\);/);
+  // Nothing is dropped for being old: a ring leaves only once it has faded out.
+  assert.match(trail, /const drying = rings\.filter\(\(ring\) => ring\.strength > 0\)\.map\(dry\);/);
+  assert.match(trail, /return \{ \.\.\.ring, strength: left < COFFEE_GONE \? 0 : left \};/);
+
+  const stained = read('src/components/Mug/Stained.tsx');
+  assert.match(stained, /<div className="stained__rings" aria-hidden="true">/);
+  assert.match(stained, /<CoffeeRing strength=\{ring\.strength\} rotation=\{ring\.rotation\} masks=\{ring\.masks\} \/>/);
+});
+
+test('The office inkjet: a smaller gamut, ink into the fibre, a dither and the head\u2019s bands, laid only where there is ink', () => {
+  const press = read('src/foundations/Inkjet/InkjetFilter.tsx');
+  const wrapper = read('src/foundations/Inkjet/Inkjet.tsx');
+  const css = read('src/foundations/Inkjet/Inkjet.css');
+
+  // Four inks on uncoated stock, and a black that dries a warm dark grey. Each curve leaves 1 alone: no ink is paper.
+  assert.match(press, /<feColorMatrix type="saturate" values=\{String\(gamut\)\} result="gamut" \/>/);
+  assert.match(press, /<feFuncR type="linear" slope="0\.87" intercept="0\.13" \/>/);
+  assert.match(press, /<feGaussianBlur in="inks" stdDeviation=\{spread\} result="wet" \/>/);
+  // The dither and the bands are arithmetic composites that fall away with the ink: k2 is 1 and k3 undoes k1.
+  assert.match(press, /operator="arithmetic" k1=\{dither\} k2="1" k3=\{-dither\} k4="0"/);
+  assert.match(press, /operator="arithmetic" k1=\{banding\} k2="1" k3=\{-banding\} k4="0"/);
+  // Bands run the length of the sheet: the turbulence is stretched across it.
+  assert.match(press, /baseFrequency="0\.0015 0\.18"/);
+  // The white of a print is the paper it was run off on.
+  assert.match(css, /\.inkjet\[data-printed\] \{\s+mix-blend-mode: multiply;/);
+  assert.match(wrapper, /style=\{enabled \? \{ \.\.\.style, filter: `url\(#\$\{id\}\)` \} : style\}/);
+
+  // The site plan is run off on it.
+  const page = read('src/pages/Desk/PromoterDesk.tsx');
+  assert.match(page, /<Inkjet className="site-plan__print" seed=\{3\}>\s+<img className="site-plan__map"/);
 
   const pen = read('src/components/Pen/Pen.tsx');
   assert.match(pen, /PEN_KINDS = \['ballpoint', 'marker', 'pencil'\]/);
@@ -133,11 +192,11 @@ test('Movable is picked up by its body, follows the pointer in surface units, an
   assert.match(behavior, /const HELD_CONTROLS = 'input, select, textarea, iframe, video, \[role="slider"\]'/);
   assert.match(behavior, /closest\(grab === 'anywhere' \? HELD_CONTROLS : CONTROLS\)/);
   // The pointer is captured once the press has travelled, and its travel is scaled to units.
-  assert.match(behavior, /if \(Math\.hypot\(dx, dy\) < MOVABLE_DRAG_THRESHOLD\) return;/);
+  assert.match(behavior, /if \(\(start\.turn \? Math\.abs\(dx\) : Math\.hypot\(dx, dy\)\) < MOVABLE_DRAG_THRESHOLD\) return;/);
   assert.match(behavior, /host\.current\?\.setPointerCapture\(start\.id\)/);
   assert.match(behavior, /onMove\(\{ x: Math\.round\(start\.x \+ dx \/ perUnit\), y: Math\.round\(start\.y \+ dy \/ perUnit\) \}\)/);
   assert.match(behavior, /element\.addEventListener\('click', swallow, \{ capture: true, once: true \}\)/);
-  // A turn: from the grip, or the body with Alt held, by the bearing from the centre; and from the bracket keys.
+  // A turn: from the grip, or the body with Alt held, by horizontal screen travel; and from the bracket keys.
   assert.match(behavior, /MOVABLE_KEY_TURN = 1/);
   assert.match(behavior, /if \(target\.closest\('\.movable__grip'\)\) \{/);
   assert.match(behavior, /begin\(event, event\.altKey\);/);
@@ -147,7 +206,7 @@ test('Movable is picked up by its body, follows the pointer in surface units, an
   assert.match(css, /\.movable\[data-movable\]:hover > \.movable__grip,\s+\.movable__grip:hover \{[\s\S]+?pointer-events: auto/);
   assert.match(css, /\.movable__grip::before \{[\s\S]+?inset: calc\(-18 \* var\(--movable-unit\)\)/);
   // The keyboard moves the thing itself, not a control inside it.
-  assert.match(behavior, /if \(!onMove \|\| event\.target !== event\.currentTarget\) return;/);
+  assert.match(behavior, /if \(!onMove \|\| \(event\.target !== event\.currentTarget && !onGrip\)\) return;/);
   assert.match(behavior, /tabIndex=\{onMove \? 0 : undefined\}/);
   assert.match(behavior, /aria-roledescription=\{onMove \? 'movable' : undefined\}/);
   assert.match(behavior, /onDragStart=\{\(event\) => event\.preventDefault\(\)\}/);
@@ -156,6 +215,8 @@ test('Movable is picked up by its body, follows the pointer in surface units, an
   assert.match(css, /\.movable\[data-dragging\] \{[\s\S]+?transition: none/);
   assert.match(css, /\.movable\[data-movable\] \{\s+cursor: grab;/);
   assert.match(css, /\.movable\[data-dragging\] > \.movable__lift \{\s+scale: 1\.03/);
+  // The shadow of a lifted thing is thrown by the thing, not by its box.
+  assert.match(css, /\.movable\[data-dragging\] > \.movable__lift \{[\s\S]+?filter: drop-shadow\(calc\(10 \* var\(--movable-unit\)\)/);
 });
 
 test('Spill packs loose things on a point and sends them out in order when opened', () => {
@@ -194,6 +255,10 @@ test('Spill packs loose things on a point and sends them out in order when opene
 test('The promoter’s desk: everything its real size against the Walkman, the folder a button, its contents spilling out, all of it movable', () => {
   const page = read('src/pages/Desk/PromoterDesk.tsx');
   const css = read('src/pages/Desk/PromoterDesk.css');
+  // Closed, the folder's box is twice the folder anyone can see: its other half lies on bare desk over the
+  // running order and the site plan, so it catches nothing and only the button and the cover's links do.
+  assert.match(css, /\.promoter-desk\[data-open='false'\] \.promoter-desk__folder \{\s+pointer-events: none;/);
+  assert.match(css, /\.promoter-desk__open \{\s+pointer-events: auto;/);
 
   // One reference: the Walkman, 112 mm, is 300 units; everything else is its real width in that scale.
   assert.match(page, /REFERENCE = \{ object: 'Walkman', millimetres: 112, units: 224 \}/);
@@ -232,6 +297,10 @@ test('The promoter’s desk: everything its real size against the Walkman, the f
   assert.match(page, /<Movable \{\.\.\.movable\('walkman', SIZES\.walkman\)\}>\s+<Walkman \{\.\.\.DEMO_TAPE\} finish="blue" \/>/);
   assert.match(page, /<Movable \{\.\.\.movable\('handheld', SIZES\.handheld\)\}>\s+<Handheld video=\{LIVE_SET\.video\}/);
   assert.match(page, /movable\('mug', SIZES\.mug/);
+  // The mug leaves its rings on the wood and on the two letter sheets, which carry their own.
+  assert.match(page, /<CoffeeRings rings=\{trail\.on\(DESK\)\} \/>/);
+  assert.match(page, /<Stained rings=\{trail\.on\('sheet'\)\}>\s+<RunSheet \/>/);
+  assert.match(page, /<Stained rings=\{trail\.on\('plan'\)\}>\s+<SitePlan \/>/);
   assert.match(page, /<Cassette label="live at the pond" side="B"/);
   assert.match(page, /function RunSheet\(/);
   assert.match(page, /Funkadelic Astronaut · 45 min/);

@@ -86,10 +86,20 @@
   rotate: var(--promoter-desk-folder-rotation, 0deg);
 }
 
+/* Closed, the folder's box is twice the folder anyone can see: the other half of it is the
+   well, lying face down on bare desk, and the running order and the site plan are under
+   there. So the box itself catches nothing while it is closed, and only the button and the
+   links stuck to the cover do; what lies beneath stays reachable. Open, the folder's own
+   leaves are in the way, as a folder lying open on paper is. */
+.promoter-desk[data-open='false'] .promoter-desk__folder {
+  pointer-events: none;
+}
+
 /* Closed, the whole folder is the button: it lies beneath the folder, which lets
    pointer events through to it, but for the stickers, which are links. Open, the
    button is the tab on the edge of the back leaf, and it sits on top. */
 .promoter-desk__open {
+  pointer-events: auto;
   position: absolute;
   left: 50%;
   top: 0;
@@ -419,6 +429,11 @@
   letter-spacing: 0.02em;
 }
 
+/* The print fills the page under the letterhead; what the printer did to it is the Inkjet's. */
+.site-plan__print {
+  min-height: 0;
+}
+
 .site-plan__map {
   display: block;
   width: 100%;
@@ -426,8 +441,6 @@
   min-height: 0;
   object-fit: cover;
   object-position: center top;
-  mix-blend-mode: multiply;
-  filter: contrast(1.05);
 }
 
 /* Said, not shown. */

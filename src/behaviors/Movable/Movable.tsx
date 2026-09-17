@@ -10,6 +10,8 @@ export const MOVABLE_DRAG_THRESHOLD = 5;
 export const MOVABLE_KEY_STEP = 10;
 /** How far a bracket key turns a thing, in degrees; with shift held, five times that. */
 export const MOVABLE_KEY_TURN = 1;
+/** Degrees turned per horizontal screen pixel, independent of surface zoom. */
+export const MOVABLE_SCRUB_TURN = 0.5;
 
 /** Presses that start on a control belong to it: the thing is picked up by its body. */
 const CONTROLS = 'button, a, input, select, textarea, iframe, video, [role="slider"], [role="button"]';
@@ -60,8 +62,7 @@ export type MovableProps = Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'cl
  * placed by its corner in the surface's units, like a Pin, and slides when
  * its place changes. With `onMove` it is movable: drag it by its body with
  * the pointer, and it lifts a little and follows; drag with Alt held, or by
- * the grip that shows at its corner, and it turns about its centre to face
- * the pointer. A press that starts on a control inside it, a key or a link,
+ * the grip that shows at its corner, and drag left or right to turn it about its centre. A press that starts on a control inside it, a key or a link,
  * is left to the control, and a drag never ends in a click. From the
  * keyboard, the thing itself takes focus, the arrow keys move it and the
  * bracket keys turn it. Whoever owns the place decides what it means: a desk
@@ -73,17 +74,17 @@ export function Movable({ x, y, rotation = 0, width = 0, unit, z, label, grab = 
   const host = useRef<HTMLDivElement>(null);
   const scale = useContext(MovableScale);
   const project = useContext(MovableProject);
-  /* A press remembers where it began, what it began on, and, for a turn, the bearing from the centre it began at. */
-  const press = useRef<{ id: number; px: number; py: number; x: number; y: number; rotation: number; turn: boolean; from: number; cx: number; cy: number } | null>(null);
+  /* Rotation uses screen travel; movement still uses the surface's scale or projection. */
+  const press = useRef<{ id: number; px: number; py: number; x: number; y: number; rotation: number; turn: boolean; moved: boolean } | null>(null);
   const [dragging, setDragging] = useState(false);
-
-  const bearing = (clientX: number, clientY: number, cx: number, cy: number) => (Math.atan2(clientY - cy, clientX - cx) * 180) / Math.PI;
+  const [gripDismissed, setGripDismissed] = useState(false);
+  const leftSinceRelease = useRef(false);
 
   const begin = (event: PointerEvent<HTMLDivElement>, turn: boolean) => {
-    const box = host.current?.getBoundingClientRect();
-    const cx = box ? box.left + box.width / 2 : event.clientX;
-    const cy = box ? box.top + box.height / 2 : event.clientY;
-    press.current = { id: event.pointerId, px: event.clientX, py: event.clientY, x, y, rotation, turn, from: bearing(event.clientX, event.clientY, cx, cy), cx, cy };
+    press.current = { id: event.pointerId, px: event.clientX, py: event.clientY, x, y, rotation, turn, moved: false };
+    if (turn) {
+      try { host.current?.setPointerCapture(event.pointerId); } catch { /* Synthetic pointer. */ }
+    }
   };
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
@@ -104,8 +105,9 @@ export function Movable({ x, y, rotation = 0, width = 0, unit, z, label, grab = 
     if (!start || !onMove || event.pointerId !== start.id) return;
     const dx = event.clientX - start.px;
     const dy = event.clientY - start.py;
-    if (!dragging) {
-      if (Math.hypot(dx, dy) < MOVABLE_DRAG_THRESHOLD) return;
+    if (!start.moved) {
+      if ((start.turn ? Math.abs(dx) : Math.hypot(dx, dy)) < MOVABLE_DRAG_THRESHOLD) return;
+      start.moved = true;
       setDragging(true);
       try {
         host.current?.setPointerCapture(start.id);
@@ -115,8 +117,8 @@ export function Movable({ x, y, rotation = 0, width = 0, unit, z, label, grab = 
       onGrab?.();
     }
     if (start.turn) {
-      /* Turned to face the pointer: the bearing from the centre now, less the bearing it was picked up at. */
-      const turned = bearing(event.clientX, event.clientY, start.cx, start.cy) - start.from;
+      /* Right turns clockwise; vertical travel has no effect. */
+      const turned = dx * MOVABLE_SCRUB_TURN;
       onMove({ x: start.x, y: start.y, rotation: Math.round((start.rotation + turned) * 2) / 2 });
       return;
     }
@@ -135,11 +137,15 @@ export function Movable({ x, y, rotation = 0, width = 0, unit, z, label, grab = 
     const start = press.current;
     if (!start || event.pointerId !== start.id) return;
     press.current = null;
-    if (!dragging) return;
+    if (start.turn) {
+      setGripDismissed(true);
+      leftSinceRelease.current = false;
+    }
     setDragging(false);
     const element = host.current;
     if (element) {
       if (element.hasPointerCapture(start.id)) element.releasePointerCapture(start.id);
+      if (!start.moved) return;
       // The click that follows the release is the end of a drag, not a press on whatever is under the pointer.
       const swallow = (click: Event) => {
         click.stopPropagation();
@@ -152,16 +158,25 @@ export function Movable({ x, y, rotation = 0, width = 0, unit, z, label, grab = 
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (!onMove || event.target !== event.currentTarget) return;
+    const onGrip = (event.target as Element).closest('.movable__grip');
+    if (!onMove || (event.target !== event.currentTarget && !onGrip)) return;
     const step = event.shiftKey ? MOVABLE_KEY_STEP * 5 : MOVABLE_KEY_STEP;
     const turn = event.shiftKey ? MOVABLE_KEY_TURN * 5 : MOVABLE_KEY_TURN;
     const moves: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
     const turns: Record<string, number> = { '[': -turn, '{': -turn, ']': turn, '}': turn };
+    if (onGrip && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+      event.preventDefault();
+      setGripDismissed(false);
+      onMove({ x, y, rotation: rotation + (event.key === 'ArrowLeft' ? -turn : turn) });
+      return;
+    }
     if (event.key in turns) {
       event.preventDefault();
+      setGripDismissed(false);
       onMove({ x, y, rotation: rotation + turns[event.key] });
       return;
     }
+    if (onGrip) return;
     const move = moves[event.key];
     if (!move) return;
     event.preventDefault();
@@ -185,6 +200,7 @@ export function Movable({ x, y, rotation = 0, width = 0, unit, z, label, grab = 
       className={`movable ${className}`}
       data-movable={onMove ? '' : undefined}
       data-dragging={dragging ? '' : undefined}
+      data-grip-dismissed={gripDismissed ? '' : undefined}
       data-turning={dragging && press.current?.turn ? '' : undefined}
       role={onMove ? 'group' : rest.role}
       aria-label={onMove ? label : rest['aria-label']}
@@ -195,20 +211,32 @@ export function Movable({ x, y, rotation = 0, width = 0, unit, z, label, grab = 
       onPointerMove={onPointerMove}
       onPointerUp={onPointerEnd}
       onPointerCancel={onPointerEnd}
+      onLostPointerCapture={onPointerEnd}
+      onPointerLeave={(event) => {
+        if (!press.current) leftSinceRelease.current = true;
+        rest.onPointerLeave?.(event);
+      }}
+      onPointerEnter={(event) => {
+        if (!press.current && leftSinceRelease.current) setGripDismissed(false);
+        rest.onPointerEnter?.(event);
+      }}
       onKeyDown={onKeyDown}
       onFocus={(event) => {
-        if (event.target === event.currentTarget) onGrab?.();
+        if (event.target === event.currentTarget || (event.target as Element).closest('.movable__grip')) {
+          setGripDismissed(false);
+          onGrab?.();
+        }
       }}
       onDragStart={(event) => event.preventDefault()}
     >
       <div className="movable__lift">{children}</div>
       {onMove && (
-        <span className="movable__grip" aria-hidden="true" title="Drag to turn">
+        <button type="button" className="movable__grip" aria-label={`Rotate ${label ?? 'object'}`} title="Drag left or right to rotate. Arrow keys rotate when focused; Shift turns faster." onClick={(event) => event.stopPropagation()}>
           <svg viewBox="0 0 20 20" focusable="false">
             <path d="M4.5 10a5.5 5.5 0 1 0 1.6-3.9" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
             <path d="M4 3.5v3.5h3.5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-        </span>
+        </button>
       )}
     </div>
   );

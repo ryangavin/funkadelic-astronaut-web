@@ -1,0 +1,918 @@
+/*
+  A Western Electric 500 desk set with an answering machine beside it, traced
+  looking straight down at the desk. Everything is measured in millimetres of
+  the real objects and one millimetre is one unit, so the whole plan is 560
+  across by 300 deep and every part below is the size it is in the hand.
+
+  It is a plan and nothing but a plan. Neither object draws its own volume:
+  there is no sloping face on the answering machine, no shading down the
+  phone's flanks, no roundness on the handset. From straight overhead a
+  moulding has an outline, a colour, whatever is recessed into it and whatever
+  shadow it throws, and that is the whole of it.
+
+  Height is declared instead of drawn. The set is 137 millimetres high with the
+  handset on, the machine 65 at the back; stand the drawing in a Solid of
+  DESK_PHONE_HEIGHT and it is handed --solid-rise and --solid-splay, each a
+  multiple of this drawing's own width. The top faces lift by them, the sides
+  below shear out into the gap, and the feet stay where the things are
+  standing. The machine, being less than half as tall, takes its own share.
+  Off a tilted plane both numbers are nothing and this is the flat drawing it
+  always was.
+
+  The housing is 221 by 229. The G-type handset, 216 cap to cap, lies face down
+  across the cradle on two hook-switch plungers 100 apart, covering them; lift
+  it and they show. The No. 9 dial is a 105-millimetre clear finger wheel over
+  a fixed printed plate — digits inside the holes, letters just outside them,
+  which is what the clear plastic is for — with the number card under its own
+  clear disc in the middle and the chrome finger stop over the rim at four
+  o'clock. The handset cord leaves the left-hand side of the base and lies on
+  the desk in 26-millimetre coils.
+
+  The answering machine is 230 by 200 and thirty-odd years younger than the
+  phone, so it is beige whatever colour the set is: they never did match on
+  anybody's desk. It keeps its own palette below.
+
+  Finishes are the Western Electric colour range: the 1949 black, then ivory,
+  cherry red, aqua blue and moss green from 1954.
+*/
+
+.desk-phone {
+  --desk-phone-unit: calc(100cqw / 560);
+  --desk-phone-rotation: 0deg;
+  /* What a Solid's two numbers are worth here, as lengths in this drawing. */
+  --desk-phone-rise: calc(var(--solid-rise, 0) * 560 * var(--desk-phone-unit));
+  --desk-phone-splay: calc(var(--solid-splay, 0) * 560 * var(--desk-phone-unit));
+  /* The machine is 65 millimetres against the set's 137, so it lifts by that much of it. */
+  --desk-phone-machine-share: calc(65 / 137);
+  /* The machine's own colours, fixed: beige plastic, brown print, a red LED. */
+  --desk-phone-machine: #d9ceb6;
+  --desk-phone-machine-side: #9e937a;
+  --desk-phone-machine-edge: #8d8269;
+  --desk-phone-machine-print: #554b3b;
+  --desk-phone-machine-key: #67614f;
+  --desk-phone-machine-key-down: #4a4539;
+  --desk-phone-machine-key-legend: #ece7d9;
+  --desk-phone-led: #ff4326;
+  --desk-phone-led-ghost: rgb(255 67 38 / 0.035);
+  --desk-phone-led-glass: #2b0f0a;
+  --desk-phone-focus: #f2b134;
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 560 / 300;
+  container-type: inline-size;
+  rotate: var(--desk-phone-rotation);
+  transform-origin: 50% 50%;
+  font-family: var(--font-body, sans-serif);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* --- Finishes ---------------------------------------------------------- */
+
+/* Each is a flat top face and the darker flank that only ever shows when the
+   plane is tilted; a moulding seen from straight above is one colour. */
+
+.desk-phone[data-finish='black'] {
+  --desk-phone-shell: #222226;
+  --desk-phone-shell-side: #131316;
+  --desk-phone-shell-edge: #08080a;
+  --desk-phone-saddle: #16161a;
+  --desk-phone-plunger: #34343a;
+  --desk-phone-handset: #2b2b31;
+  --desk-phone-handset-edge: #08080a;
+  --desk-phone-plate: #1a1a1e;
+  --desk-phone-plate-ink: #efece4;
+  --desk-phone-card: #f2ecdc;
+  --desk-phone-card-ink: #2b2a45;
+  --desk-phone-cord: #1a1a1d;
+}
+
+.desk-phone[data-finish='ivory'] {
+  --desk-phone-shell: #ded2b4;
+  --desk-phone-shell-side: #ac9f81;
+  --desk-phone-shell-edge: #8d8266;
+  --desk-phone-saddle: #c6b895;
+  --desk-phone-plunger: #efe5cb;
+  --desk-phone-handset: #ebe0c3;
+  --desk-phone-handset-edge: #8d8266;
+  --desk-phone-plate: #d5c8a8;
+  --desk-phone-plate-ink: #2b271e;
+  --desk-phone-card: #fbf6e8;
+  --desk-phone-card-ink: #2b2a45;
+  --desk-phone-cord: #cfc2a3;
+}
+
+.desk-phone[data-finish='red'] {
+  --desk-phone-shell: #a8291d;
+  --desk-phone-shell-side: #74150f;
+  --desk-phone-shell-edge: #470a06;
+  --desk-phone-saddle: #8a1c13;
+  --desk-phone-plunger: #c03828;
+  --desk-phone-handset: #b53124;
+  --desk-phone-handset-edge: #470a06;
+  --desk-phone-plate: #1e1e21;
+  --desk-phone-plate-ink: #efece4;
+  --desk-phone-card: #f6f1e2;
+  --desk-phone-card-ink: #2b2a45;
+  --desk-phone-cord: #8f1d14;
+}
+
+.desk-phone[data-finish='aqua'] {
+  --desk-phone-shell: #6fb0b9;
+  --desk-phone-shell-side: #4a8791;
+  --desk-phone-shell-edge: #2c565e;
+  --desk-phone-saddle: #5b98a1;
+  --desk-phone-plunger: #8ac6cd;
+  --desk-phone-handset: #7cbcc4;
+  --desk-phone-handset-edge: #2c565e;
+  --desk-phone-plate: #64a4ad;
+  --desk-phone-plate-ink: #16282c;
+  --desk-phone-card: #f6f8f2;
+  --desk-phone-card-ink: #2b2a45;
+  --desk-phone-cord: #5c9aa3;
+}
+
+.desk-phone[data-finish='moss'] {
+  --desk-phone-shell: #7f8e5f;
+  --desk-phone-shell-side: #5a6941;
+  --desk-phone-shell-edge: #35401f;
+  --desk-phone-saddle: #6b7a4d;
+  --desk-phone-plunger: #9aa87a;
+  --desk-phone-handset: #8b9a6a;
+  --desk-phone-handset-edge: #35401f;
+  --desk-phone-plate: #748354;
+  --desk-phone-plate-ink: #1e2413;
+  --desk-phone-card: #f7f6e6;
+  --desk-phone-card-ink: #2b2a45;
+  --desk-phone-cord: #6d7c50;
+}
+
+/* --- What lies on the desk --------------------------------------------- */
+
+/* The cord's slack and the shadows the two objects throw. All of it is on the
+   wood, so none of it lifts with anything: it is drawn in the plan and stays
+   there. It is cord and shadow, not a control, so nothing here takes a pointer. */
+.desk-phone__ground {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.desk-phone__cord-line,
+.desk-phone__cord-shadow {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.desk-phone__cord-line {
+  stroke: var(--desk-phone-cord);
+  stroke-width: 3.4;
+}
+
+.desk-phone__cord-shadow {
+  stroke: rgb(18 20 32 / 0.3);
+  stroke-width: 4.6;
+}
+
+.desk-phone__cast {
+  fill: rgb(14 12 22 / 0.4);
+}
+
+/* --- The sides --------------------------------------------------------- */
+
+/*
+  Nothing at all seen from straight above. As the plane comes down, the foot
+  stays where the thing stands and the wall shears out from under the top face
+  to meet it — the wall is a band across the footprint's waist, sheared into
+  the gap exactly as the Mug's is, so the silhouette closes into a solid.
+*/
+.desk-phone__sides {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.desk-phone__set-foot,
+.desk-phone__set-wall {
+  position: absolute;
+  left: calc(72 * var(--desk-phone-unit));
+  width: calc(221 * var(--desk-phone-unit));
+  background: var(--desk-phone-shell-side);
+}
+
+.desk-phone__set-foot {
+  top: calc(36 * var(--desk-phone-unit));
+  height: calc(229 * var(--desk-phone-unit));
+  border-radius: calc(34 * var(--desk-phone-unit)) calc(34 * var(--desk-phone-unit)) calc(48 * var(--desk-phone-unit))
+    calc(48 * var(--desk-phone-unit));
+}
+
+/* One millimetre of the footprint's waist, scaled up the height of the set. */
+.desk-phone__set-wall {
+  top: calc(149.5 * var(--desk-phone-unit));
+  height: calc(1 * var(--desk-phone-unit));
+  transform-origin: 50% 100%;
+  transform: matrix(1, 0, calc(var(--solid-splay, 0) * -560), calc(var(--solid-rise, 0) * 560), 0, 0);
+}
+
+.desk-phone__machine-foot,
+.desk-phone__machine-wall {
+  position: absolute;
+  left: calc(319 * var(--desk-phone-unit));
+  width: calc(230 * var(--desk-phone-unit));
+  background: var(--desk-phone-machine-side);
+}
+
+.desk-phone__machine-foot {
+  top: calc(44 * var(--desk-phone-unit));
+  height: calc(200 * var(--desk-phone-unit));
+  border-radius: calc(9 * var(--desk-phone-unit)) calc(9 * var(--desk-phone-unit)) calc(14 * var(--desk-phone-unit))
+    calc(14 * var(--desk-phone-unit));
+}
+
+.desk-phone__machine-wall {
+  top: calc(143.5 * var(--desk-phone-unit));
+  height: calc(1 * var(--desk-phone-unit));
+  transform-origin: 50% 100%;
+  transform: matrix(
+    1,
+    0,
+    calc(var(--solid-splay, 0) * -560 * 65 / 137),
+    calc(var(--solid-rise, 0) * 560 * 65 / 137),
+    0,
+    0
+  );
+}
+
+/* --- However the pair was laid down ------------------------------------ */
+
+/*
+  A Solid turns the drawing back out of whatever angle the thing was laid on
+  the desk at, so the flank below is always sheared the way the surface runs,
+  and hands the angle back as --solid-turn for the drawing to put on whatever
+  really does spin about the object's upright. Here that is nearly everything:
+  the two footprints, the two top faces and the shadows on the wood all turn
+  with the things, about the set's own foot, since the pair is one rigid plan.
+
+  The flank bands are the exception, and are left facing the surface, because
+  that is the one direction the shear can be measured in. A footprint this near
+  square — 221 by 229 — has near enough the same waist whichever way it is set
+  down, and what shows of the band is the sliver between the foot and the top
+  face in any case. It is the same licence the Mug takes when it leaves its own
+  side out of the turn.
+*/
+
+.desk-phone__ground {
+  transform-origin: calc(182.5 * var(--desk-phone-unit)) calc(150.5 * var(--desk-phone-unit));
+  rotate: var(--solid-turn, 0deg);
+}
+
+/* Both of the set's own layers turn about the foot, which within their shared
+   box is 110.5 across and 114.5 back. */
+.desk-phone__set-foot,
+.desk-phone__set {
+  transform-origin: calc(110.5 * var(--desk-phone-unit)) calc(114.5 * var(--desk-phone-unit));
+  rotate: var(--solid-turn, 0deg);
+}
+
+/* The machine turns about the same foot, which is off to the left of its box. */
+.desk-phone__machine-foot,
+.desk-phone__machine {
+  transform-origin: calc(-136.5 * var(--desk-phone-unit)) calc(106.5 * var(--desk-phone-unit));
+  rotate: var(--solid-turn, 0deg);
+}
+
+/* --- The housing's top face -------------------------------------------- */
+
+/* Rounded harder at the front, where the moulding sweeps down to the desk. The
+   whole face rides up on the set's height; the foot beneath it does not. */
+.desk-phone__set {
+  position: absolute;
+  left: calc(72 * var(--desk-phone-unit));
+  top: calc(36 * var(--desk-phone-unit));
+  width: calc(221 * var(--desk-phone-unit));
+  height: calc(229 * var(--desk-phone-unit));
+  border-radius: calc(34 * var(--desk-phone-unit)) calc(34 * var(--desk-phone-unit)) calc(48 * var(--desk-phone-unit))
+    calc(48 * var(--desk-phone-unit));
+  background: var(--desk-phone-shell);
+  box-shadow: 0 0 0 1px var(--desk-phone-shell-edge);
+  translate: var(--desk-phone-splay) calc(-1 * var(--desk-phone-rise));
+}
+
+/* The moulded valley the handset drops into: a recess, so a flat step down and
+   a line where the moulding turns, and no gradient pretending to be a wall. */
+.desk-phone__saddle {
+  position: absolute;
+  left: calc(10 * var(--desk-phone-unit));
+  right: calc(10 * var(--desk-phone-unit));
+  top: calc(22 * var(--desk-phone-unit));
+  height: calc(78 * var(--desk-phone-unit));
+  border-radius: calc(36 * var(--desk-phone-unit));
+  background: var(--desk-phone-saddle);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.22);
+}
+
+/* The hook switch. Under the handset it is hidden; without it, it stands in the
+   saddle and throws a small shadow, which is all a plunger shows from up here. */
+.desk-phone__plunger {
+  position: absolute;
+  top: calc(56.5 * var(--desk-phone-unit));
+  width: calc(15 * var(--desk-phone-unit));
+  height: calc(15 * var(--desk-phone-unit));
+  border-radius: 50%;
+  background: var(--desk-phone-plunger);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.28);
+}
+
+.desk-phone__plunger[data-at='left'] {
+  left: calc(53 * var(--desk-phone-unit));
+}
+
+.desk-phone__plunger[data-at='right'] {
+  left: calc(153 * var(--desk-phone-unit));
+}
+
+.desk-phone[data-hook='off'] .desk-phone__plunger {
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.28),
+    calc(1.5 * var(--desk-phone-unit)) calc(2.5 * var(--desk-phone-unit)) calc(2 * var(--desk-phone-unit)) rgb(0 0 0 / 0.4);
+}
+
+/* --- The handset ------------------------------------------------------- */
+
+/* Lying face down in the cradle. From straight overhead it is an outline and a
+   colour: two caps, the waisted bar between them, the seam round each cap, and
+   the shadow it throws. Its roundness is not visible from up here. Lifted, it
+   is set down off the cradle, further from the desk, so its shadow opens out. */
+.desk-phone__handset {
+  position: absolute;
+  left: calc(2.5 * var(--desk-phone-unit));
+  top: calc(36 * var(--desk-phone-unit));
+  width: calc(216 * var(--desk-phone-unit));
+  height: calc(56 * var(--desk-phone-unit));
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  filter: drop-shadow(calc(3 * var(--desk-phone-unit)) calc(4 * var(--desk-phone-unit)) calc(3 * var(--desk-phone-unit)) rgb(0 0 0 / 0.42));
+  transition:
+    translate 180ms ease-out,
+    filter 180ms ease-out;
+}
+
+.desk-phone[data-hook='off'] .desk-phone__handset {
+  translate: calc(-22 * var(--desk-phone-unit)) calc(-40 * var(--desk-phone-unit));
+  filter: drop-shadow(calc(9 * var(--desk-phone-unit)) calc(14 * var(--desk-phone-unit)) calc(8 * var(--desk-phone-unit)) rgb(0 0 0 / 0.44));
+}
+
+.desk-phone__handset svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The outline first, then the moulding over it: a stroke on the moulding itself
+   would draw the joins between the caps and the bar, which are not there. */
+.desk-phone__handset-edge {
+  fill: var(--desk-phone-handset-edge);
+  stroke: var(--desk-phone-handset-edge);
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+}
+
+.desk-phone__handset-body {
+  fill: var(--desk-phone-handset);
+  stroke: none;
+}
+
+/* Where the earpiece and mouthpiece caps screw on: a moulded line, drawn
+   because it is there in plan, not to suggest a dome. */
+.desk-phone__handset-seam {
+  fill: none;
+  stroke: rgb(0 0 0 / 0.2);
+  stroke-width: 1;
+}
+
+.desk-phone__handset:focus-visible {
+  outline: calc(3 * var(--desk-phone-unit)) solid var(--desk-phone-focus);
+  outline-offset: calc(2 * var(--desk-phone-unit));
+  border-radius: calc(28 * var(--desk-phone-unit));
+}
+
+/* --- The dial ---------------------------------------------------------- */
+
+/*
+  The one thing here that is not a true tracing. The 500's front slopes, so
+  from directly above the dial would read as a shallow ellipse; it is drawn as
+  a true circle instead, because a dial that is going to turn under your finger
+  has to be round. In a plan drawing that is a small cheat and a defensible
+  one, since the dial plate itself genuinely is a circle.
+
+  A hundred and eighteen millimetres square, centred across the housing and set
+  forward. The SVG works in millimetres too, origin at the dial's axis.
+*/
+.desk-phone__dial {
+  position: absolute;
+  isolation: isolate;
+  left: calc(51.5 * var(--desk-phone-unit));
+  top: calc(89 * var(--desk-phone-unit));
+  width: calc(118 * var(--desk-phone-unit));
+  height: calc(118 * var(--desk-phone-unit));
+}
+
+.desk-phone__plate,
+.desk-phone__wheel,
+.desk-phone__wheel-face,
+.desk-phone__stop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* The plate, set into the moulding: a flat face and the line where it is let in. */
+.desk-phone__dial::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(111 * var(--desk-phone-unit));
+  height: calc(111 * var(--desk-phone-unit));
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: var(--desk-phone-plate);
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.4),
+    inset 0 0 0 calc(1 * var(--desk-phone-unit)) rgb(0 0 0 / 0.16);
+}
+
+.desk-phone__plate {
+  z-index: 1;
+}
+
+.desk-phone__plate-digit,
+.desk-phone__plate-letters {
+  fill: var(--desk-phone-plate-ink);
+  text-anchor: middle;
+  font-family: var(--font-body, sans-serif);
+}
+
+.desk-phone__plate-digit {
+  font-size: 10px;
+}
+
+.desk-phone__plate-letters {
+  font-size: 4.2px;
+  letter-spacing: 0.7px;
+  opacity: 0.85;
+}
+
+/* The clear finger wheel. It carries the holes round and nothing else. A
+   reflection in polished plastic is there to be seen from straight above, so
+   the sheen stays; it is light on the surface, not a drawing of a shape. */
+.desk-phone__wheel {
+  z-index: 2;
+  rotate: calc(var(--desk-phone-dial, 0) * 1deg);
+  transform-origin: 50% 50%;
+}
+
+.desk-phone__wheel-plastic {
+  fill: rgb(246 250 255 / 0.1);
+}
+
+.desk-phone__wheel-rim {
+  fill: none;
+  stroke: rgb(255 255 255 / 0.4);
+  stroke-width: 1.4;
+}
+
+.desk-phone__wheel-hole-edge {
+  fill: none;
+  stroke: rgb(0 0 0 / 0.4);
+  stroke-width: 1.3;
+}
+
+/* Each hole is a real button: a finger goes in it, or a key does. */
+.desk-phone__hole {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(15 * var(--desk-phone-unit));
+  height: calc(15 * var(--desk-phone-unit));
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  transform: translate(-50%, -50%) rotate(var(--desk-phone-hole, 0deg)) translateY(calc(-38 * var(--desk-phone-unit)));
+  cursor: grab;
+  touch-action: none;
+}
+
+.desk-phone__hole:disabled {
+  cursor: default;
+}
+
+.desk-phone__dial[data-dial='wind'] .desk-phone__hole,
+.desk-phone__dial[data-dial='return'] .desk-phone__hole {
+  cursor: grabbing;
+}
+
+.desk-phone__hole:focus-visible {
+  outline: calc(2.5 * var(--desk-phone-unit)) solid var(--desk-phone-focus);
+  outline-offset: calc(1 * var(--desk-phone-unit));
+}
+
+/* The number card, under its own clear disc in the middle of the wheel. */
+.desk-phone__card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(1 * var(--desk-phone-unit));
+  width: calc(46 * var(--desk-phone-unit));
+  height: calc(46 * var(--desk-phone-unit));
+  translate: -50% -50%;
+  border-radius: 50%;
+  background:
+    linear-gradient(132deg, rgb(255 255 255 / 0.4) 0 24%, transparent 32%),
+    var(--desk-phone-card);
+  box-shadow: 0 0 0 calc(1.5 * var(--desk-phone-unit)) rgb(0 0 0 / 0.3);
+  color: var(--desk-phone-card-ink);
+  text-align: center;
+  overflow: hidden;
+}
+
+.desk-phone__card-legend {
+  font-size: calc(4.2 * var(--desk-phone-unit));
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.desk-phone__card-number {
+  max-width: calc(41 * var(--desk-phone-unit));
+  font-family: var(--font-handwritten, cursive);
+  font-size: calc(7.8 * var(--desk-phone-unit));
+  line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+}
+
+/* The finger stop: a chrome post fixed to the plate, standing over the wheel's
+   rim. In plan it is its own small outline and the shadow it drops on the wheel. */
+.desk-phone__stop {
+  z-index: 4;
+  pointer-events: none;
+  overflow: visible;
+  filter: drop-shadow(calc(1.5 * var(--desk-phone-unit)) calc(1.5 * var(--desk-phone-unit)) calc(1 * var(--desk-phone-unit)) rgb(0 0 0 / 0.5));
+}
+
+.desk-phone__stop-arm {
+  fill: #c2c5cb;
+  stroke: #6b6e74;
+  stroke-width: 0.7;
+}
+
+.desk-phone__stop-light {
+  fill: rgb(255 255 255 / 0.7);
+}
+
+/* --- The answering machine's top face ---------------------------------- */
+
+/*
+  Straight down, the wedge is a plain rounded rectangle. The slope from 65 at
+  the back to 35 at the front is a height, so it belongs to the Solid and to
+  the flank below, not to this drawing.
+*/
+.desk-phone__machine {
+  position: absolute;
+  left: calc(319 * var(--desk-phone-unit));
+  top: calc(44 * var(--desk-phone-unit));
+  width: calc(230 * var(--desk-phone-unit));
+  height: calc(200 * var(--desk-phone-unit));
+  border-radius: calc(9 * var(--desk-phone-unit)) calc(9 * var(--desk-phone-unit)) calc(14 * var(--desk-phone-unit))
+    calc(14 * var(--desk-phone-unit));
+  background: var(--desk-phone-machine);
+  box-shadow: 0 0 0 1px var(--desk-phone-machine-edge);
+  color: var(--desk-phone-machine-print);
+  translate: calc(var(--desk-phone-splay) * var(--desk-phone-machine-share))
+    calc(-1 * var(--desk-phone-rise) * var(--desk-phone-machine-share));
+}
+
+/* The lift-up door over the cassette well: a panel let into the top face, so a
+   line round it and the thumb lip at its edge. */
+.desk-phone__door {
+  position: absolute;
+  left: calc(22 * var(--desk-phone-unit));
+  top: calc(18 * var(--desk-phone-unit));
+  width: calc(130 * var(--desk-phone-unit));
+  height: calc(82 * var(--desk-phone-unit));
+  border-radius: calc(6 * var(--desk-phone-unit));
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.18);
+}
+
+.desk-phone__well {
+  position: absolute;
+  inset: calc(7 * var(--desk-phone-unit));
+  border-radius: calc(4 * var(--desk-phone-unit));
+  background: #221c16;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.5);
+  overflow: hidden;
+}
+
+/* The smoked lid over the well: what it reflects is on its own face, and shows
+   from straight above like any other reflection. */
+.desk-phone__well::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(118deg, transparent 40%, rgb(255 255 255 / 0.09) 42%, rgb(255 255 255 / 0.09) 45%, transparent 47%),
+    rgb(40 26 18 / 0.2);
+}
+
+/* A microcassette, 50 by 33 millimetres: a third the size of a compact one. */
+.desk-phone__microcassette {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(90 * var(--desk-phone-unit));
+  height: auto;
+  translate: -50% -50%;
+}
+
+.desk-phone__tape-shell {
+  fill: #453b46;
+  stroke: #17131a;
+  stroke-width: 1.5;
+}
+
+.desk-phone__tape-label {
+  fill: #e3d8c1;
+}
+
+.desk-phone__tape-rule {
+  stroke: rgb(70 60 48 / 0.4);
+  stroke-width: 0.9;
+}
+
+.desk-phone__tape-pack {
+  fill: #17151b;
+}
+
+/* The spinning group carries no attribute transform of its own — a CSS rotation
+   would replace it — so it is nested inside the one that places it. */
+.desk-phone__tape-hub {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: desk-phone-spin 2.2s linear infinite;
+  animation-play-state: paused;
+}
+
+.desk-phone__tape-ring {
+  fill: #cfc7b7;
+}
+
+.desk-phone__tape-eye {
+  fill: #17151b;
+}
+
+.desk-phone__tape-tooth {
+  fill: #9a9184;
+}
+
+.desk-phone__tape-window {
+  fill: #0c0a0e;
+}
+
+.desk-phone__machine[data-playing] .desk-phone__tape-hub {
+  animation-play-state: running;
+}
+
+.desk-phone__door-lip {
+  position: absolute;
+  right: calc(8 * var(--desk-phone-unit));
+  bottom: calc(1 * var(--desk-phone-unit));
+  width: calc(26 * var(--desk-phone-unit));
+  height: calc(3 * var(--desk-phone-unit));
+  border-radius: calc(2 * var(--desk-phone-unit));
+  background: rgb(0 0 0 / 0.18);
+}
+
+/* --- The readout and the lamps ----------------------------------------- */
+
+.desk-phone__readout {
+  position: absolute;
+  left: calc(166 * var(--desk-phone-unit));
+  top: calc(20 * var(--desk-phone-unit));
+  width: calc(48 * var(--desk-phone-unit));
+  padding: calc(4 * var(--desk-phone-unit)) calc(2 * var(--desk-phone-unit)) calc(3 * var(--desk-phone-unit));
+  box-sizing: border-box;
+  border-radius: calc(3 * var(--desk-phone-unit));
+  background:
+    linear-gradient(112deg, transparent 52%, rgb(255 255 255 / 0.07) 54%, rgb(255 255 255 / 0.07) 58%, transparent 60%),
+    var(--desk-phone-led-glass);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.6);
+  text-align: center;
+}
+
+.desk-phone__led {
+  display: block;
+  width: calc(34 * var(--desk-phone-unit));
+  height: auto;
+  margin: 0 auto;
+}
+
+.desk-phone__led-bar {
+  fill: var(--desk-phone-led-ghost);
+}
+
+.desk-phone__led-bar[data-lit] {
+  fill: var(--desk-phone-led);
+}
+
+.desk-phone__readout-print {
+  display: block;
+  margin-top: calc(2 * var(--desk-phone-unit));
+  font-size: calc(4.4 * var(--desk-phone-unit));
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgb(255 200 188 / 0.5);
+}
+
+.desk-phone__lamps {
+  position: absolute;
+  left: calc(166 * var(--desk-phone-unit));
+  top: calc(76 * var(--desk-phone-unit));
+  width: calc(48 * var(--desk-phone-unit));
+  display: flex;
+  justify-content: center;
+  gap: calc(12 * var(--desk-phone-unit));
+}
+
+.desk-phone__lamp {
+  width: calc(7 * var(--desk-phone-unit));
+  height: calc(7 * var(--desk-phone-unit));
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.3);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.3);
+}
+
+/* A lit lamp throws light on the plastic round it, which is a thing you see
+   looking straight down at one in a dark office. */
+.desk-phone__lamp[data-lamp='power'][data-lit] {
+  background: #4fd067;
+  box-shadow:
+    inset 0 0 0 1px rgb(0 0 0 / 0.3),
+    0 0 calc(3 * var(--desk-phone-unit)) rgb(79 208 103 / 0.7);
+}
+
+.desk-phone__lamp[data-lamp='message'][data-lit] {
+  background: var(--desk-phone-led);
+  box-shadow:
+    inset 0 0 0 1px rgb(0 0 0 / 0.3),
+    0 0 calc(3 * var(--desk-phone-unit)) rgb(255 67 38 / 0.7);
+}
+
+/* Waiting messages blink, the way they always did until somebody dealt with them. */
+.desk-phone__machine[data-waiting] .desk-phone__lamp[data-lamp='message'][data-lit] {
+  animation: desk-phone-blink 1.1s steps(1) infinite;
+}
+
+/* --- The transport ----------------------------------------------------- */
+
+.desk-phone__keys {
+  position: absolute;
+  left: calc(17 * var(--desk-phone-unit));
+  top: calc(118 * var(--desk-phone-unit));
+  height: calc(42 * var(--desk-phone-unit));
+  display: flex;
+  gap: calc(8 * var(--desk-phone-unit));
+}
+
+/* A key stands a little proud of the panel, which from up here is an outline
+   and the shadow it drops on the beige. Pressed, it goes down into the panel:
+   the shadow closes up and the face darkens. It does not move on the plan,
+   because a key going down does not travel across the desk. */
+.desk-phone__key {
+  position: relative;
+  box-sizing: border-box;
+  width: calc(44 * var(--desk-phone-unit));
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(3 * var(--desk-phone-unit));
+  border: 0;
+  border-radius: calc(4 * var(--desk-phone-unit));
+  background: var(--desk-phone-machine-key);
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.28),
+    calc(1.5 * var(--desk-phone-unit)) calc(2 * var(--desk-phone-unit)) calc(2 * var(--desk-phone-unit)) rgb(0 0 0 / 0.3);
+  color: var(--desk-phone-machine-key-legend);
+  font: inherit;
+  font-size: calc(6 * var(--desk-phone-unit));
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color 80ms ease-out,
+    box-shadow 80ms ease-out;
+}
+
+.desk-phone__key svg {
+  display: block;
+  height: calc(7 * var(--desk-phone-unit));
+  width: auto;
+  fill: currentcolor;
+}
+
+.desk-phone__key:active,
+.desk-phone__key[aria-pressed='true'] {
+  background: var(--desk-phone-machine-key-down);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.35);
+}
+
+.desk-phone__key:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.desk-phone__key:focus-visible {
+  outline: calc(2.5 * var(--desk-phone-unit)) solid var(--desk-phone-focus);
+  outline-offset: calc(2 * var(--desk-phone-unit));
+}
+
+/* Silk-screened along the front, under the keys. */
+.desk-phone__machine-print {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(170 * var(--desk-phone-unit));
+  text-align: center;
+  font-size: calc(6 * var(--desk-phone-unit));
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.desk-phone__machine-print em {
+  display: block;
+  margin-top: calc(1.5 * var(--desk-phone-unit));
+  font-style: normal;
+  font-size: calc(4.6 * var(--desk-phone-unit));
+  opacity: 0.75;
+}
+
+/* --- Spoken, not drawn ------------------------------------------------- */
+
+.desk-phone__status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes desk-phone-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes desk-phone-blink {
+  50% {
+    background: rgb(0 0 0 / 0.3);
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desk-phone__tape-hub,
+  .desk-phone__machine[data-waiting] .desk-phone__lamp[data-lamp='message'][data-lit] {
+    animation: none;
+  }
+
+  .desk-phone__key,
+  .desk-phone__handset {
+    transition: none;
+  }
+}

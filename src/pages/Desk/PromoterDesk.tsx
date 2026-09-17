@@ -13,6 +13,8 @@ import { GuitarPick } from '../../components/GuitarPick/GuitarPick';
 import { Handheld } from '../../components/Handheld/Handheld';
 import { CoffeeRing } from '../../components/Mug/CoffeeRing';
 import { Mug } from '../../components/Mug/Mug';
+import { CoffeeRings, Stained } from '../../components/Mug/Stained';
+import { DESK, useCoffeeTrail } from '../../components/Mug/trail';
 import { NewtonsCradle } from '../../components/NewtonsCradle/NewtonsCradle';
 import { OneSheet } from '../../components/OneSheet/OneSheet';
 import { Packet } from '../../components/Packet/Packet';
@@ -32,6 +34,7 @@ import { BAND_HANDBILL_BACK, BAND_HANDBILL_FRONT } from '../../experiments/BandI
 import { MiniZine } from '../../experiments/BandIntro/MiniZine';
 import { BAND_ZINE_PAGES } from '../../experiments/BandIntro/MiniZine.band';
 import { Distressed } from '../../foundations/Distressed/Distressed';
+import { Inkjet } from '../../foundations/Inkjet/Inkjet';
 import { BAND_MEMBER_PACKETS, BAND_ONE_SHEET, BAND_PACKET, DEMO_TAPE, LIVE_SET } from '../../sections/BandDossier/BandDossier';
 import { LISTEN_LINKS, SOCIAL_LINKS } from '../Home/Home';
 import '../../styles/fonts.css';
@@ -101,6 +104,8 @@ export const REAL_WIDTHS = {
 /** The same, in desk units. */
 export const SIZES = Object.fromEntries(Object.entries(REAL_WIDTHS).map(([thing, width]) => [thing, mm(width)])) as Record<keyof typeof REAL_WIDTHS, number>;
 
+/** A letter sheet stands 11 units tall for every 8.5 across, which is what the running order and the site plan are printed on. */
+const LETTER_RATIO = 11 / 8.5;
 /** The folder's proportions, from the Folder component: two leaves of 720 in 1440, 915 tall. */
 const FOLDER_RATIO = 915 / 1440;
 /** The tab on the folder's edge, from the Folder component: 9% down the leaf, 52% of its height, 58 units wide, set 44 out past the edge. */
@@ -255,7 +260,7 @@ function RunSheet() {
   );
 }
 
-/** The festival's site plan: the map from the poster, run off on a letter sheet and marked up. */
+/** The festival's site plan: the map from the poster, run off on the office inkjet onto a letter sheet. */
 function SitePlan() {
   return (
     <Weathered className="site-plan" grain wear={0.2}>
@@ -264,7 +269,9 @@ function SitePlan() {
           <span className="run-sheet__label">Mission Control</span>
           <span>Nyack Neighborhood Music &amp; Arts Festival · site plan · v2</span>
         </p>
-        <img className="site-plan__map" src={festivalMap} alt="Site plan of the festival grounds: the stages, the camp and the pond, drawn as a map" />
+        <Inkjet className="site-plan__print" seed={3}>
+          <img className="site-plan__map" src={festivalMap} alt="Site plan of the festival grounds: the stages, the camp and the pond, drawn as a map" />
+        </Inkjet>
       </div>
     </Weathered>
   );
@@ -291,6 +298,15 @@ export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange,
   const [lamp, setLamp] = useState(lampOn);
   const [placed, setPlaced] = useState<Partial<Record<ThingId, Place>>>({});
   const [stacking, setStacking] = useState<LayerId[]>(STACKING);
+  /* The rings the mug has left behind it: one on everything it was standing on each time it is lifted, every one of them drying.
+     A mug set down half on a sheet leaves half a ring on the sheet, which goes with it, and half on the wood. */
+  const trail = useCoffeeTrail(
+    () => ({ ...placeOf('mug'), width: SIZES.mug }),
+    () =>
+      (['plan', 'sheet'] as const)
+        .map((id) => ({ id, ...placeOf(id), width: SIZES[id], height: SIZES[id] * LETTER_RATIO }))
+        .sort((one, other) => stacking.indexOf(one.id) - stacking.indexOf(other.id)),
+  );
 
   const folderWidth = SIZES.folder;
   const folderHeight = folderWidth * FOLDER_RATIO;
@@ -308,7 +324,7 @@ export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange,
     onToggle?.(!open);
   };
   const grab = (id: ThingId) => setStacking((order) => (order[order.length - 1] === id ? order : [...order.filter((other) => other !== id), id]));
-  const move = (id: ThingId) => (to: { x: number; y: number }) => setPlaced((all) => ({ ...all, [id]: { ...placeOf(id), ...to } }));
+  const move = (id: ThingId) => (to: { x: number; y: number; rotation?: number }) => setPlaced((all) => ({ ...all, [id]: { ...placeOf(id), ...to } }));
   const drop = () => onArrange?.(Object.fromEntries(STACKING.filter((id): id is ThingId => id !== 'folder').map((id) => [id, placeOf(id)])) as Record<ThingId, Place>);
   /** Screen pixels per desk unit, for the pointer's travel. */
   const scale = () => (surface.current?.querySelector('.desk__top')?.getBoundingClientRect().width ?? DESK_WIDTH) / DESK_WIDTH;
@@ -375,6 +391,8 @@ export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange,
             <Pin {...DESK_LAYOUT.ring} width={SIZES.ring}>
               <CoffeeRing strength={0.55} />
             </Pin>
+            {/* The rings left this morning: the one the mug has just come off is wet and dark, and every one behind it a shade paler. */}
+            <CoffeeRings rings={trail.on(DESK)} />
 
             {/* The press package: a plain folder with the band's name on the cover, and a button beneath it.
                 It has a layer of its own, over the running order and under everything else, until something is picked up. */}
@@ -403,10 +421,14 @@ export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange,
 
             {/* The promoter's own things, shoved aside when the folder opens. */}
             <Movable {...movable('plan', SIZES.plan)}>
-              <SitePlan />
+              <Stained rings={trail.on('plan')}>
+                <SitePlan />
+              </Stained>
             </Movable>
             <Movable {...movable('sheet', SIZES.sheet)}>
-              <RunSheet />
+              <Stained rings={trail.on('sheet')}>
+                <RunSheet />
+              </Stained>
             </Movable>
             <Movable {...movable('ballpoint', SIZES.ballpoint)}>
               <Pen kind="ballpoint" ink="#2c4fa3" />
@@ -428,7 +450,19 @@ export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange,
             <Movable {...movable('cradle', SIZES.cradle, 'anywhere')}>
               <NewtonsCradle />
             </Movable>
-            <Movable {...movable('mug', SIZES.mug)}>
+            {/* The mug leaves a ring wherever it has been standing, the moment it is carried off it. */}
+            <Movable
+              {...movable('mug', SIZES.mug)}
+              onMove={(to) => {
+                trail.lift();
+                move('mug')(to);
+              }}
+              onDrop={() => {
+                trail.settle();
+                drop();
+              }}
+              onBlur={trail.settle}
+            >
               <Mug glaze="#e9e1cf" coffee={0.65} rotation={0} />
             </Movable>
             <Movable {...movable('handheld', SIZES.handheld)}>
@@ -491,7 +525,7 @@ export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange,
 
             <p className="promoter-desk__status" role="status" aria-live="polite" aria-label="Press package">
               {open
-                ? 'The press package is open and its contents are out on the desk: the members’ cards, the one-sheet, two prints, the handbill, the zine, the tour ticket and the festival pass. Everything on the desk can be moved.'
+                ? 'The press package is open and its contents are out on the desk: the members’ cards, the one-sheet, two prints, the handbill, the zine, the tour ticket and the festival pass. Everything on the desk can be moved and turned.'
                 : 'The Funkadelic Astronaut press package is closed on the Mission Control desk.'}
             </p>
           </Desk>
