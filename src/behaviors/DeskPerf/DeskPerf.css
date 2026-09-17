@@ -56,3 +56,18 @@
 .desk-perf__verdict[data-kind="attributed"] { border-color: #e8927a; }
 .desk-perf__verdict[data-kind="already-fast"] { border-color: #8fbf7a; }
 .desk-perf__verdict[data-kind="not-drawing"] { border-color: #e8c37a; color: #e8c37a; }
+
+/* The live readout for a hand-driven drag: the only figure here taken from a
+   real pointer rather than a dispatched one. */
+.desk-perf__hand {
+  margin: 0;
+  padding: .5rem .6rem;
+  border: 1px dashed #4a4038;
+  border-radius: .2rem;
+  color: #c9bba8;
+  font-variant-numeric: tabular-nums;
+}
+.desk-perf__hand[data-slow] { border-color: #e8927a; border-style: solid; color: #e8927a; }
+
+/* What size the desk was when the numbers were taken, without which they cannot be compared. */
+.desk-perf__size { margin: 0; color: #a99e90; }

@@ -121,6 +121,195 @@ export async function dragCost(root: Document | HTMLElement, label: string, { mo
   };
 }
 
+export type DragLag = {
+  label: string;
+  /** Milliseconds from the pointer event to the DOM carrying the new place. */
+  msToCommit: number;
+  /** The worst of those, which is the one a hand notices. */
+  worstMsToCommit: number;
+  /** How many of the moves took longer than a frame to reach the DOM at all. */
+  overAFrame: number;
+  /** False when nothing ever moved, which makes the rest meaningless. */
+  followed: boolean;
+};
+
+/**
+ * How long the thing takes to catch up with the pointer.
+ *
+ * This is a different question from how long a frame takes, and the bench was
+ * wrong to think one answered the other: a desk can redraw a full sixty times a
+ * second and still feel dragged through treacle, because every one of those
+ * frames shows where the pointer used to be.
+ *
+ * Two ways of asking it do not work, both tried:
+ *
+ *  * Counting frames to the first movement saturates. React commits a pointer
+ *    move before the next paint whether it took two milliseconds or forty, so
+ *    every object on the desk answers "one frame" and the slow one hides.
+ *  * Timing to the end of a settle loop measures the loop, not the lag. That is
+ *    what made everything here read fifty milliseconds — three frames of my own
+ *    waiting, reported as though it were the desk's.
+ *
+ * So the clock stops when the DOM actually carries the new place, caught by
+ * watching the element rather than by polling it. That has real resolution: it
+ * is the work standing between the event and the pixel, which is the thing a
+ * hand feels. Add about a frame for the paint that follows.
+ *
+ * It measures the synthetic path, not the real one — a dispatched event skips
+ * the browser's own input queue and its coalescing — so treat it as a floor on
+ * the lag rather than the whole of it.
+ */
+export async function dragLag(root: Document | HTMLElement, label: string, { jumps = 8, reach = 40 }: { jumps?: number; reach?: number } = {}): Promise<DragLag> {
+  const element = find(root, label);
+  const win = element.ownerDocument.defaultView;
+  if (!win) throw new Error('The desk is not in a window');
+  const box = element.getBoundingClientRect();
+  const x = box.left + box.width / 2;
+  const y = box.top + box.height / 2;
+  const at = (type: string, cx: number, cy: number, buttons = 1) =>
+    element.dispatchEvent(new win.PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 1, pointerType: 'mouse', button: 0, buttons, clientX: cx, clientY: cy }));
+
+  at('pointerdown', x, y);
+  at('pointermove', x + 12, y);
+  for (let i = 0; i < 6; i += 1) await raf(win);
+
+  const took: number[] = [];
+  let here = x + 12;
+  for (let jump = 0; jump < jumps; jump += 1) {
+    here += jump % 2 ? reach : -reach;
+    const landed = new Promise<number>(resolve => {
+      const t0 = win.performance.now();
+      const watch = new win.MutationObserver(() => { watch.disconnect(); resolve(win.performance.now() - t0); });
+      watch.observe(element, { attributes: true, attributeFilter: ['style'] });
+      /* A move that never reaches the DOM is a failure, not a fast one. */
+      win.setTimeout(() => { watch.disconnect(); resolve(Number.NaN); }, 400);
+      at('pointermove', here, y);
+    });
+    const ms = await landed;
+    if (Number.isFinite(ms)) took.push(ms);
+    /* Clear of the last one before timing the next. */
+    for (let i = 0; i < 3; i += 1) await raf(win);
+  }
+  at('pointermove', x, y);
+  at('pointerup', x, y, 0);
+  for (let i = 0; i < 3; i += 1) await raf(win);
+
+  const sorted = [...took].sort((a, b) => a - b);
+  return {
+    label,
+    msToCommit: +(sorted[Math.floor(sorted.length / 2)] ?? 0).toFixed(1),
+    worstMsToCommit: +(sorted[sorted.length - 1] ?? 0).toFixed(1),
+    overAFrame: took.filter(ms => ms > REFRESH_MS).length,
+    followed: took.length > 0,
+  };
+}
+
+export type HandDrag = {
+  /** What is being dragged, by the name it answers to. */
+  label: string;
+  /** How far the thing is behind the pointer right now, in screen pixels. */
+  trailingPx: number;
+  /** How fast the hand is going, in pixels a frame. Lag means nothing when nothing is moving. */
+  speedPxPerFrame: number;
+  /** What that distance is worth in time at this speed: the lag a hand actually feels. */
+  msBehind: number;
+  /** The frame the readout was taken on. */
+  frameMs: number;
+};
+
+/**
+ * What a real hand sees, which is the only sound way to ask this.
+ *
+ * Every synthetic measure of lag in this file is a floor rather than the truth.
+ * A dispatched pointer event skips the browser's own input queue, its
+ * coalescing and its hit testing, and it arrives exactly one to a frame, which
+ * is the kindest case there is. Measured that way the lamp is the quickest
+ * thing on the desk to reach the DOM — and the hand dragging it says otherwise.
+ * When the instrument and the hand disagree, the hand is right.
+ *
+ * So this one measures the real thing: it watches whatever is genuinely being
+ * dragged and reports how far behind the pointer it is drawn. The grab is not
+ * usually at the middle of a thing, so the offset at the moment of pick-up is
+ * taken as the zero and everything after is measured against it. Distance alone
+ * says little — trailing forty pixels is nothing at a crawl and awful at speed
+ * — so it is divided by the speed of the hand to give the lag in time.
+ */
+export function watchHandDrag(root: Document | HTMLElement, report: (drag: HandDrag | null) => void): () => void {
+  const doc = root instanceof Document ? root : root.ownerDocument;
+  const win = doc.defaultView;
+  if (!win) return () => {};
+  let pointer: { x: number; y: number } | null = null;
+  let zero: { x: number; y: number } | null = null;
+  let wasAt: { x: number; y: number } | null = null;
+  let lastFrame = win.performance.now();
+  let running = true;
+  let ticking = false;
+
+  const follow = (event: PointerEvent) => { pointer = { x: event.clientX, y: event.clientY }; };
+  /*
+    The loop only turns over while a button is down. Left running it would read
+    layout on every frame of every other measurement on this bench, and an
+    instrument that costs a millisecond of the thing it is timing is worse than
+    no instrument — the first version of this inflated its own frame times by
+    half again.
+  */
+  const begin = (event: PointerEvent) => {
+    follow(event);
+    if (ticking) return;
+    ticking = true;
+    lastFrame = win.performance.now();
+    win.requestAnimationFrame(tick);
+  };
+  const end = () => { ticking = false; zero = null; wasAt = null; report(null); };
+  win.addEventListener('pointermove', follow, { capture: true, passive: true });
+  win.addEventListener('pointerdown', begin, { capture: true, passive: true });
+  win.addEventListener('pointerup', end, { capture: true, passive: true });
+  win.addEventListener('pointercancel', end, { capture: true, passive: true });
+
+  const middleOf = (element: Element) => {
+    const box = element.getBoundingClientRect();
+    return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+  };
+
+  const tick = () => {
+    if (!running || !ticking) return;
+    const now = win.performance.now();
+    const frameMs = now - lastFrame;
+    lastFrame = now;
+    const held = root.querySelector<HTMLElement>('[data-dragging]');
+    if (!held || !pointer) {
+      zero = null;
+      wasAt = null;
+      report(null);
+    } else {
+      const at = middleOf(held);
+      /* Where the pointer sat within the thing when it was picked up: not lag, just where it was grabbed. */
+      if (!zero) zero = { x: pointer.x - at.x, y: pointer.y - at.y };
+      const behind = { x: pointer.x - at.x - zero.x, y: pointer.y - at.y - zero.y };
+      const trailingPx = Math.hypot(behind.x, behind.y);
+      const speed = wasAt ? Math.hypot(pointer.x - wasAt.x, pointer.y - wasAt.y) : 0;
+      wasAt = { x: pointer.x, y: pointer.y };
+      report({
+        label: held.getAttribute('aria-label') ?? 'something',
+        trailingPx: +trailingPx.toFixed(1),
+        speedPxPerFrame: +speed.toFixed(1),
+        msBehind: speed > 0.5 ? +(trailingPx / speed * frameMs).toFixed(1) : 0,
+        frameMs: +frameMs.toFixed(1),
+      });
+    }
+    win.requestAnimationFrame(tick);
+  };
+
+  return () => {
+    running = false;
+    ticking = false;
+    win.removeEventListener('pointermove', follow, { capture: true });
+    win.removeEventListener('pointerdown', begin, { capture: true });
+    win.removeEventListener('pointerup', end, { capture: true });
+    win.removeEventListener('pointercancel', end, { capture: true });
+  };
+}
+
 /** What the desk costs while nobody is touching it. Anything but sixty a second here is something repainting for free. */
 export async function idleCost(root: Document | HTMLElement, frames = 20): Promise<FrameCost> {
   const doc = root instanceof Document ? root : root.ownerDocument;
