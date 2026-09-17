@@ -149,8 +149,7 @@ export const Turning: Story = {
       { coords: swept(pivot, held, 30) },
       { coords: swept(pivot, held, 90) },
     ]);
-    // The turn is worked out once a frame rather than on every report, so it lands on the next one.
-    await waitFor(() => expect(Number.parseFloat(pen.style.getPropertyValue('--movable-rotation'))).toBeCloseTo(START.pen.rotation! + 90, 1));
+    await expect(Number.parseFloat(pen.style.getPropertyValue('--movable-rotation'))).toBeCloseTo(START.pen.rotation! + 90, 1);
     // The handle keeps its place on the box, and the thing has not walked anywhere.
     await expect(grip.getBoundingClientRect().x).toBeCloseTo(box.x, 1);
     await expect(grip.getBoundingClientRect().y).toBeCloseTo(box.y, 1);
@@ -203,7 +202,7 @@ export const Resizing: Story = {
       { coords: along(2) },
       { keys: '[/MouseLeft]', coords: along(2) },
     ]);
-    await waitFor(() => expect(Number(note.style.getPropertyValue('--movable-width').match(/[\d.]+/)![0])).toBeCloseTo(WIDTHS.note * 2, 0));
+    await expect(Number(note.style.getPropertyValue('--movable-width').match(/[\d.]+/)![0])).toBeCloseTo(WIDTHS.note * 2, 0);
     await expect(Math.abs(pivotOf(note).x - pivot.x)).toBeLessThan(2);
     await expect(Math.abs(pivotOf(note).y - pivot.y)).toBeLessThan(2);
     // The keyboard resizes it a step at a time from the handle, and with minus and plus anywhere on it.

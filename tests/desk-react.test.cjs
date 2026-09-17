@@ -192,12 +192,9 @@ test('Movable is picked up by its body, follows the pointer in surface units, an
   assert.match(behavior, /const HELD_CONTROLS = 'input, select, textarea, iframe, video, \[role="slider"\]'/);
   assert.match(behavior, /closest\(grab === 'anywhere' \? HELD_CONTROLS : CONTROLS\)/);
   // The pointer is captured once the press has travelled, and its travel is scaled to units.
-  assert.match(behavior, /Math\.hypot\(event\.clientX - start\.px, event\.clientY - start\.py\) < MOVABLE_DRAG_THRESHOLD\) return;/);
+  assert.match(behavior, /if \(Math\.hypot\(dx, dy\) < MOVABLE_DRAG_THRESHOLD\) return;/);
   assert.match(behavior, /host\.current\?\.setPointerCapture\(start\.id\)/);
-  assert.match(behavior, /move\(\{ x: Math\.round\(start\.x \+ dx \/ perUnit\), y: Math\.round\(start\.y \+ dy \/ perUnit\), rotation: start\.rotation, scale: start\.scale \}\)/);
-  // A pointer reports faster than the screen redraws, so only the latest move is worked out, once a frame.
-  assert.match(behavior, /frame\.current = window\.requestAnimationFrame\(apply\)/);
-  assert.match(behavior, /const flush = \(\) => \{/);
+  assert.match(behavior, /onMove\(\{ x: Math\.round\(start\.x \+ dx \/ perUnit\), y: Math\.round\(start\.y \+ dy \/ perUnit\), rotation: start\.rotation, scale: start\.scale \}\)/);
   assert.match(behavior, /element\.addEventListener\('click', swallow, \{ capture: true, once: true \}\)/);
   // A press is watched to its end on the window, so a release off the thing never leaves it on the pointer.
   assert.match(behavior, /window\.addEventListener\('pointerup', end, true\)/);
