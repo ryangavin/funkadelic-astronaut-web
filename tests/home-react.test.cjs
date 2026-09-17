@@ -7,8 +7,8 @@ const root = path.join(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 test('Stage lays a page out at 1440 design pixels and zooms it as one piece', () => {
-  const component = read('src/components/Stage/Stage.tsx');
-  const css = read('src/components/Stage/Stage.css');
+  const component = read('src/components/2D/Stage/Stage.tsx');
+  const css = read('src/components/2D/Stage/Stage.css');
 
   assert.match(component, /export const STAGE_WIDTH = 1440;/);
   assert.match(component, /new ResizeObserver\(measure\)/);
@@ -32,7 +32,7 @@ test('Home is one 11 x 17 poster on a Stage: the festival map edge to edge, ever
   for (const piece of ['pressKit', 'band', 'tour', 'booking', 'funk', 'astro', 'listen']) for (const axis of ['X', 'Y', 'Rotation', 'Scale']) assert.match(page, new RegExp(`  ${piece}${axis}: -?[\\d.]+,`));
   for (const piece of ['astronaut', 'dossier', 'ticket', 'passes']) for (const axis of ['X', 'Y', 'Rotation', 'Width']) assert.match(page, new RegExp(`  ${piece}${axis}: -?[\\d.]+,`));
   assert.match(page, /<PaperStrip paddingX=\{22\} paddingY=\{12\}>\s+<div className="home__stamps home__stamps--hero">/);
-  assert.match(read('src/components/TourPass/TourPass.data.ts'), /export const TOUR_DATES: \(TourPassProps & \{ color: TourPassColor \}\)\[\] = \[\s+\{ \.\.\.OLIVES_TOUR_PASS_PROPS, color: 'red' \}/);
+  assert.match(read('src/components/2D/TourPass/TourPass.data.ts'), /export const TOUR_DATES: \(TourPassProps & \{ color: TourPassColor \}\)\[\] = \[\s+\{ \.\.\.OLIVES_TOUR_PASS_PROPS, color: 'red' \}/);
   assert.match(page, /<AdmissionTicket \{\.\.\.TOUR_ADMISSION_TICKET_PROPS\} rotation=\{0\} \/>/);
   assert.match(page, /<Pin x=\{at.passesX\} y=\{at.passesY\} width=\{at.passesWidth\} rotation=\{at.passesRotation\}>\s+<TourPasses/);
   assert.match(page, /<Pin x=\{at\.astronautX\} y=\{at\.astronautY\} width=\{at\.astronautWidth\} rotation=\{at\.astronautRotation\}>\s+<Astronaut \/>/);

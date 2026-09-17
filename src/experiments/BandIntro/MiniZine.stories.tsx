@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import festivalSketch from '../../../assets/festival-scribble-fully-shaded.png';
-import { PaperSheet } from '../../components/PaperSheet/PaperSheet';
+import { PaperSheet } from '../../components/2D/PaperSheet/PaperSheet';
 import { MiniZine, ZINE_SPREADS, ZINE_STOCKS } from './MiniZine';
 import { BAND_ZINE_PAGES } from './MiniZine.band';
 

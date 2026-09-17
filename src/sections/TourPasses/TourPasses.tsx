@@ -1,8 +1,8 @@
 import type { CSSProperties } from 'react';
-import { Pin } from '../../components/Pin/Pin';
-import { Stage } from '../../components/Stage/Stage';
-import { TourPass } from '../../components/TourPass/TourPass';
-import { TOUR_DATES } from '../../components/TourPass/TourPass.data';
+import { Pin } from '../../components/2D/Pin/Pin';
+import { Stage } from '../../components/2D/Stage/Stage';
+import { TourPass } from '../../components/2D/TourPass/TourPass';
+import { TOUR_DATES } from '../../components/2D/TourPass/TourPass.data';
 
 export const TOUR_PASSES_WIDTH = 1300;
 export const TOUR_PASSES_HEIGHT = 580;

@@ -7,8 +7,8 @@ const root = path.join(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 test('Walkman is a plain audio element behind piano keys, a segmented display and a turning cassette', () => {
-  const component = read('src/components/Walkman/Walkman.tsx');
-  const css = read('src/components/Walkman/Walkman.css');
+  const component = read('src/components/3D/Walkman/Walkman.tsx');
+  const css = read('src/components/3D/Walkman/Walkman.css');
 
   assert.match(component, /WALKMAN_FINISHES = \['silver', 'blue', 'black'\]/);
   assert.match(component, /WALKMAN_TITLE_CELLS = 10/);
@@ -49,7 +49,7 @@ test('Walkman is a plain audio element behind piano keys, a segmented display an
   assert.match(css, /\.walkman__lcd\[data-blink\] \.segment--colon \{\s+animation: walkman-blink/);
   assert.match(css, /\.walkman__key\[aria-pressed='true'\]/);
 
-  const cassette = read('src/components/Walkman/Cassette.tsx');
+  const cassette = read('src/components/3D/Walkman/Cassette.tsx');
   assert.match(cassette, /const clip = useId\(\)/);
   assert.match(cassette, /<g transform=\{`translate\(\$\{cx\} \$\{AXIS\}\)`\}>\s+<g className="cassette__hub">/);
   assert.ok(fs.existsSync(path.join(root, 'assets', 'audio', 'demo-tape.mp3')));
@@ -57,7 +57,7 @@ test('Walkman is a plain audio element behind piano keys, a segmented display an
 
 test('Segments: the fourteen-segment font, the scrolling window and the tape counter', async () => {
   const { GLYPHS, OUTLINE, SEGMENTS, SCROLL_GAP, counter, encode, litSegments, normalise, scrollLength, titleFrom, window } = await import(
-    '../src/components/Walkman/segments.ts'
+    '../src/components/3D/Walkman/segments.ts'
   );
 
   assert.equal(SEGMENTS.length, 15);

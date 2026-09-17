@@ -4,9 +4,9 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import kevin from '../../../assets/band-22.webp';
 import ryan from '../../../assets/band-13.webp';
 import sam from '../../../assets/band-21.webp';
-import { Folder } from '../../components/Folder/Folder';
-import { Polaroid } from '../../components/Polaroid/Polaroid';
-import { StickyNote } from '../../components/StickyNote/StickyNote';
+import { Folder } from '../../components/2D/Folder/Folder';
+import { Polaroid } from '../../components/2D/Polaroid/Polaroid';
+import { StickyNote } from '../../components/2D/StickyNote/StickyNote';
 import { SPILL_FLIGHT_MS, SPILL_STAGGER_MS, Spill, Spilled } from './Spill';
 
 const meta = {

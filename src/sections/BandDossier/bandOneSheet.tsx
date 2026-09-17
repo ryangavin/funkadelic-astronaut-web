@@ -1,6 +1,6 @@
 import performance from '../../../assets/performance.webp';
 import { BAND_MEMBER_PACKETS, BAND_PACKET, LIVE_SET } from './bandMembers';
-import { type OneSheetContent, OneSheetColumns, OneSheetFacts, OneSheetFoot, OneSheetHeading, OneSheetLetterhead, OneSheetNote, OneSheetPhoto, OneSheetPhotoSpill, OneSheetTag, OneSheetText } from '../../components/OneSheet/OneSheet';
+import { type OneSheetContent, OneSheetColumns, OneSheetFacts, OneSheetFoot, OneSheetHeading, OneSheetLetterhead, OneSheetNote, OneSheetPhoto, OneSheetPhotoSpill, OneSheetTag, OneSheetText } from '../../components/2D/OneSheet/OneSheet';
 
 const PARTS = ['Keys', 'Drums', 'Bass & vocals'];
 

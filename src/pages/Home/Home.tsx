@@ -1,15 +1,15 @@
 import type React from 'react';
 import festivalMap from '../../../assets/festival-map.webp';
-import { AdmissionTicket, TOUR_ADMISSION_TICKET_PROPS } from '../../components/AdmissionTicket/AdmissionTicket';
-import { Astronaut } from '../../components/Astronaut/Astronaut';
-import { PaperSheet } from '../../components/PaperSheet/PaperSheet';
-import { PaperStrip } from '../../components/PaperStrip/PaperStrip';
-import { Pin } from '../../components/Pin/Pin';
-import { Ribbon } from '../../components/Ribbon/Ribbon';
-import { SocialIcon, type SocialPlatform } from '../../components/SocialIcon/SocialIcon';
-import { STAGE_WIDTH, Stage, type StageProps } from '../../components/Stage/Stage';
+import { AdmissionTicket, TOUR_ADMISSION_TICKET_PROPS } from '../../components/2D/AdmissionTicket/AdmissionTicket';
+import { Astronaut } from '../../components/2D/Astronaut/Astronaut';
+import { PaperSheet } from '../../components/2D/PaperSheet/PaperSheet';
+import { PaperStrip } from '../../components/2D/PaperStrip/PaperStrip';
+import { Pin } from '../../components/2D/Pin/Pin';
+import { Ribbon } from '../../components/2D/Ribbon/Ribbon';
+import { SocialIcon, type SocialPlatform } from '../../components/2D/SocialIcon/SocialIcon';
+import { STAGE_WIDTH, Stage, type StageProps } from '../../components/2D/Stage/Stage';
 import { TourPasses, TOUR_PASSES_LAYOUT } from '../../sections/TourPasses/TourPasses';
-import { Wordmark } from '../../components/Wordmark/Wordmark';
+import { Wordmark } from '../../components/2D/Wordmark/Wordmark';
 import { BandDossier } from '../../sections/BandDossier/BandDossier';
 import '../../styles/fonts.css';
 import './Home.css';
@@ -44,7 +44,7 @@ export const LISTEN_INKS: Partial<Record<SocialPlatform, string>> = { applemusic
 
 export const BOOKING_HREF = 'mailto:samluba1@gmail.com?subject=Funkadelic%20Astronaut%20Booking';
 
-export { TOUR_DATES } from '../../components/TourPass/TourPass.data';
+export { TOUR_DATES } from '../../components/2D/TourPass/TourPass.data';
 
 /**
  * Where everything is pinned, in design pixels from the poster's top left, with

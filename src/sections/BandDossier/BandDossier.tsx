@@ -1,10 +1,10 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { Stack, type StackProps } from '../../behaviors/Stack/Stack';
-import { Folder, type FolderStock } from '../../components/Folder/Folder';
-import { OneSheet, type OneSheetContent } from '../../components/OneSheet/OneSheet';
-import { Packet } from '../../components/Packet/Packet';
-import { Polaroid } from '../../components/Polaroid/Polaroid';
-import { Walkman } from '../../components/Walkman/Walkman';
+import { Folder, type FolderStock } from '../../components/2D/Folder/Folder';
+import { OneSheet, type OneSheetContent } from '../../components/2D/OneSheet/OneSheet';
+import { Packet } from '../../components/2D/Packet/Packet';
+import { Polaroid } from '../../components/2D/Polaroid/Polaroid';
+import { Walkman } from '../../components/3D/Walkman/Walkman';
 import { BAND_MEMBER_PACKETS, DEMO_TAPE, LIVE_SET, type LiveSet, type MemberPacket, type Tape } from './bandMembers';
 import { BAND_ONE_SHEET } from './bandOneSheet';
 import './BandDossier.css';

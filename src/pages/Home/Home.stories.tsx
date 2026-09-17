@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, waitFor, within } from 'storybook/test';
-import { STAGE_WIDTH } from '../../components/Stage/Stage';
+import { STAGE_WIDTH } from '../../components/2D/Stage/Stage';
 import { HOME_HEIGHT, HOME_LAYOUT, Home } from './Home';
 
 /* The widths worth checking: the design width, common laptops either side of it, a big monitor, and a phone. */

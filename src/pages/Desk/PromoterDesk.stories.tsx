@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
-import { DESK_WOODS } from '../../components/Desk/Desk';
+import { DESK_WOODS } from '../../components/3D/Desk/Desk';
 import { DESK_LAYOUT, PromoterDesk, REAL_WIDTHS, SIZES } from './PromoterDesk';
 
 const viewports = {

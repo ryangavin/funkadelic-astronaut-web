@@ -7,8 +7,8 @@ const root = path.join(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 test('Desk is a wooden top in sheet units whose surface measures against the desk itself', () => {
-  const component = read('src/components/Desk/Desk.tsx');
-  const css = read('src/components/Desk/Desk.css');
+  const component = read('src/components/3D/Desk/Desk.tsx');
+  const css = read('src/components/3D/Desk/Desk.css');
 
   assert.match(component, /DESK_WOODS = \['walnut', 'oak', 'ebony', 'cherry'\]/);
   assert.match(component, /boards = 1, light = 1, edge = 22/);
@@ -31,7 +31,7 @@ test('Desk is a wooden top in sheet units whose surface measures against the des
 });
 
 test('The desk things: mug, ring, pens, sticky note and pick, each sized by its parent', () => {
-  const mug = read('src/components/Mug/Mug.tsx');
+  const mug = read('src/components/3D/Mug/Mug.tsx');
   assert.match(mug, /coffee = 0\.7/);
   assert.match(mug, /const surface = 54 - \(1 - level\) \* 5/);
   assert.doesNotMatch(mug, /className="mug__(shadow|footing)"/);
@@ -39,12 +39,12 @@ test('The desk things: mug, ring, pens, sticky note and pick, each sized by its 
   assert.match(mug, /className="mug__handle"/);
   assert.match(mug, /level > 0\.02 \? \(/);
   assert.match(mug, /className="mug__dregs"/);
-  const ring = read('src/components/Mug/CoffeeRing.tsx');
+  const ring = read('src/components/3D/Mug/CoffeeRing.tsx');
   assert.match(ring, /strokeDasharray=/);
   // The ring turns inside its box, so what was lying over the surface can be cut out of it in the box's own frame.
   assert.match(ring, /<path d=\{cut\} clipRule="evenodd" \/>/);
   assert.match(ring, /transform=\{`rotate\(\$\{rotation\} 100 100\)`\}/);
-  const mugCss = read('src/components/Mug/Mug.css');
+  const mugCss = read('src/components/3D/Mug/Mug.css');
   assert.match(mugCss, /\.coffee-ring \{[\s\S]+?mix-blend-mode: multiply/);
   assert.match(mugCss, /\.coffee-ring \{[\s\S]+?transition: opacity 1400ms/);
   assert.match(mugCss, /\.stained__rings \{[\s\S]+?overflow: clip/);
@@ -52,10 +52,10 @@ test('The desk things: mug, ring, pens, sticky note and pick, each sized by its 
 });
 
 test('The mug lays its ring down as it is set down, on everything it is standing on, and the rings dry where they lie', () => {
-  const trail = read('src/components/Mug/trail.ts');
+  const trail = read('src/components/3D/Mug/trail.ts');
 
   // The ring is the mug's base, which is off the centre of its box, so turning the mug swings the ring round with it.
-  assert.match(read('src/components/Mug/Mug.tsx'), /MUG_FOOT = \{ x: 104 \/ 240, y: 120 \/ 240 \}/);
+  assert.match(read('src/components/3D/Mug/Mug.tsx'), /MUG_FOOT = \{ x: 104 \/ 240, y: 120 \/ 240 \}/);
   assert.match(trail, /import \{ MUG_FOOT \} from '\.\/Mug';/);
   assert.match(trail, /MUG_RING = 83 \/ 140/);
   assert.match(trail, /const centreX = x \+ width \/ 2 \+ offsetX \* Math\.cos\(turn\) - offsetY \* Math\.sin\(turn\)/);
@@ -76,7 +76,7 @@ test('The mug lays its ring down as it is set down, on everything it is standing
   assert.match(trail, /const drying = rings\.filter\(\(ring\) => ring\.strength > 0\)\.map\(dry\);/);
   assert.match(trail, /return \{ \.\.\.ring, strength: left < COFFEE_GONE \? 0 : left \};/);
 
-  const stained = read('src/components/Mug/Stained.tsx');
+  const stained = read('src/components/3D/Mug/Stained.tsx');
   assert.match(stained, /<div className="stained__rings" aria-hidden="true">/);
   assert.match(stained, /<CoffeeRing strength=\{ring\.strength\} rotation=\{ring\.rotation\} masks=\{ring\.masks\} \/>/);
 });
@@ -103,39 +103,39 @@ test('The office inkjet: a smaller gamut, ink into the fibre, a dither and the h
   const page = read('src/pages/Desk/PromoterDesk.tsx');
   assert.match(page, /<Inkjet className="site-plan__print" seed=\{3\}>\s+<img className="site-plan__map"/);
 
-  const pen = read('src/components/Pen/Pen.tsx');
+  const pen = read('src/components/3D/Pen/Pen.tsx');
   assert.match(pen, /PEN_KINDS = \['ballpoint', 'marker', 'pencil'\]/);
   assert.match(pen, /viewBox="0 0 720 60"/);
   assert.match(pen, /className="pen__tube"/);
   assert.match(pen, /className="pen__lead"/);
-  const penCss = read('src/components/Pen/Pen.css');
+  const penCss = read('src/components/3D/Pen/Pen.css');
   assert.match(penCss, /\.pen \{[\s\S]+?--pen-unit: calc\(100cqw \/ 720\)/);
   assert.match(penCss, /\.pen \{[\s\S]+?aspect-ratio: 720 \/ 60/);
   // The shadow uses the pen's own units, which only its children can measure.
   assert.match(penCss, /\.pen svg \{[\s\S]+?filter: drop-shadow\(calc\(3 \* var\(--pen-unit\)\)/);
 
-  const note = read('src/components/StickyNote/StickyNote.tsx');
+  const note = read('src/components/2D/StickyNote/StickyNote.tsx');
   assert.match(note, /STICKY_NOTE_COLORS = \['canary', 'pink', 'blue', 'green', 'orange'\]/);
   assert.match(note, /curl = 'right'/);
   assert.match(note, /className="sticky-note__curl"/);
-  const noteCss = read('src/components/StickyNote/StickyNote.css');
+  const noteCss = read('src/components/2D/StickyNote/StickyNote.css');
   assert.match(noteCss, /--sticky-note-unit: calc\(100cqw \/ 720\)/);
   assert.match(noteCss, /\.sticky-note\[data-curl='right'\] \.sticky-note__paper \{\s+clip-path: polygon/);
   assert.match(noteCss, /\.sticky-note \{[\s\S]+?font-family: var\(--font-handwritten/);
 
-  const clock = read('src/components/DeskClock/DeskClock.tsx');
+  const clock = read('src/components/3D/DeskClock/DeskClock.tsx');
   assert.match(clock, /export function readout\(at: Date, hours: 12 \| 24\)/);
   assert.match(clock, /<SegmentDisplay className="desk-clock__time" text=\{time\} kind="digit" \/>/);
   assert.match(clock, /role="timer"/);
   assert.match(clock, /const wallClock = \(\) => new Date\(\);/);
   assert.match(clock, /now = wallClock, running = true/);
-  const clockCss = read('src/components/DeskClock/DeskClock.css');
+  const clockCss = read('src/components/3D/DeskClock/DeskClock.css');
   assert.match(clockCss, /aspect-ratio: 720 \/ 560/);
   // The digits span the panel: both rows sized by width, with a selector that outranks the Walkman's display rule.
   assert.match(clockCss, /\.desk-clock \.desk-clock__time,\s+\.desk-clock \.desk-clock__date \{\s+width: 100%;\s+height: auto;/);
   assert.match(clockCss, /\.desk-clock__row \{\s+display: grid;\s+grid-template-columns: auto 1fr;/);
   assert.doesNotMatch(clockCss, /\.desk-clock \.segment-display \{/);
-  const cradle = read('src/components/NewtonsCradle/NewtonsCradle.tsx');
+  const cradle = read('src/components/3D/NewtonsCradle/NewtonsCradle.tsx');
   assert.match(cradle, /CRADLE_BALLS = \[140, 250, 360, 470, 580\]/);
   assert.match(cradle, /aria-label=\{swinging \? 'Stop the cradle' : 'Set the cradle going'\}/);
   assert.match(cradle, /band\.type = 'bandpass'/);
@@ -143,28 +143,28 @@ test('The office inkjet: a smaller gamut, ink into the fibre, a dither and the h
   assert.match(cradle, /CRADLE_RAILS = \[90, 510\]/);
   assert.match(cradle, /angle: \(Math\.atan\(CRADLE_SWING \/ \(CRADLE_REST - CRADLE_RAILS\[0\]\)\) \* 180\) \/ Math\.PI/);
   assert.match(cradle, /<line className="newtons-cradle__string newtons-cradle__string--top" x1=\{cx\} y1=\{CRADLE_RAILS\[0\]\} x2=\{cx\} y2=\{CRADLE_REST\} style=\{\{ transformOrigin: `\$\{cx\}px \$\{CRADLE_RAILS\[0\]\}px` \}\} \/>/);
-  const cradleCss = read('src/components/NewtonsCradle/NewtonsCradle.css');
+  const cradleCss = read('src/components/3D/NewtonsCradle/NewtonsCradle.css');
   assert.match(cradleCss, /\.newtons-cradle__string \{\s+transform-box: view-box;/);
   assert.match(cradleCss, /@keyframes cradle-swing-left \{[\s\S]+?translate: calc\(-1 \* var\(--cradle-swing\)\) 0;\s+scale: 1\.14/);
   assert.match(cradleCss, /@keyframes cradle-string-left-top \{[\s\S]+?transform: rotate\(var\(--cradle-string-angle\)\) scaleY\(var\(--cradle-string-stretch\)\)/);
   assert.match(cradleCss, /@keyframes cradle-string-right-bottom \{[\s\S]+?transform: rotate\(var\(--cradle-string-angle\)\) scaleY\(var\(--cradle-string-stretch\)\)/);
 
-  const lamp = read('src/components/DeskLamp/DeskLamp.tsx');
+  const lamp = read('src/components/3D/DeskLamp/DeskLamp.tsx');
   assert.match(lamp, /DESK_LAMP_SHADE = \{ x: 200, y: 420, radius: 130 \}/);
   assert.match(lamp, /aria-label=\{on \? 'Turn the lamp off' : 'Turn the lamp on'\}/);
   assert.match(lamp, /export function LampLight\(/);
-  assert.match(read('src/components/DeskLamp/DeskLamp.css'), /\.lamp-light \{[\s\S]+?mix-blend-mode: screen/);
+  assert.match(read('src/components/3D/DeskLamp/DeskLamp.css'), /\.lamp-light \{[\s\S]+?mix-blend-mode: screen/);
 
   // Each platform carries its own colour, and a sticker wears it unless told otherwise.
-  const platforms = read('src/components/SocialIcon/platforms.ts');
+  const platforms = read('src/components/2D/SocialIcon/platforms.ts');
   for (const [platform, brand] of [['facebook', '#4a78b8'], ['spotify', '#2f9a58'], ['youtube', '#c9352e'], ['bandcamp', '#3f94b0']]) {
     assert.match(platforms, new RegExp(`${platform}: \\{\\n    label: '[^']+',\\n    brand: '${brand}',`), platform);
   }
   assert.match(platforms, /gradient: \['#e0b84a', '#c9457a', '#6f4bb5'\]/);
-  assert.match(read('src/components/Sticker/SocialSticker.tsx'), /ink = 'brand', worn = false, print = 'flat'/);
-  assert.match(read('src/components/SocialIcon/SocialIcon.tsx'), /const color = ink === 'brand' \? brand :/);
+  assert.match(read('src/components/2D/Sticker/SocialSticker.tsx'), /ink = 'brand', worn = false, print = 'flat'/);
+  assert.match(read('src/components/2D/SocialIcon/SocialIcon.tsx'), /const color = ink === 'brand' \? brand :/);
   // A keyline round the print, and a liner to lie on.
-  const sticker = read('src/components/Sticker/Sticker.tsx');
+  const sticker = read('src/components/2D/Sticker/Sticker.tsx');
   assert.match(sticker, /border = 1\.3,\s+keyline = 0\.4,\s+backing = false,/);
   assert.match(sticker, /const DEFAULT_LINER = 2\.4;/);
   assert.match(sticker, /\{keyline > 0 && <use href=\{outline\} fill="none" stroke="#121420" strokeWidth=\{2 \* keyline\} \/>\}/);
@@ -172,12 +172,12 @@ test('The office inkjet: a smaller gamut, ink into the fibre, a dither and the h
   assert.match(sticker, /\{liner > 0 && \(\s+<svg className="sticker__layer sticker__sheet"/);
   assert.match(sticker, /<\/svg>\s+\)\}\s+\{\/\* The vinyl on the surface/);
   // A flat social print draws past its square, so the wide marks fill the vinyl cut for them.
-  assert.match(read('src/components/SocialIcon/SocialIcon.css'), /\.social-icon--flat \.social-icon__mark \{\s+overflow: visible;/);
+  assert.match(read('src/components/2D/SocialIcon/SocialIcon.css'), /\.social-icon--flat \.social-icon__mark \{\s+overflow: visible;/);
 
-  const pick = read('src/components/GuitarPick/GuitarPick.tsx');
+  const pick = read('src/components/3D/GuitarPick/GuitarPick.tsx');
   assert.match(pick, /viewBox="0 0 100 116"/);
   assert.match(pick, /print = 'FA'/);
-  assert.match(read('src/components/GuitarPick/GuitarPick.css'), /aspect-ratio: 100 \/ 116/);
+  assert.match(read('src/components/3D/GuitarPick/GuitarPick.css'), /aspect-ratio: 100 \/ 116/);
 });
 
 test('Movable is picked up by its body, follows the pointer in surface units, and never ends a drag in a click', () => {

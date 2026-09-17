@@ -4,7 +4,7 @@ import performance from '../../../assets/performance.webp';
 import ryan from '../../../assets/band-13.webp';
 import sam from '../../../assets/band-21.webp';
 import type { ReactNode } from 'react';
-import type { PacketProps } from '../../components/Packet/Packet';
+import type { PacketProps } from '../../components/2D/Packet/Packet';
 import { KEVIN_SIGNATURE, RYAN_SIGNATURE, SAM_SIGNATURE } from './signatures';
 
 export type LiveSet = {

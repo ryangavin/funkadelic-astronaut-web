@@ -78,8 +78,8 @@ test('MiniZine is eight photocopied pages on four leaves that hinge on the spine
 });
 
 test('OneSheet is a letter page Z-folded in three, with the lower panels hung from the creases', () => {
-  const component = read('src/components/OneSheet/OneSheet.tsx');
-  const css = read('src/components/OneSheet/OneSheet.css');
+  const component = read('src/components/2D/OneSheet/OneSheet.tsx');
+  const css = read('src/components/2D/OneSheet/OneSheet.css');
 
   assert.match(component, /ONE_SHEET_STOCKS = \['bond', 'ivory', 'grey'\]/);
   // The middle panel is inside the top one, the bottom inside the middle, so the fold's geometry is the nesting.

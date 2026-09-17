@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { PLAN_VIEW, STANDING_VIEW } from '../../behaviors/Perspective/Perspective';
-import { DESK_WOODS } from '../../components/Desk/Desk';
+import { DESK_WOODS } from '../../components/3D/Desk/Desk';
 import { DESK_DEPTH, DESK_LAYOUT, PerspectiveDesk } from './PerspectiveDesk';
 
 const viewports = {

@@ -2,11 +2,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import ryan from '../../../assets/band-13.webp';
-import { Mug } from '../../components/Mug/Mug';
-import { PaperSheet } from '../../components/PaperSheet/PaperSheet';
-import { Pen } from '../../components/Pen/Pen';
-import { Polaroid } from '../../components/Polaroid/Polaroid';
-import { StickyNote } from '../../components/StickyNote/StickyNote';
+import { Mug } from '../../components/3D/Mug/Mug';
+import { PaperSheet } from '../../components/2D/PaperSheet/PaperSheet';
+import { Pen } from '../../components/3D/Pen/Pen';
+import { Polaroid } from '../../components/2D/Polaroid/Polaroid';
+import { StickyNote } from '../../components/2D/StickyNote/StickyNote';
 import { MOVABLE_KEY_STEP, MOVABLE_KEY_TURN, MOVABLE_SCRUB_TURN, Movable, MovableScale, type Place } from './Movable';
 
 const meta = {

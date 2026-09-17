@@ -7,8 +7,8 @@ const root = path.join(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 test('Handheld is a widescreen games console whose screen plays the disc through the embedded player', () => {
-  const component = read('src/components/Handheld/Handheld.tsx');
-  const css = read('src/components/Handheld/Handheld.css');
+  const component = read('src/components/3D/Handheld/Handheld.tsx');
+  const css = read('src/components/3D/Handheld/Handheld.css');
 
   assert.match(component, /HANDHELD_FINISHES = \['black', 'silver', 'white'\]/);
   assert.match(component, /HANDHELD_SEEK_SECONDS = 10/);
@@ -47,7 +47,7 @@ test('Handheld is a widescreen games console whose screen plays the disc through
 
 test('Player wire: the disc address, the messages, the clock and the volume steps', async () => {
   const { YOUTUBE_ORIGIN, clock, command, discTitle, listening, modeOf, parseMessage, stepVolume, youTubeDisc } = await import(
-    '../src/components/Handheld/player.ts'
+    '../src/components/3D/Handheld/player.ts'
   );
 
   const disc = new URL(youTubeDisc('iVZmXA27KfA', 'http://localhost:6006'));

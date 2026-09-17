@@ -7,8 +7,8 @@ const root = path.join(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 test('PaperSheet reuses the site torn edge and positions against a 1440 reference width', () => {
-  const sheet = read('src/components/PaperSheet/PaperSheet.tsx');
-  const sheetCss = read('src/components/PaperSheet/PaperSheet.css');
+  const sheet = read('src/components/2D/PaperSheet/PaperSheet.tsx');
+  const sheetCss = read('src/components/2D/PaperSheet/PaperSheet.css');
   const edge = read('src/styles/torn-edge.css');
 
   assert.match(sheet, /className="paper-sheet torn-edge"/);
@@ -24,8 +24,8 @@ test('PaperSheet reuses the site torn edge and positions against a 1440 referenc
 });
 
 test('Pin places children in sheet units', () => {
-  const pin = read('src/components/Pin/Pin.tsx');
-  const pinCss = read('src/components/Pin/Pin.css');
+  const pin = read('src/components/2D/Pin/Pin.tsx');
+  const pinCss = read('src/components/2D/Pin/Pin.css');
 
   assert.match(pin, /'--pin-x': x/);
   assert.match(pinCss, /position: absolute/);
@@ -33,8 +33,8 @@ test('Pin places children in sheet units', () => {
 });
 
 test('PaperSheet prints an optional image onto the stock underneath the content', () => {
-  const sheet = read('src/components/PaperSheet/PaperSheet.tsx');
-  const sheetCss = read('src/components/PaperSheet/PaperSheet.css');
+  const sheet = read('src/components/2D/PaperSheet/PaperSheet.tsx');
+  const sheetCss = read('src/components/2D/PaperSheet/PaperSheet.css');
 
   assert.match(sheet, /imageSrc\?: string/);
   assert.match(sheet, /const image = imageSrc \? \([\s\S]+?className="paper-sheet__image"/);

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import festivalSketch from '../../../assets/festival-scribble-fully-shaded.png';
-import { PaperSheet } from '../../components/PaperSheet/PaperSheet';
+import { PaperSheet } from '../../components/2D/PaperSheet/PaperSheet';
 import { HANDBILL_SIDES, HANDBILL_SPOTS, HANDBILL_STOCKS, Handbill } from './Handbill';
 import { BAND_HANDBILL_BACK, BAND_HANDBILL_FRONT } from './Handbill.band';
 

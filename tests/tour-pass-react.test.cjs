@@ -7,8 +7,8 @@ const root = path.join(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 test('React tour pass preserves the complete Olive’s artist pass', () => {
-  const component = read('src/components/TourPass/TourPass.tsx');
-  const css = read('src/components/TourPass/TourPass.css');
+  const component = read('src/components/2D/TourPass/TourPass.tsx');
+  const css = read('src/components/2D/TourPass/TourPass.css');
 
   for (const content of [
     '2026-09-18',
@@ -29,7 +29,7 @@ test('React tour pass preserves the complete Olive’s artist pass', () => {
   // Every pass is one size: the card has a fixed height and long venue names step down instead of wrapping it taller.
   assert.match(component, /export const venueFit = \(venue: string\): VenueFit => \(venue\.length <= 12 \? 'short' : venue\.length <= 22 \? 'medium' : 'long'\)/);
   assert.match(component, /<p className="tour-pass__venue" data-fit=\{venueFit\(venue\)\}>/);
-  const passCss = read('src/components/TourPass/TourPass.css');
+  const passCss = read('src/components/2D/TourPass/TourPass.css');
   assert.match(passCss, /\.tour-pass \{[\s\S]+?height: calc\(540 \* var\(--u\)\);/);
   assert.doesNotMatch(passCss, /min-height: calc\(540/);
   assert.match(component, /actionHref \? \([\s\S]+?<a[\s\S]+?: \([\s\S]+?<span/);

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { SocialIcon } from '../../components/SocialIcon/SocialIcon';
+import { SocialIcon } from '../../components/2D/SocialIcon/SocialIcon';
 import { Distressed } from './Distressed';
 import '../../styles/cutout-ink.css';
 

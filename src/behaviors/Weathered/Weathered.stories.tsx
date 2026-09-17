@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { IndexCard } from '../../components/IndexCard/IndexCard';
-import { Polaroid } from '../../components/Polaroid/Polaroid';
+import { IndexCard } from '../../components/2D/IndexCard/IndexCard';
+import { Polaroid } from '../../components/2D/Polaroid/Polaroid';
 import ryan from '../../../assets/band-13.webp';
 import { Weathered } from './Weathered';
 

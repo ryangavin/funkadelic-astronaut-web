@@ -1,6 +1,6 @@
 import type React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { SocialIcon } from '../components/SocialIcon/SocialIcon';
+import { SocialIcon } from '../components/2D/SocialIcon/SocialIcon';
 import '../styles/cutout-ink.css';
 
 type CutoutInkDemoProps = {

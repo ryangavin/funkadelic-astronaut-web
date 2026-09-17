@@ -2,14 +2,14 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState, type ComponentProps } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 import { Movable, type Place } from '../Movable/Movable';
-import { Desk } from '../../components/Desk/Desk';
-import { DeskClock } from '../../components/DeskClock/DeskClock';
-import { MUG_FOOT, MUG_HEIGHT, MUG_WIDTH, Mug } from '../../components/Mug/Mug';
-import { DeskLamp, LampLight } from '../../components/DeskLamp/DeskLamp';
+import { Desk } from '../../components/3D/Desk/Desk';
+import { DeskClock } from '../../components/3D/DeskClock/DeskClock';
+import { MUG_FOOT, MUG_HEIGHT, MUG_WIDTH, Mug } from '../../components/3D/Mug/Mug';
+import { DeskLamp, LampLight } from '../../components/3D/DeskLamp/DeskLamp';
 import { DeskLighting, useDeskLight } from '../DeskLighting/DeskLighting';
-import { MugShadow, mugShadowProjection } from '../../components/Mug/MugShadow';
-import { Pen } from '../../components/Pen/Pen';
-import { StickyNote } from '../../components/StickyNote/StickyNote';
+import { MugShadow, mugShadowProjection } from '../../components/3D/Mug/MugShadow';
+import { Pen } from '../../components/3D/Pen/Pen';
+import { StickyNote } from '../../components/2D/StickyNote/StickyNote';
 import { GENTLE_VIEW, GENTLE_DEPTH, PLAN_VIEW, Perspective, STANDING_VIEW, Solid, Standing } from './Perspective';
 
 const meta = {

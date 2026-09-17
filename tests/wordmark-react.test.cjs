@@ -12,7 +12,7 @@ const hidden = /<span class="printed-wordmark__text">[^<]*<\/span>/g;
 const visibleText = (html) => html.replace(hidden, '').replace(/<[^>]+>/g, '');
 
 test('Wordmark splits printed text into independent glyphs while words and reading stay intact', async () => {
-  const { printGlyphs, GLYPH_CLASS } = await import('../src/components/Wordmark/glyphs.ts');
+  const { printGlyphs, GLYPH_CLASS } = await import('../src/components/2D/Wordmark/glyphs.ts');
   const html = render(printGlyphs('GOOD MUSIC'));
 
   assert.equal(html.match(hidden)[0], '<span class="printed-wordmark__text">GOOD MUSIC</span>');
@@ -28,7 +28,7 @@ test('Wordmark splits printed text into independent glyphs while words and readi
 });
 
 test('Wordmark splits text inside supplied markup and moves artwork as one print', async () => {
-  const { printGlyphs, GLYPH_CLASS } = await import('../src/components/Wordmark/glyphs.ts');
+  const { printGlyphs, GLYPH_CLASS } = await import('../src/components/2D/Wordmark/glyphs.ts');
   const Custom = ({ children }) => React.createElement('em', null, children);
   const html = render(printGlyphs(React.createElement('span', { className: 'row' },
     React.createElement('svg', { className: 'icon' }), 'LIVE', React.createElement(Custom, null, 'NOW'))));
@@ -40,8 +40,8 @@ test('Wordmark splits text inside supplied markup and moves artwork as one print
 });
 
 test('Wordmark wires its jitter prop to every glyph on one shared cadence', () => {
-  const wordmark = read('src/components/Wordmark/Wordmark.tsx');
-  const css = read('src/components/Wordmark/Wordmark.css');
+  const wordmark = read('src/components/2D/Wordmark/Wordmark.tsx');
+  const css = read('src/components/2D/Wordmark/Wordmark.css');
   const motion = read('src/behaviors/Jitter/motion.ts');
 
   assert.match(wordmark, /jitter\?: boolean \| JitterOptions/);

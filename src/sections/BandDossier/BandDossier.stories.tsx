@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import festivalSketch from '../../../assets/festival-scribble-fully-shaded.png';
-import { FOLDER_STOCKS } from '../../components/Folder/Folder';
-import { PaperSheet } from '../../components/PaperSheet/PaperSheet';
+import { FOLDER_STOCKS } from '../../components/2D/Folder/Folder';
+import { PaperSheet } from '../../components/2D/PaperSheet/PaperSheet';
 import { BandDossier, DOSSIER_PLACEMENT } from './BandDossier';
 
 const percent = (category: string, min = 0, max = 100) => (({

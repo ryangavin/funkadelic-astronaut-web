@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Astronaut } from '../../components/Astronaut/Astronaut';
+import { Astronaut } from '../../components/2D/Astronaut/Astronaut';
 import { Jitter } from './Jitter';
 
 const meta = {

@@ -7,8 +7,8 @@ const root = path.join(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 test('Polaroid is a captioned figure with the two instant-film formats', () => {
-  const component = read('src/components/Polaroid/Polaroid.tsx');
-  const css = read('src/components/Polaroid/Polaroid.css');
+  const component = read('src/components/2D/Polaroid/Polaroid.tsx');
+  const css = read('src/components/2D/Polaroid/Polaroid.css');
 
   assert.match(component, /POLAROID_FORMATS = \['square', 'wide'\]/);
   assert.match(component, /<figure className="polaroid__card" data-plain=/);
@@ -24,7 +24,7 @@ test('Polaroid is a captioned figure with the two instant-film formats', () => {
   // Laid out larger by the scale and scaled back down, so YouTube's fixed-pixel buttons shrink while the picture still covers.
   assert.match(css, /\.polaroid__player \{[\s\S]+?width: calc\(max\(100%, 100cqh \* 16 \/ 9\) \/ var\(--polaroid-player-scale\)\);\s+height: calc\(max\(100cqh, 100cqw \* 9 \/ 16\) \/ var\(--polaroid-player-scale\) \+ 2 \* var\(--polaroid-chrome\)\);\s+translate: -50% -50%;\s+scale: var\(--polaroid-player-scale\);/);
   assert.doesNotMatch(css, /\.polaroid__player \{[\s\S]+?pointer-events: none/, 'a click on the picture plays or pauses');
-  assert.ok(!fs.existsSync(path.join(root, 'src/components/Polaroid/stream.ts')), 'the HLS player is gone: the live set is embedded from YouTube');
+  assert.ok(!fs.existsSync(path.join(root, 'src/components/2D/Polaroid/stream.ts')), 'the HLS player is gone: the live set is embedded from YouTube');
   assert.match(read('src/sections/BandDossier/bandMembers.tsx'), /LIVE_SET: LiveSet = \{\s+video: WHAT_TO_DO,/);
   assert.match(read('src/sections/BandDossier/bandMembers.tsx'), /WHAT_TO_DO = 'https:\/\/www\.youtube\.com\/watch\?v=iVZmXA27KfA'/);
   assert.match(component, /<img className="polaroid__photo" src=\{src\} alt=\{alt\} \/>/);
@@ -38,7 +38,7 @@ test('Polaroid is a captioned figure with the two instant-film formats', () => {
 });
 
 test('YouTube links resolve to a muted, looping, privacy-enhanced player', async () => {
-  const { youTubeId, youTubePreview } = await import('../src/components/Polaroid/embed.ts');
+  const { youTubeId, youTubePreview } = await import('../src/components/2D/Polaroid/embed.ts');
 
   for (const url of [
     'https://www.youtube.com/watch?v=iVZmXA27KfA',
@@ -69,7 +69,7 @@ test('YouTube links resolve to a muted, looping, privacy-enhanced player', async
 });
 
 test('Polaroid prints its photo like dye film: cropped to a focus, blacks lifted, recessed under gloss', () => {
-  const css = read('src/components/Polaroid/Polaroid.css');
+  const css = read('src/components/2D/Polaroid/Polaroid.css');
 
   assert.match(css, /object-position: var\(--polaroid-focus\)/);
   assert.match(css, /\.polaroid__fade::before \{[\s\S]+?mix-blend-mode: lighten/);

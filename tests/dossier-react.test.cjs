@@ -7,8 +7,8 @@ const root = path.join(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 test('IndexCard sets type on printed rules and keeps clear of a clipped photo', () => {
-  const component = read('src/components/IndexCard/IndexCard.tsx');
-  const css = read('src/components/IndexCard/IndexCard.css');
+  const component = read('src/components/2D/IndexCard/IndexCard.tsx');
+  const css = read('src/components/2D/IndexCard/IndexCard.css');
 
   assert.match(component, /INDEX_CARD_SIZES = \['4x6', '3x5'\]/);
   assert.match(component, /<Weathered className="index-card__sheet" grain>/);
@@ -38,8 +38,8 @@ test('IndexCard sets type on printed rules and keeps clear of a clipped photo', 
 });
 
 test('Folder hinges its cover on the spine and carries a tab on the back leaf', () => {
-  const component = read('src/components/Folder/Folder.tsx');
-  const css = read('src/components/Folder/Folder.css');
+  const component = read('src/components/2D/Folder/Folder.tsx');
+  const css = read('src/components/2D/Folder/Folder.css');
 
   assert.match(component, /FOLDER_STOCKS = \['manila', 'kraft', 'green'\]/);
   assert.match(component, /<Weathered className="folder__leaf folder__back" patina=\{0\.5\} flecks=\{0\.5\}>/);
@@ -56,7 +56,7 @@ test('Folder hinges its cover on the spine and carries a tab on the back leaf', 
 });
 
 test('Packet clips a Polaroid over an IndexCard and marks the print for the stack to lag', () => {
-  const component = read('src/components/Packet/Packet.tsx');
+  const component = read('src/components/2D/Packet/Packet.tsx');
 
   assert.match(component, /PACKET_RATIO = '720 \/ 480'/);
   assert.match(component, /<IndexCard \{\.\.\.cardProps\} clearance=\{clearance\}>\s+\{children\}\s+\{factList\}/);
@@ -64,8 +64,8 @@ test('Packet clips a Polaroid over an IndexCard and marks the print for the stac
   assert.match(component, /<div className="packet__photo" data-stack-lag="">\s+<Polaroid \{\.\.\.photo\} \/>/);
   assert.match(component, /<PaperClip part="back" className="packet__clip packet__clip--back" \/>/);
   assert.match(component, /<PaperClip part="front" className="packet__clip" \/>/);
-  assert.match(read('src/components/Packet/Packet.css'), /\.packet__card \{\s+position: absolute;\s+z-index: 1;/);
-  assert.match(read('src/components/Packet/Packet.css'), /\.packet__clip--back \{\s+z-index: 0;/);
+  assert.match(read('src/components/2D/Packet/Packet.css'), /\.packet__card \{\s+position: absolute;\s+z-index: 1;/);
+  assert.match(read('src/components/2D/Packet/Packet.css'), /\.packet__clip--back \{\s+z-index: 0;/);
 });
 
 test('BandDossier is the band section: the live set in the cover, the pile and the folded one-sheet in the well', () => {
@@ -100,7 +100,7 @@ test('BandDossier is the band section: the live set in the cover, the pile and t
   assert.match(css, /\.member-pile__status \{[\s\S]+?clip-path: inset\(50%\)/);
   assert.doesNotMatch(read('styles/sections.css'), /\.dossier\b(?!-)/, 'the legacy stylesheet must not style the React section');
   // The sheet's wear is a Weathered surface, so a glossy print laid on it is not speckled.
-  assert.doesNotMatch(read('src/components/PaperSheet/PaperSheet.css'), /paper-sheet__wear/);
+  assert.doesNotMatch(read('src/components/2D/PaperSheet/PaperSheet.css'), /paper-sheet__wear/);
 });
 
 test('Stack maths: depth wraps, slots layer by depth, and one packet flies per sift', async () => {

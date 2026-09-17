@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useEffect, useState } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
-import { Desk } from '../../components/Desk/Desk';
-import { CRADLE_BALLS, CRADLE_PERIOD_MS, CRADLE_RADIUS, CRADLE_RAILS, CRADLE_REST, CRADLE_SWING, NewtonsCradle } from '../../components/NewtonsCradle/NewtonsCradle';
+import { Desk } from '../../components/3D/Desk/Desk';
+import { CRADLE_BALLS, CRADLE_PERIOD_MS, CRADLE_RADIUS, CRADLE_RAILS, CRADLE_REST, CRADLE_SWING, NewtonsCradle } from '../../components/3D/NewtonsCradle/NewtonsCradle';
 import { Movable, type Place } from '../Movable/Movable';
 import { GENTLE_DEPTH, GENTLE_VIEW, Perspective, type PerspectiveProps } from './Perspective';
 import { SIZES, mm } from '../../pages/Desk/PromoterDesk';

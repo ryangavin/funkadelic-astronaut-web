@@ -1,5 +1,5 @@
 import { Children, useLayoutEffect, useRef, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
-import { PACKET_RATIO } from '../../components/Packet/Packet';
+import { PACKET_RATIO } from '../../components/2D/Packet/Packet';
 import { DEFAULT_SIFT_MS, depthOf, movesBetween, sift, slotFor } from './sift';
 import './Stack.css';
 

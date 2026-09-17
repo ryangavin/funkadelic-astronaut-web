@@ -3,7 +3,7 @@ import kevin from '../../../assets/kevin-portrait.webp';
 import performance from '../../../assets/performance.webp';
 import ryan from '../../../assets/ryan-portrait.webp';
 import sam from '../../../assets/sam-portrait.webp';
-import { TOUR_DATES } from '../../components/TourPass/TourPass.data';
+import { TOUR_DATES } from '../../components/2D/TourPass/TourPass.data';
 import { BAND_MEMBER_PACKETS, BAND_PACKET, LIVE_SET } from '../../sections/BandDossier/bandMembers';
 import { ZineFolio, ZineHeading, ZineList, ZineNote, ZinePhoto, ZineText, ZineTitle } from './MiniZine';
 
