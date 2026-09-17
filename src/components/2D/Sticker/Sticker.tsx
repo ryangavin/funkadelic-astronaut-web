@@ -136,6 +136,7 @@ export function Sticker({
     '--sticker-art-left': `${fix((overhang + margin) * unit)}px`,
     '--sticker-art-top': `${fix(margin * unit)}px`,
     '--sticker-art-size': `${size}px`,
+    '--sticker-art-height': `${fix(height * unit)}px`,
     '--sticker-rotation': `${rotation}deg`,
     '--sticker-cut': kept(0),
     '--sticker-cut-lifted': kept(shift),

@@ -5,7 +5,7 @@ import ryan from '../../../assets/band-13.webp';
 import { Weathered } from './Weathered';
 
 const meta = {
-  title: 'Behaviors/Weathered',
+  title: 'Foundations/Behaviors/Weathered',
   component: Weathered,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

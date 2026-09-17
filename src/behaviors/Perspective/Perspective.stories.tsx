@@ -13,7 +13,7 @@ import { StickyNote } from '../../components/2D/StickyNote/StickyNote';
 import { GENTLE_VIEW, GENTLE_DEPTH, PLAN_VIEW, Perspective, STANDING_VIEW, Solid, Standing } from './Perspective';
 
 const meta = {
-  title: 'Behaviors/Perspective',
+  title: 'Foundations/Behaviors/Perspective',
   component: Perspective,
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],

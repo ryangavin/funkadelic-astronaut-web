@@ -3,7 +3,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { MemberPile } from '../../sections/BandDossier/BandDossier';
 
 const meta = {
-  title: 'Behaviors/Stack',
+  title: 'Foundations/Behaviors/Stack',
   component: MemberPile,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

@@ -6,7 +6,7 @@ import { Weathered } from '../../behaviors/Weathered/Weathered';
 import { Inkjet } from './Inkjet';
 
 const meta = {
-  title: 'Foundations/Inkjet',
+  title: 'Foundations/Styles/Inkjet',
   component: Inkjet,
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],

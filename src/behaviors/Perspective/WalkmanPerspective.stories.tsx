@@ -11,7 +11,7 @@ import { elevatedLayer } from './elevation';
 import { SIZES } from '../../pages/Desk/PromoterDesk';
 
 const meta = {
-  title: 'Behaviors/Perspective',
+  title: 'Foundations/Behaviors/Perspective',
   component: Perspective,
   parameters: { layout: 'fullscreen' },
   args: { angle: GENTLE_VIEW, depth: GENTLE_DEPTH, width: 1440 },

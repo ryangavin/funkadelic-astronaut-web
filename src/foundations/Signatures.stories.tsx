@@ -41,7 +41,7 @@ function Sheet({ children }: { children: React.ReactNode }) {
 }
 
 const meta = {
-  title: 'Foundations/Signatures',
+  title: 'Foundations/Styles/Signatures',
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],
 } satisfies Meta;

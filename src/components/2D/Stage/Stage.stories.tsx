@@ -6,7 +6,7 @@ import { Wordmark } from '../Wordmark/Wordmark';
 import { STAGE_WIDTH, Stage } from './Stage';
 
 const meta = {
-  title: 'Layout/Stage',
+  title: 'Foundations/Layout/Stage',
   component: Stage,
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],

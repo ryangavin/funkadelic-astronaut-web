@@ -3,7 +3,7 @@ import { expect, waitFor } from 'storybook/test';
 import { TourPasses, TOUR_PASSES_LAYOUT } from './TourPasses';
 
 const meta = {
-  title: 'Sections/Tour Passes',
+  title: 'Pages/Sections/Tour Passes',
   component: TourPasses,
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],

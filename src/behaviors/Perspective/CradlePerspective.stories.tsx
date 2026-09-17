@@ -10,7 +10,7 @@ import { projectElevation } from './elevation';
 import './CradlePerspective.css';
 
 const meta = {
-  title: 'Behaviors/Perspective',
+  title: 'Foundations/Behaviors/Perspective',
   component: Perspective,
   parameters: { layout: 'fullscreen' },
   args: { angle: GENTLE_VIEW, depth: GENTLE_DEPTH, width: 1440 },

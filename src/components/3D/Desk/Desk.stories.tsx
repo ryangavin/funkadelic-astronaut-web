@@ -9,7 +9,7 @@ import { StickyNote } from '../../2D/StickyNote/StickyNote';
 import { DESK_WOODS, Desk } from './Desk';
 
 const meta = {
-  title: 'Layout/Desk',
+  title: 'Foundations/Layout/Desk',
   component: Desk,
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],

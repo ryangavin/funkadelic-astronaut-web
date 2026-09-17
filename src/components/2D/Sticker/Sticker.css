@@ -38,7 +38,7 @@
   left: var(--sticker-art-left);
   top: var(--sticker-art-top);
   width: var(--sticker-art-size);
-  height: var(--sticker-art-size);
+  height: var(--sticker-art-height, var(--sticker-art-size));
   display: grid;
   place-items: center;
 }

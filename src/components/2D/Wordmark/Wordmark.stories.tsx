@@ -5,7 +5,7 @@ import { PAPER_STOCKS } from '../PaperSheet/PaperSheet';
 import { Wordmark } from './Wordmark';
 
 const meta = {
-  title: 'Brand/Wordmark', component: Wordmark, tags: ['autodocs'],
+  title: 'Components/2D/Wordmark', component: Wordmark, tags: ['autodocs'],
   parameters: { layout: 'fullscreen' },
   argTypes: {
     children: { control: 'text' },

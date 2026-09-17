@@ -15,7 +15,7 @@ const degrees = (category: string) => (({
 }) as const);
 
 const meta = {
-  title: 'Sections/Band Dossier',
+  title: 'Pages/Sections/Band Dossier',
   component: BandDossier,
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],

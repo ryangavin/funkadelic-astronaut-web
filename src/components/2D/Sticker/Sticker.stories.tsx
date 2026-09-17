@@ -1,4 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useId } from 'react';
+import astronautImage from '../../../../assets/astronaut-flat.webp';
+import { ASTRONAUT_PAPER_SHAPE, AstronautPalette } from '../Astronaut/Astronaut';
+import { Sticker } from './Sticker';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { SOCIAL_ICON_INK_NAMES, SOCIAL_PLATFORM_NAMES } from '../SocialIcon/SocialIcon';
 import { PAPER_STOCKS } from '../PaperSheet/PaperSheet';
@@ -31,6 +35,35 @@ export const AppleMusic: Story = {};
 export const Spotify: Story = { args: { platform: 'spotify', rotation: 5 } };
 export const YouTube: Story = { args: { platform: 'youtube', rotation: -3 } };
 export const Deezer: Story = { args: { platform: 'deezer', rotation: 4 } };
+
+/** The same vinyl sticker, printed with the astronaut instead of a platform mark. */
+export const Astronaut: Story = {
+  args: { size: 180, rotation: -6, border: 0.8, keyline: 0.12, peel: 0, label: 'Astronaut wearing headphones' },
+  argTypes: {
+    size: { control: { type: 'range', min: 80, max: 320, step: 10 } },
+    platform: { table: { disable: true } },
+    ink: { table: { disable: true } },
+    print: { table: { disable: true } },
+    worn: { table: { disable: true } },
+  },
+  render: function AstronautStory({ size, rotation, stock, border, keyline, peel, backing, glossy, href, label }) {
+    const id = `astronaut-sticker-${useId().replace(/:/g, '')}`;
+    return <Sticker size={size} rotation={rotation} stock={stock} border={border} keyline={keyline}
+      peel={peel} backing={backing} glossy={glossy} href={href} aria-label={href ? label : undefined}
+      shape={{ width: 24, height: 36, path: ASTRONAUT_PAPER_SHAPE.path.replace(/-?\d+(?:\.\d+)?/g, (value) => String(Number(value) / 30)) }}
+      peelTip={{ x: 23.8, y: 30.5 }}>
+      <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true"><defs><AstronautPalette id={id} /></defs></svg>
+      <img src={astronautImage} alt={href ? '' : label} width={720} height={1080}
+        style={{ display: 'block', width: '100%', height: '100%', filter: `url(#${id})` }} />
+    </Sticker>;
+  },
+  play: async ({ canvasElement }) => {
+    const image = within(canvasElement).getByRole('img', { name: 'Astronaut wearing headphones' }) as HTMLImageElement;
+    await waitFor(() => expect(image.naturalWidth).toBe(720));
+    const art = canvasElement.querySelector('.sticker__artwork')!;
+    await expect(parseFloat(getComputedStyle(art).height) / parseFloat(getComputedStyle(art).width)).toBeCloseTo(1.5);
+  },
+};
 
 export const StreamingStickers: Story = {
   render: (args) => <div style={{ display: 'flex', flexWrap: 'wrap', gap: 28, alignItems: 'center', justifyContent: 'center' }}>

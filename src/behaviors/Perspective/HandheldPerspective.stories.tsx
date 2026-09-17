@@ -11,7 +11,7 @@ import { mm, SIZES } from '../../pages/Desk/PromoterDesk';
 import './HandheldPerspective.css';
 
 const meta = {
-  title: 'Behaviors/Perspective',
+  title: 'Foundations/Behaviors/Perspective',
   component: Perspective,
   parameters: { layout: 'fullscreen' },
   argTypes: {

@@ -5,7 +5,7 @@ import { Pin } from '../Pin/Pin';
 import { PAPER_SHEET_IMAGE_DEFAULTS, PAPER_STOCKS, PaperSheet, type PaperSheetProps } from './PaperSheet';
 
 const meta = {
-  title: 'Layout/Paper Sheet',
+  title: 'Foundations/Layout/Paper Sheet',
   component: PaperSheet,
   parameters: {
     layout: 'fullscreen',

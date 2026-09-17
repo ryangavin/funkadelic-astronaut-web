@@ -3,7 +3,7 @@ import { Astronaut } from '../../components/2D/Astronaut/Astronaut';
 import { Jitter } from './Jitter';
 
 const meta = {
-  title: 'Behaviors/Jitter',
+  title: 'Foundations/Behaviors/Jitter',
   component: Jitter,
   tags: ['autodocs'],
   parameters: { layout: 'centered' },
