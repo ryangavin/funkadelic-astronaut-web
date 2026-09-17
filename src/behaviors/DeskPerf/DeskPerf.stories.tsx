@@ -46,21 +46,32 @@ function Bench() {
   const readout = useRef<HTMLParagraphElement>(null);
   const worstSeen = useRef(0);
   const held = useRef('');
+  const worstPx = useRef(0);
   useEffect(() => watchHandDrag(desk.current ?? document.body, drag => {
     const line = readout.current;
     if (!line) return;
     /* The reading has to outlive the drag, or it is gone by the time anyone looks up. */
+    /* The reading has to outlive the drag, or it is gone by the time anyone looks up. */
     if (!drag) {
-      if (held.current) { line.textContent = `${held.current} — worst ${worstSeen.current.toFixed(1)}ms behind the pointer. Drag again to retake it.`; held.current = ''; }
+      if (held.current) {
+        line.textContent = worstPx.current > 0
+          ? `${held.current} — worst ${worstPx.current.toFixed(0)}px behind while properly moving, about ${worstSeen.current.toFixed(0)}ms. Drag again to retake it.`
+          : `${held.current} — never moved fast enough to measure. Drag it briskly across the desk.`;
+        held.current = '';
+      }
       return;
     }
-    if (!held.current) worstSeen.current = 0;
+    if (!held.current) { worstSeen.current = 0; worstPx.current = 0; }
     held.current = drag.label;
-    /* A reading taken while the hand is barely moving is noise: a pixel of
-       trailing divided by a pixel of travel says a whole frame. */
-    if (drag.speedPxPerFrame > 2 && drag.msBehind > worstSeen.current) worstSeen.current = drag.msBehind;
-    line.textContent = `${drag.label}: ${drag.trailingPx}px behind at ${drag.speedPxPerFrame}px a frame — ${drag.msBehind}ms (worst ${worstSeen.current.toFixed(1)}ms), frame ${drag.frameMs}ms`;
-    line.toggleAttribute('data-slow', worstSeen.current > 33);
+    /* Only while the hand is properly moving: see MOVING_ENOUGH. */
+    if (drag.worthStating) {
+      if (drag.msBehind > worstSeen.current) worstSeen.current = drag.msBehind;
+      if (drag.trailingPx > worstPx.current) worstPx.current = drag.trailingPx;
+    }
+    line.textContent = drag.worthStating
+      ? `${drag.label}: ${drag.trailingPx}px behind at ${drag.speedPxPerFrame}px a frame — ${drag.msBehind}ms (worst ${worstPx.current.toFixed(0)}px · ${worstSeen.current.toFixed(0)}ms), frame ${drag.frameMs}ms`
+      : `${drag.label}: ${drag.trailingPx}px behind, but only ${drag.speedPxPerFrame}px a frame — move faster for a reading.`;
+    line.toggleAttribute('data-slow', worstPx.current > 20);
   }), []);
 
   const root = () => desk.current ?? document.body;

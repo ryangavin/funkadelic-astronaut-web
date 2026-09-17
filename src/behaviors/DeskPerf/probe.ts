@@ -204,15 +204,30 @@ export async function dragLag(root: Document | HTMLElement, label: string, { jum
   };
 }
 
+/*
+  Below this the hand is barely moving and the lag in time is not worth stating.
+
+  Dividing a distance by a speed to get a time blows up as the speed goes to
+  nothing: twenty pixels behind at half a pixel a frame reads as five hundred
+  milliseconds, and the moment you slow down or turn round is exactly when the
+  trailing distance persists and the speed collapses. A first version of this
+  reported that number and it was the instrument's arithmetic, not the desk.
+  Six pixels a frame is about three hundred and sixty a second — an
+  unambiguous, deliberate drag.
+*/
+const MOVING_ENOUGH = 6;
+
 export type HandDrag = {
   /** What is being dragged, by the name it answers to. */
   label: string;
-  /** How far the thing is behind the pointer right now, in screen pixels. */
+  /** How far the thing is behind the pointer right now, in screen pixels. This is the plain fact. */
   trailingPx: number;
-  /** How fast the hand is going, in pixels a frame. Lag means nothing when nothing is moving. */
+  /** How fast the hand is going, in pixels a frame. */
   speedPxPerFrame: number;
-  /** What that distance is worth in time at this speed: the lag a hand actually feels. */
+  /** What that distance is worth in time — only while the hand is properly moving, and 0 otherwise. */
   msBehind: number;
+  /** Whether the hand was moving fast enough for `msBehind` to mean anything. */
+  worthStating: boolean;
   /** The frame the readout was taken on. */
   frameMs: number;
 };
@@ -289,11 +304,13 @@ export function watchHandDrag(root: Document | HTMLElement, report: (drag: HandD
       const trailingPx = Math.hypot(behind.x, behind.y);
       const speed = wasAt ? Math.hypot(pointer.x - wasAt.x, pointer.y - wasAt.y) : 0;
       wasAt = { x: pointer.x, y: pointer.y };
+      const worthStating = speed >= MOVING_ENOUGH;
       report({
         label: held.getAttribute('aria-label') ?? 'something',
         trailingPx: +trailingPx.toFixed(1),
         speedPxPerFrame: +speed.toFixed(1),
-        msBehind: speed > 0.5 ? +(trailingPx / speed * frameMs).toFixed(1) : 0,
+        msBehind: worthStating ? +(trailingPx / speed * frameMs).toFixed(1) : 0,
+        worthStating,
         frameMs: +frameMs.toFixed(1),
       });
     }
