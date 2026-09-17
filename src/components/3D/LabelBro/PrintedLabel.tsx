@@ -15,6 +15,12 @@ export type PrintedLabelProps = {
   margin?: Margin;
   /** How it came to rest, in degrees. */
   rotation?: number;
+  /**
+   * How long the strip runs, in units, when that is not what the text costs:
+   * a blank run of leader standing in the exit slot has a length of its own
+   * and no print on it at all.
+   */
+  runUnits?: number;
   className?: string;
   style?: React.CSSProperties;
 };
@@ -30,12 +36,18 @@ export type PrintedLabelProps = {
  * drawing and the length on the screen are the same arithmetic and a strip
  * that says 58 mm measures 58 mm. Sized by its parent's width.
  */
-export function PrintedLabel({ text = '', width = 12, stock = 'black-on-white', margin = 'full', rotation = 0, className = '', style }: PrintedLabelProps) {
-  const units = tapeUnits(text, width, margin);
+export function PrintedLabel({ text = '', width = 12, stock = 'black-on-white', margin = 'full', rotation = 0, runUnits, className = '', style }: PrintedLabelProps) {
+  const units = runUnits ?? tapeUnits(text, width, margin);
   const tall = width / 0.25;
   const paint = STOCK[stock];
   const vars = {
-    '--printed-unit': `calc(100% / ${units})`,
+    /*
+      One quarter-millimetre of this strip's own length. It has to be a
+      container unit and not a percentage: a percentage means the containing
+      block in `width` but the inherited font size in `font-size`, and the
+      print is set in both.
+    */
+    '--printed-unit': `calc(100cqw / ${units})`,
     '--printed-ink': paint.ink,
     '--printed-tape': paint.tape,
     '--printed-edge': paint.edge,

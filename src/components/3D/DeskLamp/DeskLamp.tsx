@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useContext, useId, useMemo, useRef, useState } from 'react';
 import { MovableProject } from '../../../behaviors/Movable/Movable';
-import { articulateLamp, type LampPoint } from './articulation';
+import { articulateLamp, type LampPose, type LampPoint } from './articulation';
 import './DeskLamp.css';
 import { projectElevation } from '../../../behaviors/Perspective/elevation';
 import { DEFAULT_SHADOW_STRENGTH, useRegisterDeskLight } from '../../../behaviors/DeskLighting/DeskLighting';
@@ -43,19 +43,20 @@ export type DeskLampProps = {
  */
 export function DeskLamp({ head: controlledHead, onHeadChange, camera, shadowStrength = DEFAULT_SHADOW_STRENGTH, lightPosition, on = true, onToggle, enamel = 'red', rotation = 0, className = '', style }: DeskLampProps) {
   const id = `lamp-${useId().replace(/:/g, '')}`;
-  const [ownHead, setOwnHead] = useState<LampPoint>(DESK_LAMP_SHADE);
-  const arm = articulateLamp(controlledHead ?? ownHead);
+  const [ownArm, setOwnArm] = useState(() => articulateLamp(controlledHead ?? DESK_LAMP_SHADE));
+  const arm = controlledHead && (controlledHead.x !== ownArm.head.x || controlledHead.y !== ownArm.head.y)
+    ? articulateLamp(controlledHead, ownArm, 0) : ownArm;
   const { x, y } = arm.head;
   const { radius } = DESK_LAMP_SHADE;
   const svg = useRef<SVGSVGElement>(null);
   const project = useContext(MovableProject);
-  const drag = useRef<{ id: number; px: number; py: number; pointer: LampPoint; head: LampPoint; moved: boolean } | null>(null);
+  const drag = useRef<{ id: number; px: number; py: number; pointer: LampPoint; head: LampPoint; pose: LampPose; moved: boolean } | null>(null);
   const suppressClick = useRef(false);
   const turn = (rotation + (lightPosition?.rotation ?? 0)) * Math.PI / 180;
   const changeHead = (next: LampPoint) => {
-    const bounded = articulateLamp(next).head;
-    setOwnHead(bounded);
-    onHeadChange?.(bounded);
+    const pose = articulateLamp(next, arm);
+    setOwnArm(pose);
+    onHeadChange?.(pose.head);
   };
   const dx = (x - 360) / 720;
   const dy = (y - 300) / 720;
@@ -76,6 +77,13 @@ export function DeskLamp({ head: controlledHead, onHeadChange, camera, shadowStr
   const neck = point(x + 60, y - 40, bulbHeight + 100);
   const shade = point(x, y, bulbHeight + 100);
   const rim = point(x, y, bulbHeight);
+  const tubeGradient = (from: LampPoint, to: LampPoint, width: number) => {
+    const length = Math.hypot(to.x - from.x, to.y - from.y) || 1;
+    const nx = -(to.y - from.y) / length * width / 2;
+    const ny = (to.x - from.x) / length * width / 2;
+    const cx = (from.x + to.x) / 2, cy = (from.y + to.y) / 2;
+    return { x1: cx - nx, y1: cy - ny, x2: cx + nx, y2: cy + ny };
+  };
   const layer = (p: { x: number; y: number; scale: number }, cx: number, cy: number) => `translate(${p.x} ${p.y}) scale(${p.scale}) translate(${-cx} ${-cy})`;
   const lampGeometry = useMemo(() => {
     if (!lightPosition) return undefined;
@@ -115,7 +123,7 @@ export function DeskLamp({ head: controlledHead, onHeadChange, camera, shadowStr
     if (event.button !== 0) return;
     event.stopPropagation();
     suppressClick.current = false;
-    drag.current = { id: event.pointerId, px: event.clientX, py: event.clientY, pointer: pointer(event.clientX, event.clientY), head: { x, y }, moved: false };
+    drag.current = { id: event.pointerId, px: event.clientX, py: event.clientY, pointer: pointer(event.clientX, event.clientY), head: { x, y }, pose: arm, moved: false };
     event.currentTarget.setPointerCapture(event.pointerId);
   };
   const moveHead = (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -133,7 +141,7 @@ export function DeskLamp({ head: controlledHead, onHeadChange, camera, shadowStr
     event.stopPropagation();
     suppressClick.current = start.moved;
     drag.current = null;
-    if (event.type === 'pointercancel') changeHead(start.head);
+    if (event.type === 'pointercancel') { setOwnArm(start.pose); onHeadChange?.(start.pose.head); }
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   };
   return (
@@ -150,6 +158,18 @@ export function DeskLamp({ head: controlledHead, onHeadChange, camera, shadowStr
             <stop offset="0.5" stopColor="#a6aab2" />
             <stop offset="1" stopColor="#4d5057" />
           </linearGradient>
+          {[
+            { name: 'lower-tube', from: base, to: elbow, width: 24 },
+            { name: 'upper-tube', from: elbow, to: neck, width: 22 },
+          ].map(({ name, from, to, width }) => (
+            <linearGradient key={name} id={`${id}-${name}`} gradientUnits="userSpaceOnUse" {...tubeGradient(from, to, width)}>
+              <stop offset="0" stopColor="#646a74" />
+              <stop offset="0.28" stopColor="#edf0f4" />
+              <stop offset="0.44" stopColor="#c9cdd4" />
+              <stop offset="0.75" stopColor="#9298a3" />
+              <stop offset="1" stopColor="#444a54" />
+            </linearGradient>
+          ))}
           <radialGradient id={`${id}-base`} cx="0.4" cy="0.35" r="0.7">
             <stop offset="0" stopColor="#fff" stopOpacity="0.35" />
             <stop offset="0.6" stopColor="#fff" stopOpacity="0.02" />
@@ -170,9 +190,9 @@ export function DeskLamp({ head: controlledHead, onHeadChange, camera, shadowStr
           <circle cx="600" cy="110" r="30" fill={`url(#${id}-arm)`} />
         </g>
         <g className="desk-lamp__arm">
-          <path d={`M ${base.x} ${base.y} L ${elbow.x} ${elbow.y}`} stroke={`url(#${id}-arm)`} strokeWidth="24" strokeLinecap="round" />
+          <path d={`M ${base.x} ${base.y} L ${elbow.x} ${elbow.y}`} stroke={`url(#${id}-lower-tube)`} strokeWidth="24" strokeLinecap="round" />
           <circle cx={elbow.x} cy={elbow.y} r={20 * elbow.scale} fill={`url(#${id}-arm)`} />
-          <path d={`M ${elbow.x} ${elbow.y} L ${neck.x} ${neck.y}`} stroke={`url(#${id}-arm)`} strokeWidth="22" strokeLinecap="round" />
+          <path d={`M ${elbow.x} ${elbow.y} L ${neck.x} ${neck.y}`} stroke={`url(#${id}-upper-tube)`} strokeWidth="22" strokeLinecap="round" />
           <circle cx={neck.x} cy={neck.y} r={17 * neck.scale} fill={`url(#${id}-arm)`} />
         </g>
 

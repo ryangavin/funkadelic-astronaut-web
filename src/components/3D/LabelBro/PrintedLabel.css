@@ -17,6 +17,9 @@
   display: block;
   position: relative;
   width: 100%;
+  /* So --printed-unit has a width of its own to measure against. Only
+     descendants may spend it: an element's own container is its ancestor's. */
+  container-type: inline-size;
   rotate: var(--printed-rotation);
   transform-origin: 50% 50%;
   background: var(--printed-tape);
@@ -37,6 +40,9 @@
   right: calc(var(--printed-margin) * var(--printed-unit));
   top: 50%;
   translate: 0 -50%;
+  /* The band the head can reach. The rest of the tape stays blank whatever
+     size the type is set at. */
+  height: calc(var(--printed-band) * var(--printed-unit));
   display: flex;
   align-items: center;
   color: var(--printed-ink);

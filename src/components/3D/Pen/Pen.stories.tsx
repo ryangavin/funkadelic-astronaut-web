@@ -1,3 +1,4 @@
+import { elevatedLayer } from '../../../behaviors/Perspective/elevation';
 import { checkDeskStudy } from '../../../behaviors/Perspective/DeskObjectStudy.check';
 import { DeskObjectStudy } from '../../../behaviors/Perspective/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -67,5 +68,26 @@ export const OnDesk: Story = {
   play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
-  render: (args) => <DeskObjectStudy name="Pen" widthMm={149} depthRatio={60/720} heightMm={10} shapes={[{ path: "M0 32L9 10H90Q100 10 100 32V68Q100 90 90 90H9L0 68Z" }]}><Pen {...args} rotation={0} /></DeskObjectStudy>,
+  render: (args) => {
+    const heightMm = args.kind === 'marker' ? 6 : args.kind === 'pencil' ? 5 : 3.5;
+    // Narrow silhouettes follow the artwork instead of filling its empty SVG margins.
+    const outline = args.kind === 'marker'
+      ? 'M.3 18H4.2V8.3H19.4V18H23V23H96.7V30H98.9V70H96.7V77H23V82H.3Z'
+      : args.kind === 'pencil'
+        ? 'M.3 30H5.6V27H11.9V28H86.7L99.4 50L86.7 72H11.9V73H5.6V70H.3Z'
+        : 'M.3 28H3.3V18H17.2V28H19.7V33H96.4L99.9 50L96.4 67H19.7V72H.3Z';
+    return <DeskObjectStudy name="Pen" widthMm={149} depthRatio={60/720} heightMm={heightMm} customRelief shapes={[{ path: outline }]} note="Estimated shallow height; a darker copy of the artwork supplies the thin side edge.">
+      {(place, camera) => {
+        const top = elevatedLayer(heightMm * 2, { ...place, width: 298, drawingWidth: 720, drawingHeight: 60 }, camera);
+        return <div style={{ position: 'relative', aspectRatio: '720 / 60' }}>
+          <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', filter: 'brightness(.65)' }}>
+            <Pen {...args} rotation={0} />
+          </div>
+          <div style={{ position: 'relative', transformOrigin: '50% 50%', transform: `translate(${top.x / 720 * 100}%, ${top.y / 60 * 100}%) scale(${top.scale})` }}>
+            <Pen {...args} rotation={0} />
+          </div>
+        </div>;
+      }}
+    </DeskObjectStudy>;
+  },
 };

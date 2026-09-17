@@ -9,9 +9,10 @@
   gets away with.
 
   Eight rows. The top two are the light grey function keys, the four in the
-  middle are an ordinary QWERTY, and the arrows sit in the well to the right
-  of the numbers where there is nothing else to put. The power key is round
-  and red and sits on its own at the left, the way it does on the real thing.
+  middle are an ordinary QWERTY, and the arrows sit in the well the round keys
+  and the number row leave open at the right. The power key is round and red
+  and sits on its own at the left, the way it does on the real thing, with the
+  deck to the left of the function row left bare for the words printed on it.
 */
 
 /** The machine's plan, in units: 183 by 193 millimetres. */
@@ -91,7 +92,7 @@ const rowA = lay(0, 543, 'light', [
 
 /* Row B: what the label is, rather than what it says. And the two that take it back. */
 const rowB = [
-  ...lay(1, LEFT, 'light', [
+  ...lay(1, 198, 'light', [
     { id: 'font', cap: 'Font', w: 72 },
     { id: 'label', cap: 'Label', w: 72 },
     { id: 'frame', cap: 'Frame', w: 72 },
@@ -161,11 +162,12 @@ const rowH = lay(7, 190, 'dark', [
   spanning the two rows the numbers and QWERTY leave empty out there.
 */
 const ARROW = 32;
+const TALL = 28;
 const arrows: Key[] = [
-  { id: 'up', icon: 'up', name: 'Up', x: 626, y: ROW(3), w: ARROW, h: 30, tone: 'dark' },
-  { id: 'left', icon: 'left', name: 'Left', x: 592, y: ROW(3) + 32, w: ARROW, h: 30, tone: 'dark' },
-  { id: 'right', icon: 'right', name: 'Right', x: 660, y: ROW(3) + 32, w: ARROW, h: 30, tone: 'dark' },
-  { id: 'down', icon: 'down', name: 'Down', x: 626, y: ROW(3) + 64, w: ARROW, h: 30, tone: 'dark' },
+  { id: 'up', icon: 'up', name: 'Up', x: 626, y: ROW(2), w: ARROW, h: TALL, tone: 'dark' },
+  { id: 'left', icon: 'left', name: 'Left', x: 592, y: ROW(2) + 30, w: ARROW, h: TALL, tone: 'dark' },
+  { id: 'right', icon: 'right', name: 'Right', x: 660, y: ROW(2) + 30, w: ARROW, h: TALL, tone: 'dark' },
+  { id: 'down', icon: 'down', name: 'Down', x: 626, y: ROW(2) + 60, w: ARROW, h: TALL, tone: 'dark' },
 ];
 
 /** Every key on the machine, in the order a thumb would find them. */
