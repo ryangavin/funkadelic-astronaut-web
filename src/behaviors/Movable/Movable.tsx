@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState, type CSSProperties, type HTMLAttributes, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
+import { flushSync } from 'react-dom';
 import './Movable.css';
 
 /** Where a thing lies: its top-left corner in the surface's units, its tilt, and how big it is drawn. */
@@ -164,6 +165,18 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
      desk full of things. */
   const ending = useRef<(start: Press) => void>(() => {});
   ending.current = finish;
+  /*
+    What is told about the end of a gesture, reached through a ref rather than
+    held from the render that started it. The last move of a drag is committed
+    on release, which re-renders whoever owns the thing; the callbacks from
+    before that commit close over where it used to be, and a mug asked where it
+    stands would answer with the place it stood a move ago.
+  */
+  const dropped = useRef(onDrop);
+  const settling = useRef(onSettle);
+  dropped.current = onDrop;
+  settling.current = onSettle;
+  useEffect(() => () => { if (frame.current) window.cancelAnimationFrame(frame.current); }, []);
   useEffect(() => {
     if (!watching) return;
     const end = (event: globalThis.PointerEvent) => {
@@ -185,9 +198,13 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
   }, [watching]);
 
   function finish(start: Press) {
+    /* Whatever the last move was waiting on a frame for, it lands before the
+       thing is let go, or a quick flick would be dropped on release. */
+    flush();
     press.current = null;
     setWatching(false);
-    let settled: Place = { x, y, rotation, scale };
+    /* What was last sent, rather than the props behind it, which are a render old. */
+    let settled: Place = sent.current ?? { x, y, rotation, scale };
     /* A resize keeps its pivot by measuring where the pivot has got to, which
        trails the size it is answering by a frame; on the last of them there is
        no next frame, so it is settled here instead. */
@@ -198,6 +215,7 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
       const dy = start.anchor.y - stands.y;
       if (Math.abs(dx) >= 0.5 || Math.abs(dy) >= 0.5) {
         settled = { x: Math.round(x + dx), y: Math.round(y + dy), rotation, scale };
+        sent.current = settled;
         onMove(settled);
       }
     }
@@ -220,8 +238,8 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
       }
     }
     if (start.moved) {
-      onDrop?.();
-      onSettle?.(settled);
+      dropped.current?.();
+      settling.current?.(settled);
     }
   }
 
@@ -244,6 +262,8 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
       reach: Math.max(Math.hypot(here.x - at.x, here.y - at.y), 1e-6),
       moved: false,
     };
+    awaiting.current = null;
+    sent.current = null;
     setWatching(true);
     if (gesture !== 'move') {
       try { host.current?.setPointerCapture(event.pointerId); } catch { /* Synthetic pointer. */ }
@@ -268,22 +288,47 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
     begin(event, event.altKey ? 'turn' : 'move');
   };
 
-  const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+  /*
+    A pointer reports far faster than a screen redraws — a thousand times a
+    second is an ordinary mouse — and every one of those reports used to be
+    worked all the way through: the plane measured twice over, a place worked
+    out, and a render asked for. All but the last were thrown away before
+    anything was painted, and the measuring forces layout, so a fast hand made
+    the desk do the same expensive thing several times for one frame.
+
+    So a move is now remembered rather than acted on, and the most recent one is
+    worked out once, in an animation frame. That is as often as the screen can
+    show it anyway. Whether a press has become a drag is still decided on the
+    event itself, since that is only a distance, and capture must be taken while
+    the browser is still in the gesture.
+  */
+  const awaiting = useRef<{ clientX: number; clientY: number; shiftKey: boolean } | null>(null);
+  const frame = useRef(0);
+  /* What was last handed to onMove, since the props behind it trail a render. */
+  const sent = useRef<Place | null>(null);
+
+  const apply = () => flushSync(work);
+
+  const work = () => {
+    frame.current = 0;
     const start = press.current;
-    if (!start || !onMove || event.pointerId !== start.id) return;
+    const event = awaiting.current;
+    if (!start || !event || !onMove) return;
+    /*
+      Worked out in an animation frame, which is outside React's own batching,
+      so the move is committed here rather than left to whenever React would
+      otherwise get to it. Two reasons, and the second is the one that bit:
+      it puts the new place on the screen in the frame it was worked out for,
+      and it means anything told about the end of the gesture a moment later
+      reads where the thing actually is. Left to React's timing, a release
+      arriving in the same frame as a move found the move still pending.
+    */
     const dx = event.clientX - start.px;
     const dy = event.clientY - start.py;
-    if (!start.moved) {
-      if (Math.hypot(dx, dy) < MOVABLE_DRAG_THRESHOLD) return;
-      start.moved = true;
-      setDragging(start.gesture);
-      try {
-        host.current?.setPointerCapture(start.id);
-      } catch {
-        /* A pointer the browser no longer knows, such as one made up by a test: the drag goes on without capture. */
-      }
-      onGrab?.();
-    }
+    const move = (place: Place) => {
+      sent.current = place;
+      onMove(place);
+    };
     if (start.gesture === 'turn' || start.gesture === 'size') {
       const at = onSurface(start.pivot.cx, start.pivot.cy);
       const here = onSurface(event.clientX, event.clientY);
@@ -292,7 +337,7 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
         /* The thing follows the pointer round the pivot: the side you took is the side that ends up where you point. */
         const swept = (Math.atan2(here.y - at.y, here.x - at.x) - start.angle) * 180 / Math.PI;
         const turned = start.rotation + swept;
-        onMove({ x: start.x, y: start.y, scale: start.scale, rotation: event.shiftKey ? Math.round(turned / MOVABLE_SNAP_TURN) * MOVABLE_SNAP_TURN : Math.round(turned * 2) / 2 });
+        move({ x: start.x, y: start.y, scale: start.scale, rotation: event.shiftKey ? Math.round(turned / MOVABLE_SNAP_TURN) * MOVABLE_SNAP_TURN : Math.round(turned * 2) / 2 });
         return;
       }
       /* Out from the pivot is bigger, in toward it smaller — and the pivot itself does not move.
@@ -302,18 +347,51 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
       const stands = onSurface(now.cx, now.cy);
       const drift = { x: start.anchor.x - stands.x, y: start.anchor.y - stands.y };
       const grown = resized(start.scale * away / start.reach);
-      onMove({ x: Math.round(grown.x + drift.x), y: Math.round(grown.y + drift.y), scale: grown.scale, rotation: start.rotation });
+      move({ x: Math.round(grown.x + drift.x), y: Math.round(grown.y + drift.y), scale: grown.scale, rotation: start.rotation });
       return;
     }
     if (project) {
       /* On a tilted surface the pointer's travel is worth more near the eye than far from it: map both ends of it onto the surface. */
       const from = project(start.px, start.py);
       const to = project(event.clientX, event.clientY);
-      onMove({ x: Math.round(start.x + to.x - from.x), y: Math.round(start.y + to.y - from.y), rotation: start.rotation, scale: start.scale });
+      move({ x: Math.round(start.x + to.x - from.x), y: Math.round(start.y + to.y - from.y), rotation: start.rotation, scale: start.scale });
       return;
     }
     const perUnit = surfaceScale() || 1;
-    onMove({ x: Math.round(start.x + dx / perUnit), y: Math.round(start.y + dy / perUnit), rotation: start.rotation, scale: start.scale });
+    move({ x: Math.round(start.x + dx / perUnit), y: Math.round(start.y + dy / perUnit), rotation: start.rotation, scale: start.scale });
+  };
+
+  /*
+    Work out whatever is waiting, now, and drop the frame that was going to.
+
+    It is committed on the spot rather than left to React's own timing, because
+    the only caller is the release, and whoever owns the thing is about to be
+    told it has been put down — and will read where it ended up. Without this
+    the last move of a drag is still pending when `onDrop` runs, and the mug
+    lays its coffee ring at the place it was a move ago.
+  */
+  const flush = () => {
+    if (!frame.current) return;
+    window.cancelAnimationFrame(frame.current);
+    apply();
+  };
+
+  const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    const start = press.current;
+    if (!start || !onMove || event.pointerId !== start.id) return;
+    if (!start.moved) {
+      if (Math.hypot(event.clientX - start.px, event.clientY - start.py) < MOVABLE_DRAG_THRESHOLD) return;
+      start.moved = true;
+      setDragging(start.gesture);
+      try {
+        host.current?.setPointerCapture(start.id);
+      } catch {
+        /* A pointer the browser no longer knows, such as one made up by a test: the drag goes on without capture. */
+      }
+      onGrab?.();
+    }
+    awaiting.current = { clientX: event.clientX, clientY: event.clientY, shiftKey: event.shiftKey };
+    if (!frame.current) frame.current = window.requestAnimationFrame(apply);
   };
 
   /* A thing grows from its corner, so growing it alone would walk it off the spot
