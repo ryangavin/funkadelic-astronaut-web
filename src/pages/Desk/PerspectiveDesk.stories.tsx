@@ -5,6 +5,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { GENTLE_DEPTH, GENTLE_VIEW } from '../../behaviors/Perspective/Perspective';
 import { DESK_WOODS } from '../../components/3D/Desk/Desk';
+import { FLOOR_WOODS } from '../../components/3D/Floor/Floor';
+import { WALL_FINISHES } from '../../components/3D/Wall/Wall';
 import { PerspectiveDesk } from './PerspectiveDesk';
 
 const initialAngles = lampPoseAngles(articulateLamp({ x: 200, y: 420 }));
@@ -22,6 +24,13 @@ const meta = {
     angle: { table: { category: 'Camera' }, control: { type: 'range', min: 78, max: 90, step: 1 } },
     depth: { table: { category: 'Camera' }, control: { type: 'range', min: 4000, max: 12000, step: 100 } },
     wood: { table: { category: 'Desktop' }, control: 'inline-radio', options: DESK_WOODS },
+    room: { table: { category: 'Room' }, control: 'boolean' },
+    floor: { table: { category: 'Room' }, control: 'inline-radio', options: FLOOR_WOODS },
+    wall: { table: { category: 'Room' }, control: 'inline-radio', options: WALL_FINISHES },
+    deskShare: { table: { category: 'Room' }, control: { type: 'range', min: 0.6, max: 1, step: 0.01 } },
+    roomLip: { table: { category: 'Room' }, control: { type: 'range', min: 0, max: 300, step: 5 } },
+    roomBlur: { table: { category: 'Room' }, control: { type: 'range', min: 0, max: 3, step: 0.1 } },
+    roomDim: { table: { category: 'Room' }, control: { type: 'range', min: 0, max: 1, step: 0.02 } },
     shadowStrength: { table: { category: 'Lighting' }, control: { type: 'range', min: 0, max: 1, step: .01 } },
     lamp: { control: 'boolean', table: { category: 'Lighting' } },
     lampX: { control: { type: 'number', step: 1 }, table: { category: 'Lamp placement' } },
@@ -53,10 +62,34 @@ export const Desk: Story = {
     depth: 5700,
     lampX: 396,
     lampY: 17,
-    lampLowerAngle: -148.01516538847474,
-    lampUpperAngle: 107.8561580784906,
+    lampLowerAngle: -142.6818247177271,
+    lampUpperAngle: 110.41274403236815,
 
     objectPlacements: {
+      "sitePlan": {
+        "rotation": -8,
+        "x": 481,
+        "y": 415
+      },
+
+      "poster": {
+        "rotation": -5,
+        "x": 1154,
+        "y": 410
+      },
+
+      "setTimes": {
+        "rotation": 4,
+        "x": 812,
+        "y": 402
+      },
+
+      "contract": {
+        "rotation": -3,
+        "x": 637,
+        "y": 346
+      },
+
       "dossier": {
         "rotation": -9,
         "x": -294,
@@ -65,8 +98,8 @@ export const Desk: Story = {
 
       "clock": {
         "rotation": 5.5,
-        "x": 823,
-        "y": 193
+        "x": 681,
+        "y": 146
       },
 
       "cradle": {
@@ -83,26 +116,26 @@ export const Desk: Story = {
 
       "rolodex": {
         "rotation": 9,
-        "x": 1245,
-        "y": 55
+        "x": 1267,
+        "y": 15
       },
 
       "handheld": {
         "rotation": -5,
-        "x": 460,
-        "y": 220
+        "x": 490,
+        "y": 297
       },
 
       "labelBro": {
         "rotation": 3.5,
-        "x": 995,
-        "y": 52
+        "x": 1016,
+        "y": 4
       },
 
       "pen": {
         "rotation": 8,
-        "x": 1117,
-        "y": 314
+        "x": 1120,
+        "y": 273
       },
 
       "walkman": {
@@ -113,12 +146,13 @@ export const Desk: Story = {
 
       "phone": {
         "rotation": 0,
-        "x": 172,
-        "y": -56
+        "x": 333,
+        "y": -32
       }
     },
 
-    showObjects: true
+    showObjects: true,
+    wood: "oak"
   },
 
   play: async ({ canvasElement, args }) => {

@@ -12,6 +12,22 @@ export type DeskLampEnamel = (typeof DESK_LAMP_ENAMELS)[number];
 /** Where the shade's centre is in the lamp's box, and its radius, in 720ths of the box's width. */
 export const DESK_LAMP_SHADE = { x: 200, y: 420, radius: 130 } as const;
 
+/*
+  The light spilling round the rim.
+
+  This was a solid disc put through a Gaussian blur, which is a radial gradient
+  drawn the expensive way: a blur filter is rasterised on its own every time
+  what is under it changes, and the lamp is the thing most often dragged across
+  the desk. The stops are that blur's own profile. A disc blurred by a deviation
+  of s is still solid about two deviations inside its edge, exactly half at the
+  edge, and gone about two deviations outside it, so the falloff below draws
+  what the filter drew — and the compositor can now simply move it.
+*/
+const SPILL_BLUR = 22;
+const SPILL_CORE = DESK_LAMP_SHADE.radius + 30;
+const SPILL_EDGE = SPILL_CORE + SPILL_BLUR * 2.5;
+const spillStop = (at: number) => +(at / SPILL_EDGE).toFixed(4);
+
 export type DeskLampProps = {
   /** Full controlled articulation, including the lower hinge orientation. */
   pose?: LampPose;
@@ -180,12 +196,14 @@ export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledH
             <stop offset="0.6" stopColor="#fff" stopOpacity="0.02" />
             <stop offset="1" stopColor="#000" stopOpacity="0.5" />
           </radialGradient>
-          <filter id={`${id}-soft`} x="-40%" y="-40%" width="180%" height="180%">
-            <feGaussianBlur stdDeviation="14" />
-          </filter>
-          <filter id={`${id}-glow`} x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation="22" />
-          </filter>
+          {/* The spill's own falloff, in place of the blur that used to make it. */}
+          <radialGradient id={`${id}-spill`}>
+            <stop offset={spillStop(SPILL_CORE - SPILL_BLUR * 2)} stopColor="var(--desk-lamp-spill)" stopOpacity="1" />
+            <stop offset={spillStop(SPILL_CORE - SPILL_BLUR)} stopColor="var(--desk-lamp-spill)" stopOpacity="0.86" />
+            <stop offset={spillStop(SPILL_CORE)} stopColor="var(--desk-lamp-spill)" stopOpacity="0.5" />
+            <stop offset={spillStop(SPILL_CORE + SPILL_BLUR)} stopColor="var(--desk-lamp-spill)" stopOpacity="0.14" />
+            <stop offset="1" stopColor="var(--desk-lamp-spill)" stopOpacity="0" />
+          </radialGradient>
         </defs>
 
         {/* The base, and the arm on its elbow. */}
@@ -203,7 +221,7 @@ export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledH
 
         {/* The light spilling round the rim, and the shade over it. */}
         <g transform={layer(rim, x, y)}>
-        <circle className="desk-lamp__spill" cx={x} cy={y} r={radius + 30} filter={`url(#${id}-glow)`} />
+        <circle className="desk-lamp__spill" cx={x} cy={y} r={SPILL_EDGE} fill={`url(#${id}-spill)`} />
         </g>
         {elevated && <g className="desk-lamp__side">
           <circle cx={rim.x} cy={rim.y} r={radius * rim.scale} />

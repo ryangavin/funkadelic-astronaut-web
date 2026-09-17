@@ -31,7 +31,7 @@ export type PerspectiveProps = {
 export type SurfacePoint = { x: number; y: number };
 
 /** The numbers the view is built from: how far the surface is tipped away, in radians, and how far off it the eye is. */
-type View = { tilt: number; depth: number; width: number };
+export type View = { tilt: number; depth: number; width: number };
 
 /**
  * Where a point on the screen falls on the tilted surface, in the surface's
@@ -56,6 +56,16 @@ export function unproject(plane: HTMLElement, { tilt, depth, width }: View, clie
 
 /** The view of the surface, for the things standing on it. The plane itself they find by looking up. */
 const PerspectiveView = createContext<View | null>(null);
+
+/**
+ * How the surface is being looked at, for anything that has to work in both
+ * spaces at once. With `unproject` it turns a point on the screen into a point
+ * on the surface; off a Perspective there is no view, and the screen is the
+ * surface.
+ */
+export function usePerspectiveView() {
+  return useContext(PerspectiveView);
+}
 
 /** Where a thing's top face has to be drawn for it to stand on the surface. */
 export type Stood = {
@@ -213,7 +223,14 @@ export function Solid({ localCoordinates = false, height, foot = ON_ITS_BOTTOM, 
   const stands = useRef<HTMLSpanElement>(null);
   const edge = useRef<HTMLSpanElement>(null);
   const view = useContext(PerspectiveView);
-  /* After every render, because the thing moves: it is dragged about the desk, and the view of it can change. */
+  /*
+    Measuring is done after every render, because the thing moves: it is dragged
+    about the desk, and the view of it can change. It is kept in a ref so the
+    watch below can be set up once and still call the current one — a desk full
+    of Solids that each built and tore down an observer every render spent more
+    time in the observer than in the drawing.
+  */
+  const measurer = useRef<() => void>(() => {});
   useLayoutEffect(() => {
     const element = host.current;
     const mark = stands.current;
@@ -235,12 +252,21 @@ export function Solid({ localCoordinates = false, height, foot = ON_ITS_BOTTOM, 
       element.style.setProperty('--solid-splay', String(stood.splay));
       element.style.setProperty('--solid-turn', `${(stood.turn * 180) / Math.PI}deg`);
     };
+    measurer.current = measure;
     measure();
-    const observer = new ResizeObserver(measure);
+  });
+
+  /* The watch itself outlives the renders: the plane and the thing keep their
+     boxes, and only what is measured off them changes. */
+  useLayoutEffect(() => {
+    const element = host.current;
+    if (!element) return;
+    const plane = element.closest<HTMLElement>('.perspective__plane');
+    const observer = new ResizeObserver(() => measurer.current());
     if (plane) observer.observe(plane);
     observer.observe(element);
     return () => observer.disconnect();
-  });
+  }, []);
   const vars = { '--solid-foot-x': foot.x, '--solid-foot-y': foot.y, ...style } as CSSProperties;
   return (
     <div ref={host} className={`solid ${className}`} style={vars}>

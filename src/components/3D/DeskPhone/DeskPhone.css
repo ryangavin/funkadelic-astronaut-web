@@ -1,8 +1,8 @@
 /*
-  A Western Electric 500 desk set with an answering machine beside it, traced
-  looking straight down at the desk. Everything is measured in millimetres of
-  the real objects and one millimetre is one unit, so the whole plan is 560
-  across by 300 deep and every part below is the size it is in the hand.
+  A Western Electric 500 desk set, traced looking straight down at the desk.
+  Everything is measured in millimetres of the real object and one millimetre
+  is one unit, so the whole plan is 320 across by 300 deep and every part below
+  is the size it is in the hand.
 
   It is a plan and nothing but a plan. Neither object draws its own volume:
   there is no sloping face on the answering machine, no shading down the
@@ -11,13 +11,13 @@
   shadow it throws, and that is the whole of it.
 
   Height is declared instead of drawn. The set is 137 millimetres high with the
-  handset on, the machine 65 at the back; stand the drawing in a Solid of
-  DESK_PHONE_HEIGHT and it is handed --solid-rise and --solid-splay, each a
-  multiple of this drawing's own width. The top faces lift by them, the sides
-  below shear out into the gap, and the feet stay where the things are
-  standing. The machine, being less than half as tall, takes its own share.
-  Off a tilted plane both numbers are nothing and this is the flat drawing it
-  always was.
+  handset on, but what stands up is the moulding under it: 68.5 to the rim of
+  the cradle, which is SET_BODY_HEIGHT and what DESK_PHONE_HEIGHT is worked out
+  from. Stand the drawing in a Solid of it and it is handed --solid-rise and
+  --solid-splay, each a multiple of this drawing's own width. The top face
+  lifts by them, the side below shears out into the gap, and the foot stays
+  where the set is standing. Off a tilted plane both numbers are nothing and
+  this is the flat drawing it always was.
 
   The housing is 221 by 229. The G-type handset, 216 cap to cap, lies face down
   across the cradle on two hook-switch plungers 100 apart, covering them; lift
@@ -217,7 +217,7 @@
   top: calc(149.5 * var(--desk-phone-unit));
   height: calc(1 * var(--desk-phone-unit));
   transform-origin: 50% 100%;
-  transform: matrix(1, 0, calc(var(--solid-splay, 0) * -560), calc(var(--solid-rise, 0) * 320), 0, 0);
+  transform: matrix(1, 0, calc(var(--solid-splay, 0) * -320), calc(var(--solid-rise, 0) * 320), 0, 0);
 }
 
 .desk-phone__machine-foot,
@@ -624,5 +624,54 @@
   }
 }
 
-.desk-phone__cord-connector { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+/* --- The climb ---------------------------------------------------------- */
+
+/*
+  The last of the cord. The coil lies on the wood and the handset is up on the
+  set, so this one short piece has an end in each place: its foot is where the
+  coil stops and its head is the cap it plugs into. It is drawn in the set, so
+  it comes with the set's lift already on it, and all that is needed is to give
+  that lift back at the foot and nothing at all at the head — a shear about the
+  head, which moves a point by the whole lift at the foot and by none of it at
+  the head, and by the share in between for everything along the way. So the
+  cord stretches out of the coil as the plane comes down instead of parting
+  from it.
+
+  The numbers are the shear that does that, and they are the climb's own: how
+  far the head is from the foot, across and up this drawing. Two hook states,
+  two climbs, so two sets of them. Like the flank above, the shear is measured
+  the way the surface runs rather than the way the set was laid down.
+*/
+.desk-phone__cord-connector {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  /* On the cradle: the cap is 40 across and 14 up the drawing from the coil. */
+  transform-origin: calc(6 * var(--desk-phone-unit)) calc(48 * var(--desk-phone-unit));
+  transform: matrix(
+    calc(1 + var(--solid-splay, 0) * 7.1269),
+    calc(var(--solid-rise, 0) * -7.1269),
+    calc(var(--solid-splay, 0) * -2.4944),
+    calc(1 + var(--solid-rise, 0) * 2.4944),
+    0,
+    0
+  );
+}
+
+/* Lifted, the handset stands off to the left and back, so the climb is 18
+   across and 54 up instead and the same shear takes its own numbers. */
+.desk-phone[data-hook='off'] .desk-phone__cord-connector {
+  transform-origin: calc(-16 * var(--desk-phone-unit)) calc(8 * var(--desk-phone-unit));
+  transform: matrix(
+    calc(1 + var(--solid-splay, 0) * 1.7778),
+    calc(var(--solid-rise, 0) * -1.7778),
+    calc(var(--solid-splay, 0) * -5.3333),
+    calc(1 + var(--solid-rise, 0) * 5.3333),
+    0,
+    0
+  );
+}
 .desk-phone__saddle { left: calc(22 * var(--desk-phone-unit)); right: calc(22 * var(--desk-phone-unit)); height: calc(66 * var(--desk-phone-unit)); top: calc(30 * var(--desk-phone-unit)); }

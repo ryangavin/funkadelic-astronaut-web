@@ -25,9 +25,39 @@
 .perspective-desk__settings textarea { box-sizing: border-box; width: 100%; height: 240px; margin-top: 8px; font: 11px/1.4 monospace; }
 
 .perspective-desk__frame {
+  --perspective-desk-share: 0.75;
+  position: relative;
   width: 100%;
   max-width: calc((100svh - 64px) * 16 / 9);
   aspect-ratio: 16 / 9;
   margin: 0 auto;
   overflow: visible;
+}
+
+/*
+  With a room behind it the desk no longer is the frame: it stands in it, at
+  its share of the width, pushed up to the brick. The frame crops the room, so
+  nothing of the floor's far end or the wall's top shows outside it.
+*/
+.perspective-desk__frame[data-room] {
+  overflow: clip;
+  container-type: inline-size;
+}
+
+/*
+  The desk stands in the room by its front edge, which is the hinge everything
+  else is measured from: a lip up from the frame's bottom, so the floor shows
+  past its feet, in desk units of the desk's share of the width. The room's
+  floor, wall and the desk's own legs are placed from that same edge, so the
+  desk's back edge lands on the brick by measurement rather than by lining it
+  up. Its shadow on the boards is the room's to draw, in the room's own
+  perspective, from the lamp.
+*/
+.perspective-desk__frame[data-room] .perspective-desk__stand {
+  position: absolute;
+  /* In desk units of the frame's width: the frame is the container, so cqw is its width. */
+  bottom: calc(var(--perspective-desk-lip, 0) * var(--perspective-desk-share) * 100cqw / 1440);
+  left: 50%;
+  width: calc(var(--perspective-desk-share) * 100%);
+  translate: -50% 0;
 }

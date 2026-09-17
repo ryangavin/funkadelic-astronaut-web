@@ -100,7 +100,7 @@ test('The office inkjet: a smaller gamut, ink into the fibre, a dither and the h
   assert.match(wrapper, /style=\{enabled \? \{ \.\.\.style, filter: `url\(#\$\{id\}\)` \} : style\}/);
 
   // The site plan is run off on it.
-  const page = read('src/pages/Desk/PromoterDesk.tsx');
+  const page = (read('src/pages/Desk/PromoterDesk.tsx') + read('src/pages/Desk/DeskPapers.tsx'));
   assert.match(page, /<Inkjet className="site-plan__print" seed=\{3\}>\s+<img className="site-plan__map"/);
 
   const pen = read('src/components/3D/Pen/Pen.tsx');
@@ -192,21 +192,35 @@ test('Movable is picked up by its body, follows the pointer in surface units, an
   assert.match(behavior, /const HELD_CONTROLS = 'input, select, textarea, iframe, video, \[role="slider"\]'/);
   assert.match(behavior, /closest\(grab === 'anywhere' \? HELD_CONTROLS : CONTROLS\)/);
   // The pointer is captured once the press has travelled, and its travel is scaled to units.
-  assert.match(behavior, /if \(\(start\.turn \? Math\.abs\(dx\) : Math\.hypot\(dx, dy\)\) < MOVABLE_DRAG_THRESHOLD\) return;/);
+  assert.match(behavior, /if \(Math\.hypot\(dx, dy\) < MOVABLE_DRAG_THRESHOLD\) return;/);
   assert.match(behavior, /host\.current\?\.setPointerCapture\(start\.id\)/);
-  assert.match(behavior, /onMove\(\{ x: Math\.round\(start\.x \+ dx \/ perUnit\), y: Math\.round\(start\.y \+ dy \/ perUnit\) \}\)/);
+  assert.match(behavior, /onMove\(\{ x: Math\.round\(start\.x \+ dx \/ perUnit\), y: Math\.round\(start\.y \+ dy \/ perUnit\), rotation: start\.rotation, scale: start\.scale \}\)/);
   assert.match(behavior, /element\.addEventListener\('click', swallow, \{ capture: true, once: true \}\)/);
-  // A turn: from the grip, or the body with Alt held, by horizontal screen travel; and from the bracket keys.
+  // A press is watched to its end on the window, so a release off the thing never leaves it on the pointer.
+  assert.match(behavior, /window\.addEventListener\('pointerup', end, true\)/);
+  assert.match(behavior, /window\.addEventListener\('pointercancel', end, true\)/);
+  // A turn: from the grip, or the body with Alt held, following the pointer round the pivot; and from the bracket keys.
   assert.match(behavior, /MOVABLE_KEY_TURN = 1/);
+  assert.match(behavior, /MOVABLE_SNAP_TURN = 15/);
   assert.match(behavior, /if \(target\.closest\('\.movable__grip'\)\) \{/);
-  assert.match(behavior, /begin\(event, event\.altKey\);/);
-  assert.match(behavior, /onMove\(\{ x: start\.x, y: start\.y, rotation: Math\.round\(\(start\.rotation \+ turned\) \* 2\) \/ 2 \}\)/);
+  assert.match(behavior, /begin\(event, event\.altKey \? 'turn' : 'move'\);/);
+  assert.match(behavior, /const swept = \(Math\.atan2\(here\.y - at\.y, here\.x - at\.x\) - start\.angle\) \* 180 \/ Math\.PI;/);
+  assert.match(behavior, /rotation: event\.shiftKey \? Math\.round\(turned \/ MOVABLE_SNAP_TURN\) \* MOVABLE_SNAP_TURN : Math\.round\(turned \* 2\) \/ 2/);
   assert.match(behavior, /const turns: Record<string, number> = \{ '\[': -turn, '\{': -turn, '\]': turn, '\}': turn \}/);
-  assert.match(behavior, /className="movable__grip"/);
+  assert.match(behavior, /className="movable__grip" data-grip="turn"/);
+  // And a resize, from its own handle or the minus and plus keys, about the same pivot.
+  assert.match(behavior, /MOVABLE_MIN_SCALE = 0\.25/);
+  assert.match(behavior, /MOVABLE_MAX_SCALE = 4/);
+  assert.match(behavior, /className="movable__grip" data-grip="size"/);
+  assert.match(behavior, /const sizes: Record<string, number> = \{ '-': -grow, _: -grow, '=': grow, '\+': grow \}/);
+  // The pivot is a point of its own, left out of the turn so it says where the thing really stands.
+  assert.match(behavior, /className="movable__pivot"/);
+  assert.match(css, /\.movable__pivot \{[\s\S]+?left: calc\(var\(--movable-pivot-x, 0\.5\) \* 100%\)/);
+  assert.match(css, /\.movable__lift \{[\s\S]+?transform-origin: calc\(var\(--movable-pivot-x, 0\.5\) \* 100%\) calc\(var\(--movable-pivot-y, 0\.5\) \* 100%\)/);
   assert.match(css, /\.movable\[data-movable\]:hover > \.movable__grip,\s+\.movable__grip:hover \{[\s\S]+?pointer-events: auto/);
   assert.match(css, /\.movable__grip::before \{[\s\S]+?inset: calc\(-18 \* var\(--movable-unit\)\)/);
   // The keyboard moves the thing itself, not a control inside it.
-  assert.match(behavior, /if \(!onMove \|\| \(event\.target !== event\.currentTarget && !onGrip\)\) return;/);
+  assert.match(behavior, /if \(!onMove \|\| \(event\.target !== event\.currentTarget && !grip\)\) return;/);
   assert.match(behavior, /tabIndex=\{onMove \? 0 : undefined\}/);
   assert.match(behavior, /aria-roledescription=\{onMove \? 'movable' : undefined\}/);
   assert.match(behavior, /onDragStart=\{\(event\) => event\.preventDefault\(\)\}/);
@@ -253,8 +267,8 @@ test('Spill packs loose things on a point and sends them out in order when opene
 });
 
 test('The promoter’s desk: everything its real size against the Walkman, the folder a button, its contents spilling out, all of it movable', () => {
-  const page = read('src/pages/Desk/PromoterDesk.tsx');
-  const css = read('src/pages/Desk/PromoterDesk.css');
+  const page = (read('src/pages/Desk/PromoterDesk.tsx') + read('src/pages/Desk/DeskPapers.tsx'));
+  const css = (read('src/pages/Desk/PromoterDesk.css') + read('src/pages/Desk/DeskPapers.css'));
   // Closed, the folder's box is twice the folder anyone can see: its other half lies on bare desk over the
   // running order and the site plan, so it catches nothing and only the button and the cover's links do.
   assert.match(css, /\.promoter-desk\[data-open='false'\] \.promoter-desk__folder \{\s+pointer-events: none;/);

@@ -8,6 +8,7 @@
   --desk-lamp-rotation: 0deg;
   --desk-lamp-enamel: #c9432f;
   --desk-lamp-enamel-deep: #7d2416;
+  --desk-lamp-spill: #ffe2a8;
   position: relative;
   display: block;
   width: 100%;
@@ -52,8 +53,8 @@
 }
 
 /* The light round the rim of the shade: there when it is on, gone when it is off. */
+/* The colour is the gradient's now, so it lives here as a token rather than a fill. */
 .desk-lamp__spill {
-  fill: #ffe2a8;
   opacity: 0;
   transition: opacity 320ms ease;
 }

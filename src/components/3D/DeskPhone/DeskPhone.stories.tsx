@@ -9,7 +9,7 @@ import { Perspective, STANDING_VIEW, Solid } from '../../../behaviors/Perspectiv
 import { Desk } from '../Desk/Desk';
 import { PaperSheet } from '../../2D/PaperSheet/PaperSheet';
 import { Pin } from '../../2D/Pin/Pin';
-import { DESK_PHONE_FINISHES, DESK_PHONE_FOOT, DESK_PHONE_HEIGHT, DeskPhone, SET_HEIGHT } from './DeskPhone';
+import { DESK_PHONE_FINISHES, DESK_PHONE_FOOT, DESK_PHONE_HEIGHT, DeskPhone, SET_BODY_HEIGHT } from './DeskPhone';
 import { DIAL_OFFSET, DIAL_PITCH, DIAL_SPEED, PULSE_RATE, pulsesFor, returnMs, travelFor } from './pulses';
 
 const meta = {
@@ -153,7 +153,7 @@ export const Raised: Story = {
   ),
   play: async ({ canvasElement }) => {
     // 137 millimetres against the 320 this drawing is wide.
-    await expect(DESK_PHONE_HEIGHT).toBeCloseTo(SET_HEIGHT / 320, 6);
+    await expect(DESK_PHONE_HEIGHT).toBeCloseTo(SET_BODY_HEIGHT / 320, 6);
 
     const sets = [...canvasElement.querySelectorAll<HTMLElement>('.desk-phone')];
     const flank = (root: HTMLElement, part: string) => root.querySelector<HTMLElement>(part)!.getBoundingClientRect().height;
@@ -245,5 +245,5 @@ export const OnDesk: Story = {
   play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
-  render: (args) => <DeskObjectStudy name="Desk phone" widthMm={240} depthRatio={300/320} heightMm={102.75} solid={{ height: DESK_PHONE_HEIGHT, foot: DESK_PHONE_FOOT }} shapes={[{ path: "M32 12H81Q92 12 92 25V80Q92 88 81 88H32Q23 88 23 80V25Q23 12 32 12Z" }]} note="Phone shown at 75% scale; handset and cord remain attached when lifted."><DeskPhone {...args} rotation={0} sound={false} /></DeskObjectStudy>,
+  render: (args) => <DeskObjectStudy name="Desk phone" widthMm={240} depthRatio={300/320} heightMm={SET_BODY_HEIGHT * 0.75} solid={{ height: DESK_PHONE_HEIGHT, foot: DESK_PHONE_FOOT }} shapes={[{ path: "M32 12H81Q92 12 92 25V80Q92 88 81 88H32Q23 88 23 80V25Q23 12 32 12Z" }]} note="Phone shown at 75% scale. What stands up is the moulding, not the handset lying on it; handset and cord remain attached when lifted."><DeskPhone {...args} rotation={0} sound={false} /></DeskObjectStudy>,
 };

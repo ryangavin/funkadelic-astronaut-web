@@ -1,0 +1,58 @@
+/* The bench around the desk: a readout down one side, the desk itself filling the rest. */
+.desk-perf {
+  display: grid;
+  grid-template-columns: minmax(20rem, 24rem) 1fr;
+  gap: 1rem;
+  align-items: start;
+  min-height: 100vh;
+  padding: 1rem;
+  background: #14110e;
+  color: #efe7dc;
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.desk-perf__panel { position: sticky; top: 1rem; display: grid; gap: .75rem; }
+.desk-perf__panel h2 { margin: 0; font-size: 1rem; letter-spacing: .04em; text-transform: uppercase; }
+.desk-perf__hint { margin: 0; color: #a99e90; }
+.desk-perf__actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+.desk-perf__actions button {
+  padding: .4rem .7rem;
+  border: 1px solid #4a4038;
+  border-radius: .25rem;
+  background: #221c17;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.desk-perf__actions button:hover:not(:disabled) { border-color: #857665; background: #2c241d; }
+.desk-perf__actions button:disabled { opacity: .5; cursor: progress; }
+
+.desk-perf__status { margin: 0; min-height: 1.5em; color: #c9bba8; }
+
+.desk-perf__table { width: 100%; border-collapse: collapse; }
+.desk-perf__table caption { padding-bottom: .3rem; color: #a99e90; text-align: left; }
+.desk-perf__table th, .desk-perf__table td { padding: .25rem .4rem; border-bottom: 1px solid #2e2823; text-align: right; }
+.desk-perf__table thead th { color: #a99e90; font-weight: 400; }
+.desk-perf__table tbody th { font-weight: 400; text-align: left; }
+
+/* Past the budget, and well past it. */
+.desk-perf__table tbody tr[data-tight] td { color: #e8c37a; }
+.desk-perf__table tbody tr[data-slow] td { color: #e8927a; }
+
+.desk-perf__react { margin: 0; padding-top: .5rem; border-top: 1px solid #2e2823; color: #a99e90; }
+.desk-perf__react strong { color: #efe7dc; font-weight: 600; }
+
+.desk-perf__desk { overflow: hidden; border-radius: .25rem; }
+
+@media (max-width: 60rem) {
+  .desk-perf { grid-template-columns: 1fr; }
+  .desk-perf__panel { position: static; }
+}
+
+/* The bench's own reading of the run. A window that was not drawing is the one
+   that most needs saying out loud, so it is the one that shouts. */
+.desk-perf__verdict { margin: 0; padding: .5rem .6rem; border-left: 3px solid #4a4038; border-radius: .2rem; background: #1c1713; }
+.desk-perf__verdict[data-kind="attributed"] { border-color: #e8927a; }
+.desk-perf__verdict[data-kind="already-fast"] { border-color: #8fbf7a; }
+.desk-perf__verdict[data-kind="not-drawing"] { border-color: #e8c37a; color: #e8c37a; }

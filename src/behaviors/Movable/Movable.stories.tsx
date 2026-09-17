@@ -7,7 +7,7 @@ import { PaperSheet } from '../../components/2D/PaperSheet/PaperSheet';
 import { Pen } from '../../components/3D/Pen/Pen';
 import { Polaroid } from '../../components/2D/Polaroid/Polaroid';
 import { StickyNote } from '../../components/2D/StickyNote/StickyNote';
-import { MOVABLE_KEY_STEP, MOVABLE_KEY_TURN, MOVABLE_SCRUB_TURN, Movable, MovableScale, type Place } from './Movable';
+import { MOVABLE_KEY_SCALE, MOVABLE_KEY_STEP, MOVABLE_KEY_TURN, Movable, MovableScale, type Place } from './Movable';
 
 const meta = {
   title: 'Foundations/Behaviors/Movable',
@@ -44,7 +44,8 @@ function Things(args: Story['args']) {
     width: WIDTHS[id],
     z: 1 + stacking.indexOf(id),
     label: LABELS[id],
-    onMove: (to: { x: number; y: number }) => setPlaces((all) => ({ ...all, [id]: { ...all[id], ...to } })),
+    resizable: true,
+    onMove: (to: Place) => setPlaces((all) => ({ ...all, [id]: { ...all[id], ...to } })),
     onGrab: () => {
       setStacking((order) => [...order.filter((other) => other !== id), id]);
       args?.onGrab?.();
@@ -113,7 +114,20 @@ export const OnASheet: Story = {
   },
 };
 
-/** Hover to reveal the fixed upper-right grip. Scrub horizontally, release, then leave and hover again. */
+/** Where the pivot of a thing is drawn, on the screen. */
+function pivotOf(thing: HTMLElement) {
+  const box = thing.querySelector('.movable__pivot')!.getBoundingClientRect();
+  return { x: box.x, y: box.y };
+}
+
+/** A point the same distance from the pivot as `from`, swept round it by `degrees`. */
+function swept(pivot: { x: number; y: number }, from: { x: number; y: number }, degrees: number) {
+  const angle = Math.atan2(from.y - pivot.y, from.x - pivot.x) + (degrees * Math.PI) / 180;
+  const reach = Math.hypot(from.x - pivot.x, from.y - pivot.y);
+  return { clientX: pivot.x + reach * Math.cos(angle), clientY: pivot.y + reach * Math.sin(angle) };
+}
+
+/** Hover to reveal the handles. Take the turn handle round the thing and it follows the pointer. */
 export const Turning: Story = {
   render: (args) => <Things {...args} />,
   play: async ({ canvasElement, args }) => {
@@ -127,16 +141,19 @@ export const Turning: Story = {
     // Let the hover reveal finish before measuring the fixed handle.
     await waitFor(() => expect(getComputedStyle(grip).scale).toBe('1'));
     const box = grip.getBoundingClientRect();
-    const at = (dx: number, dy = 0) => ({ clientX: box.x + box.width / 2 + dx, clientY: box.y + box.height / 2 + dy });
+    const held = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    const pivot = pivotOf(pen);
+    // The thing turns by however far the handle is taken round the pivot, and by nothing else.
     await user.pointer([
-      { keys: '[MouseLeft>]', target: grip, coords: at(0) },
-      { coords: at(40, 70) },
-      { coords: at(180, 70) },
+      { keys: '[MouseLeft>]', target: grip, coords: { clientX: held.x, clientY: held.y } },
+      { coords: swept(pivot, held, 30) },
+      { coords: swept(pivot, held, 90) },
     ]);
-    await expect(Number.parseFloat(pen.style.getPropertyValue('--movable-rotation'))).toBe(START.pen.rotation! + 180 * MOVABLE_SCRUB_TURN);
+    await expect(Number.parseFloat(pen.style.getPropertyValue('--movable-rotation'))).toBeCloseTo(START.pen.rotation! + 90, 1);
+    // The handle keeps its place on the box, and the thing has not walked anywhere.
     await expect(grip.getBoundingClientRect().x).toBeCloseTo(box.x, 1);
     await expect(grip.getBoundingClientRect().y).toBeCloseTo(box.y, 1);
-    await user.pointer([{ keys: '[/MouseLeft]', coords: at(180, 70) }]);
+    await user.pointer([{ keys: '[/MouseLeft]', coords: swept(pivot, held, 90) }]);
     await expect(pen.style.getPropertyValue('--movable-x')).toBe(String(START.pen.x));
     await expect(pen.style.getPropertyValue('--movable-y')).toBe(String(START.pen.y));
     await expect(args.onDrop).toHaveBeenCalledTimes(1);
@@ -149,15 +166,52 @@ export const Turning: Story = {
     await user.keyboard('{ArrowLeft}{Shift>}{ArrowRight}{/Shift}');
     await expect(Number.parseFloat(pen.style.getPropertyValue('--movable-rotation'))).toBe(START.pen.rotation! + 90 + 4);
     await expect(pen.style.getPropertyValue('--movable-x')).toBe(String(START.pen.x));
-    // Alt-drag uses the same horizontal scrub, including leftward travel.
+    // Alt and a drag on the body turn it the same way, the other way round.
     const mug = canvas.getByRole('group', { name: 'Mug' });
-    const press = (type: string, dx: number) =>
-      mug.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 7, pointerType: 'mouse', isPrimary: true, button: 0, buttons: type === 'pointerup' ? 0 : 1, clientX: 900 + dx, clientY: 200, altKey: true }));
-    press('pointerdown', 0);
-    press('pointermove', -180);
-    press('pointerup', -180);
-    await waitFor(() => expect(Number.parseFloat(mug.style.getPropertyValue('--movable-rotation'))).toBe(START.mug.rotation! - 90));
+    const centre = pivotOf(mug);
+    const grabbed = { x: centre.x + 120, y: centre.y };
+    const press = (type: string, at: { clientX: number; clientY: number }) =>
+      mug.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 7, pointerType: 'mouse', isPrimary: true, button: 0, buttons: type === 'pointerup' ? 0 : 1, altKey: true, ...at }));
+    press('pointerdown', { clientX: grabbed.x, clientY: grabbed.y });
+    press('pointermove', swept(centre, grabbed, -90));
+    press('pointerup', swept(centre, grabbed, -90));
+    await waitFor(() => expect(Number.parseFloat(mug.style.getPropertyValue('--movable-rotation'))).toBeCloseTo(START.mug.rotation! - 90, 1));
     await expect(mug.style.getPropertyValue('--movable-x')).toBe(String(START.mug.x));
+  },
+};
+
+/** The size handle: take it out from the thing to enlarge it, in toward it to shrink. */
+export const Resizing: Story = {
+  render: (args) => <Things {...args} />,
+  play: async ({ canvasElement }) => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    const canvas = within(canvasElement);
+    const note = canvas.getByRole('group', { name: 'Sticky note' });
+    const grip = canvas.getByRole('button', { name: 'Resize Sticky note' });
+    note.focus();
+    await user.hover(note);
+    await waitFor(() => expect(getComputedStyle(grip).scale).toBe('1'));
+    const pivot = pivotOf(note);
+    const box = grip.getBoundingClientRect();
+    const held = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    const along = (times: number) => ({ clientX: pivot.x + (held.x - pivot.x) * times, clientY: pivot.y + (held.y - pivot.y) * times });
+    // Twice as far out from the pivot is twice the size, and the pivot has not budged.
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: grip, coords: { clientX: held.x, clientY: held.y } },
+      { coords: along(1.4) },
+      { coords: along(2) },
+      { keys: '[/MouseLeft]', coords: along(2) },
+    ]);
+    await expect(Number(note.style.getPropertyValue('--movable-width').match(/[\d.]+/)![0])).toBeCloseTo(WIDTHS.note * 2, 0);
+    await expect(Math.abs(pivotOf(note).x - pivot.x)).toBeLessThan(2);
+    await expect(Math.abs(pivotOf(note).y - pivot.y)).toBeLessThan(2);
+    // The keyboard resizes it a step at a time from the handle, and with minus and plus anywhere on it.
+    grip.focus();
+    await user.keyboard('{ArrowDown}');
+    await expect(Number(note.style.getPropertyValue('--movable-width').match(/[\d.]+/)![0])).toBeCloseTo(WIDTHS.note * (2 - MOVABLE_KEY_SCALE), 0);
+    note.focus();
+    await user.keyboard('-');
+    await expect(Number(note.style.getPropertyValue('--movable-width').match(/[\d.]+/)![0])).toBeCloseTo(WIDTHS.note * (2 - MOVABLE_KEY_SCALE * 2), 0);
   },
 };
 
@@ -189,7 +243,7 @@ export const ChildControls: Story = {
     const grip = canvas.getByRole('button', { name: 'Rotate Control card' });
     grip.focus();
     await userEvent.keyboard('{ArrowRight}');
-    await expect(args.onMove).toHaveBeenCalledWith({ x: 100, y: 100, rotation: 1 });
+    await expect(args.onMove).toHaveBeenCalledWith({ x: 100, y: 100, rotation: 1, scale: 1 });
     // A cancelled rotation settles and dismisses its handle without moving the card.
     const card = canvas.getByRole('group', { name: 'Control card' });
     const pointer = (type: string, clientX: number) => grip.dispatchEvent(new PointerEvent(type, {
@@ -200,6 +254,11 @@ export const ChildControls: Story = {
     pointer('pointercancel', 140);
     await waitFor(() => expect(card).not.toHaveAttribute('data-dragging'));
     await expect(card).toHaveAttribute('data-grip-dismissed');
-    await expect(args.onMove).toHaveBeenLastCalledWith({ x: 100, y: 100, rotation: 20 });
+    // It turned by where the pointer went round the card, and it did not move or resize.
+    const last = (args.onMove as ReturnType<typeof fn>).mock.calls.at(-1)![0] as Place;
+    await expect(last.x).toBe(100);
+    await expect(last.y).toBe(100);
+    await expect(last.scale).toBe(1);
+    await expect(last.rotation).not.toBe(1);
   },
 };
