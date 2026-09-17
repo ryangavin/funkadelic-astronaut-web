@@ -228,6 +228,19 @@ export type HandDrag = {
   msBehind: number;
   /** Whether the hand was moving fast enough for `msBehind` to mean anything. */
   worthStating: boolean;
+  /**
+   * How many pointer reports arrived in the frame just gone.
+   *
+   * This is the one number that settles whether coalescing the stream is worth
+   * doing at all. A mouse reports far faster than a screen redraws, but the
+   * browser is supposed to hand the page about one move a frame and keep the
+   * rest inside `getCoalescedEvents`. If this reads 1, then nothing is being
+   * worked out more than once a frame and there is nothing to coalesce; if it
+   * reads 4 or 8, the stream really is outrunning the screen. Neither a
+   * dispatched event nor an injected drag can answer it — only a hand on a real
+   * mouse can.
+   */
+  movesThisFrame: number;
   /** The frame the readout was taken on. */
   frameMs: number;
 };
@@ -260,7 +273,10 @@ export function watchHandDrag(root: Document | HTMLElement, report: (drag: HandD
   let running = true;
   let ticking = false;
 
+  let sinceFrame = 0;
   const follow = (event: PointerEvent) => { pointer = { x: event.clientX, y: event.clientY }; };
+  /* Counted apart from the position, so that the press itself is not counted as a move. */
+  const reported = (event: PointerEvent) => { follow(event); sinceFrame += 1; };
   /*
     The loop only turns over while a button is down. Left running it would read
     layout on every frame of every other measurement on this bench, and an
@@ -276,7 +292,7 @@ export function watchHandDrag(root: Document | HTMLElement, report: (drag: HandD
     win.requestAnimationFrame(tick);
   };
   const end = () => { ticking = false; zero = null; wasAt = null; report(null); };
-  win.addEventListener('pointermove', follow, { capture: true, passive: true });
+  win.addEventListener('pointermove', reported, { capture: true, passive: true });
   win.addEventListener('pointerdown', begin, { capture: true, passive: true });
   win.addEventListener('pointerup', end, { capture: true, passive: true });
   win.addEventListener('pointercancel', end, { capture: true, passive: true });
@@ -291,6 +307,8 @@ export function watchHandDrag(root: Document | HTMLElement, report: (drag: HandD
     const now = win.performance.now();
     const frameMs = now - lastFrame;
     lastFrame = now;
+    const reports = sinceFrame;
+    sinceFrame = 0;
     const held = root.querySelector<HTMLElement>('[data-dragging]');
     if (!held || !pointer) {
       zero = null;
@@ -311,6 +329,7 @@ export function watchHandDrag(root: Document | HTMLElement, report: (drag: HandD
         speedPxPerFrame: +speed.toFixed(1),
         msBehind: worthStating ? +(trailingPx / speed * frameMs).toFixed(1) : 0,
         worthStating,
+        movesThisFrame: reports,
         frameMs: +frameMs.toFixed(1),
       });
     }
@@ -320,7 +339,7 @@ export function watchHandDrag(root: Document | HTMLElement, report: (drag: HandD
   return () => {
     running = false;
     ticking = false;
-    win.removeEventListener('pointermove', follow, { capture: true });
+    win.removeEventListener('pointermove', reported, { capture: true });
     win.removeEventListener('pointerdown', begin, { capture: true });
     win.removeEventListener('pointerup', end, { capture: true });
     win.removeEventListener('pointercancel', end, { capture: true });

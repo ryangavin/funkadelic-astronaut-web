@@ -47,21 +47,28 @@ function Bench() {
   const worstSeen = useRef(0);
   const held = useRef('');
   const worstPx = useRef(0);
+  /* The busiest frame of the drag: how many pointer reports arrived in one. */
+  const mostReports = useRef(0);
+  const reportFrames = useRef(0);
+  const reportTotal = useRef(0);
   useEffect(() => watchHandDrag(desk.current ?? document.body, drag => {
     const line = readout.current;
     if (!line) return;
     /* The reading has to outlive the drag, or it is gone by the time anyone looks up. */
-    /* The reading has to outlive the drag, or it is gone by the time anyone looks up. */
     if (!drag) {
       if (held.current) {
+        const each = reportFrames.current ? (reportTotal.current / reportFrames.current).toFixed(1) : '0';
+        const stream = `Pointer reports: ${each} a frame on average, ${mostReports.current} at the busiest.`;
         line.textContent = worstPx.current > 0
-          ? `${held.current} — worst ${worstPx.current.toFixed(0)}px behind while properly moving, about ${worstSeen.current.toFixed(0)}ms. Drag again to retake it.`
-          : `${held.current} — never moved fast enough to measure. Drag it briskly across the desk.`;
+          ? `${held.current} — worst ${worstPx.current.toFixed(0)}px behind while properly moving, about ${worstSeen.current.toFixed(0)}ms. ${stream} Drag again to retake it.`
+          : `${held.current} — never moved fast enough to measure. ${stream} Drag it briskly across the desk.`;
         held.current = '';
       }
       return;
     }
-    if (!held.current) { worstSeen.current = 0; worstPx.current = 0; }
+    if (!held.current) { worstSeen.current = 0; worstPx.current = 0; mostReports.current = 0; reportFrames.current = 0; reportTotal.current = 0; }
+    if (drag.movesThisFrame > 0) { reportFrames.current += 1; reportTotal.current += drag.movesThisFrame; }
+    if (drag.movesThisFrame > mostReports.current) mostReports.current = drag.movesThisFrame;
     held.current = drag.label;
     /* Only while the hand is properly moving: see MOVING_ENOUGH. */
     if (drag.worthStating) {
@@ -69,7 +76,7 @@ function Bench() {
       if (drag.trailingPx > worstPx.current) worstPx.current = drag.trailingPx;
     }
     line.textContent = drag.worthStating
-      ? `${drag.label}: ${drag.trailingPx}px behind at ${drag.speedPxPerFrame}px a frame — ${drag.msBehind}ms (worst ${worstPx.current.toFixed(0)}px · ${worstSeen.current.toFixed(0)}ms), frame ${drag.frameMs}ms`
+      ? `${drag.label}: ${drag.trailingPx}px behind at ${drag.speedPxPerFrame}px a frame — ${drag.msBehind}ms (worst ${worstPx.current.toFixed(0)}px · ${worstSeen.current.toFixed(0)}ms), frame ${drag.frameMs}ms, ${drag.movesThisFrame} report${drag.movesThisFrame === 1 ? '' : 's'} this frame`
       : `${drag.label}: ${drag.trailingPx}px behind, but only ${drag.speedPxPerFrame}px a frame — move faster for a reading.`;
     line.toggleAttribute('data-slow', worstPx.current > 20);
   }), []);
