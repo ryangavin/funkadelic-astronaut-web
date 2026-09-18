@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState, type CSSProperties, type HTMLAttributes, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type HTMLAttributes, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
 import { Tallied } from '../../debug/DeskPerf/tally';
 import { usePlaces } from './places';
 import './Movable.css';
@@ -181,7 +181,10 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
      keeps its place in. Without one or the other it is a drawing, not a thing. */
   const movable = !!onMove || !!kept;
   const here = (kept && places?.get(kept)) || { x, y, rotation, scale };
-  const atX = here.x, atY = here.y, atRotation = here.rotation ?? 0, atScale = here.scale ?? 1;
+  const currentPlace = () => {
+    const at = (kept && places?.get(kept)) || { x, y, rotation, scale };
+    return { atX: at.x, atY: at.y, atRotation: at.rotation ?? 0, atScale: at.scale ?? 1 };
+  };
   const press = useRef<Press | null>(null);
   const [dragging, setDragging] = useState<Gesture | null>(null);
   const [gripDismissed, setGripDismissed] = useState(false);
@@ -236,6 +239,7 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
   }, [watching]);
 
   function finish(start: Press) {
+    const { atX, atY, atRotation, atScale } = currentPlace();
     press.current = null;
     setWatching(false);
     /* Written straight to the element while the drag ran, so this is the first
@@ -282,6 +286,7 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
   }
 
   const begin = (event: PointerEvent<HTMLDivElement>, gesture: Gesture) => {
+    const { atX, atY, atRotation, atScale } = currentPlace();
     const on = pivotOnScreen();
     const at = onSurface(on.cx, on.cy);
     const here = onSurface(event.clientX, event.clientY);
@@ -334,6 +339,20 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
     if (width > 0) element.style.setProperty('--movable-width', `calc(${width * (next.scale ?? 1)} * var(--movable-unit))`);
   };
 
+  /* External resets and arrangements update the same DOM path as carrying.
+     The callback never writes to the store, so notifications cannot recurse. */
+  const redraw = useRef(draw);
+  redraw.current = draw;
+  useLayoutEffect(() => {
+    if (!kept || !places) return;
+    const update = () => {
+      const next = places.get(kept);
+      if (next) redraw.current(next);
+    };
+    update();
+    return places.subscribe(kept, update);
+  }, [kept, places]);
+
   /* Where the thing has got to. With a place of its own that is the store's, and
      the store is told first so anything drawing from the place — a shadow, the
      light a lamp carries — is working from the same frame. */
@@ -341,7 +360,6 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
     if (kept) {
       latest.current = next;
       places?.set(kept, next);
-      draw(next);
       return;
     }
     /* The bench's A/B has no store behind it, so the props it would work a turn
@@ -407,6 +425,7 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
      is measured as it is now rather than taken from the drawing, since what a child
      does with the width it is given is the child's business. */
   const resized = (next: number) => {
+    const { atX, atY, atRotation, atScale } = currentPlace();
     const size = Math.round(clamp(next, MOVABLE_MIN_SCALE, MOVABLE_MAX_SCALE) * 100) / 100;
     const was = width * atScale;
     const now = width * size;
@@ -427,6 +446,7 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const { atX, atY, atRotation, atScale } = currentPlace();
     const grip = (event.target as Element).closest('.movable__grip');
     const onSize = grip?.getAttribute('data-grip') === 'size';
     if (!movable || (event.target !== event.currentTarget && !grip)) return;
