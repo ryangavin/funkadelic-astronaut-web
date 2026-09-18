@@ -339,7 +339,7 @@ export const DeskRoom = memo(function DeskRoom({ angle, depth, deskShare = ROOM_
       {/* The boards: the desk top's plane a desk's height down, running from in front of the desk back to the wall. */}
       <div className="desk-room__layer desk-room__layer--floor">
         <div className="desk-room__floor">
-          <Floor wood={floor} width={span} height={floorDepth} lay="across" board={FLOOR_COURSE} run={FLOOR_RUN} light={0} />
+          <Floor materialOrigin={{ x: -span / 2, y: 0 }} wood={floor} width={span} height={floorDepth} lay="across" board={FLOOR_COURSE} run={FLOOR_RUN} light={0} />
           <DeskFloorShadow deskWidth={deskWidth} span={span} deskDepth={deskDepth} stand={stand} floorDepth={floorDepth} strength={shadowStrength} />
         </div>
       </div>
@@ -347,7 +347,7 @@ export const DeskRoom = memo(function DeskRoom({ angle, depth, deskShare = ROOM_
       {/* The brick, stood up on the boards where they stop, its bottom courses behind the desk. */}
       <div className="desk-room__layer desk-room__layer--wall">
         <div className="desk-room__wall">
-          <Wall finish={wall} width={span} height={wallHeight} flat light={0} />
+          <Wall materialOrigin={{ x: -span / 2, y: -wallHeight }} finish={wall} width={span} height={wallHeight} flat light={0} />
         </div>
       </div>
 

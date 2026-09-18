@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useId } from 'react';
 import './Floor.css';
+import { materialRows, floorMaterialJoints, floorGrainTile, positiveModulo, type MaterialOrigin } from '../../../geometry/materialCoordinates';
 
 export const FLOOR_WOODS = ['pine', 'oak', 'walnut', 'limed'] as const;
 export type FloorWood = (typeof FLOOR_WOODS)[number];
@@ -34,6 +35,8 @@ function joints(row: number, width: number, run: number) {
 }
 
 export type FloorProps = {
+  /** World coordinates at the crop’s top-left; omitted preserves standalone drawing. */
+  materialOrigin?: MaterialOrigin;
   /** The timber the boards are cut from. */
   wood?: FloorWood;
   /** The floor's design width in units, which is what every size here is measured against. */
@@ -68,6 +71,7 @@ export type FloorProps = {
  * a room. Tip it in a `Perspective` and it foreshortens like any other surface.
  */
 export function Floor({
+  materialOrigin,
   wood = 'pine',
   width = 1440,
   height = 1620,
@@ -85,13 +89,17 @@ export function Floor({
   const length = lay === 'across' ? width : height;
   const span = lay === 'across' ? height : width;
   const courses = Math.max(1, Math.ceil(span / Math.max(1, board)));
+  const along = materialOrigin ? (lay === 'across' ? materialOrigin.x : materialOrigin.y) : 0;
+  const across = materialOrigin ? (lay === 'across' ? materialOrigin.y : -materialOrigin.x - width) : 0;
+  const rows = materialOrigin ? materialRows(across, span, board) : Array.from({ length: courses }, (_, row) => row);
   return (
     <div
       {...rest}
       className={`floor ${className}`}
       data-wood={wood}
+      data-material-origin={materialOrigin ? `${materialOrigin.x},${materialOrigin.y}` : undefined}
       data-lay={lay}
-      style={{ '--floor-width': width, '--floor-height': height, '--floor-board': board, '--floor-light': light, ...style } as React.CSSProperties}
+      style={{ '--floor-width': width, '--floor-height': height, '--floor-board': board, '--floor-light': light, '--floor-origin-x': materialOrigin?.x ?? 0, '--floor-origin-y': materialOrigin?.y ?? 0, '--floor-along': along, '--floor-course-offset': rows[0] * board - across, ...style } as React.CSSProperties}
     >
       <div className="floor__ground">
         <svg className="floor__filters" aria-hidden="true" focusable="false">
@@ -104,12 +112,12 @@ export function Floor({
           </defs>
         </svg>
         <div className="floor__boards" data-lay={lay} aria-hidden="true">
-          {Array.from({ length: courses }, (_, course) => (
-            <div key={course} className="floor__course" style={{ '--floor-course': course } as React.CSSProperties}>
-              <div className="floor__bands" style={{ filter: `url(#${id}-grain)` }} />
+          {rows.map(course => (
+            <div key={course} className="floor__course" data-course={course} data-cast={positiveModulo(course + 1, 3) === 0 ? 'light' : positiveModulo(course + 1, 2) === 0 ? 'dark' : 'plain'} style={{ '--floor-course': course } as React.CSSProperties}>
+              <div className="floor__bands" style={materialOrigin ? { backgroundImage: floorGrainTile(course, board) } : { filter: `url(#${id}-grain)` }} />
               {run > 0
-                ? joints(course, length, run).map((x) => (
-                    <span key={x} className="floor__butt" style={{ '--floor-butt-at': x } as React.CSSProperties} />
+                ? (materialOrigin ? floorMaterialJoints(course, along, length, run) : joints(course, length, run)).map((x) => (
+                    <span key={x} className="floor__butt" data-material-x={x} style={{ '--floor-butt-at': x - along } as React.CSSProperties} />
                   ))
                 : null}
             </div>
