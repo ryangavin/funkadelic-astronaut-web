@@ -17,7 +17,7 @@ import { DeskPhone, DESK_PHONE_WIDTH, DESK_PHONE_DEPTH, DESK_PHONE_HEIGHT, DESK_
 import { Handheld } from '../../components/3D/Handheld/Handheld';
 import { HANDHELD_SILHOUETTE } from '../../components/3D/Handheld/silhouette';
 import { LabelBro, LABEL_BRO_HEIGHT, LABEL_BRO_FOOT } from '../../components/3D/LabelBro/LabelBro';
-import { MUG_FOOT, MUG_SILHOUETTE, Mug } from '../../components/3D/Mug/Mug';
+import { MUG_FOOT, MUG_HEIGHT, MUG_SILHOUETTE, MUG_TALL, Mug } from '../../components/3D/Mug/Mug';
 import { Pen } from '../../components/3D/Pen/Pen';
 import { Rolodex } from '../../components/3D/Rolodex/Rolodex';
 import { Walkman } from '../../components/3D/Walkman/Walkman';
@@ -57,7 +57,7 @@ const OBJECT_DRAWINGS: ObjectSpec[] = [
   { id: 'clock', name: 'Desk clock', width: 180, ratio: 560/720, height: 15, place: { x: 60, y: 65, rotation: -4 }, content: <DeskClock /> },
   // CradleRelief works its own rail and ball elevations out of the width it is given.
   { id: 'cradle', name: 'Newton’s cradle', width: 240, ratio: 600/720, height: 90, place: { x: 330, y: 65, scale: 1.2 }, shapes: [{ path: 'M3 5H97V95H3Z', heightMm: 8 }, { path: 'M8 20H92V23H8Z M8 77H92V80H8Z', heightMm: 90 }] },
-  { id: 'mug', name: 'Mug', width: 280, ratio: 1, height: 95, place: { x: 1010, y: 570, rotation: -15 }, shapes: MUG_SILHOUETTE, solid: { height: 95/140, foot: MUG_FOOT }, content: <Mug shadow="contact" /> },
+  { id: 'mug', name: 'Mug', width: 280, ratio: 1, height: MUG_TALL, place: { x: 1010, y: 570, rotation: -15 }, shapes: MUG_SILHOUETTE, solid: { height: MUG_HEIGHT, foot: MUG_FOOT }, content: <Mug shadow="contact" /> },
   { id: 'rolodex', name: 'Rolodex', width: 274.1, ratio: 624/518, height: 107.95, place: { x: 1170, y: 330, rotation: 4 }, solid: { localCoordinates: true, height: 408/518, foot: { x: .5, y: 312/518 } }, content: <Rolodex rotation={0} loose={false} /> , inspect: HANDLE },
   { id: 'handheld', name: 'Handheld', width: 408, ratio: 327/720, height: 23, place: { x: 30, y: 250, rotation: -5 }, content: <Handheld rotation={0} />, shapes: [{ path: HANDHELD_SILHOUETTE }], colors: ['#17181b', '#141519', '#090a0d'] , inspect: HANDLE },
   { id: 'labelBro', name: 'Label Bro', width: 366, ratio: 772/732, height: 65, place: { x: 755, y: 515, rotation: -5 }, solid: { localCoordinates: true, height: LABEL_BRO_HEIGHT, foot: LABEL_BRO_FOOT }, content: <LabelBro rotation={0} defaultOn defaultText="BACKLINE" /> , inspect: HANDLE },

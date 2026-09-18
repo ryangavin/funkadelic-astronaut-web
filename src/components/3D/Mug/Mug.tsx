@@ -15,8 +15,20 @@ export type MugProps = {
   style?: React.CSSProperties;
 };
 
-/** How tall a mug is, as a multiple of the width of its drawing: 95 mm against 140. */
-export const MUG_HEIGHT = 95 / 140;
+/** How tall a mug is, in millimetres. */
+export const MUG_TALL = 70;
+/**
+ * How tall it is as a multiple of the width of its drawing, which is what a
+ * Solid wants: 70 mm against the drawing's 140.
+ *
+ * It was 95, which is life size for an eight ounce mug and read as one — while
+ * it still had a handle. Without one, height is only legible from the shadow,
+ * and a vessel that tall with nothing sticking out of it reads as a travel cup
+ * rather than as something you would drink a coffee from at a desk. So it is
+ * squat now: near enough as tall as it is wide, which is what the eye takes for
+ * a mug when there is no handle to say so.
+ */
+export const MUG_HEIGHT = MUG_TALL / 140;
 /** 140 mm across the drawing, at two desk units per millimetre. */
 export const MUG_WIDTH = 280;
 /** Where it stands within that drawing: the middle of it, now that nothing stands beside it. */

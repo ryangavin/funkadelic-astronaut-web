@@ -4,7 +4,7 @@ import { expect, userEvent, within } from 'storybook/test';
 import { Movable, type Place } from '../Movable/Movable';
 import { Desk } from '../../components/3D/Desk/Desk';
 import { DeskClock } from '../../components/3D/DeskClock/DeskClock';
-import { MUG_FOOT, MUG_HEIGHT, MUG_SILHOUETTE, MUG_WIDTH, Mug } from '../../components/3D/Mug/Mug';
+import { MUG_FOOT, MUG_HEIGHT, MUG_SILHOUETTE, MUG_TALL, MUG_WIDTH, Mug } from '../../components/3D/Mug/Mug';
 import { LampShadows } from '../../components/3D/DeskLamp/LampShadows';
 import { DeskLamp, LampLight } from '../../components/3D/DeskLamp/DeskLamp';
 import { DeskLighting, castFrom, useDeskLight } from '../DeskLighting/DeskLighting';
@@ -39,7 +39,7 @@ function MugLighting({ place }: { place: Place }) {
   return <>
     <LampLight on={light.on} style={{ position: 'absolute', width: `${poolWidth / 1440 * 100}%`, aspectRatio: '1', left: `${(light.x - poolWidth / 2) / 1440 * 100}%`, top: `${(light.y - poolWidth / 2) / 800 * 100}%` }} />
     <LampShadows />
-    <ObjectCastShadow place={place} pivot={{ x: MUG_FOOT.x, y: MUG_FOOT.y }} width={MUG_WIDTH} depth={MUG_WIDTH} shapes={MUG_SILHOUETTE} heightMm={95} surfaceHeight={800} />
+    <ObjectCastShadow place={place} pivot={{ x: MUG_FOOT.x, y: MUG_FOOT.y }} width={MUG_WIDTH} depth={MUG_WIDTH} shapes={MUG_SILHOUETTE} heightMm={MUG_TALL} surfaceHeight={800} />
   </>;
 }
 

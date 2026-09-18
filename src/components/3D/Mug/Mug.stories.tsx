@@ -8,7 +8,7 @@ import { Desk } from '../Desk/Desk';
 import { Pen } from '../Pen/Pen';
 import { StickyNote } from '../../2D/StickyNote/StickyNote';
 import { CoffeeRing } from './CoffeeRing';
-import { MUG_FOOT, MUG_SILHOUETTE, Mug } from './Mug';
+import { MUG_FOOT, MUG_HEIGHT, MUG_SILHOUETTE, MUG_TALL, Mug } from './Mug';
 import { CoffeeRings, Stained } from './Stained';
 import { COFFEE_DRIES, COFFEE_GONE, COFFEE_WET, DESK, useCoffeeTrail } from './trail';
 
@@ -235,5 +235,5 @@ export const OnDesk: Story = {
   play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
-  render: (args) => <DeskObjectStudy name="Mug" widthMm={140} depthRatio={1} heightMm={95} shapes={MUG_SILHOUETTE} solid={{ height: 95/140, foot: MUG_FOOT }} note="Existing 95 mm mug height; the body is the silhouette it casts by."><Mug {...args} shadow="contact" /></DeskObjectStudy>,
+  render: (args) => <DeskObjectStudy name="Mug" widthMm={140} depthRatio={1} heightMm={MUG_TALL} shapes={MUG_SILHOUETTE} solid={{ height: MUG_HEIGHT, foot: MUG_FOOT }} note="70 mm tall, squat because it has no handle to say its size; the body is the silhouette it casts by."><Mug {...args} shadow="contact" /></DeskObjectStudy>,
 };
