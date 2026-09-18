@@ -15,6 +15,10 @@ export type SpillProps = {
   open: boolean;
   /** Mount contents on demand and remove them after the closing flight. */
   lazy?: boolean;
+  /** Keep packed drawings visible when a real container cover occludes them. */
+  hidePacked?: boolean;
+  /** Scale of the packed pile, independent of landed sizes. */
+  packedScale?: number;
   /** Last flight index, when children are grouped in a fragment or component. */
   lastOrder?: number;
   /** Where the items lie packed, as the point their centres gather on. Defaults to the container's own centre. */
@@ -47,7 +51,7 @@ const Context = createContext<SpillContext>({ open: true, stagger: SPILL_STAGGER
  * the same units as a Pin, so it can sit inside a folder's well or anywhere
  * else on a sheet. Reduced motion places everything without a flight.
  */
-export function Spill({ open, lazy = false, lastOrder, from, scatter = 12, duration = SPILL_FLIGHT_MS, stagger = SPILL_STAGGER_MS, delay = 0, unit, children, className = '', style }: SpillProps) {
+export function Spill({ open, lazy = false, hidePacked = true, packedScale = 1, lastOrder, from, scatter = 12, duration = SPILL_FLIGHT_MS, stagger = SPILL_STAGGER_MS, delay = 0, unit, children, className = '', style }: SpillProps) {
   const present = useClosingPresence(open, duration * 0.8 + (lastOrder ?? Math.max(0, Children.count(children) - 1)) * stagger);
   const [unpacked, setUnpacked] = useState(open);
   useEffect(() => {
@@ -60,6 +64,7 @@ export function Spill({ open, lazy = false, lastOrder, from, scatter = 12, durat
   const vars = {
     '--spill-from-x': from ? `${from.x}` : undefined,
     '--spill-from-y': from ? `${from.y}` : undefined,
+    '--spill-packed-scale': packedScale,
     '--spill-flight': `${duration}ms`,
     '--spill-delay': `${delay}ms`,
     '--spill-unit': unit,
@@ -67,7 +72,7 @@ export function Spill({ open, lazy = false, lastOrder, from, scatter = 12, durat
   } as CSSProperties;
   return (
     <Context.Provider value={{ open: shown, stagger, scatter }}>
-      <div className={`spill ${className}`} data-open={shown ? 'true' : 'false'} inert={!open} aria-hidden={!open} data-from={from ? 'point' : 'centre'} style={vars}>
+      <div className={`spill ${className}`} data-hide-packed={hidePacked} data-open={shown ? 'true' : 'false'} inert={!open} aria-hidden={!open} data-from={from ? 'point' : 'centre'} style={vars}>
         {(!lazy || present) && children}
       </div>
     </Context.Provider>

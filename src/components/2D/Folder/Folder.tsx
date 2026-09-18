@@ -30,6 +30,8 @@ export type FolderProps = {
   cover?: React.ReactNode;
   /** What sits in the well of the folder, on the right when open. */
   children?: React.ReactNode;
+  /** Scene-owned loose contents, beneath the moving cover in body coordinates. */
+  contentsLayer?: React.ReactNode;
   /** Tilt of the whole folder in degrees. */
   rotation?: number;
   className?: string;
@@ -56,6 +58,7 @@ export function Folder({
   sticker,
   cover,
   children,
+  contentsLayer,
   rotation = 0,
   className = '',
   style,
@@ -79,6 +82,7 @@ export function Folder({
           ) : null}
         </Weathered>
         <div className="folder__well" inert={!open} aria-hidden={!open}>{(!lazyContents || contentsPresent) && children}</div>
+        {contentsLayer && <div className="folder__contents-layer">{contentsLayer}</div>}
         <div className="folder__cover">
           <Weathered className="folder__face folder__face--inside" patina={0.5} flecks={0.5}>
             {stamps.slice(0, 3).map((stamp, index) => (
