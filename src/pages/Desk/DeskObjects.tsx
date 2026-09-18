@@ -1,3 +1,5 @@
+import { CoffeeRings } from '../../components/3D/Mug/Stained';
+import { DESK, useCoffeeTrail } from '../../components/3D/Mug/trail';
 import { PAPER_MM, mmToUnits } from '../../geometry/physicalScale';
 import { RunSheet, SitePlan } from './DeskPapers';
 import { Contract } from '../../components/2D/Contract/Contract';
@@ -180,7 +182,7 @@ function PositionedSolid({ object }: { object: ObjectSpec }) {
   return <Solid {...object.solid!}>{object.content}</Solid>;
 }
 
-export const DeskObject = memo(function DeskObject({ object, place, camera, layer, held, onFront }: { object: ObjectSpec; place: Place; camera: StudyCamera; layer: number; held: boolean; onFront: (id: string) => void }) {
+export const DeskObject = memo(function DeskObject({ object, place, camera, layer, held, onFront, onSettle }: { onSettle?: (place: Place) => void; object: ObjectSpec; place: Place; camera: StudyCamera; layer: number; held: boolean; onFront: (id: string) => void }) {
   const follows = worksItselfOutFromWhereItStands(object);
   const places = usePlaces();
   /* Subscribed only by the thing that still needs it; the hook is always called,
@@ -191,7 +193,7 @@ export const DeskObject = memo(function DeskObject({ object, place, camera, laye
   /* Sizes handed on at a scale of one: whatever the thing has been grown to is
      read off its place, inside the drawing, where a drag can reach it without a render. */
   const drawing = object.flat ? object.content : object.id === 'pen' ? <PenRelief place={at} placeId={object.id} camera={camera} width={object.width} /> : object.id === 'cradle' ? <CradleRelief place={at} camera={camera} width={size.width} /> : object.solid ? <PositionedSolid object={object} /> : <Relief place={at} placeId={object.id} camera={camera} width={object.width} depth={object.width * object.ratio} heightMm={object.height} path={object.shapes?.[0].path ?? ROUND_CASE} sideColors={object.colors}>{object.content}</Relief>;
-  return <Movable id={object.id} {...at} width={object.width} pivot={pivotOf(object)} resizable label={object.name} z={held ? INSPECT_LAYER : layer} onGrab={() => { if (object.flat) onFront(object.id); }} grab={object.id === 'poster' ? 'anywhere' : object.flat ? 'body' : 'anywhere'}>
+  return <Movable onSettle={onSettle} id={object.id} {...at} width={object.width} pivot={pivotOf(object)} resizable label={object.name} z={held ? INSPECT_LAYER : layer} onGrab={() => { if (object.flat) onFront(object.id); }} grab={object.id === 'poster' ? 'anywhere' : object.flat ? 'body' : 'anywhere'}>
     {object.inspect ? <Inspectable id={object.id} {...object.inspect}>{drawing}</Inspectable> : drawing}
   </Movable>;
 });
@@ -202,6 +204,18 @@ export const DeskObject = memo(function DeskObject({ object, place, camera, laye
   its own element, its shadow follows by subscription, and only a Relief — which
   is genuinely a different drawing at a different place — renders again.
 */
+/** The desk owns stains; each set-down snapshots the mug's current drawn footprint.
+ * Existing stains never subscribe to mug scale or follow it through its Solid. */
+function MugWithTrail(props: React.ComponentProps<typeof DeskObject>) {
+  const places = usePlaces();
+  const footprint = () => ({ ...(places?.get(props.object.id) ?? props.place), width: props.object.width });
+  const trail = useCoffeeTrail(footprint);
+  return <>
+    <CoffeeRings rings={trail.on(DESK)} />
+    <DeskObject {...props} onSettle={place => { trail.lift(); trail.settleAt({ ...place, width: props.object.width }); }} />
+  </>;
+}
+
 export function DeskObjects({ camera, only }: { camera: StudyCamera; only?: readonly string[] }) {
   const [front, setFront] = useState<string>();
   const inspection = useInspection();
@@ -212,6 +226,7 @@ export function DeskObjects({ camera, only }: { camera: StudyCamera; only?: read
     /* Paper stays under everything that stands up, however recently it was handled. */
     const layer = object.flat ? (front === object.id ? PAPER_LAYER + DESK_OBJECTS.length : PAPER_LAYER + index) : OBJECT_LAYER + index;
     if (object.id === 'dossier') return <DeskDossier key={object.id} width={object.width} place={DEFAULT_OBJECT_PLACEMENTS[object.id]} layer={layer} onFront={bringForward} />;
-    return <DeskObject key={object.id} object={object} place={DEFAULT_OBJECT_PLACEMENTS[object.id] ?? object.place} camera={camera} layer={layer} held={inspection?.held === object.id} onFront={bringForward} />;
+    const Component = object.id === 'mug' ? MugWithTrail : DeskObject;
+    return <Component key={object.id} object={object} place={DEFAULT_OBJECT_PLACEMENTS[object.id] ?? object.place} camera={camera} layer={layer} held={inspection?.held === object.id} onFront={bringForward} />;
   })}</>;
 }

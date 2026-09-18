@@ -1,16 +1,17 @@
+import { PerspectiveDesk } from '../../../pages/Desk/PerspectiveDesk';
 import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
 import { DeskObjectStudy } from '../../../debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { expect, userEvent, within } from 'storybook/test';
-import { Movable, MovableScale, type Place } from '../../../behaviors/Movable/Movable';
-import { Desk } from '../Desk/Desk';
+import { expect, fireEvent, waitFor, userEvent, within } from 'storybook/test';
+import { Movable, type Place } from '../../../behaviors/Movable/Movable';
+import { Room } from '../../../foundations/Room/Room';
 import { Pen } from '../Pen/Pen';
 import { StickyNote } from '../../2D/StickyNote/StickyNote';
 import { CoffeeRing } from './CoffeeRing';
 import { MUG_FOOT, MUG_HEIGHT, MUG_SILHOUETTE, MUG_TALL, Mug } from './Mug';
 import { CoffeeRings, Stained } from './Stained';
-import { COFFEE_DRIES, COFFEE_GONE, COFFEE_WET, DESK, useCoffeeTrail } from './trail';
+import { COFFEE_DRIES, COFFEE_GONE, COFFEE_WET, DESK, ringUnder, setDown, stampRings, useCoffeeTrail } from './trail';
 
 const meta = {
   title: 'Components/3D/Mug',
@@ -115,13 +116,12 @@ function MugOnTheMove() {
       setPlaces((all) => ({ ...all, [id]: { ...all[id], ...to } }));
     },
     onGrab: () => setStacking((order) => [...order.filter((other) => other !== id), id]),
-    onDrop: trail.settle,
+    onSettle: (place: Place) => { if (id === 'mug') trail.settleAt({ ...place, width: DESK_THINGS.mug.width }); },
     onBlur: trail.settle,
   });
 
   return (
-    <MovableScale.Provider value={() => (document.querySelector('.desk__top')?.getBoundingClientRect().width ?? 1440) / 1440}>
-      <Desk height={900}>
+    <Room angle={90} room={false} lamp={false} deskShare={1} roomLip={0}>
         {/* The wood's own rings lie under everything on it. */}
         <CoffeeRings rings={trail.on(DESK)} />
         <Movable {...thing('sheet')}>
@@ -140,8 +140,7 @@ function MugOnTheMove() {
         <Movable {...thing('mug')}>
           <Mug glaze="#e9e1cf" coffee={0.6} />
         </Movable>
-      </Desk>
-    </MovableScale.Provider>
+    </Room>
   );
 }
 
@@ -156,9 +155,10 @@ function MugOnTheMove() {
  * paper, leaving the mug standing on the crescent the paper was not covering.
  */
 export const Rings: Story = {
-  parameters: { layout: 'fullscreen', shownAt: '100%' },
+  parameters: { layout: 'fullscreen', shownAt: '100%', composition: true },
   render: () => <MugOnTheMove />,
   play: async ({ canvasElement }) => {
+    if (import.meta.env.MODE !== 'test') return;
     const canvas = within(canvasElement);
     const mug = canvas.getByRole('group', { name: 'Mug' });
     const paper = canvas.getByRole('group', { name: 'Sheet of paper' });
@@ -236,4 +236,73 @@ export const OnDesk: Story = {
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
   render: (args) => <DeskObjectStudy name="Mug" widthMm={140} depthRatio={1} heightMm={MUG_TALL} shapes={MUG_SILHOUETTE} solid={{ height: MUG_HEIGHT, foot: MUG_FOOT }} note="Estimated 82 mm body diameter × 95 mm height; the 140 mm artwork box includes empty space."><Mug {...args} shadow="contact" /></DeskObjectStudy>,
+};
+
+/** The composition owns footprints, at the mug's current size, in fixed desk units. */
+export const Footprints: Story = {
+  parameters: { layout: 'fullscreen', composition: true },
+  render: function FootprintScene() {
+    const [wide, setWide] = useState(false);
+    return <><button onClick={() => setWide(value => !value)}>Change desk dimensions</button>
+      <PerspectiveDesk only={['mug']} showSettings={false} lamp={false} cameraMode="physical" eyeHeightMm={1800} viewerSetbackMm={500} deskWidthMm={wide ? 1600 : 1200} deskDepthMm={wide ? 1000 : 800} />
+    </>;
+  },
+  play: async ({ canvasElement }) => {
+    if (import.meta.env.MODE !== 'test') return;
+    const canvas = within(canvasElement);
+    const mug = canvas.getByRole('group', { name: 'Mug' });
+    const rings = () => [...canvasElement.querySelectorAll<HTMLElement>('.coffee-ring')].map(ring => ring.closest<HTMLElement>('.pin')!);
+    const snapshot = (ring: HTMLElement) => [ring.style.getPropertyValue('--pin-x'), ring.style.getPropertyValue('--pin-y'), ring.style.getPropertyValue('--pin-width')];
+    const place = () => ({ x: Number(mug.style.getPropertyValue('--movable-x')), y: Number(mug.style.getPropertyValue('--movable-y')), width: 168, scale: Number(mug.style.getPropertyValue('--movable-scale')) || Number.parseFloat(mug.style.getPropertyValue('--movable-width').replace('calc(', '')) / 168, rotation: Number.parseFloat(mug.style.getPropertyValue('--movable-rotation')) });
+    const matches = () => {
+      const expected = ringUnder(place()), newest = rings()[0];
+      expect(Number(newest.style.getPropertyValue('--pin-x'))).toBeCloseTo(expected.x, 6);
+      expect(Number(newest.style.getPropertyValue('--pin-y'))).toBeCloseTo(expected.y, 6);
+      expect(Number.parseFloat(newest.style.getPropertyValue('--pin-width').replace('calc(', ''))).toBeCloseTo(expected.width, 6);
+    };
+    await waitFor(() => expect(rings()).toHaveLength(1));
+    const original = rings()[0], initial = snapshot(original);
+    matches();
+    expect(original.closest('.movable, .solid')).toBeNull();
+    // An independent physical check: 140 mm artwork at 1.2 units/mm leaves an 83 mm ring.
+    expect(Number.parseFloat(initial[2].replace('calc(', ''))).toBeCloseTo(99.6, 6);
+    fireEvent.keyDown(mug, { key: '+' });
+    await waitFor(() => expect(rings()).toHaveLength(2));
+    matches();
+    expect(snapshot(original)).toEqual(initial);
+    const resized = snapshot(rings()[0]);
+    fireEvent.keyDown(mug, { key: 'ArrowRight' });
+    await waitFor(() => expect(rings()).toHaveLength(3));
+    matches();
+    expect(snapshot(rings()[1])).toEqual(resized);
+    fireEvent.keyDown(mug, { key: ']' });
+    await waitFor(() => expect(rings()).toHaveLength(4));
+    matches();
+    const before = rings().map(snapshot);
+    await userEvent.click(canvas.getByRole('button', { name: 'Change desk dimensions' }));
+    expect(rings().map(snapshot)).toEqual(before);
+    const box = mug.getBoundingClientRect(), start = { clientX: box.x + box.width / 2, clientY: box.y + box.height / 2 };
+    fireEvent.pointerDown(mug, { ...start, pointerId: 1, button: 0, buttons: 1 });
+    fireEvent.pointerMove(mug, { clientX: start.clientX + 60, clientY: start.clientY + 35, pointerId: 1, buttons: 1 });
+    fireEvent.pointerUp(mug, { clientX: start.clientX + 60, clientY: start.clientY + 35, pointerId: 1, button: 0 });
+    await waitFor(() => expect(rings()).toHaveLength(5));
+    matches();
+    expect(snapshot(original)).toEqual(initial);
+    // Pure ownership check: changing future mug size cannot change a deposited surface mask.
+    expect(ringUnder({ x: 20, y: 40, width: 200, scale: 1.5, rotation: 45 })).toEqual({
+      x: 20 + 150 - 300 * 83 / 140 / 2,
+      y: 40 + 150 - 300 * 83 / 140 / 2,
+      width: 300 * 83 / 140,
+    });
+    const small = { x: 0, y: 0, width: 168, scale: 1, rotation: 30 };
+    const paper = [{ id: 'paper', x: 80, y: 0, width: 100, height: 200 }];
+    const stamped = stampRings(small, paper, 1);
+    const saved = JSON.stringify(stamped);
+    const next = setDown(Object.fromEntries(Object.entries(stamped).map(([id, stain]) => [id, [stain]])), { ...small, width: 200, scale: 2 }, paper);
+    expect(JSON.stringify(stamped)).toBe(saved);
+    expect(next.paper[0].width).toBeCloseTo(400 * 83 / 140, 6);
+    expect(stamped.desk.masks).toHaveLength(1);
+    expect(next.desk[1]).toEqual({ ...stamped.desk, strength: stamped.desk.strength * COFFEE_DRIES });
+    expect(next.paper[1]).toEqual({ ...stamped.paper, strength: stamped.paper.strength * COFFEE_DRIES });
+  },
 };
