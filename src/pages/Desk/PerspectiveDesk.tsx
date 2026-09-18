@@ -16,7 +16,7 @@ import './PerspectiveDesk.css';
 
 export { DESK_DEPTH } from '../../foundations/Room/Room';
 
-export type RoomControls = Pick<RoomProps, 'showPerformance' | 'cameraMode' | 'deskWidthMm' | 'deskDepthMm' | 'deskHeightMm' | 'deskEdgeMm' | 'eyeHeightMm' | 'viewerSetbackMm' | 'roomSpanMm' | 'floorFrontMm' | 'wallHeightMm' | 'lampIntensity' | 'lightTuning'>;
+export type RoomControls = Pick<RoomProps, 'showPerformance' | 'cameraMode' | 'deskWidthMm' | 'deskDepthMm' | 'deskHeightMm' | 'deskEdgeMm' | 'eyeHeightMm' | 'viewerSetbackMm' | 'headTiltDegrees' | 'roomSpanMm' | 'floorFrontMm' | 'wallHeightMm' | 'lampIntensity' | 'lightTuning'>;
 export type PerspectiveDeskProps = RoomControls & {
   objectPlacements?: ObjectPlacements;
   showObjects?: boolean;
