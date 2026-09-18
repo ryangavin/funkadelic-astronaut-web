@@ -27,7 +27,7 @@ test('Desk is a wooden top in sheet units whose surface measures against the des
   assert.match(css, /\.desk__top \{[\s\S]+?height: calc\(var\(--desk-height\) \* var\(--sheet-unit\)\)/);
   assert.match(css, /\.desk__top \{[\s\S]+?overflow: clip/);
   assert.match(css, /\.desk\[data-wood='oak'\] \{/);
-  assert.match(css, /\.desk__bands \{[\s\S]+?mix-blend-mode: soft-light/);
+  assert.match(css, /\.desk__grain \{[\s\S]+?mix-blend-mode: soft-light/);
   assert.match(css, /\.desk__light \{[\s\S]+?radial-gradient/);
   assert.match(css, /\.desk__edge \{[\s\S]+?height: calc\(var\(--desk-edge\) \* var\(--sheet-unit\)\)/);
 });
