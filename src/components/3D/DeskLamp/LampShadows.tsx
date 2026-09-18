@@ -100,7 +100,7 @@ export function LampPool({ surfaceWidth, surfaceHeight }: { surfaceWidth: number
     if (!light) { element.style.display = 'none'; return; }
     const size = light.height * (light.tuning?.poolSpread ?? DEFAULT_LIGHT_TUNING.poolSpread);
     element.style.display = '';
-    element.style.filter = `brightness(${light.intensity ?? 1})`;
+    element.style.filter = (light.intensity ?? 1) === 1 ? '' : `brightness(${light.intensity})`;
     element.style.visibility = light.intensity === 0 ? 'hidden' : '';
     element.style.width = `${size / surfaceWidth * 100}%`;
     element.style.left = `${(light.x - size / 2) / surfaceWidth * 100}%`;
