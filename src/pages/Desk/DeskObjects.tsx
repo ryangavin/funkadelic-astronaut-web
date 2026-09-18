@@ -17,7 +17,7 @@ import { DeskPhone, DESK_PHONE_WIDTH, DESK_PHONE_DEPTH, DESK_PHONE_HEIGHT, DESK_
 import { Handheld } from '../../components/3D/Handheld/Handheld';
 import { HANDHELD_SILHOUETTE } from '../../components/3D/Handheld/silhouette';
 import { LabelBro, LABEL_BRO_HEIGHT, LABEL_BRO_FOOT } from '../../components/3D/LabelBro/LabelBro';
-import { Mug } from '../../components/3D/Mug/Mug';
+import { MUG_FOOT, MUG_SILHOUETTE, Mug } from '../../components/3D/Mug/Mug';
 import { Pen } from '../../components/3D/Pen/Pen';
 import { Rolodex } from '../../components/3D/Rolodex/Rolodex';
 import { Walkman } from '../../components/3D/Walkman/Walkman';
@@ -57,7 +57,7 @@ const OBJECT_DRAWINGS: ObjectSpec[] = [
   { id: 'clock', name: 'Desk clock', width: 180, ratio: 560/720, height: 15, place: { x: 60, y: 65, rotation: -4 }, content: <DeskClock /> },
   // CradleRelief works its own rail and ball elevations out of the width it is given.
   { id: 'cradle', name: 'Newton’s cradle', width: 240, ratio: 600/720, height: 90, place: { x: 330, y: 65, scale: 1.2 }, shapes: [{ path: 'M3 5H97V95H3Z', heightMm: 8 }, { path: 'M8 20H92V23H8Z M8 77H92V80H8Z', heightMm: 90 }] },
-  { id: 'mug', name: 'Mug', width: 280, ratio: 1, height: 95, place: { x: 1010, y: 570, rotation: -15 }, solid: { height: 95/140, foot: { x: 104/240, y: 120/240 } }, content: <Mug rotation={0} shadow="contact" /> },
+  { id: 'mug', name: 'Mug', width: 280, ratio: 1, height: 95, place: { x: 1010, y: 570, rotation: -15 }, shapes: MUG_SILHOUETTE, solid: { height: 95/140, foot: MUG_FOOT }, content: <Mug shadow="contact" /> },
   { id: 'rolodex', name: 'Rolodex', width: 274.1, ratio: 624/518, height: 107.95, place: { x: 1170, y: 330, rotation: 4 }, solid: { localCoordinates: true, height: 408/518, foot: { x: .5, y: 312/518 } }, content: <Rolodex rotation={0} loose={false} /> , inspect: HANDLE },
   { id: 'handheld', name: 'Handheld', width: 408, ratio: 327/720, height: 23, place: { x: 30, y: 250, rotation: -5 }, content: <Handheld rotation={0} />, shapes: [{ path: HANDHELD_SILHOUETTE }], colors: ['#17181b', '#141519', '#090a0d'] , inspect: HANDLE },
   { id: 'labelBro', name: 'Label Bro', width: 366, ratio: 772/732, height: 65, place: { x: 755, y: 515, rotation: -5 }, solid: { localCoordinates: true, height: LABEL_BRO_HEIGHT, foot: LABEL_BRO_FOOT }, content: <LabelBro rotation={0} defaultOn defaultText="BACKLINE" /> , inspect: HANDLE },
@@ -119,11 +119,14 @@ const ObjectShadow = memo(function ObjectShadow({ object, place, height }: { obj
   const size = sizeOf(object, place);
   /* Counted apart from the thing itself: a shadow that rebuilds when its object
      moves is a different fact from the object rebuilding, and they want different fixes. */
-  return <Tallied id={`${object.name} — shadow`}><StudyLighting shadowOnly surfaceHeight={height} place={place} pivot={pivotOf(object)} width={size.width} depth={size.depth} heightMm={size.heightMm} mug={object.id === 'mug'} shapes={(object.shapes ?? [{ path: ROUND_CASE }] as StudyShape[]).map(shape => ({ ...shape, heightMm: shape.heightMm === undefined ? undefined : shape.heightMm * size.scale }))} /></Tallied>;
+  return <Tallied id={`${object.name} — shadow`}><StudyLighting shadowOnly surfaceHeight={height} place={place} pivot={pivotOf(object)} width={size.width} depth={size.depth} heightMm={size.heightMm} shapes={(object.shapes ?? [{ path: ROUND_CASE }] as StudyShape[]).map(shape => ({ ...shape, heightMm: shape.heightMm === undefined ? undefined : shape.heightMm * size.scale }))} /></Tallied>;
 });
 
-export function DeskObjectShadows({ placements, height }: { placements: ObjectPlacements; height: number }) {
-  return <>{DESK_OBJECTS.filter(object => !object.flat).map(object =>
+/** Which things are on the desk at all: everything, or the few named. */
+const chosen = (only?: readonly string[]) => (only ? DESK_OBJECTS.filter(object => only.includes(object.id)) : DESK_OBJECTS);
+
+export function DeskObjectShadows({ placements, height, only }: { placements: ObjectPlacements; height: number; only?: readonly string[] }) {
+  return <>{chosen(only).filter(object => !object.flat).map(object =>
     <ObjectShadow key={object.id} object={object} place={placements[object.id] ?? object.place} height={height} />)}</>;
 }
 
@@ -141,7 +144,7 @@ export const DeskObject = memo(function DeskObject({ object, place, camera, laye
   </Movable>;
 });
 
-export function DeskObjects({ placements, camera, onMove }: { placements: ObjectPlacements; camera: StudyCamera; onMove: (id: string, place: Place) => void }) {
+export function DeskObjects({ placements, camera, onMove, only }: { placements: ObjectPlacements; camera: StudyCamera; onMove: (id: string, place: Place) => void; only?: readonly string[] }) {
   const [front, setFront] = useState<string>();
   const inspection = useInspection();
   /* Both are handed down to a memoised thing, so they have to keep their identity
@@ -150,7 +153,7 @@ export function DeskObjects({ placements, camera, onMove }: { placements: Object
   move.current = onMove;
   const moved = useCallback((id: string, next: Place) => move.current(id, next), []);
   const bringForward = useCallback((id: string) => setFront(id), []);
-  return <>{DESK_OBJECTS.map((object, index) => {
+  return <>{chosen(only).map((object, index) => {
     /* Paper stays under everything that stands up, however recently it was handled. */
     const layer = object.flat ? (front === object.id ? PAPER_LAYER + DESK_OBJECTS.length : PAPER_LAYER + index) : OBJECT_LAYER + index;
     return <DeskObject key={object.id} object={object} place={placements[object.id] ?? object.place} camera={camera} layer={layer} held={inspection?.held === object.id} onFront={bringForward} onMove={moved} />;

@@ -4,7 +4,6 @@ import { DeskLighting, DEFAULT_SHADOW_STRENGTH, useDeskLight, useDeskLightEffect
 import { Desk } from '../../components/3D/Desk/Desk';
 import { DeskLamp, LampLight } from '../../components/3D/DeskLamp/DeskLamp';
 import { LampShadows } from '../../components/3D/DeskLamp/LampShadows';
-import { MugShadow } from '../../components/3D/Mug/MugShadow';
 import { GENTLE_DEPTH, GENTLE_VIEW, Perspective, Solid, type Foot } from './Perspective';
 import { elevatedLayer } from './elevation';
 import './DeskObjectStudy.css';
@@ -20,7 +19,6 @@ export type DeskObjectStudyProps = {
   note?: string;
   shapes?: StudyShape[];
   solid?: { height: number; foot: Foot; localCoordinates?: boolean };
-  mug?: boolean;
   bare?: boolean;
   customRelief?: boolean;
   sideColors?: readonly [string, string, string];
@@ -88,15 +86,6 @@ export function ObjectCastShadow({ place, pivot = { x: 0.5, y: 0.5 }, width, dep
   </svg>;
 }
 
-/** The mug's own shadow, which is a projected body rather than a stack of slices. */
-function MugCastShadow({ place, width, depth, surfaceHeight }: { place: Place; width: number; depth: number; surfaceHeight: number }) {
-  const light = useDeskLight();
-  if (!light) return null;
-  const cx = place.x + width / 2, cy = place.y + depth / 2;
-  const turn = (place.rotation ?? 0) * Math.PI / 180;
-  return <MugShadow x={cx - width / 15 * Math.cos(turn)} y={cy - width / 15 * Math.sin(turn)} width={width} rotation={place.rotation ?? 0} light={light} deskHeight={surfaceHeight} />;
-}
-
 /** The pool the lamp throws and its own cast arm, for a scene that owns its lamp. */
 function LampPoolLayers({ surfaceHeight }: { surfaceHeight: number }) {
   const light = useDeskLight();
@@ -114,12 +103,10 @@ function LampPoolLayers({ surfaceHeight }: { surfaceHeight: number }) {
  * re-renders when the lamp moves; each piece below subscribes for only what it
  * actually needs.
  */
-export function StudyLighting({ place, pivot = { x: 0.5, y: 0.5 }, width, depth, shapes, heightMm, mug, surfaceHeight, shadowOnly = false }: { shadowOnly?: boolean; surfaceHeight: number; place: Place; pivot?: { x: number; y: number }; width: number; depth: number; shapes: StudyShape[]; heightMm: number; mug?: boolean }) {
+export function StudyLighting({ place, pivot = { x: 0.5, y: 0.5 }, width, depth, shapes, heightMm, surfaceHeight, shadowOnly = false }: { shadowOnly?: boolean; surfaceHeight: number; place: Place; pivot?: { x: number; y: number }; width: number; depth: number; shapes: StudyShape[]; heightMm: number }) {
   return <>
     {!shadowOnly && <LampPoolLayers surfaceHeight={surfaceHeight} />}
-    {mug
-      ? <MugCastShadow place={place} width={width} depth={depth} surfaceHeight={surfaceHeight} />
-      : <ObjectCastShadow place={place} pivot={pivot} width={width} depth={depth} shapes={shapes} heightMm={heightMm} surfaceHeight={surfaceHeight} />}
+    <ObjectCastShadow place={place} pivot={pivot} width={width} depth={depth} shapes={shapes} heightMm={heightMm} surfaceHeight={surfaceHeight} />
   </>;
 }
 
@@ -149,7 +136,7 @@ export function Relief({ children, place, camera, width, depth, heightMm, path, 
 }
 
 /** Shared physical-scale inspection bench. Source objects remain interactive; all cast shadows belong to the lamp. */
-export function DeskObjectStudy({ name, widthMm = 120, depthRatio = 1, heightMm = 30, note, shapes = [{ path: ROUND_CASE }], solid, mug, bare, customRelief, sideColors, children }: DeskObjectStudyProps) {
+export function DeskObjectStudy({ name, widthMm = 120, depthRatio = 1, heightMm = 30, note, shapes = [{ path: ROUND_CASE }], solid, bare, customRelief, sideColors, children }: DeskObjectStudyProps) {
   const initialPlace = { x: 150, y: widthMm > 400 ? 650 : 410, rotation: 0 };
   const surfaceHeight = widthMm > 400 ? 1300 : 900;
   const [place, setPlace] = useState<Place>(initialPlace);
@@ -174,7 +161,7 @@ export function DeskObjectStudy({ name, widthMm = 120, depthRatio = 1, heightMm 
     <p>{bare ? 'Move and articulate the lamp to inspect the desktop.' : `${widthMm} mm artwork width · ${heightMm} mm height. ${note ?? 'Height is estimated; shadow uses an approximate solid silhouette.'}`} Drag the object or lamp base; drag the shade to aim and click it to switch.</p>
     <div className="desk-study__viewport"><div style={{ width: `${zoom * 100}%`, minWidth: 720 }}>
       <DeskLighting><Perspective {...camera} className="perspective--lamp-study"><Desk height={surfaceHeight} edge={12}>
-        <StudyLighting surfaceHeight={surfaceHeight} place={place} pivot={pivotHere} width={width} depth={depth} shapes={bare ? [] : shapes} heightMm={heightMm} mug={mug} />
+        <StudyLighting surfaceHeight={surfaceHeight} place={place} pivot={pivotHere} width={width} depth={depth} shapes={bare ? [] : shapes} heightMm={heightMm} />
         {!bare && <Movable {...place} width={width} pivot={pivotHere} label={name} grab="anywhere" onMove={to => setPlace(at => ({ ...at, ...to }))}>
           {solid ? <Solid {...solid}>{content}</Solid> : customRelief ? content : <Relief sideColors={sideColors} place={place} camera={camera} width={width} depth={depth} heightMm={heightMm} path={shapes[0]?.path ?? ROUND_CASE}>{content}</Relief>}
         </Movable>}

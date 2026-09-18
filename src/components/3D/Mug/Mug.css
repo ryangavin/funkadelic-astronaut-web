@@ -1,11 +1,10 @@
 /*
-  A mug from above, drawn 240 units square with the body centred a little to
-  the left so the handle fits. The scene light owns its cast shadow.
+  A mug from above, drawn 240 units square with the body in the middle of it.
+  The scene light owns its cast shadow.
   The ring it leaves is a separate thing, laid on paper.
 */
 
 .mug {
-  --mug-rotation: 30deg;
   --mug-glaze: #e8dfcc;
   --mug-drink: #3a2113;
   display: block;
@@ -13,14 +12,8 @@
   aspect-ratio: 1;
 }
 
-/* The handle turns about the mug; the circular material lighting stays fixed. */
-.mug__handle {
-  transform-origin: 104px 120px;
-  rotate: calc(var(--mug-rotation) + var(--solid-turn, 0deg));
-}
-
 /*
-  The rim, the drink and the handle are the top layer, up where the mug's height
+  The rim and the drink are the top layer, up where the mug's height
   puts them: a Solid on a tilted surface says how far up the surface that is and
   how far it leans out from the eye's line. Without one, both are nothing, the
   side has no height, and the mug is the flat drawing it always was.
@@ -53,15 +46,9 @@
   overflow: visible;
 }
 
-.mug__handle path:first-child,
 .mug__body,
 .mug__inside {
   fill: var(--mug-glaze);
-}
-
-.mug__handle path:first-child {
-  fill: none;
-  stroke: var(--mug-glaze);
 }
 
 .mug__rim {

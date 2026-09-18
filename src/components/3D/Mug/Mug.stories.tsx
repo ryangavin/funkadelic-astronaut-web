@@ -8,7 +8,7 @@ import { Desk } from '../Desk/Desk';
 import { Pen } from '../Pen/Pen';
 import { StickyNote } from '../../2D/StickyNote/StickyNote';
 import { CoffeeRing } from './CoffeeRing';
-import { Mug } from './Mug';
+import { MUG_FOOT, MUG_SILHOUETTE, Mug } from './Mug';
 import { CoffeeRings, Stained } from './Stained';
 import { COFFEE_DRIES, COFFEE_GONE, COFFEE_WET, DESK, useCoffeeTrail } from './trail';
 
@@ -21,9 +21,8 @@ const meta = {
     glaze: { control: 'color' },
     drink: { control: 'color' },
     coffee: { control: { type: 'range', min: 0, max: 1, step: 0.05 } },
-    rotation: { control: { type: 'range', min: -180, max: 180, step: 5 } },
   },
-  args: { glaze: '#e8dfcc', drink: '#3a2113', coffee: 0.7, rotation: 30 },
+  args: { glaze: '#e8dfcc', drink: '#3a2113', coffee: 0.7 },
   decorators: [
     /* The mug is shown the size a mug is held at, unless a story asks for room to move it about. */
     (Story, { parameters }) => parameters.composition ? <Story /> : (
@@ -58,7 +57,7 @@ export const Empty: Story = {
 
 /** A dark glaze, tea in it. */
 export const Tea: Story = {
-  args: { glaze: '#2d4a3e', drink: '#a5561e', coffee: 0.9, rotation: -40 },
+  args: { glaze: '#2d4a3e', drink: '#a5561e', coffee: 0.9 },
 };
 
 /** The ring a mug leaves, on paper. */
@@ -74,10 +73,10 @@ export const Ring: Story = {
    so the sheet is letter size, the mug is 140 mm across the handle and the marker is a Sharpie. */
 type Thing = 'sheet' | 'note' | 'pen' | 'mug';
 const DESK_THINGS: Record<Thing, { place: Place; width: number; label: string }> = {
-  sheet: { place: { x: 660, y: 130, rotation: -5 }, width: 432, label: 'Sheet of paper' },
-  note: { place: { x: 150, y: 560, rotation: 7 }, width: 152, label: 'Sticky note' },
-  pen: { place: { x: 780, y: 730, rotation: -11 }, width: 280, label: 'Marker' },
-  mug: { place: { x: 300, y: 180, rotation: 0 }, width: 280, label: 'Mug' },
+  sheet: { place: { x: 660, y: 130 }, width: 432, label: 'Sheet of paper' },
+  note: { place: { x: 150, y: 560 }, width: 152, label: 'Sticky note' },
+  pen: { place: { x: 780, y: 730 }, width: 280, label: 'Marker' },
+  mug: { place: { x: 300, y: 180 }, width: 280, label: 'Mug' },
 };
 /** A letter sheet stands 11 units tall for every 8.5 across. */
 const SHEET_RATIO = 11 / 8.5;
@@ -139,7 +138,7 @@ function MugOnTheMove() {
           <Pen kind="marker" ink="#c9432f" />
         </Movable>
         <Movable {...thing('mug')}>
-          <Mug glaze="#e9e1cf" coffee={0.6} rotation={0} />
+          <Mug glaze="#e9e1cf" coffee={0.6} />
         </Movable>
       </Desk>
     </MovableScale.Provider>
@@ -236,5 +235,5 @@ export const OnDesk: Story = {
   play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
-  render: (args) => <DeskObjectStudy name="Mug" widthMm={140} depthRatio={1} heightMm={95} mug solid={{ height: 95/140, foot: { x: 104/240, y: 120/240 } }} note="Existing 95 mm mug height; circular body and handle silhouette."><Mug {...args} rotation={0} shadow="contact" /></DeskObjectStudy>,
+  render: (args) => <DeskObjectStudy name="Mug" widthMm={140} depthRatio={1} heightMm={95} shapes={MUG_SILHOUETTE} solid={{ height: 95/140, foot: MUG_FOOT }} note="Existing 95 mm mug height; the body is the silhouette it casts by."><Mug {...args} shadow="contact" /></DeskObjectStudy>,
 };

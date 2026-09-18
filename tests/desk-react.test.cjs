@@ -36,7 +36,9 @@ test('The desk things: mug, ring, pens, sticky note and pick, each sized by its 
   assert.match(mug, /const surface = 54 - \(1 - level\) \* 5/);
   assert.doesNotMatch(mug, /className="mug__(shadow|footing)"/);
   assert.match(mug, /shadow = 'none'/);
-  assert.match(mug, /className="mug__handle"/);
+  // No handle: it turned nothing but itself, and a circle is what a mug blocks the light with.
+  assert.doesNotMatch(mug, /mug__handle|--mug-rotation/);
+  assert.match(mug, /export const MUG_SILHOUETTE = \[\{ path: 'M50 20\.8/);
   assert.match(mug, /level > 0\.02 \? \(/);
   assert.match(mug, /className="mug__dregs"/);
   const ring = read('src/components/3D/Mug/CoffeeRing.tsx');
@@ -55,7 +57,7 @@ test('The mug lays its ring down as it is set down, on everything it is standing
   const trail = read('src/components/3D/Mug/trail.ts');
 
   // The ring is the mug's base, which is off the centre of its box, so turning the mug swings the ring round with it.
-  assert.match(read('src/components/3D/Mug/Mug.tsx'), /MUG_FOOT = \{ x: 104 \/ 240, y: 120 \/ 240 \}/);
+  assert.match(read('src/components/3D/Mug/Mug.tsx'), /MUG_FOOT = \{ x: 0\.5, y: 0\.5 \}/);
   assert.match(trail, /import \{ MUG_FOOT \} from '\.\/Mug';/);
   assert.match(trail, /MUG_RING = 83 \/ 140/);
   assert.match(trail, /const centreX = x \+ width \/ 2 \+ offsetX \* Math\.cos\(turn\) - offsetY \* Math\.sin\(turn\)/);

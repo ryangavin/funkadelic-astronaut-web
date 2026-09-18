@@ -1,11 +1,9 @@
 import { Profiler, useCallback, useEffect, useMemo, useRef, useState, type ProfilerOnRenderCallback } from 'react';
 import type React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { DESK_DEPTH, PerspectiveDesk } from '../../pages/Desk/PerspectiveDesk';
-import { DESK_OBJECTS, DeskObject } from '../../pages/Desk/DeskObjects';
-import { DESK_WIDTH } from '../../components/3D/Desk/Desk';
-import { GENTLE_DEPTH, GENTLE_VIEW } from '../Perspective/Perspective';
-import { MovableLive, type Place } from '../Movable/Movable';
+import { PerspectiveDesk } from '../../pages/Desk/PerspectiveDesk';
+import { DESK_OBJECTS } from '../../pages/Desk/DeskObjects';
+import { MovableLive } from '../Movable/Movable';
 import { RenderTally, makeTally, type Rendered } from './tally';
 import { attribute, census, dragLag, draggables, frameSeries, splitFrames, sweep, wastedWork, watchHandDrag, type Attribution, type Census, type DragLag, type FrameCost, type FrameSplit, type HandDrag, type Series, type Verdict, type Wasted } from './probe';
 import './DeskPerf.css';
@@ -45,15 +43,16 @@ import './DeskPerf.css';
   because nothing about how the thing is drawn has changed.
 */
 function OneThing({ id }: { id: string }) {
-  const object = DESK_OBJECTS.find(one => one.id === id) ?? DESK_OBJECTS[0];
-  const [place, setPlace] = useState<Place>(() => ({ rotation: 0, scale: 1, ...object.place }));
-  useEffect(() => setPlace({ rotation: 0, scale: 1, ...object.place }), [object]);
-  const camera = useMemo(() => ({ angle: GENTLE_VIEW, depth: GENTLE_DEPTH, width: DESK_WIDTH, surfaceHeight: DESK_DEPTH }), []);
-  const moved = useCallback((_id: string, next: Place) => setPlace(next), []);
-  const front = useCallback(() => {}, []);
-  return <PerspectiveDesk showObjects={false} showSettings={false}>
-    <DeskObject object={object} place={place} camera={camera} layer={100} held={false} onFront={front} onMove={moved} />
-  </PerspectiveDesk>;
+  /*
+    The desk is asked for this one thing rather than handed it, so the thing is
+    drawn exactly as the composition draws it — and, more to the point, so it
+    still gets its shadow. A shadow is drawn in the lighting layer and not by the
+    object, so a bench that mounted the object itself got a thing casting
+    nothing, which quietly made a comparison of two shadows a comparison of
+    neither. That mistake was made here once already.
+  */
+  const only = useMemo(() => [id], [id]);
+  return <PerspectiveDesk only={only} showSettings={false} />;
 }
 
 function Bench({ only }: { only?: string }) {

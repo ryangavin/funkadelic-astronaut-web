@@ -4,13 +4,13 @@ import { expect, userEvent, within } from 'storybook/test';
 import { Movable, type Place } from '../Movable/Movable';
 import { Desk } from '../../components/3D/Desk/Desk';
 import { DeskClock } from '../../components/3D/DeskClock/DeskClock';
-import { MUG_FOOT, MUG_HEIGHT, MUG_WIDTH, Mug } from '../../components/3D/Mug/Mug';
+import { MUG_FOOT, MUG_HEIGHT, MUG_SILHOUETTE, MUG_WIDTH, Mug } from '../../components/3D/Mug/Mug';
 import { LampShadows } from '../../components/3D/DeskLamp/LampShadows';
 import { DeskLamp, LampLight } from '../../components/3D/DeskLamp/DeskLamp';
-import { DeskLighting, useDeskLight } from '../DeskLighting/DeskLighting';
-import { MugShadow, mugShadowProjection } from '../../components/3D/Mug/MugShadow';
+import { DeskLighting, castFrom, useDeskLight } from '../DeskLighting/DeskLighting';
 import { Pen } from '../../components/3D/Pen/Pen';
 import { StickyNote } from '../../components/2D/StickyNote/StickyNote';
+import { ObjectCastShadow } from './DeskObjectStudy';
 import { GENTLE_VIEW, GENTLE_DEPTH, PLAN_VIEW, Perspective, STANDING_VIEW, Solid, Standing } from './Perspective';
 
 const meta = {
@@ -31,7 +31,7 @@ export default meta;
 type Story = StoryObj<ComponentProps<typeof Perspective> & { shadowStrength?: number }>;
 
 /** The scene reads the bulb registered by DeskLamp; objects provide only their silhouette and height. */
-function MugLighting({ foot, rotation }: { foot: { x: number; y: number }; rotation: number }) {
+function MugLighting({ place }: { place: Place }) {
   const light = useDeskLight();
   if (!light) return null;
   // Approximate 70° light cone: footprint follows the bulb's height in desk units.
@@ -39,7 +39,7 @@ function MugLighting({ foot, rotation }: { foot: { x: number; y: number }; rotat
   return <>
     <LampLight on={light.on} style={{ position: 'absolute', width: `${poolWidth / 1440 * 100}%`, aspectRatio: '1', left: `${(light.x - poolWidth / 2) / 1440 * 100}%`, top: `${(light.y - poolWidth / 2) / 800 * 100}%` }} />
     <LampShadows />
-    <MugShadow {...foot} width={MUG_WIDTH} rotation={rotation} light={light} />
+    <ObjectCastShadow place={place} pivot={{ x: MUG_FOOT.x, y: MUG_FOOT.y }} width={MUG_WIDTH} depth={MUG_WIDTH} shapes={MUG_SILHOUETTE} heightMm={95} surfaceHeight={800} />
   </>;
 }
 
@@ -49,9 +49,6 @@ function GentleMugScene({ shadowStrength, ...args }: NonNullable<Story['args']>)
   const [lampOn, setLampOn] = useState(true);
   // 480×400 mm lamp drawing; bulb elevation estimated at 350 mm. Desk units are 2/mm.
   const [lamp, setLamp] = useState({ x: 400, y: 40, width: 960, rotation: 0 });
-  const turn = (place.rotation ?? 0) * Math.PI / 180;
-  const footOffset = (MUG_FOOT.x - 0.5) * MUG_WIDTH;
-  const foot = { x: place.x + MUG_WIDTH / 2 + footOffset * Math.cos(turn), y: place.y + MUG_WIDTH / 2 + footOffset * Math.sin(turn) };
   return (
     <DeskLighting><div style={{ background: '#1a1512', padding: '24px', minHeight: '100vh', boxSizing: 'border-box' }}>
       <div style={{ maxWidth: 1000, margin: '0 auto' }}>
@@ -60,13 +57,13 @@ function GentleMugScene({ shadowStrength, ...args }: NonNullable<Story['args']>)
         </p>
         <Perspective {...args} className="perspective--lamp-study">
           <Desk height={800} edge={0}>
-            <MugLighting foot={foot} rotation={20 + (place.rotation ?? 0)} />
+            <MugLighting place={place} />
             <Movable {...lamp} className="perspective__lamp" label="Desk lamp" onMove={(to) => setLamp((at) => ({ ...at, ...to }))}>
               <DeskLamp camera={{ angle: args.angle ?? GENTLE_VIEW, depth: args.depth ?? GENTLE_DEPTH, width: args.width ?? 1440, surfaceHeight: 800 }} shadowStrength={shadowStrength} lightPosition={{ ...lamp, height: 700 }} on={lampOn} onToggle={setLampOn} enamel="green" />
             </Movable>
             <Movable {...place} width={MUG_WIDTH} label="Mug" onMove={(to) => setPlace((at) => ({ ...at, ...to }))}>
               <Solid height={MUG_HEIGHT} foot={MUG_FOOT}>
-                <Mug rotation={20} coffee={0.7} shadow="contact" />
+                <Mug coffee={0.7} shadow="contact" />
               </Solid>
             </Movable>
           </Desk>
@@ -82,24 +79,37 @@ export const GentleMug: Story = {
   render: (args) => <GentleMugScene {...args} />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const shadow = canvasElement.querySelector('.mug-cast-shadow > g')!;
-    const horizontal = () => Number(shadow.getAttribute('data-shadow-x'));
-    await expect(horizontal()).toBeLessThan(0);
+    const shadow = canvasElement.querySelector('.desk-study__shadow .desk-study__cast')!;
+    const mugGroup = () => canvas.getByRole('group', { name: 'Mug' });
+    /*
+      Which side of the thing its shadow falls on, measured off what is drawn
+      rather than read off an attribute. The mug used to carry its own shadow and
+      its own number to check; now it casts the way everything else does, and the
+      thing worth asserting is the one that was always meant — that the shadow is
+      thrown away from the bulb, and swaps sides when the thing is carried past it.
+    */
+    const horizontal = () => {
+      const cast = shadow.getBoundingClientRect();
+      const thing = mugGroup().getBoundingClientRect();
+      return (cast.left + cast.width / 2) - (thing.left + thing.width / 2);
+    };
+    const before = horizontal();
+    await expect(before).toBeLessThan(0);
     await userEvent.click(canvas.getByRole('button', { name: 'Turn the lamp off' }));
     await expect(shadow).toHaveAttribute('opacity', '0');
     await expect(canvasElement.querySelector('.mug__contact')).toBeInTheDocument();
     await userEvent.click(canvas.getByRole('button', { name: 'Turn the lamp on' }));
     await expect(Number(shadow.getAttribute('opacity'))).toBeGreaterThan(0);
-    const mug = canvas.getByRole('group', { name: 'Mug' });
+    const mug = mugGroup();
     mug.focus();
     await userEvent.keyboard('{Shift>}{ArrowRight>11/}{/Shift}');
     await expect(horizontal()).toBeGreaterThan(0);
     await userEvent.keyboard('{Shift>}{ArrowLeft>11/}{/Shift}');
     mug.blur();
     // Near-horizontal rays and a bulb below the mug must remain bounded.
-    const grazing = mugShadowProjection(10000, 10000, 250, { x: 0, y: 0, height: 200, on: true });
+    const grazing = castFrom(10000, 10000, 250, { x: 0, y: 0, height: 200, on: true });
     await expect(Math.hypot(grazing.x, grazing.y)).toBeLessThanOrEqual(1440.001);
-    const overhead = mugShadowProjection(10, 10, 250, { x: 10, y: 10, height: 720, on: true });
+    const overhead = castFrom(10, 10, 250, { x: 10, y: 10, height: 720, on: true });
     await expect(overhead.x).toBe(0);
     await expect(overhead.y).toBe(0);
   },
@@ -144,7 +154,7 @@ function ADesk(args: Story['args']) {
           </Movable>
           <Movable {...thing('mug')}>
             <Solid height={MUG_HEIGHT} foot={MUG_FOOT}>
-              <Mug rotation={20} coffee={0.6} />
+              <Mug coffee={0.6} />
             </Solid>
           </Movable>
           <Movable {...thing('clock')}>
@@ -240,7 +250,7 @@ export const WhatStandsUp: Story = {
         <Desk height={620} edge={0}>
           <div style={{ position: 'absolute', left: '10%', top: '34%', width: '20%' }}>
             <Solid height={MUG_HEIGHT} foot={MUG_FOOT}>
-              <Mug rotation={20} />
+              <Mug />
             </Solid>
           </div>
           <div style={{ position: 'absolute', left: '58%', top: '40%', width: '14%' }}>

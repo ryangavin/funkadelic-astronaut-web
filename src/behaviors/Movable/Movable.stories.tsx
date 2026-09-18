@@ -67,7 +67,7 @@ function Things(args: Story['args']) {
           <Pen kind="pencil" />
         </Movable>
         <Movable {...thing('mug')}>
-          <Mug rotation={0} />
+          <Mug />
         </Movable>
       </PaperSheet>
     </MovableScale.Provider>

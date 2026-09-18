@@ -48,7 +48,7 @@ export const WithThings: Story = {
           <CoffeeRing strength={0.5} />
         </Pin>
         <Pin x={170} y={90} width={160}>
-          <Mug rotation={40} />
+          <Mug />
         </Pin>
         <Pin x={420} y={200} width={220} rotation={-3}>
           <StickyNote color="pink" rotation={0} size={76}>

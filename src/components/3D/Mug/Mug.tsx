@@ -9,8 +9,6 @@ export type MugProps = {
   glaze?: string;
   /** How full it is, 0 to 1. Empty shows the bottom of the mug and what dried on it. */
   coffee?: number;
-  /** Which way the handle points, in degrees clockwise from the right. */
-  rotation?: number;
   /** What is drunk from it: the colour of the surface. */
   drink?: string;
   className?: string;
@@ -21,32 +19,43 @@ export type MugProps = {
 export const MUG_HEIGHT = 95 / 140;
 /** 140 mm across the drawing, at two desk units per millimetre. */
 export const MUG_WIDTH = 280;
-/** Where it stands within that drawing: the middle of its base, which is off to the left to leave room for the handle. */
-export const MUG_FOOT = { x: 104 / 240, y: 120 / 240 };
+/** Where it stands within that drawing: the middle of it, now that nothing stands beside it. */
+export const MUG_FOOT = { x: 0.5, y: 0.5 };
+
+/*
+  What the mug blocks the light with: a circle, because that is what a mug is.
+
+  It used to have a shadow of its own — a component that swept a circle and a
+  stroked arc away from the bulb analytically, because the general way of casting
+  here, stamping a silhouette up through its own height, had nothing to stamp.
+  Given an outline it has, and the two were hard to tell apart on the desk. So the
+  mug says what shape it is, like everything else, and the special case is gone.
+*/
+export const MUG_SILHOUETTE = [{ path: 'M50 20.8A29.2 29.2 0 1 0 50 79.2A29.2 29.2 0 1 0 50 20.8Z' }];
 
 const clamp = (value: number) => Math.min(1, Math.max(0, Number.isFinite(value) ? value : 0));
 
 /**
  * A coffee mug seen straight down: the thick rim of the glaze, the inside wall
  * shading away from the window, the surface of the drink with the window's
- * reflection and a few bubbles gathered at the edge, and the handle sticking
- * out. Cast shadows are supplied by the scene light. Sized by its parent.
+ * reflection and a few bubbles gathered at the edge. Cast shadows are supplied
+ * by the scene light. Sized by its parent.
  *
  * It is 95 mm tall, and on a surface seen at an angle that height is worth
- * something. Stand it in a `Solid` of {@link MUG_HEIGHT} and the rim and the
- * handle rise off the desk and lean away from the eye, the side slides out
+ * something. Stand it in a `Solid` of {@link MUG_HEIGHT} and the rim rises off
+ * the desk and leans away from the eye, the side slides out
  * from under them, and the base stays where the mug is standing. Without one,
  * or seen from straight above, all of that is worth nothing and the drawing is
  * exactly what it always was.
  */
-export function Mug({ shadow = 'none', glaze = '#e8dfcc', coffee = 0.7, rotation = 30, drink = '#3a2113', className = '', style }: MugProps) {
+export function Mug({ shadow = 'none', glaze = '#e8dfcc', coffee = 0.7, drink = '#3a2113', className = '', style }: MugProps) {
   const id = `mug-${useId().replace(/:/g, '')}`;
   const level = clamp(coffee);
   /* The surface sinks a little as it empties: seen from above it is nearer the bottom, so a shade smaller. */
   const surface = 54 - (1 - level) * 5;
   return (
-    <div className={`mug ${shadow === 'contact' ? 'mug--contact' : ''} ${className}`} style={{ '--mug-rotation': `${rotation}deg`, '--mug-glaze': glaze, '--mug-drink': drink, ...style } as React.CSSProperties}>
-      <svg className="mug__art" viewBox="0 0 240 240" aria-hidden="true" focusable="false">
+    <div className={`mug ${shadow === 'contact' ? 'mug--contact' : ''} ${className}`} style={{ '--mug-glaze': glaze, '--mug-drink': drink, ...style } as React.CSSProperties}>
+      <svg className="mug__art" viewBox="-16 0 240 240" aria-hidden="true" focusable="false">
         <defs>
           {/* A sheen on the glaze from the window. It only lifts: what shades the glaze is the cylinder it is part of. */}
           <radialGradient id={`${id}-glaze`} cx="0.36" cy="0.3" r="0.8">
@@ -64,10 +73,6 @@ export function Mug({ shadow = 'none', glaze = '#e8dfcc', coffee = 0.7, rotation
             <stop offset="0.5" stopColor="#fff" stopOpacity="0" />
             <stop offset="1" stopColor="#000" stopOpacity="0.45" />
           </radialGradient>
-          <linearGradient id={`${id}-handle`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#fff" stopOpacity="0.28" />
-            <stop offset="1" stopColor="#000" stopOpacity="0.3" />
-          </linearGradient>
           {/* A cylinder under the window: bright a third of the way across, dark round both edges.
               In user space, so the wall and the base below it are lit as one piece. */}
           <linearGradient id={`${id}-side`} gradientUnits="userSpaceOnUse" x1="34" y1="0" x2="174" y2="0">
@@ -122,12 +127,6 @@ export function Mug({ shadow = 'none', glaze = '#e8dfcc', coffee = 0.7, rotation
         </g>
 
         <g className="mug__top">
-        {/* The handle: a loop of glaze, lit along its outer edge. */}
-        <g className="mug__handle">
-          <path d="M160 84 C 214 74 214 166 160 156" fill="none" strokeWidth="21" strokeLinecap="round" />
-          <path d="M160 84 C 214 74 214 166 160 156" fill="none" stroke={`url(#${id}-handle)`} strokeWidth="21" strokeLinecap="round" />
-          <path d="M160 84 C 214 74 214 166 160 156" fill="none" stroke="#fff" strokeOpacity="0.25" strokeWidth="5" strokeLinecap="round" transform="translate(-2 -3)" />
-        </g>
 
         {/* The rim of the glaze, then the inside wall, then the drink. */}
         {/* The outer glaze is lit as the same cylinder as the wall below it, in the same user space, so

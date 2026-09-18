@@ -73,7 +73,7 @@ function Things() {
             </Inspectable>
           </Movable>
           <Movable {...thing('mug')}>
-            <Mug rotation={0} shadow="contact" />
+            <Mug shadow="contact" />
           </Movable>
         </Desk>
       </Perspective>

@@ -7,6 +7,50 @@ export type LampOccluder = { base: LightOccluderPoint; elbow: LightOccluderPoint
 export type DeskLight = { x: number; y: number; height: number; on: boolean; shadowStrength?: number; lamp?: LampOccluder };
 
 /*
+  How far anything on this desk is thrown by the light. One rule, in one place.
+
+  It was written out four times over — once for the stack of slices a thing casts
+  by, once for the mug, once for the lamp's own arms, once for the desk on the
+  boards — and the four had quietly drifted apart, each with its own idea of how
+  far was too far. They are the same geometry: a point standing `height` above
+  the surface is thrown away from the bulb by its drop over the bulb's clearance
+  above it, which is a fraction of however far it stands from the bulb.
+
+  Two things have to be bounded or the arithmetic runs away, and both happen on
+  this desk rather than in theory: a bulb lowered to or below the height of what
+  it is lighting divides by nothing, and a thing far enough out throws past the
+  room. So the clearance is held at a unit and the throw at a desk's width.
+*/
+
+/** How far a point is thrown, as a fraction of its distance from the bulb. */
+export function castRatio(height: number, light: DeskLight) {
+  return Math.max(0, height) / Math.max(1, light.height - height);
+}
+
+/** As far as a shadow is allowed to reach: one desk. */
+export const CAST_REACH = 1440;
+
+/**
+ * Where a point standing `height` above the surface throws its shadow, as an
+ * offset from the point itself, with how much larger it is drawn there and how
+ * dark it falls. A point under the bulb throws nothing, which is the one case
+ * worth checking by hand.
+ */
+export function castFrom(x: number, y: number, height: number, light: DeskLight) {
+  const dx = x - light.x;
+  const dy = y - light.y;
+  const distance = Math.hypot(dx, dy);
+  const ratio = castRatio(height, light);
+  const length = Math.min(CAST_REACH, distance * ratio);
+  return {
+    x: distance ? dx / distance * length : 0,
+    y: distance ? dy / distance * length : 0,
+    scale: 1 + Math.min(2, ratio),
+    opacity: light.on ? (light.shadowStrength ?? DEFAULT_SHADOW_STRENGTH) / (1 + (distance / 1000) ** 2) : 0,
+  };
+}
+
+/*
   The light is a store rather than a piece of state, and the difference is the
   whole performance of the desk.
 

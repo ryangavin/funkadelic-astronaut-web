@@ -20,6 +20,10 @@ const INITIAL_LAMP: Place = { x: 770, y: 100, rotation: 0 };
 export type PerspectiveDeskProps = {
   objectPlacements?: ObjectPlacements;
   showObjects?: boolean;
+  /** Which things are on the desk, by id. Left out, all of them are. A bench that wants
+      one thing on an otherwise bare desk asks for it here, so the thing still gets its
+      shadow — which is drawn in the lighting layer rather than by the object itself. */
+  only?: readonly string[];
   showSettings?: boolean;
   onCaptureSettings?: (settings: Partial<PerspectiveDeskProps>) => void;
   lampX?: number;
@@ -80,7 +84,7 @@ function arranged(saved: ObjectPlacements = {}): ObjectPlacements {
 }
 
 /** The main desk composition, starting with its surface and working lamp. */
-export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, showObjects = true, showSettings = true, onCaptureSettings, lampX, lampY, lampRotation, lampWidth = 576, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', onArticulate, angle = GENTLE_VIEW, depth = GENTLE_DEPTH, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArrange, children }: PerspectiveDeskProps) {
+export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, showObjects = true, only, showSettings = true, onCaptureSettings, lampX, lampY, lampRotation, lampWidth = 576, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', onArticulate, angle = GENTLE_VIEW, depth = GENTLE_DEPTH, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArrange, children }: PerspectiveDeskProps) {
   const [place, setPlace] = useState({ x: lampX ?? INITIAL_LAMP.x, y: lampY ?? INITIAL_LAMP.y, rotation: lampRotation ?? 0 });
   useEffect(() => { setPlace({ x: lampX ?? INITIAL_LAMP.x, y: lampY ?? INITIAL_LAMP.y, rotation: lampRotation ?? 0 }); }, [lampX, lampY, lampRotation]);
   const [pose, setPose] = useState(() => lampLowerAngle !== undefined && lampUpperAngle !== undefined ? lampPoseFromAngles(lampLowerAngle, lampUpperAngle) : articulateLamp({ x: 200, y: 420 }));
@@ -141,10 +145,10 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
       <div className="perspective-desk__stand">
       <Perspective {...camera} className="perspective--lamp-study">
         <Desk className="desk-study-materials" wood={wood} height={DESK_DEPTH} edge={12}>
-          <div className="perspective-desk__lighting" aria-hidden="true"><DeskLightLayers />{showObjects && <DeskObjectShadows placements={placements} height={DESK_DEPTH} />}</div>
+          <div className="perspective-desk__lighting" aria-hidden="true"><DeskLightLayers />{showObjects && <DeskObjectShadows placements={placements} height={DESK_DEPTH} only={only} />}</div>
           {/* Drawn on the desk itself, so it takes the desk's perspective and pushes everything under it away. */}
           <InspectorVeil />
-          {showObjects && <DeskObjects placements={placements} camera={camera} onMove={(id, next) => setPlacements(current => ({ ...current, [id]: next }))} />}
+          {showObjects && <DeskObjects placements={placements} camera={camera} only={only} onMove={(id, next) => setPlacements(current => ({ ...current, [id]: next }))} />}
           {children}
           {/* The lamp's own place is kept here so it follows the pointer, and whoever
               owns it is told once, when it is put down: a story that writes every

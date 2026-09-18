@@ -393,7 +393,7 @@ export function PromoterDesk({ open: initiallyOpen = false, onToggle, onArrange,
               }}
               onBlur={trail.settle}
             >
-              <Mug glaze="#e9e1cf" coffee={0.65} rotation={0} />
+              <Mug glaze="#e9e1cf" coffee={0.65} />
             </Movable>
             <Movable {...movable('handheld', SIZES.handheld)}>
               <Handheld video={LIVE_SET.video} title="What to Do · live at Barrier Brewing Co." finish="black" />
