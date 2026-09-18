@@ -30,7 +30,7 @@
 
 .room-controls__scene .perspective-desk-room { min-height: 0; padding: 0; }
 
-/* Reserve space for the physical camera's status above the 16:9 scene. */
+/* Reserve space for the physical camera's status below the 16:9 scene. */
 .room-controls__scene .room { max-width: min(100%, calc(max(120px, 100cqh - 90px) * 16 / 9)); }
 .room-controls__sidebar:focus-visible, .room-controls__scene:focus-visible { outline: 2px solid #ead3a7; outline-offset: -2px; }
 
@@ -50,3 +50,5 @@
   .room-controls__fields { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
   .room-controls__scene .room { max-width: 100%; }
 }
+
+.room-controls__performance { display: flex; align-items: center; gap: 8px; margin: 0; padding: 0 12px 16px; cursor: pointer; }

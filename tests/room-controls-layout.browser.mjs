@@ -15,6 +15,16 @@ try {
       const sidebar = page.getByRole('complementary', { name: 'Room controls' });
       await scene.waitFor();
       const before = await scene.boundingBox();
+      const status = await page.locator('.room__diagnostic[role=status]').boundingBox();
+      assert.ok(status.y >= before.y + before.height - 1, 'Camera status is below the scene');
+      assert.equal(await page.getByText(/Scale bench · 1 meter/).count(), 0, 'Scale Bench banner is removed');
+      const fps = page.getByRole('checkbox', { name: 'Show FPS overlay' });
+      assert.equal(await fps.isChecked(), false, 'FPS starts off');
+      assert.equal(await page.getByRole('group', { name: 'Animation frame timing' }).count(), 0);
+      await fps.check();
+      await page.getByRole('group', { name: 'Animation frame timing' }).waitFor();
+      await fps.uncheck();
+      assert.equal(await page.getByRole('group', { name: 'Animation frame timing' }).count(), 0, 'FPS unmounts when disabled');
       const controls = await sidebar.boundingBox();
       assert.ok(before.width >= (viewport.width > 700 ? 400 : viewport.width > 520 ? 340 : 350), 'Preview remains usefully sized');
       assert.ok(before.y + before.height <= viewport.height + 1, 'Scene fits in the viewport');

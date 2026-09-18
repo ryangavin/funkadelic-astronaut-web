@@ -11,10 +11,7 @@ const meta = {
   argTypes: { ...physicalControls },
   args: { ...physicalDefaults, cameraMode: 'physical', eyeHeightMm: 1650, viewerSetbackMm: 650, deskShare: .8, roomLip: 180 },
   render: function Experiment(args) {
-    return <>
-      <p style={{ margin: 16, font: '14px/1.5 monospace' }}>Scale bench · 1 meter / 39.37 inches. Drag the stick; use its turn handle or bracket keys to rotate. Its size stays fixed while you adjust the room.</p>
-      <RoomExperiment args={args}>{values => <ScaleBench {...withLightTuning(values)} />}</RoomExperiment>
-    </>;
+    return <RoomExperiment args={args}>{values => <ScaleBench {...withLightTuning(values)} />}</RoomExperiment>;
   },
 } satisfies Meta<RoomProps & RoomStoryControls>;
 export default meta;

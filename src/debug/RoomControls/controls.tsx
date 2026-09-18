@@ -86,9 +86,10 @@ export function RoomControlPanel({ args, update, children }: { args: RoomProps &
         </fieldset>;
       })}
     </div>
-    <p style={{ margin: 0, padding: '0 12px 12px', color: '#c7bcae', background: '#211b16', font: '13px system-ui' }}>
-      Very low views or large room extents can exceed background rendering capacity. An alert explains the limit; the last supported view stays visible until you adjust the values.
-    </p>
+    <label className="room-controls__performance">
+      <input type="checkbox" checked={args.showPerformance ?? false} onChange={event => update({ showPerformance: event.target.checked })} />
+      Show FPS overlay
+    </label>
     </aside>
     <div className="room-controls__scene" role="region" aria-label="Room preview" tabIndex={0}>{children}</div>
   </div>;

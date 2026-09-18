@@ -187,9 +187,9 @@ export function Room(props: RoomProps) {
   if (!('error' in resolved)) previous.current = { props, setup: resolved.setup, tuning: resolved.tuning };
   const scene = previous.current;
   return <>
-    {error ? <div className="room__diagnostic" role="alert">Room setup: {error}. {scene ? 'Showing the last valid scene; your arrangement is retained.' : 'Enter valid values to show the scene.'}</div>
-      : cameraMode === 'physical' && scene && <p className="room__diagnostic" role="status">Physical camera: {scene.setup.camera.angle.toFixed(1)}°; eye clearance {(scene.setup.camera.depth * Math.sin(scene.setup.camera.angle * Math.PI / 180) / 1.2).toFixed(1)} mm. Artwork layers at or above the eye plane are hidden. Objects are 2.5D drawings; low views reveal their limitations.</p>}
+    {error && <div className="room__diagnostic" role="alert">Room setup: {error}. {scene ? 'Showing the last valid scene; your arrangement is retained.' : 'Enter valid values to show the scene.'}</div>}
     {scene && <RoomScene {...scene.props} showPerformance={props.showPerformance} setup={scene.setup} tuning={scene.tuning} />}
+    {!error && cameraMode === 'physical' && scene && <p className="room__diagnostic" role="status">Physical camera: {scene.setup.camera.angle.toFixed(1)}°; eye clearance {(scene.setup.camera.depth * Math.sin(scene.setup.camera.angle * Math.PI / 180) / 1.2).toFixed(1)} mm. Artwork layers at or above the eye plane are hidden. Objects are 2.5D drawings; low views reveal their limitations.</p>}
   </>;
 }
 
