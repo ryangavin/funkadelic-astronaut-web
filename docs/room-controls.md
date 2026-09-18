@@ -85,3 +85,5 @@ silently clamped. Adjust the camera, reduce explicit extents, or disable
 the room background to recover. Direct DeskRoom usage shows the capacity alert
 instead of allocating the oversized materials. This is a renderer limit rather
 than an aesthetic camera-angle restriction.
+
+The shared controls sidebar includes an optional **Show FPS overlay** checkbox. It is off by default and mounts the existing animation-frame timing overlay only while enabled. The physical camera status appears beneath the scene; recoverable setup errors remain above it. Scale Bench opens directly into the shared controls and preview.
