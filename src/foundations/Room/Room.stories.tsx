@@ -28,6 +28,7 @@ const meta = {
   decorators: [Story => <div className="room-story"><Story /></div>],
   tags: ['autodocs'],
   argTypes: {
+    showPerformance: { control: 'boolean', table: { category: 'Debug' } },
     ...physicalControls,
     angle: { table: { category: 'Camera' }, control: { type: 'number', step: 1 } },
     depth: { table: { category: 'Camera' }, control: { type: 'number', step: 100 } },
@@ -55,7 +56,7 @@ const meta = {
     onArticulate: { table: { disable: true } },
     onLamp: { table: { disable: true } },
   },
-  args: { ...physicalDefaults, angle: 78, depth: 5700, wood: 'walnut', room: true, floor: 'pine', wall: 'red', lamp: true, shadowStrength: .36, lampX: 396, lampY: 17, lampRotation: 0, lampWidth: 576, lampEnamel: 'green', lampLowerAngle: -142.6818247177271, lampUpperAngle: 110.41274403236815, onArrange: fn(), onArticulate: fn(), onLamp: fn() },
+  args: { showPerformance: false, ...physicalDefaults, angle: 78, depth: 5700, wood: 'walnut', room: true, floor: 'pine', wall: 'red', lamp: true, shadowStrength: .36, lampX: 396, lampY: 17, lampRotation: 0, lampWidth: 576, lampEnamel: 'green', lampLowerAngle: -142.6818247177271, lampUpperAngle: 110.41274403236815, onArrange: fn(), onArticulate: fn(), onLamp: fn() },
 } satisfies Meta<RoomProps & RoomStoryControls>;
 
 export default meta;

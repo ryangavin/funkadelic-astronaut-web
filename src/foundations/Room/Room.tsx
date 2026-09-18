@@ -2,6 +2,7 @@ import { roomSurfaceExtents } from '../../geometry/roomCoverage';
 import { lightingSetup, type LightTuning } from '../../geometry/lightingSetup';
 import { roomSetup, positive, type PhysicalRoomInputs } from '../../geometry/roomSetup';
 import { mmToUnits } from '../../geometry/physicalScale';
+import { PerformanceOverlay } from '../../debug/PerformanceOverlay/PerformanceOverlay';
 import { LAMP_WIDTH, LAMP_HEIGHT } from '../../geometry/physicalScale';
 import { articulateLamp, lampPoseFromAngles, lampPoseAngles, type LampPose } from '../../components/3D/DeskLamp/articulation';
 import type React from 'react';
@@ -39,6 +40,8 @@ const RoomCamera = createContext<StudyCamera>({ angle: GENTLE_VIEW, depth: GENTL
 export const useRoomCamera = () => useContext(RoomCamera);
 
 export type RoomProps = PhysicalRoomInputs & {
+  /** Tiny screen-aligned animation-frame timing; disabled means no sampling. */
+  showPerformance?: boolean;
   /** Relative lamp pool brightness; 1 preserves the original light. No aesthetic maximum. */
   lampIntensity?: number;
   /** Advanced artistic pool/shadow shaping; defaults preserve existing scenes. */
@@ -185,11 +188,11 @@ export function Room(props: RoomProps) {
   return <>
     {error ? <div className="room__diagnostic" role="alert">Room setup: {error}. {scene ? 'Showing the last valid scene; your arrangement is retained.' : 'Enter valid values to show the scene.'}</div>
       : cameraMode === 'physical' && scene && <p className="room__diagnostic" role="status">Physical camera: {scene.setup.camera.angle.toFixed(1)}°; eye clearance {(scene.setup.camera.depth * Math.sin(scene.setup.camera.angle * Math.PI / 180) / 1.2).toFixed(1)} mm. Artwork layers at or above the eye plane are hidden. Objects are 2.5D drawings; low views reveal their limitations.</p>}
-    {scene && <RoomScene {...scene.props} setup={scene.setup} tuning={scene.tuning} />}
+    {scene && <RoomScene {...scene.props} showPerformance={props.showPerformance} setup={scene.setup} tuning={scene.tuning} />}
   </>;
 }
 
-function RoomScene({ setup, tuning, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & { setup: ReturnType<typeof roomSetup>; tuning: LightTuning }) {
+function RoomScene({ setup, tuning, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & { setup: ReturnType<typeof roomSetup>; tuning: LightTuning }) {
   const { camera, stand, edge } = setup;
   const span = roomSpanMm === undefined ? undefined : mmToUnits(roomSpanMm);
   const front = floorFrontMm === undefined ? undefined : mmToUnits(floorFrontMm);
@@ -277,7 +280,9 @@ function RoomScene({ setup, tuning, lampIntensity = 1, roomSpanMm, floorFrontMm,
             </Desk>
           </Perspective>
         </div>
-      </DeskLighting></Inspector>
+      </DeskLighting>
+      {showPerformance && <PerformanceOverlay />}
+      </Inspector>
     </RoomCamera.Provider>
   </PlacesProvider>;
 }
