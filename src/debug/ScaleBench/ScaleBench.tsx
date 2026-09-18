@@ -15,7 +15,7 @@ const pivot = { x: .5, y: .5 };
 
 function Stick({ shadow = false }: { shadow?: boolean }) {
   const camera = useRoomCamera();
-  if (shadow) return <StudyLighting shadowOnly surfaceHeight={camera.surfaceHeight} place={PLACE} placeId={ID} pivot={pivot} width={width} depth={depth} heightMm={METER_STICK_MM.height} shapes={shapes} />;
+  if (shadow) return <StudyLighting shadowOnly surfaceWidth={camera.width} surfaceHeight={camera.surfaceHeight} place={PLACE} placeId={ID} pivot={pivot} width={width} depth={depth} heightMm={METER_STICK_MM.height} shapes={shapes} />;
   return <Movable id={ID} {...PLACE} width={width} label="Meter stick" grab="anywhere" resizable={false}>
     <Relief place={PLACE} placeId={ID} camera={camera} width={width} depth={depth} heightMm={METER_STICK_MM.height} path={METER_STICK_OUTLINE}>
       <MeterStick />

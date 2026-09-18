@@ -30,6 +30,7 @@ export const PhysicalSetup: StoryObj<typeof meta> = {
     await expect(fraction()).toBeCloseTo(1000 / 1200, 3);
     fireEvent.change(canvas.getByRole('slider', { name: 'Desk width (mm) slider' }), { target: { value: '2000' } });
     await waitFor(() => expect(fraction()).toBeCloseTo(.5, 3));
+    await expect(canvasElement.querySelector('.desk-study__shadow')).toHaveAttribute('viewBox', '0 0 2400 960');
     await expect(canvas.getByLabelText('Desk width (mm) inches')).toHaveTextContent('78.74 in');
     await expect(stick.style.getPropertyValue('--movable-width')).toBe('calc(1200 * var(--movable-unit))');
   },
