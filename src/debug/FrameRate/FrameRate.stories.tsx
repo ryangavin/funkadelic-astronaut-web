@@ -75,7 +75,7 @@ function Rig({ filtered, count = 24 }: { filtered: boolean; count?: number }) {
 }
 
 const meta = {
-  title: 'Foundations/Behaviors/Frame Rate',
+  title: 'Debug/Frame Rate',
   component: FrameRate,
   parameters: { layout: 'fullscreen' },
 } satisfies Meta<typeof FrameRate>;

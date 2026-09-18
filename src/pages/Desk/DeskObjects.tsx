@@ -6,7 +6,7 @@ import { DossierCover } from './DossierCover';
 import { BandDossier } from '../../sections/BandDossier/BandDossier';
 import { memo, useCallback, useRef, useState, type ReactNode } from 'react';
 import { Movable, type Place } from '../../behaviors/Movable/Movable';
-import { Tallied } from '../../behaviors/DeskPerf/tally';
+import { Tallied } from '../../debug/DeskPerf/tally';
 import { Inspectable, useInspection } from '../../behaviors/Inspectable/Inspectable';
 import { Solid, type Foot } from '../../behaviors/Perspective/Perspective';
 import { Relief, StudyLighting, ROUND_CASE, type StudyCamera, type StudyShape } from '../../behaviors/Perspective/DeskObjectStudy';

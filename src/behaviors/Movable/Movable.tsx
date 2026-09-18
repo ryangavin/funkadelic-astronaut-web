@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState, type CSSProperties, type HTMLAttributes, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
-import { Tallied } from '../DeskPerf/tally';
+import { Tallied } from '../../debug/DeskPerf/tally';
 import { usePlaces } from './places';
 import './Movable.css';
 

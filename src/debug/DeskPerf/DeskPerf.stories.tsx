@@ -3,7 +3,7 @@ import type React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { PerspectiveDesk } from '../../pages/Desk/PerspectiveDesk';
 import { DESK_OBJECTS } from '../../pages/Desk/DeskObjects';
-import { MovableLive } from '../Movable/Movable';
+import { MovableLive } from '../../behaviors/Movable/Movable';
 import { RenderTally, makeTally, type Rendered } from './tally';
 import { attribute, census, dragLag, draggables, frameSeries, splitFrames, sweep, wastedWork, watchHandDrag, type Attribution, type Census, type DragLag, type FrameCost, type FrameSplit, type HandDrag, type Series, type Verdict, type Wasted } from './probe';
 import './DeskPerf.css';
@@ -401,7 +401,7 @@ function Bench({ only }: { only?: string }) {
 }
 
 const meta = {
-  title: 'Behaviors/Desk Perf',
+  title: 'Debug/Desk Perf',
   component: Bench,
   parameters: { layout: 'fullscreen' },
   /* Kept out of the test run. It mounts the whole desk to measure it, which is

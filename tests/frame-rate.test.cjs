@@ -29,7 +29,7 @@ function fixture() {
   return { win, doc, frame, cancels: () => cancelled };
 }
 
-const load = () => import('../src/behaviors/FrameRate/meter.ts');
+const load = () => import('../src/debug/FrameRate/meter.ts');
 
 test('frame meter throws away its own arrival and reports the middle frame', async () => {
   const { attachFrameMeter } = await load();
