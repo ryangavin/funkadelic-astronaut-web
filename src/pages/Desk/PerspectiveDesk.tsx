@@ -1,7 +1,7 @@
 import { DeskObjects, DeskObjectShadows, DEFAULT_OBJECT_PLACEMENTS, type ObjectPlacements } from './DeskObjects';
-import { articulateLamp, lampPoseFromAngles, lampPoseAngles } from '../../components/3D/DeskLamp/articulation';
+import { articulateLamp, lampPoseFromAngles, lampPoseAngles, type LampPose } from '../../components/3D/DeskLamp/articulation';
 import type React from 'react';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { GENTLE_DEPTH, GENTLE_VIEW, Perspective } from '../../behaviors/Perspective/Perspective';
 import { DeskLighting, DEFAULT_SHADOW_STRENGTH, useDeskLight } from '../../behaviors/DeskLighting/DeskLighting';
 import { Movable, type Place } from '../../behaviors/Movable/Movable';
@@ -54,6 +54,9 @@ export type PerspectiveDeskProps = {
   children?: ReactNode;
 };
 
+/* Held, so the desk can render round it without rebuilding it. See lightPosition below. */
+const SteadyLamp = memo(DeskLamp);
+
 function DeskLightLayers() {
   const light = useDeskLight();
   if (!light) return null;
@@ -93,6 +96,30 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
   /* Handed to every thing on the desk, which is memoised: a fresh camera each
      render would redraw the whole desk on every step of a drag. */
   const camera = useMemo(() => ({ angle, depth, width: DESK_WIDTH, surfaceHeight: DESK_DEPTH }), [angle, depth]);
+  /*
+    Everything the lamp is handed, held still.
+
+    The bench found the lamp re-rendering forty-nine times and spending 33.7ms
+    while a sheet of paper was dragged across the other side of the desk — nine
+    tenths of all the React on the desk, for a thing nobody had touched. It was
+    not the lamp's fault: it sits in this component's render, so every step of
+    every drag rebuilt it, and it was handed a fresh lightPosition and two fresh
+    callbacks each time, so there was nothing to memoise against either.
+  */
+  const lightPosition = useMemo(() => ({ x: place.x, y: place.y, rotation: place.rotation, width: lampWidth, height: 700 * lampWidth / 960 }), [place.x, place.y, place.rotation, lampWidth]);
+  const articulated = useCallback((next: LampPose) => {
+    setPose(next);
+    told.current.onArticulate?.(lampPoseAngles(next));
+  }, []);
+  const switched = useCallback((next: boolean) => {
+    setOverride({ initial: told.current.lamp, on: next });
+    told.current.onLamp?.(next);
+  }, []);
+  /* The callbacks above must keep their identity, so what they call is read when
+     they run rather than captured when they are made. */
+  const told = useRef({ onArticulate, onLamp, lamp });
+  told.current = { onArticulate, onLamp, lamp };
+
   const capture = () => {
     const angles = lampPoseAngles(pose);
     return { angle, depth, wood, room, floor, wall, roomBlur, roomDim, deskShare, roomLip, lamp: on, shadowStrength, lampX: place.x, lampY: place.y, lampRotation: place.rotation, lampWidth, lampEnamel, lampLowerAngle: angles.lower, lampUpperAngle: angles.upper, objectPlacements: placements, showObjects };
@@ -123,10 +150,7 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
               owns it is told once, when it is put down: a story that writes every
               step back into its controls re-renders the desk under the drag. */}
           <Movable {...place} width={lampWidth} label="Desk lamp" className="perspective__lamp" onMove={next => setPlace(current => ({ ...current, ...next }))} onSettle={next => onArrange?.(next)}>
-            <DeskLamp camera={camera} lightPosition={{ ...place, width: lampWidth, height: 700 * lampWidth / 960 }} shadowStrength={shadowStrength} on={on} enamel={lampEnamel} pose={pose} onPoseChange={next => { setPose(next); onArticulate?.(lampPoseAngles(next)); }} onToggle={next => {
-              setOverride({ initial: lamp, on: next });
-              onLamp?.(next);
-            }} />
+            <SteadyLamp camera={camera} lightPosition={lightPosition} shadowStrength={shadowStrength} on={on} enamel={lampEnamel} pose={pose} onPoseChange={articulated} onToggle={switched} />
           </Movable>
         </Desk>
       </Perspective>
