@@ -74,8 +74,8 @@ test('The mug lays its ring down as it is set down, on everything it is standing
   assert.match(trail, /stamp\(null, over\);/);
   // The coffee goes down with the mug, so the paper can be pulled out from under it and take its half away.
   assert.match(trail, /const lift = \(\) => \{\s+standing\.current = false;/);
-  assert.match(trail, /const settle = \(\) => \{\s+if \(standing\.current\) return;/);
-  assert.match(trail, /setTrail\(\(down\) => setDown\(down, mug\(\), over\(\)\)\);/);
+  assert.match(trail, /const settleAt = \(place\?: MugPlace\) => \{\s+if \(standing\.current\) return;/);
+  assert.match(trail, /setTrail\(\(down\) => setDown\(down, place \?\? mug\(\), over\(\)\)\);/);
   // Nothing is dropped for being old: a ring leaves only once it has faded out.
   assert.match(trail, /const drying = rings\.filter\(\(ring\) => ring\.strength > 0\)\.map\(dry\);/);
   assert.match(trail, /return \{ \.\.\.ring, strength: left < COFFEE_GONE \? 0 : left \};/);
