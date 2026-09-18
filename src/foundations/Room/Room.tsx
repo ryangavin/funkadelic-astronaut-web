@@ -1,3 +1,4 @@
+import { roomSurfaceExtents } from '../../geometry/roomCoverage';
 import { lightingSetup, type LightTuning } from '../../geometry/lightingSetup';
 import { roomSetup, positive, type PhysicalRoomInputs } from '../../geometry/roomSetup';
 import { mmToUnits } from '../../geometry/physicalScale';
@@ -161,9 +162,20 @@ export function Room(props: RoomProps) {
       for (const [name, value] of [['shadowStrength', props.shadowStrength ?? DEFAULT_SHADOW_STRENGTH], ['roomDim', props.roomDim ?? 0.32]] as const)
         if (!Number.isFinite(value) || value < 0 || value > 1) throw new RangeError(`${name} must be between 0 and 1 (normalized opacity)`);
       if (!Number.isFinite(props.roomLip ?? ROOM_LIP)) throw new RangeError('roomLip must be finite');
+      // Check material allocation before accepting a new scene. Failed edits keep
+      // the last valid scene alive, including its object arrangement and lamp.
+      if (props.room !== false) roomSurfaceExtents({
+        angle: setup.camera.angle, depth: setup.camera.depth,
+        deskWidth: setup.camera.width, deskDepth: setup.camera.surfaceHeight, stand: setup.stand,
+        deskShare: props.deskShare ?? ROOM_DESK_SHARE, lip: props.roomLip ?? ROOM_LIP,
+      }, {
+        span: props.roomSpanMm === undefined ? undefined : mmToUnits(props.roomSpanMm),
+        front: props.floorFrontMm === undefined ? undefined : mmToUnits(props.floorFrontMm),
+        wallHeight: props.wallHeightMm === undefined ? undefined : mmToUnits(props.wallHeightMm),
+      });
       return { setup, tuning };
     } catch (error) { return { error: error instanceof Error ? error.message : 'Invalid room setup' }; }
-  }, [measured, props.lightTuning, props.lampIntensity, props.lampWidth, props.roomSpanMm, props.floorFrontMm, props.wallHeightMm, props.deskShare, props.roomBlur, props.shadowStrength, props.roomDim, props.roomLip]);
+  }, [measured, props.room, props.lightTuning, props.lampIntensity, props.lampWidth, props.roomSpanMm, props.floorFrontMm, props.wallHeightMm, props.deskShare, props.roomBlur, props.shadowStrength, props.roomDim, props.roomLip]);
   // Numeric fields pass through incomplete values while typing. Keep the last
   // valid scene mounted so editing never discards places, switch state or pose.
   const previous = useRef<{ props: RoomProps; setup: ReturnType<typeof roomSetup>; tuning: LightTuning } | null>(null);

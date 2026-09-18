@@ -72,6 +72,15 @@ export async function checkPhysicalRoom({ canvasElement }: { canvasElement: HTML
   await waitFor(() => expect(canvasElement.querySelector('.room__diagnostic')).toHaveTextContent('100.0 mm'));
   for (const node of canvasElement.querySelectorAll('[style], [transform]'))
     expect(`${node.getAttribute('style')} ${node.getAttribute('transform')}`).not.toMatch(/NaN|Infinity/);
+  const supportedCamera = camera().getAttribute('style');
+  const materialCount = canvasElement.querySelectorAll('.floor__course, .floor__butt, .wall__brick').length;
+  input('Eye height (mm)', '751');
+  await waitFor(() => expect(canvas.getByRole('alert')).toHaveTextContent('renderer capacity exceeded'));
+  expect(canvas.getByRole('alert')).toHaveTextContent('last valid scene');
+  expect(canvas.getByRole('spinbutton', { name: 'Eye height (mm)' })).toHaveValue(751);
+  expect(camera().getAttribute('style')).toBe(supportedCamera);
+  expect(canvasElement.querySelectorAll('.floor__course, .floor__butt, .wall__brick')).toHaveLength(materialCount);
+  expect(lamp.style.getPropertyValue('--movable-x')).toBe(lampX);
   input('Eye height (mm)', '700');
   await expect(canvas.getByRole('alert')).toHaveTextContent('eye height above tabletop');
   input('Eye height (mm)', '1650');

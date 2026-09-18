@@ -1,4 +1,4 @@
-import { roomCoverage } from '../../geometry/roomCoverage';
+import { roomSurfaceExtents } from '../../geometry/roomCoverage';
 import { DEFAULT_LIGHT_TUNING } from '../../geometry/lightingSetup';
 import { DESK_SIZE, mmToUnits } from '../../geometry/physicalScale';
 import type React from 'react';
@@ -6,7 +6,7 @@ import { memo, useId, useRef, type Ref } from 'react';
 import { useDeskLightEffect } from '../../behaviors/DeskLighting/DeskLighting';
 import { DESK_WIDTH } from '../../components/3D/Desk/Desk';
 import { Floor, type FloorWood } from '../../components/3D/Floor/Floor';
-import { WALL_HEIGHT, Wall, type WallFinish } from '../../components/3D/Wall/Wall';
+import { Wall, type WallFinish } from '../../components/3D/Wall/Wall';
 import './DeskRoom.css';
 
 /**
@@ -24,8 +24,6 @@ export const DESK_STAND = DESK_SIZE.height;
 export const ROOM_DESK_DEPTH = DESK_SIZE.depth;
 /** How far the frame reaches below the desk's front edge, in desk units on the screen: a strip of the boards under it. */
 export const ROOM_LIP = 60;
-/** How far the boards are drawn out in front of the desk, so the frame's bottom corners are covered. */
-const FLOOR_FRONT = 400;
 /** How much floor and wall is drawn: 2.2 metres, so the frame is covered however the eye moves. */
 export const ROOM_SPAN = mmToUnits(2200);
 /*
@@ -303,10 +301,18 @@ function DeskFloorShadow({ deskWidth, span, deskDepth, stand, floorDepth, streng
 */
 export const DeskRoom = memo(function DeskRoom({ angle, depth, deskShare = ROOM_DESK_SHARE, deskWidth = DESK_WIDTH, span: givenSpan, front: givenFront, wallHeight: givenWallHeight, deskDepth = ROOM_DESK_DEPTH, stand = DESK_STAND, lip = ROOM_LIP, floor = 'pine', wall = 'red', blur = 1, dim = 0.32, shadowStrength = 0.36 }: DeskRoomProps) {
   const { back, down } = floorLies(angle, stand);
-  const coverage = roomCoverage({ angle, depth, deskWidth, deskDepth, stand, deskShare, lip });
-  const span = givenSpan ?? Math.max(ROOM_SPAN, coverage.span);
-  const front = givenFront ?? Math.max(FLOOR_FRONT, coverage.front);
-  const wallHeight = givenWallHeight ?? Math.max(WALL_HEIGHT, coverage.wallHeight);
+  let extents;
+  try {
+    extents = roomSurfaceExtents(
+      { angle, depth, deskWidth, deskDepth, stand, deskShare, lip },
+      { span: givenSpan, front: givenFront, wallHeight: givenWallHeight },
+    );
+  } catch (error) {
+    // Room normally catches this before accepting the scene. Keep direct
+    // DeskRoom consumers safe too; never allocate an unbounded material tree.
+    return <div className="room__diagnostic" role="alert">{error instanceof Error ? error.message : 'Room background exceeds rendering capacity'}</div>;
+  }
+  const { span, front, wallHeight } = extents;
   const floorDepth = deskDepth + front;
   return (
     <div

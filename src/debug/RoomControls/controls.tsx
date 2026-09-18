@@ -66,6 +66,9 @@ export function RoomControlPanel({ args, update, children }: { args: RoomProps &
         </fieldset>;
       })}
     </div>
+    <p style={{ margin: 0, padding: '0 12px 12px', color: '#c7bcae', background: '#211b16', font: '13px system-ui' }}>
+      Very low views or large room extents can exceed background rendering capacity. An alert explains the limit; the last supported view stays visible until you adjust the values.
+    </p>
     {children}
   </div>;
 }
