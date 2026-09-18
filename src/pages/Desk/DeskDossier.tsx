@@ -148,6 +148,9 @@ export function DeskDossier({ width, place, layer, onFront }: { width: number; p
       if (!motion.matches) return;
       window.clearTimeout(timer);
       cancelAnimationFrame(frame);
+      // The returning phase deliberately leaves the folder in its open place.
+      // Finish that deferred restoration before discarding the saved layout.
+      if (!requestedOpen) arrange(closed.current ?? {}, 0);
       setPhase(requestedOpen ? 'open' : 'closed');
     };
     motion.addEventListener('change', reduce);
