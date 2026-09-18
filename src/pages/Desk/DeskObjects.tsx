@@ -130,7 +130,7 @@ export function DeskObjectShadows({ placements, height }: { placements: ObjectPl
   and every Solid measures itself off the plane the moment it renders, so a
   single drag was paying for a whole desk of measurements a frame.
 */
-const DeskObject = memo(function DeskObject({ object, place, camera, layer, held, onFront, onMove }: { object: ObjectSpec; place: Place; camera: StudyCamera; layer: number; held: boolean; onFront: (id: string) => void; onMove: (id: string, place: Place) => void }) {
+export const DeskObject = memo(function DeskObject({ object, place, camera, layer, held, onFront, onMove }: { object: ObjectSpec; place: Place; camera: StudyCamera; layer: number; held: boolean; onFront: (id: string) => void; onMove: (id: string, place: Place) => void }) {
   const size = sizeOf(object, place);
   const drawing = object.flat ? object.content : object.id === 'pen' ? <PenRelief place={place} camera={camera} width={size.width} /> : object.id === 'cradle' ? <CradleRelief place={place} camera={camera} width={size.width} /> : object.solid ? <Solid {...object.solid}>{object.content}</Solid> : <Relief place={place} camera={camera} width={size.width} depth={size.depth} heightMm={size.heightMm} path={object.shapes?.[0].path ?? ROUND_CASE} sideColors={object.colors}>{object.content}</Relief>;
   return <Movable {...place} width={object.width} pivot={pivotOf(object)} resizable label={object.name} z={held ? INSPECT_LAYER : layer} onGrab={() => { if (object.flat) onFront(object.id); }} grab={object.id === 'poster' ? 'anywhere' : object.flat ? 'body' : 'anywhere'} onMove={next => onMove(object.id, { ...place, ...next })}>

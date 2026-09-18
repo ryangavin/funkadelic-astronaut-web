@@ -50,6 +50,20 @@ export type ProbeOptions = {
 /* One refresh, near enough. Anything at or under this is the frame budget met. */
 const REFRESH_MS = 17;
 
+/*
+  How many frames of real movement to throw away before starting the clock.
+
+  A drag does not cost the same throughout. Some things on this desk run at the
+  refresh for about the first third of a second of being moved and then step up
+  — the dossier goes from seventeen milliseconds to nearer sixty and stays there
+  for as long as you hold it. It is the second number that a hand feels, and the
+  first that a short measurement reports: with four frames of settling and twenty
+  timed, this bench used to time almost nothing but the cheap part, and ranked
+  the dearest thing on the desk as one of the lightest. Twenty frames of movement
+  is comfortably past where that step has happened.
+*/
+const SETTLE_FRAMES = 20;
+
 const raf = (win: Window) => new Promise<void>(resolve => win.requestAnimationFrame(() => resolve()));
 
 /** Every movable thing on the desk, by the name it answers to. */
@@ -83,10 +97,16 @@ export async function dragCost(root: Document | HTMLElement, label: string, { mo
   const at = (type: string, cx: number, cy: number, buttons = 1) =>
     element.dispatchEvent(new win.PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 1, pointerType: 'mouse', button: 0, buttons, clientX: cx, clientY: cy }));
 
-  /* Past the drag threshold and settled, so none of the timed frames is paying for the pick-up. */
+  /* Past the drag threshold and settled, so none of the timed frames is paying
+     for the pick-up — and then kept moving, unclocked, until the drag is in
+     whatever state it is going to stay in. See SETTLE_FRAMES. */
   at('pointerdown', x, y);
   at('pointermove', x + reach * 2, y);
   for (let i = 0; i < 4; i += 1) await raf(win);
+  for (let i = 0; i < SETTLE_FRAMES; i += 1) {
+    at('pointermove', x + reach * 2 + (i % 2 ? reach : -reach), y + (i % 5));
+    await raf(win);
+  }
 
   const frames: number[] = [];
   let last = win.performance.now();
@@ -399,6 +419,19 @@ export const DESK_LAYERS: Layer[] = [
   /* The desk's own shadow on the boards: one shape, but the size of the room,
      and the only thing in the room that moves when the lamp does. */
   { name: 'the desk\u2019s shadow on the floor', strip: hiding('.desk-room__shadow') },
+  /* The boards' own figure, drawn the way the desk top's is: turbulence pushing
+     bands of tone about. It never changes, and it is the dearest thing in the
+     room to rasterise — so taking it away while leaving the floor there is what
+     separates “the shadow moved” from “the grain had to be worked out again”. */
+  {
+    name: 'the floor’s wood grain (filter: url(#…))',
+    strip: root => {
+      const bands = [...root.querySelectorAll<HTMLElement>('.floor__bands')];
+      const was = bands.map(node => node.style.filter);
+      bands.forEach(node => { node.style.filter = 'none'; });
+      return () => bands.forEach((node, index) => { node.style.filter = was[index]; });
+    },
+  },
   { name: 'the lamp’s pool of light', strip: hiding('.lamp-light, .desk-lamp__pool') },
   { name: 'the whole lighting layer', strip: hiding('.perspective-desk__lighting') },
   { name: 'the room behind the desk', strip: hiding('.desk-room, .desk-room__wall, .desk-room__floor') },
@@ -412,19 +445,26 @@ export type Verdict =
   | { kind: 'already-fast'; says: string }
   | { kind: 'not-drawing'; says: string };
 
-function judge(asIs: FrameCost, layers: Attribution[]): Verdict {
+function judge(asIs: FrameCost, layers: Attribution[], drawing?: Drawing): Verdict {
   const best = layers[0];
   const movedTheNeedle = best && best.savedPct >= 3;
   if (movedTheNeedle) return { kind: 'attributed', says: `${best.savedPct}% of the frame is ${best.label.replace(/^without /, '')}.` };
   if (asIs.medianMs > REFRESH_MS * 1.5) {
     return { kind: 'attributed', says: 'Slow, but no single layer accounts for it — the cost is spread, or it is in a layer this bench cannot take away.' };
   }
-  /* At the refresh rate with nothing to strip. Either genuinely fast, or nothing was drawn. */
+  /* At the refresh with nothing to strip. Either genuinely fast, or nothing was
+     drawn — and that is not a thing to guess at, so it was asked directly. */
+  if (drawing?.available && !drawing.drawing) {
+    return {
+      kind: 'not-drawing',
+      says: `Every frame landed on the refresh — and so did the control, which puts the room's grain back in the path of every frame and ought to cost twenty milliseconds (${drawing.plainMs}ms against ${drawing.loadedMs}ms). Nothing was being drawn, and the whole run is void. Bring the window to the front, make sure it is on screen, and run it again.`,
+    };
+  }
   return {
-    kind: asIs.worstMs < REFRESH_MS * 1.3 ? 'not-drawing' : 'already-fast',
-    says: asIs.worstMs < REFRESH_MS * 1.3
-      ? 'Every frame landed on the refresh and no layer was worth anything — this window was almost certainly not drawing. Bring it to the front, make sure it is on screen, and run it again.'
-      : 'Already inside the frame budget, so there is nothing here to attribute.',
+    kind: 'already-fast',
+    says: drawing?.available
+      ? `Already inside the frame budget, and the window really was drawing it: with the control applied the same drag went from ${drawing.plainMs}ms to ${drawing.loadedMs}ms. There is nothing here to attribute.`
+      : 'Already inside the frame budget, so there is nothing here to attribute — though with no room on this desk there was no control to prove the window was drawing at all.',
   };
 }
 
@@ -443,7 +483,11 @@ export async function attribute(root: Document | HTMLElement, label: string, opt
     layers.push({ ...without, label: `without ${layer.name}`, savedMs: +(asIs.medianMs - without.medianMs).toFixed(1), savedPct: Math.round((asIs.medianMs - without.medianMs) / asIs.medianMs * 100) });
   }
   layers.sort((a, b) => b.savedMs - a.savedMs);
-  return { asIs, layers, verdict: judge(asIs, layers) };
+  /* Only when the run has nothing to show for itself is it worth two more drags
+     to find out whether that is the desk or the window. */
+  const nothingToShow = !layers[0] || layers[0].savedPct < 3;
+  const drawing = nothingToShow && asIs.medianMs <= REFRESH_MS * 1.5 ? await drawingCheck(root, options) : undefined;
+  return { asIs, layers, verdict: judge(asIs, layers, drawing) };
 }
 
 /**
@@ -458,12 +502,441 @@ export function looksUndrawn(costs: FrameCost[]): boolean {
   return costs.length > 1 && costs.every(cost => cost.medianMs <= REFRESH_MS * 1.15);
 }
 
+export type Drawing = {
+  /** False when the control could not be set up, in which case nothing at all follows from the rest. */
+  available: boolean;
+  /** Whether this window is really rasterising what it is asked to. */
+  drawing: boolean;
+  /** The same drag as it is, and again with the control applied. */
+  plainMs: number;
+  loadedMs: number;
+};
+
+const NOT_ASKED: Drawing = { available: false, drawing: true, plainMs: 0, loadedMs: 0 };
+
+/**
+ * Whether the measurements can be believed — asked properly this time.
+ *
+ * The old test was that something on the desk always costs more than a frame
+ * while it is really being drawn, so a run where nothing did was a run where
+ * nothing was drawn. That was true of this desk for as long as the desk was
+ * slow, and it stopped being true the day it got fast: a desk that drags at the
+ * refresh throughout is now an ordinary, correct result, and the bench was
+ * calling it a broken instrument.
+ *
+ * So instead of inferring from an absence, this makes something happen. The
+ * desk is given a load no compositor could absorb and dragged again. If the
+ * frame does not budge, nothing is being rasterised and the whole run is void.
+ * If it gets much dearer, the window is drawing and a fast reading is simply a
+ * fast desk.
+ */
+export async function drawingCheck(root: Document | HTMLElement, options?: ProbeOptions): Promise<Drawing> {
+  /*
+    The control has to be something that is *invalidated*, not merely something
+    expensive. Both obvious loads were tried and both were free: a wide blur over
+    the whole desk, and sixteen stacked turbulence-filtered sheets over it, each
+    measured at exactly the frame time without them. Of course they were — they
+    never change, so they are rasterised once and composited thereafter, which is
+    the very thing this desk has spent its life learning. A load that costs has to
+    be dear to draw *and* dirtied every frame.
+
+    There is one to hand, and it is the desk's own: take the floorboards' layer
+    away and the room's grain is back in the path of the shadow that moves over
+    it, which is worth some twenty milliseconds a frame and was measured both
+    ways. So the control is simply the state this bench found the desk in before
+    the boards were given a layer of their own.
+  */
+  const boards = [...root.querySelectorAll<HTMLElement>('.desk-room__floor > .floor')];
+  /* And it has to be the lamp that is dragged. The boards are only ever dirtied
+     by the shadow the lamp throws across them; drag anything else and the room is
+     not touched at all, so the control sits there costing nothing and the bench
+     reads a working window as a dead one. That mistake was made once already. */
+  const lamp = root.querySelector('.perspective__lamp[role="group"]')?.getAttribute('aria-label');
+  if (!boards.length || !lamp) return NOT_ASKED;
+  const plain = await dragCost(root, lamp, options);
+  const was = boards.map(node => node.style.willChange);
+  boards.forEach(node => { node.style.willChange = 'auto'; });
+  let loaded: FrameCost;
+  try {
+    loaded = await dragCost(root, lamp, options);
+  } finally {
+    boards.forEach((node, index) => { node.style.willChange = was[index]; });
+  }
+  return {
+    available: true,
+    /* A quarter again on the frame is far less than the control really costs, and far more than noise. */
+    drawing: loaded.medianMs > plain.medianMs * 1.25,
+    plainMs: plain.medianMs,
+    loadedMs: loaded.medianMs,
+  };
+}
+
 /** Every thing on the desk, dragged in turn, dearest first: which object is the problem. */
-export async function sweep(root: Document | HTMLElement, options?: ProbeOptions): Promise<{ costs: FrameCost[]; undrawn: boolean }> {
+export async function sweep(root: Document | HTMLElement, options?: ProbeOptions): Promise<{ costs: FrameCost[]; undrawn: boolean; drawing?: Drawing }> {
   const costs: FrameCost[] = [await idleCost(root)];
-  for (const label of draggables(root)) costs.push(await dragCost(root, label, options));
+  const things = draggables(root);
+  for (const label of things) costs.push(await dragCost(root, label, options));
   const [idle, ...dragged] = costs;
   dragged.sort((a, b) => b.medianMs - a.medianMs);
   const ordered = [idle, ...dragged];
-  return { costs: ordered, undrawn: looksUndrawn(ordered) };
+  /* Only worth the extra drag when the run came back suspiciously level; when
+     something on the desk plainly cost more than a frame, it was plainly drawn. */
+  if (!looksUndrawn(ordered) || !things.length) return { costs: ordered, undrawn: false };
+  const drawing = await drawingCheck(root, options);
+  return { costs: ordered, undrawn: drawing.available && !drawing.drawing, drawing };
+}
+
+/*
+  ---------------------------------------------------------------------------
+  Three more instruments, for the three questions the ones above cannot answer.
+
+  What is here already says how long a frame took and what taking a layer away
+  was worth. That is enough to know the desk is slow and roughly where, and not
+  enough to know why — so each of these asks a different kind of question:
+
+   * `splitFrames` asks what the frame was *made of*: how much of it the main
+     thread was busy for, how much of that was style and layout, and how much
+     was left over for the drawing, which happens somewhere else entirely. It
+     settles the React argument with a number instead of a comment.
+   * `wastedWork` asks how much of what we did was worth doing. It counts every
+     attribute and every custom property written during a drag and how many of
+     them wrote the value that was already there — and then says who.
+   * `census` asks what the drawing is made of, which is why a repaint of it
+     costs what it does. It moves nothing and is true whether or not the window
+     is drawing, so it is the one reading here that cannot be void.
+  ---------------------------------------------------------------------------
+*/
+
+/* The browser's own account of a frame. Not in the DOM types yet, and only the few fields worth having. */
+type LongFrame = PerformanceEntry & {
+  renderStart?: number;
+  styleAndLayoutStart?: number;
+  blockingDuration?: number;
+  scripts?: { duration: number; forcedStyleAndLayoutDuration?: number; invoker?: string; invokerType?: string }[];
+};
+
+export type FrameSplit = {
+  /** Whether the browser reports this at all. Without it the rest is zeroes. */
+  available: boolean;
+  /** How many frames it was able to account for. It only reports the ones over the threshold, so a fast run reports none — which is itself the answer. */
+  frames: number;
+  /** The whole of an average reported frame. */
+  frameMs: number;
+  /** How long the main thread was busy before the browser started rendering: our own code, React included. */
+  scriptMs: number;
+  /** Of the render, how much was working out style and laying the page out. */
+  styleLayoutMs: number;
+  /** How much of the script time above was a layout read forcing that work to happen early. */
+  forcedMs: number;
+  /** What is left: paint, raster and composite. None of it is on the main thread and none of it is ours to profile — it is simply the cost of the drawing. */
+  drawingMs: number;
+};
+
+const NO_SPLIT: FrameSplit = { available: false, frames: 0, frameMs: 0, scriptMs: 0, styleLayoutMs: 0, forcedMs: 0, drawingMs: 0 };
+
+/**
+ * Watch what the frames of the next measurement are made of.
+ *
+ * The browser will break a frame down for you — `long-animation-frame` gives
+ * the start of the frame, the moment rendering began, the moment style and
+ * layout began, and what each script in it cost. Subtracting those gives the
+ * one number nobody here has had: how much of the frame was spent somewhere
+ * the main thread cannot see.
+ *
+ * The threshold can be brought down to sixteen milliseconds and no lower, so a
+ * frame that lands on the refresh is never reported. That is not a gap: it
+ * means the main thread had nothing long enough to mention, and if the frame
+ * still took forty milliseconds, all forty of them were the drawing.
+ */
+export function splitFrames(win: Window = window): { stop: () => FrameSplit } {
+  const seen: LongFrame[] = [];
+  /* The window's own constructor, since the desk may be in another document; it is not on the Window type. */
+  const Observer = (win as unknown as { PerformanceObserver?: typeof PerformanceObserver }).PerformanceObserver;
+  if (!Observer) return { stop: () => NO_SPLIT };
+  let observer: PerformanceObserver;
+  try {
+    observer = new Observer(list => { for (const entry of list.getEntries()) seen.push(entry as LongFrame); });
+    /* Sixteen is the floor the browser allows; anything under it is a frame that met its budget. */
+    observer.observe({ type: 'long-animation-frame', durationThreshold: 16 } as PerformanceObserverInit);
+  } catch {
+    return { stop: () => NO_SPLIT };
+  }
+  return {
+    stop: () => {
+      observer.disconnect();
+      if (!seen.length) return { ...NO_SPLIT, available: true };
+      const mean = (of: (frame: LongFrame) => number) => seen.reduce((total, frame) => total + of(frame), 0) / seen.length;
+      const frameMs = mean(frame => frame.duration);
+      const scriptMs = mean(frame => (frame.renderStart ? frame.renderStart - frame.startTime : frame.duration));
+      const styleLayoutMs = mean(frame => (frame.styleAndLayoutStart ? frame.startTime + frame.duration - frame.styleAndLayoutStart : 0));
+      const forcedMs = mean(frame => (frame.scripts ?? []).reduce((total, script) => total + (script.forcedStyleAndLayoutDuration ?? 0), 0));
+      return {
+        available: true,
+        frames: seen.length,
+        frameMs: +frameMs.toFixed(1),
+        scriptMs: +scriptMs.toFixed(1),
+        styleLayoutMs: +styleLayoutMs.toFixed(1),
+        forcedMs: +forcedMs.toFixed(1),
+        /* Whatever the frame took that the main thread cannot account for. */
+        drawingMs: +Math.max(0, frameMs - scriptMs - styleLayoutMs).toFixed(1),
+      };
+    },
+  };
+}
+
+/** One kind of redundant work, and who did it. */
+export type Culprit = {
+  /** The element, near enough to find it: its tag and first class, and what was written to it. */
+  what: string;
+  /** How many times a frame. */
+  perFrame: number;
+  /** True when every one of those wrote the value that was already there. */
+  idle: boolean;
+};
+
+export type Wasted = FrameCost & {
+  frames: number;
+  /** Attributes written a frame, and how many of those wrote a value the element already had. */
+  attributes: number;
+  idleAttributes: number;
+  /** The same for inline styles and custom properties. */
+  styles: number;
+  idleStyles: number;
+  /** Boxes measured off the DOM mid-frame, each of which makes the browser work out style and layout there and then. */
+  layoutReads: number;
+  /** Who did the most of it, dearest first. */
+  culprits: Culprit[];
+  /** Who read the most layout, the same way. */
+  readers: Culprit[];
+};
+
+/** A name for an element short enough to put in a table and specific enough to find it by. */
+function nameOf(node: Element): string {
+  const classes = typeof node.className === 'string' ? node.className : (node.className as unknown as SVGAnimatedString)?.baseVal ?? '';
+  const first = classes.split(/\s+/).filter(Boolean)[0];
+  return first ? `${node.tagName.toLowerCase()}.${first}` : node.tagName.toLowerCase();
+}
+
+/**
+ * How much of a drag was spent putting things back where they already were.
+ *
+ * Everything on this desk that moves without re-rendering does it by writing
+ * straight to the DOM, which is the right way round and is why the shadows keep
+ * up with the lamp at all. But a write like that is unconditional: the code that
+ * does it runs whenever its component renders, not only when what it writes has
+ * changed, and an SVG attribute set to the value it already held still marks
+ * that element as needing to be drawn again. A handful of those in the wrong
+ * layer is worth more than everything else on this bench put together.
+ *
+ * So this drags a thing with every write and every layout read counted, and
+ * separates the ones that changed something from the ones that did not. It is
+ * the only reading here that names a line of code rather than a layer.
+ *
+ * It costs what it measures: wrapping three prototype methods makes every frame
+ * of this run dearer than the same drag without the bench watching, so the
+ * frame times it reports are its own and are not comparable with the tables
+ * above. The counts are exact; the milliseconds beside them are not.
+ */
+export async function wastedWork(root: Document | HTMLElement, label: string, options?: ProbeOptions): Promise<Wasted> {
+  const doc = root instanceof Document ? root : root.ownerDocument;
+  const win = doc.defaultView;
+  if (!win) throw new Error('The desk is not in a window');
+  const element = win.Element.prototype;
+  const declaration = win.CSSStyleDeclaration.prototype;
+  const wasRect = element.getBoundingClientRect;
+  const wasAttribute = element.setAttribute;
+  const wasProperty = declaration.setProperty;
+
+  let attributes = 0, idleAttributes = 0, styles = 0, idleStyles = 0, layoutReads = 0;
+  const wrote = new Map<string, { count: number; idle: number }>();
+  const read = new Map<string, number>();
+  const tally = (map: Map<string, { count: number; idle: number }>, key: string, idle: boolean) => {
+    const at = map.get(key) ?? { count: 0, idle: 0 };
+    map.set(key, { count: at.count + 1, idle: at.idle + (idle ? 1 : 0) });
+  };
+
+  element.getBoundingClientRect = function (this: Element) {
+    layoutReads += 1;
+    read.set(nameOf(this), (read.get(nameOf(this)) ?? 0) + 1);
+    return wasRect.call(this);
+  };
+  element.setAttribute = function (this: Element, name: string, value: string) {
+    attributes += 1;
+    const idle = this.getAttribute(name) === String(value);
+    if (idle) idleAttributes += 1;
+    tally(wrote, `${nameOf(this)} [${name}]`, idle);
+    return wasAttribute.call(this, name, value);
+  };
+  declaration.setProperty = function (this: CSSStyleDeclaration, name: string, value: string | null, priority?: string) {
+    styles += 1;
+    const idle = this.getPropertyValue(name) === String(value ?? '');
+    if (idle) idleStyles += 1;
+    tally(wrote, name, idle);
+    return wasProperty.call(this, name, value, priority);
+  };
+
+  let cost: FrameCost;
+  try {
+    cost = await dragCost(root, label, options);
+  } finally {
+    element.getBoundingClientRect = wasRect;
+    element.setAttribute = wasAttribute;
+    declaration.setProperty = wasProperty;
+  }
+
+  const frames = options?.moves ?? 20;
+  const per = (count: number) => +(count / frames).toFixed(1);
+  const listed = (map: Map<string, { count: number; idle: number }>) =>
+    [...map].sort((a, b) => b[1].count - a[1].count).slice(0, 8).map(([what, at]) => ({ what, perFrame: per(at.count), idle: at.idle === at.count }));
+
+  return {
+    ...cost,
+    frames,
+    attributes: per(attributes),
+    idleAttributes: per(idleAttributes),
+    styles: per(styles),
+    idleStyles: per(idleStyles),
+    layoutReads: per(layoutReads),
+    culprits: listed(wrote),
+    readers: [...read].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([what, count]) => ({ what, perFrame: per(count), idle: false })),
+  };
+}
+
+/** What the drawing is made of: the count of everything a repaint of it has to go through. */
+export type Census = {
+  /** Elements in the desk, all told. */
+  nodes: number;
+  /** Elements the compositor has to treat as their own surface, and cannot simply move. */
+  filtered: number;
+  /** Of those, the ones carrying a referenced SVG filter, which is the dear kind. */
+  referenced: number;
+  /** Elements that blend with whatever is painted beneath them, so neither can be drawn on its own. */
+  blended: number;
+  /** Elements that read back what is behind them. */
+  backdrops: number;
+  masked: number;
+  boxShadows: number;
+  /** Shapes in all the SVG on the desk. */
+  shapes: number;
+  /** Noise and displacement, which cost per pixel of the region they cover. */
+  turbulence: number;
+  blurs: number;
+  /** How large the desk is being drawn, and how many pixels that really is. */
+  drawn: string;
+  megapixels: number;
+};
+
+export function census(root: Document | HTMLElement): Census {
+  const doc = root instanceof Document ? root : root.ownerDocument;
+  const win = doc.defaultView!;
+  const host = root instanceof Document ? root.documentElement : root;
+  const all = [...root.querySelectorAll('*')];
+  const count = (matches: (style: CSSStyleDeclaration, node: Element) => boolean) =>
+    all.filter(node => matches(win.getComputedStyle(node), node)).length;
+  const box = host.getBoundingClientRect();
+  return {
+    nodes: all.length,
+    filtered: count(style => !!style.filter && style.filter !== 'none'),
+    referenced: count(style => (style.filter || '').includes('url(')),
+    blended: count(style => !!style.mixBlendMode && style.mixBlendMode !== 'normal'),
+    backdrops: count(style => { const back = style.backdropFilter || style.getPropertyValue('-webkit-backdrop-filter'); return !!back && back !== 'none'; }),
+    masked: count((style, node) => (!!style.maskImage && style.maskImage !== 'none') || node.hasAttribute('mask')),
+    boxShadows: count(style => !!style.boxShadow && style.boxShadow !== 'none'),
+    shapes: root.querySelectorAll('path, polygon, circle, rect, ellipse, line, use, image, text').length,
+    turbulence: root.querySelectorAll('feTurbulence, feDisplacementMap').length,
+    blurs: root.querySelectorAll('feGaussianBlur').length,
+    drawn: `${Math.round(box.width)}×${Math.round(box.height)} at dpr ${win.devicePixelRatio}`,
+    megapixels: +(box.width * box.height * win.devicePixelRatio ** 2 / 1e6).toFixed(1),
+  };
+}
+
+export type Series = {
+  label: string;
+  /** Every frame of the drag, in order. */
+  frames: number[];
+  medianMs: number;
+  worstMs: number;
+  /**
+   * The frame the drag got dearer at and stayed, if it did.
+   *
+   * Worth having its own number, because a median hides it completely and a
+   * worst frame calls it a blip. A drag that runs at the refresh for a third of
+   * a second and then settles ten milliseconds slower for as long as you hold it
+   * is not an outlier — it is two different drags, and only the second one is
+   * the one a hand feels.
+   */
+  stepAt?: number;
+  /** What it cost before and after that, so the step can be stated rather than eyeballed. */
+  beforeMs?: number;
+  afterMs?: number;
+};
+
+const middle = (of: number[]) => {
+  if (!of.length) return 0;
+  const sorted = [...of].sort((a, b) => a - b);
+  return sorted[Math.floor(sorted.length / 2)];
+};
+
+/**
+ * Drag one thing and hand back every frame of it, rather than a median.
+ *
+ * The median is the right summary for comparing one desk with another and the
+ * wrong one for understanding a single drag: it says nothing about whether the
+ * cost was spread evenly, spiked once, or stepped up partway and stayed there.
+ * Those want different fixes, and the only way to tell them apart is to look at
+ * the frames in the order they happened.
+ *
+ * It holds the thing still for the first few frames deliberately — a drag that
+ * is not moving is the control, and if that is slow too then nothing about the
+ * motion is to blame.
+ */
+export async function frameSeries(root: Document | HTMLElement, label: string, { moves = 48, reach = 6 }: ProbeOptions = {}): Promise<Series> {
+  const element = find(root, label);
+  const win = element.ownerDocument.defaultView;
+  if (!win) throw new Error('The desk is not in a window');
+  const box = element.getBoundingClientRect();
+  const x = box.left + box.width / 2;
+  const y = box.top + box.height / 2;
+  const at = (type: string, cx: number, cy: number, buttons = 1) =>
+    element.dispatchEvent(new win.PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 1, pointerType: 'mouse', button: 0, buttons, clientX: cx, clientY: cy }));
+
+  at('pointerdown', x, y);
+  at('pointermove', x + reach * 2, y);
+  for (let i = 0; i < 3; i += 1) await raf(win);
+
+  const frames: number[] = [];
+  let last = win.performance.now();
+  for (let i = 0; i < moves; i += 1) {
+    at('pointermove', x + reach * 2 + (i % 2 ? reach : -reach), y);
+    await raf(win);
+    const now = win.performance.now();
+    frames.push(+(now - last).toFixed(1));
+    last = now;
+  }
+  at('pointermove', x, y);
+  at('pointerup', x, y, 0);
+  for (let i = 0; i < 3; i += 1) await raf(win);
+
+  /* A step, not a spike: the drag is dearer from some frame on and stays that
+     way to the end. Found by comparing the two ends and then looking for where
+     the crossing happened and held. */
+  const third = Math.max(4, Math.floor(frames.length / 3));
+  const before = middle(frames.slice(0, third));
+  const after = middle(frames.slice(-third));
+  let stepAt: number | undefined;
+  if (after > before * 1.25 && after - before > 3) {
+    const between = (before + after) / 2;
+    for (let i = 0; i + 4 < frames.length; i += 1) {
+      if (frames.slice(i, i + 5).every(frame => frame > between)) { stepAt = i + 1; break; }
+    }
+  }
+  return {
+    label,
+    frames,
+    medianMs: +middle(frames).toFixed(1),
+    worstMs: +Math.max(...frames).toFixed(1),
+    stepAt,
+    beforeMs: stepAt ? +before.toFixed(1) : undefined,
+    afterMs: stepAt ? +after.toFixed(1) : undefined,
+  };
 }
