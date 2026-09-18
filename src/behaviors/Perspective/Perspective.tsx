@@ -39,12 +39,33 @@ export type View = { tilt: number; depth: number; width: number };
  * units. The near edge is the hinge: it neither moves nor foreshortens, so
  * the drawn box measures the surface for us, however the page is zoomed.
  */
-export function unproject(plane: HTMLElement, { tilt, depth, width }: View, clientX: number, clientY: number): SurfacePoint {
+export function unproject(plane: HTMLElement, view: View, clientX: number, clientY: number): SurfacePoint {
+  return unprojectFrom(measurePlane(plane), view, clientX, clientY);
+}
+
+/**
+ * Everything `unproject` needs to know about the plane: where its near edge is
+ * on the screen, how wide it is drawn, and how deep it is drawn for that width.
+ *
+ * Kept apart from the projection itself because taking it is the expensive
+ * half — three reads off the DOM, and mid-gesture they are forced ones, since
+ * the thing being dragged has just been written to. None of them change while
+ * something is dragged across the plane: the plane neither moves nor resizes
+ * for that. So it is measured when it really changes and held in between.
+ */
+export type PlaneMetrics = { left: number; bottom: number; across: number; ratio: number };
+
+export function measurePlane(plane: HTMLElement): PlaneMetrics {
   const box = plane.getBoundingClientRect();
-  const perUnit = box.width / width || 1;
-  const height = (width * plane.offsetHeight) / (plane.offsetWidth || 1);
-  const across = (clientX - (box.left + box.width / 2)) / perUnit;
-  const up = (clientY - box.bottom) / perUnit;
+  return { left: box.left, bottom: box.bottom, across: box.width, ratio: plane.offsetHeight / (plane.offsetWidth || 1) };
+}
+
+/** `unproject`, off a plane already measured. */
+export function unprojectFrom(plane: PlaneMetrics, { tilt, depth, width }: View, clientX: number, clientY: number): SurfacePoint {
+  const perUnit = plane.across / width || 1;
+  const height = width * plane.ratio;
+  const across = (clientX - (plane.left + plane.across / 2)) / perUnit;
+  const up = (clientY - plane.bottom) / perUnit;
   const cos = Math.cos(tilt);
   const sin = Math.sin(tilt);
   /* How far back up the surface that point lies, from the hinge. Past the horizon there is no surface left to land on. */
@@ -184,8 +205,44 @@ export function Perspective({ angle = GENTLE_VIEW, depth = GENTLE_DEPTH, width =
     worth arguing about.
   */
   const view = useMemo(() => ({ tilt, depth, width }), [tilt, depth, width]);
+  /*
+    The plane, measured when it changes rather than on every pointer report.
+
+    Each projection used to read the plane's box, its offsetWidth and its
+    offsetHeight, and Movable asks for two of them per move — both ends of the
+    travel — while the lamp's head asks for its own. Mid-drag those are forced
+    layouts: carry() has just written to the thing being dragged, so the browser
+    has to work the page out again to answer. The bench counted 4.3 of them a
+    frame off this one element.
+
+    What is read is the plane's own, and the plane does not move or resize while
+    something is dragged across it. So it is taken here, when the things that do
+    change it say so: the element resizing, the window resizing, or anything
+    above it scrolling — which matters, because the desk sits in pages that
+    scroll and in a bench with a scroller of its own, and a stale box would let
+    a thing track the pointer at a constant offset without any error to show for it.
+  */
+  const measured = useRef<PlaneMetrics | null>(null);
+  useLayoutEffect(() => {
+    const element = plane.current;
+    if (!element) return;
+    const take = () => { measured.current = measurePlane(element); };
+    take();
+    const observer = new ResizeObserver(take);
+    observer.observe(element);
+    window.addEventListener('resize', take);
+    window.addEventListener('scroll', take, true);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', take);
+      window.removeEventListener('scroll', take, true);
+    };
+  }, []);
   const project = useCallback(
-    (clientX: number, clientY: number): SurfacePoint => (plane.current ? unproject(plane.current, { tilt, depth, width }, clientX, clientY) : { x: clientX, y: clientY }),
+    (clientX: number, clientY: number): SurfacePoint => {
+      const box = measured.current ?? (plane.current ? measurePlane(plane.current) : null);
+      return box ? unprojectFrom(box, { tilt, depth, width }, clientX, clientY) : { x: clientX, y: clientY };
+    },
     [tilt, depth, width],
   );
   const vars = { '--perspective-angle': angle, '--perspective-depth': depth, '--perspective-width': width, ...style } as CSSProperties;

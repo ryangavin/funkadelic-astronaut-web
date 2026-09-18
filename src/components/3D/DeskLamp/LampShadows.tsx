@@ -29,6 +29,9 @@ export function LampShadows({ surfaceHeight = 800 }: { surfaceHeight?: number })
   const foot = useRef<SVGCircleElement>(null);
   const lower = useRef<SVGPathElement>(null);
   const upper = useRef<SVGPathElement>(null);
+  /* The falloff's reach follows the bulb's height, which a lamp being carried does
+     not change: kept so it is written when it moves rather than every frame. */
+  const reach = useRef<number>(NaN);
 
   const armPath = (from: LightOccluderPoint, to: LightOccluderPoint, light: DeskLight) => {
     // Clip the upper link below the source plane; its remaining length fades outside the light pool.
@@ -52,7 +55,7 @@ export function LampShadows({ surfaceHeight = 800 }: { surfaceHeight?: number })
     contact.current?.setAttribute('r', String(base.radius * 1.01));
     pool.current?.setAttribute('cx', String(light.x));
     pool.current?.setAttribute('cy', String(light.y));
-    pool.current?.setAttribute('r', String(light.height * 1.6));
+    if (light.height !== reach.current) { reach.current = light.height; pool.current?.setAttribute('r', String(light.height * 1.6)); }
     lit.current?.setAttribute('opacity', String(light.on ? light.shadowStrength ?? DEFAULT_SHADOW_STRENGTH : 0));
     const projectedBase = lampShadowPoint(base, light);
     foot.current?.setAttribute('cx', String(projectedBase.x));

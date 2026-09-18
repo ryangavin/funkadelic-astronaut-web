@@ -179,6 +179,7 @@ function DeskFloorShadow({ deskDepth, stand, floorDepth, strength }: { deskDepth
   const halo = useRef<SVGGElement>(null);
   const core = useRef<SVGGElement>(null);
   const bulbPool = useRef<SVGCircleElement>(null);
+  const switched = useRef<boolean | null>(null);
   const poolStops = useRef<SVGRadialGradientElement>(null);
 
   /*
@@ -191,7 +192,13 @@ function DeskFloorShadow({ deskDepth, stand, floorDepth, strength }: { deskDepth
   */
   useDeskLightEffect(light => {
     const on = !!light?.on;
-    for (const group of [halo.current, core.current, bulbPool.current]) group?.setAttribute('opacity', on ? '1' : '0');
+    /* Whether the lamp is lit changes when it is switched, not when it is carried:
+       written then rather than every frame of a drag, since an opacity put back at
+       the value it already had still marks its layer to be drawn again. */
+    if (on !== switched.current) {
+      switched.current = on;
+      for (const group of [halo.current, core.current, bulbPool.current]) group?.setAttribute('opacity', on ? '1' : '0');
+    }
     if (!light || !on) return;
     /*
       The same projection every object on the desk casts by, with the desk top as
