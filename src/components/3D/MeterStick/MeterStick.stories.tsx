@@ -21,6 +21,16 @@ export const OneMeter: Story = {
     await expect(svg).toHaveAttribute('viewBox', '0 0 1000 40');
     await expect(svg.querySelector('.meter-stick__ticks')?.getAttribute('d')?.split('M').length).toBe(1002);
     await expect(svg.querySelector('.meter-stick__numbers')?.lastElementChild).toHaveAttribute('x', '1000');
+    // Branding and unit labels occupy the clear band between the two scales.
+    const brand = svg.querySelector<SVGGraphicsElement>('.meter-stick__brand')!.getBBox();
+    const unit = svg.querySelector<SVGGraphicsElement>('.meter-stick__unit')!.getBBox();
+    const metric = svg.querySelector<SVGGraphicsElement>('.meter-stick__numbers text')!.getBBox();
+    const inch = svg.querySelector<SVGGraphicsElement>('g.meter-stick__inches text')?.getBBox();
+    if (inch) {
+      await expect(brand.y).toBeGreaterThanOrEqual(metric.y + metric.height);
+      await expect(brand.y + brand.height).toBeLessThanOrEqual(inch.y);
+      await expect(unit.y + unit.height).toBeLessThanOrEqual(inch.y);
+    }
   },
 };
 
