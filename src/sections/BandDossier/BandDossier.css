@@ -72,3 +72,20 @@
   translate: 0 0;
   rotate: 0deg;
 }
+
+/* A dedicated tab control leaves the cover available to drag. */
+.dossier { position: relative; }
+.dossier__toggle {
+  position: absolute;
+  z-index: 6;
+  right: -3.1%;
+  top: 9%;
+  width: 4.1%;
+  height: 52%;
+  padding: 0;
+  border: 0;
+  border-radius: 0 4px 4px 0;
+  background: transparent;
+  cursor: pointer;
+}
+.dossier__toggle:focus-visible { outline: 3px solid #5ba1e3; outline-offset: 3px; }

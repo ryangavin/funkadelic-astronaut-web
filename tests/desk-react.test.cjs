@@ -255,7 +255,7 @@ test('Spill packs loose things on a point and sends them out in order when opene
   assert.match(behavior, /SPILL_STAGGER_MS = 110/);
   assert.match(behavior, /export function Spill\(/);
   assert.match(behavior, /export function Spilled\(/);
-  assert.match(behavior, /data-open=\{open \? 'true' : 'false'\}/);
+  // Packed/open lifecycle is exercised by the Spill and Desk Dossier browser stories.
   assert.match(behavior, /data-from=\{from \? 'point' : 'centre'\}/);
   // A spilled thing is a Movable, so it can be dragged once it is out.
   assert.match(behavior, /return <Movable \{\.\.\.movable\} x=\{x\} y=\{y\} rotation=\{rotation\} unit="var\(--spill-unit\)" className=\{`spilled \$\{className\}`\}/);

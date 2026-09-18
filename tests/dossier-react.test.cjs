@@ -87,7 +87,7 @@ test('BandDossier is the band section: the live set in the cover, the pile and t
   assert.match(read('src/sections/BandDossier/bandMembers.tsx'), /export const DEMO_TAPE: Tape = \{\s+src: demoTape,/);
   assert.match(css, /\.dossier__deck \{\s+position: absolute;\s+left: var\(--dossier-deck-x\);\s+bottom: var\(--dossier-deck-y\);\s+width: var\(--dossier-deck-width\);\s+z-index: 2;/);
   assert.match(css, /--dossier-deck-width: 94%;\s+--dossier-deck-x: -4%;\s+--dossier-deck-y: -14%;/);
-  assert.match(section, /<MemberPile members=\{members\} initial=\{initial\} spread=\{spread\} spreadX=\{spreadX\} duration=\{duration\} \/>\s+<OneSheet \{\.\.\.oneSheet\} rotation=\{bandRotation\} \/>/);
+  assert.match(section, /<MemberPile members=\{members\} selected=\{selected\} onSelect=\{setSelected\} spread=\{spread\} spreadX=\{spreadX\} duration=\{duration\} \/>\s+<OneSheet \{\.\.\.oneSheet\} rotation=\{bandRotation\} \/>/);
   assert.match(section, /oneSheet = BAND_ONE_SHEET,/);
   // Placement is a set of props the stories expose as controls, written to variables the stylesheet defaults.
   assert.match(section, /export const DOSSIER_PLACEMENT = \{\s+proofWidth: 108,/);

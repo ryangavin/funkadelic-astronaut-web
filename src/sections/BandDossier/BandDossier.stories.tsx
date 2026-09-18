@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import festivalSketch from '../../../assets/festival-scribble-fully-shaded.png';
@@ -154,5 +155,28 @@ export const SpineCrossing: Story = {
       await expect(occlusions, `${name} stays above the cover throughout the flight`).toBe(0);
       await expect(topItem(canvasElement).textContent).toContain(next);
     }
+  },
+};
+
+/** Closed contents are unmounted; the selected member survives packing away. */
+export const LazyContents: Story = {
+  render: function Lifecycle(args) {
+    const [open, setOpen] = useState(false);
+    return <div style={{ width: 1100, maxWidth: '100%', padding: 40 }}>
+      <BandDossier {...args} open={open} onOpen={() => setOpen(true)} onClose={() => setOpen(false)} />
+    </div>;
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvasElement.querySelectorAll('.member-pile, .one-sheet, .walkman, iframe')).toHaveLength(0);
+    await userEvent.click(canvas.getByRole('button', { name: 'Open the press package' }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Bring Sam Luba to the front' }));
+    await waitFor(() => expect(topItem(canvasElement).textContent).toContain('Sam Luba'), { timeout: 2000 });
+    await userEvent.click(canvas.getByRole('button', { name: 'Close the press package' }));
+    await expect(canvasElement.querySelector('.member-pile')).toBeInTheDocument();
+    await expect(canvasElement.querySelector('.folder__well')).toHaveAttribute('inert');
+    await waitFor(() => expect(canvasElement.querySelector('.member-pile')).not.toBeInTheDocument(), { timeout: 1500 });
+    await userEvent.click(canvas.getByRole('button', { name: 'Open the press package' }));
+    await expect(topItem(canvasElement).textContent).toContain('Sam Luba');
   },
 };

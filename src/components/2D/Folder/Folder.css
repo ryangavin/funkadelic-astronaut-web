@@ -238,3 +238,7 @@
   line-height: 1.1;
   rotate: -1.5deg;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .folder__cover { transition: none; }
+}
