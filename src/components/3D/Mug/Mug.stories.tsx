@@ -235,5 +235,5 @@ export const OnDesk: Story = {
   play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
-  render: (args) => <DeskObjectStudy name="Mug" widthMm={140} depthRatio={1} heightMm={MUG_TALL} shapes={MUG_SILHOUETTE} solid={{ height: MUG_HEIGHT, foot: MUG_FOOT }} note="70 mm tall, squat because it has no handle to say its size; the body is the silhouette it casts by."><Mug {...args} shadow="contact" /></DeskObjectStudy>,
+  render: (args) => <DeskObjectStudy name="Mug" widthMm={140} depthRatio={1} heightMm={MUG_TALL} shapes={MUG_SILHOUETTE} solid={{ height: MUG_HEIGHT, foot: MUG_FOOT }} note="Estimated 82 mm body diameter × 95 mm height; the 140 mm artwork box includes empty space."><Mug {...args} shadow="contact" /></DeskObjectStudy>,
 };

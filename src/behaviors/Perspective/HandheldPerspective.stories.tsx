@@ -7,7 +7,7 @@ import { Handheld } from '../../components/3D/Handheld/Handheld';
 import { Movable, type Place } from '../Movable/Movable';
 import { GENTLE_DEPTH, GENTLE_VIEW, Perspective } from './Perspective';
 import { elevatedLayer } from './elevation';
-import { mm, SIZES } from '../../pages/Desk/PromoterDesk';
+import { mmToUnits as mm } from '../../geometry/physicalScale';
 import './HandheldPerspective.css';
 
 const meta = {
@@ -24,7 +24,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Preserve the shared desk layout width: its original 170 mm shell is scaled to 204 mm.
+// PSP-sized baseline; the artwork includes a little space around the shell.
 // Thickness remains an explicit 23 mm estimate for this PSP-like component.
 const HANDHELD_THICKNESS_MM = 23;
 
@@ -32,17 +32,17 @@ function GentleHandheldScene(args: Story['args']) {
   const [place, setPlace] = useState<Place>({ x: 550, y: 320, rotation: -7 });
   const layerStyle = (fraction: number): CSSProperties => {
     const layer = elevatedLayer(mm(HANDHELD_THICKNESS_MM) * fraction,
-      { ...place, width: SIZES.handheld, drawingWidth: 720, drawingHeight: 327 },
+      { ...place, width: mm(170), drawingWidth: 720, drawingHeight: 327 },
       { angle: args?.angle ?? GENTLE_VIEW, depth: args?.depth ?? GENTLE_DEPTH, width: 1440, surfaceHeight: 800 });
     return { '--shell-x': layer.x, '--shell-y': layer.y, '--shell-scale': layer.scale } as CSSProperties;
   };
   return (
     <div className="handheld-perspective-study">
       <div className="handheld-perspective-study__frame">
-        <p>Gentle handheld · 204 mm desk width (original 170 mm art); estimated thickness 23 mm. Drag the shell; scrub the corner handle to turn. The original player controls still work. Set Angle to 90° to compare overhead.</p>
+        <p>Gentle handheld · 170 mm artwork width; estimated thickness 23 mm. Drag the shell; scrub the corner handle to turn. The original player controls still work. Set Angle to 90° to compare overhead.</p>
         <Perspective {...args}>
           <Desk height={800} edge={0}>
-            <Movable {...place} width={SIZES.handheld} label="Handheld console" onMove={(to) => setPlace((at) => ({ ...at, ...to }))}>
+            <Movable {...place} width={mm(170)} label="Handheld console" onMove={(to) => setPlace((at) => ({ ...at, ...to }))}>
                 <div className="handheld-perspective-shell">
                   {/* Eight overlapping silhouettes close the shallow gap without redrawing the original controls. */}
                   {Array.from({ length: 8 }, (_, index) => (

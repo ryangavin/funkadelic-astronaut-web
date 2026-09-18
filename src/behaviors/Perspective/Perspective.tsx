@@ -1,3 +1,4 @@
+import { DESK_SIZE } from '../../geometry/physicalScale';
 import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useRef, type CSSProperties, type ReactNode } from 'react';
 import { MovableProject } from '../Movable/Movable';
 import './Perspective.css';
@@ -13,7 +14,7 @@ export const PERSPECTIVE_DEPTH = 3200;
 /** A distant eye keeps the gentle view almost parallel across the desk. */
 export const GENTLE_DEPTH = 8000;
 /** The design width of a surface, in units, matching a sheet and a desk. */
-export const PERSPECTIVE_WIDTH = 1440;
+export const PERSPECTIVE_WIDTH = DESK_SIZE.width;
 
 export type PerspectiveProps = {
   /** Where the eye is, in degrees above the surface. 90 is straight down, the way everything is drawn; 60 is standing at a desk. */

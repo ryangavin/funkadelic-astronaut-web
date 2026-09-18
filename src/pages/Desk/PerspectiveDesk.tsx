@@ -1,3 +1,4 @@
+import { LAMP_WIDTH, LAMP_HEIGHT } from '../../geometry/physicalScale';
 import { DeskObjects, DeskObjectShadows, DEFAULT_OBJECT_PLACEMENTS, type ObjectPlacements } from './DeskObjects';
 import { articulateLamp, lampPoseFromAngles, lampPoseAngles, type LampPose } from '../../components/3D/DeskLamp/articulation';
 import type React from 'react';
@@ -87,7 +88,7 @@ function arranged(saved: ObjectPlacements = {}): ObjectPlacements {
 }
 
 /** The main desk composition, starting with its surface and working lamp. */
-export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, showObjects = true, only, showSettings = true, onCaptureSettings, lampX, lampY, lampRotation, lampWidth = 576, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', onArticulate, angle = GENTLE_VIEW, depth = GENTLE_DEPTH, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArrange, children }: PerspectiveDeskProps) {
+export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, showObjects = true, only, showSettings = true, onCaptureSettings, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', onArticulate, angle = GENTLE_VIEW, depth = GENTLE_DEPTH, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArrange, children }: PerspectiveDeskProps) {
   /*
     Where the lamp stands lives in a store, not in this component's state.
 
@@ -98,14 +99,14 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
     off the same subscription without rendering, and this component hears
     nothing until the lamp is put down.
   */
-  const places = usePlaceStore({ [LAMP]: { x: lampX ?? INITIAL_LAMP.x, y: lampY ?? INITIAL_LAMP.y, rotation: lampRotation ?? 0 } });
+  const places = usePlaceStore({ ...arranged(objectPlacements), [LAMP]: { x: lampX ?? INITIAL_LAMP.x, y: lampY ?? INITIAL_LAMP.y, rotation: lampRotation ?? 0 } });
   useEffect(() => { places.set(LAMP, { x: lampX ?? INITIAL_LAMP.x, y: lampY ?? INITIAL_LAMP.y, rotation: lampRotation ?? 0 }); }, [places, lampX, lampY, lampRotation]);
+  /* A saved arrangement arriving from outside puts everything back at once. */
+  useEffect(() => { for (const [id, where] of Object.entries(arranged(objectPlacements))) places.set(id, where); }, [places, objectPlacements]);
   const [pose, setPose] = useState(() => lampLowerAngle !== undefined && lampUpperAngle !== undefined ? lampPoseFromAngles(lampLowerAngle, lampUpperAngle) : articulateLamp({ x: 200, y: 420 }));
   useEffect(() => {
     if (lampLowerAngle !== undefined && lampUpperAngle !== undefined) setPose(lampPoseFromAngles(lampLowerAngle, lampUpperAngle));
   }, [lampLowerAngle, lampUpperAngle]);
-  const [placements, setPlacements] = useState(() => arranged(objectPlacements));
-  useEffect(() => setPlacements(arranged(objectPlacements)), [objectPlacements]);
   const [exported, setExported] = useState('');
   const [copyStatus, setCopyStatus] = useState('');
   const [override, setOverride] = useState<{ initial: boolean; on: boolean }>();
@@ -123,7 +124,7 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
     every drag rebuilt it, and it was handed a fresh lightPosition and two fresh
     callbacks each time, so there was nothing to memoise against either.
   */
-  const lightPosition = useMemo(() => ({ x: INITIAL_LAMP.x, y: INITIAL_LAMP.y, rotation: 0, width: lampWidth, height: 700 * lampWidth / 960 }), [lampWidth]);
+  const lightPosition = useMemo(() => ({ x: INITIAL_LAMP.x, y: INITIAL_LAMP.y, rotation: 0, width: lampWidth, height: LAMP_HEIGHT * lampWidth / LAMP_WIDTH }), [lampWidth]);
   const articulated = useCallback((next: LampPose) => {
     setPose(next);
     told.current.onArticulate?.(lampPoseAngles(next));
@@ -139,7 +140,7 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
 
   const capture = () => {
     const angles = lampPoseAngles(pose);
-    return { angle, depth, wood, room, floor, wall, roomBlur, roomDim, deskShare, roomLip, lamp: on, shadowStrength, lampX: places.get(LAMP)?.x, lampY: places.get(LAMP)?.y, lampRotation: places.get(LAMP)?.rotation, lampWidth, lampEnamel, lampLowerAngle: angles.lower, lampUpperAngle: angles.upper, objectPlacements: placements, showObjects };
+    return { angle, depth, wood, room, floor, wall, roomBlur, roomDim, deskShare, roomLip, lamp: on, shadowStrength, lampX: places.get(LAMP)?.x, lampY: places.get(LAMP)?.y, lampRotation: places.get(LAMP)?.rotation, lampWidth, lampEnamel, lampLowerAngle: angles.lower, lampUpperAngle: angles.upper, objectPlacements: places.all(), showObjects };
   };
   return <main className="perspective-desk-room" aria-label="Perspective desk">
     {showSettings && <aside className="perspective-desk__settings">
@@ -158,10 +159,10 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
       <div className="perspective-desk__stand">
       <Perspective {...camera} className="perspective--lamp-study">
         <Desk className="desk-study-materials" wood={wood} height={DESK_DEPTH} edge={12}>
-          <div className="perspective-desk__lighting" aria-hidden="true"><DeskLightLayers />{showObjects && <DeskObjectShadows placements={placements} height={DESK_DEPTH} only={only} />}</div>
+          <div className="perspective-desk__lighting" aria-hidden="true"><DeskLightLayers />{showObjects && <DeskObjectShadows height={DESK_DEPTH} only={only} />}</div>
           {/* Drawn on the desk itself, so it takes the desk's perspective and pushes everything under it away. */}
           <InspectorVeil />
-          {showObjects && <DeskObjects placements={placements} camera={camera} only={only} onMove={(id, next) => setPlacements(current => ({ ...current, [id]: next }))} />}
+          {showObjects && <DeskObjects camera={camera} only={only} />}
           {children}
           {/* The lamp's own place is kept here so it follows the pointer, and whoever
               owns it is told once, when it is put down: a story that writes every

@@ -146,7 +146,8 @@ export type MovableProps = Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'cl
  * It is placed by its corner in the surface's units, like a Pin, and slides
  * when its place changes.
  *
- * With `onMove` it is movable: drag it by its body with the pointer, and it
+ * With an `id` on a surface that keeps places, or with `onMove`, it is movable:
+ * drag it by its body with the pointer, and it
  * lifts a little and follows. Two handles show at its corner while it is under
  * the pointer or has focus. The first turns it: the thing follows the pointer
  * round its pivot, so wherever you take the handle is where that side of the
@@ -176,6 +177,9 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
   /* Where the thing has got to while the owner is not being told. */
   const latest = useRef<Place | null>(null);
   /* What the surface says it is at, which outranks the props once it has a place of its own. */
+  /* A thing is movable if anyone is listening — either the owner, or the store it
+     keeps its place in. Without one or the other it is a drawing, not a thing. */
+  const movable = !!onMove || !!kept;
   const here = (kept && places?.get(kept)) || { x, y, rotation, scale };
   const atX = here.x, atY = here.y, atRotation = here.rotation ?? 0, atScale = here.scale ?? 1;
   const press = useRef<Press | null>(null);
@@ -243,14 +247,14 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
     /* A resize keeps its pivot by measuring where the pivot has got to, which
        trails the size it is answering by a frame; on the last of them there is
        no next frame, so it is settled here instead. */
-    if (start.gesture === 'size' && start.moved && onMove) {
+    if (start.gesture === 'size' && start.moved && movable) {
       const on = pivotOnScreen();
       const stands = onSurface(on.cx, on.cy);
       const dx = start.anchor.x - stands.x;
       const dy = start.anchor.y - stands.y;
       if (Math.abs(dx) >= 0.5 || Math.abs(dy) >= 0.5) {
         settled = { x: Math.round(atX + dx), y: Math.round(atY + dy), rotation: atRotation, scale: atScale };
-        onMove(settled);
+        carry(settled);
       }
     }
     if (start.gesture !== 'move') {
@@ -303,7 +307,7 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
   };
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    if (!onMove || event.button !== 0) return;
+    if (!movable || event.button !== 0) return;
     const target = event.target as Element;
     /* Each handle has its own job; so does the body with Alt held. Anything else on a control is the control's. */
     if (target.closest('.movable__grip[data-grip="size"]')) {
@@ -352,7 +356,7 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
 
   const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
     const start = press.current;
-    if (!start || !onMove || event.pointerId !== start.id) return;
+    if (!start || !movable || event.pointerId !== start.id) return;
     const dx = event.clientX - start.px;
     const dy = event.clientY - start.py;
     if (!start.moved) {
@@ -425,7 +429,7 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const grip = (event.target as Element).closest('.movable__grip');
     const onSize = grip?.getAttribute('data-grip') === 'size';
-    if (!onMove || (event.target !== event.currentTarget && !grip)) return;
+    if (!movable || (event.target !== event.currentTarget && !grip)) return;
     const step = event.shiftKey ? MOVABLE_KEY_STEP * 5 : MOVABLE_KEY_STEP;
     const turn = event.shiftKey ? MOVABLE_KEY_TURN * 5 : MOVABLE_KEY_TURN;
     const grow = event.shiftKey ? MOVABLE_KEY_SCALE * 5 : MOVABLE_KEY_SCALE;
@@ -491,15 +495,15 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
       {...rest}
       ref={host}
       className={`movable ${className}`}
-      data-movable={onMove ? '' : undefined}
+      data-movable={movable ? '' : undefined}
       data-dragging={dragging ? '' : undefined}
       data-grip-dismissed={gripDismissed ? '' : undefined}
       data-turning={dragging === 'turn' ? '' : undefined}
       data-sizing={dragging === 'size' ? '' : undefined}
-      role={onMove ? 'group' : rest.role}
-      aria-label={onMove ? label : rest['aria-label']}
-      aria-roledescription={onMove ? 'movable' : undefined}
-      tabIndex={onMove ? 0 : undefined}
+      role={movable ? 'group' : rest.role}
+      aria-label={movable ? label : rest['aria-label']}
+      aria-roledescription={movable ? 'movable' : undefined}
+      tabIndex={movable ? 0 : undefined}
       style={vars}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -526,7 +530,7 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
       {/* Where it turns and grows about. It is not turned with the thing, so it says where the pivot is drawn however the thing lies. */}
       <span ref={anchor} className="movable__pivot" aria-hidden="true" />
       <div className="movable__lift">{children}</div>
-      {onMove && (
+      {movable && (
         <button type="button" className="movable__grip" data-grip="turn" aria-label={`Rotate ${label ?? 'object'}`} title="Drag round the object to turn it; hold Shift to snap. Arrow keys turn it when focused." onClick={(event) => event.stopPropagation()}>
           <svg viewBox="0 0 20 20" focusable="false">
             <path d="M4.5 10a5.5 5.5 0 1 0 1.6-3.9" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
@@ -534,7 +538,7 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
           </svg>
         </button>
       )}
-      {onMove && sizeable && (
+      {movable && sizeable && (
         <button type="button" className="movable__grip" data-grip="size" aria-label={`Resize ${label ?? 'object'}`} title="Drag away from the object to enlarge it, toward it to shrink. Arrow keys resize it when focused; minus and plus work anywhere on it." onClick={(event) => event.stopPropagation()}>
           <svg viewBox="0 0 20 20" focusable="false">
             <path d="M4 16 16 4" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />

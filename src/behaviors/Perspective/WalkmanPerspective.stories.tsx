@@ -8,7 +8,7 @@ import { Movable, type Place } from '../Movable/Movable';
 import { GENTLE_DEPTH, GENTLE_VIEW, Perspective, type PerspectiveProps } from './Perspective';
 import './WalkmanPerspective.css';
 import { elevatedLayer } from './elevation';
-import { SIZES } from '../../pages/Desk/PromoterDesk';
+import { mmToUnits as mm } from '../../geometry/physicalScale';
 
 const meta = {
   title: 'Foundations/Behaviors/Perspective',
@@ -24,10 +24,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Match the existing desk's 112 mm width at two units/mm. Thickness is
+// Match the existing desk's 112 mm width at the shared physical scale. Thickness is
 // explicitly estimated: this illustration is not a measured hardware model.
-const WIDTH = SIZES.walkman;
-const CASE_HEIGHT = 30 * 2;
+const WIDTH = mm(112);
+const CASE_HEIGHT = mm(30);
 const DESK_HEIGHT = 850;
 
 function WalkmanStudy(args: PerspectiveProps) {
@@ -46,7 +46,7 @@ function WalkmanStudy(args: PerspectiveProps) {
   return (
     <div className="walkman-study">
       <div className="walkman-study__frame">
-        <p>Gentle Walkman · Drag the case; scrub its corner handle to turn. Play the tape or roll the volume wheel. 112 mm drawing width; estimated 30 mm case thickness. One desk unit = 0.5 mm.</p>
+        <p>Gentle Walkman · Drag the case; scrub its corner handle to turn. Play the tape or roll the volume wheel. 112 mm drawing width; estimated 30 mm case thickness. 1.2 desk units = 1 mm.</p>
         <Perspective {...args}>
           <Desk height={DESK_HEIGHT} edge={0}>
             <Movable {...place} width={WIDTH} label="Walkman study" onMove={(next) => setPlace((current) => ({ ...current, ...next }))}>

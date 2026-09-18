@@ -1,3 +1,5 @@
+import { DESK_OBJECTS, DEFAULT_OBJECT_PLACEMENTS } from './DeskObjects';
+import { DESK_SIZE, PAPER_MM, mmToUnits } from '../../geometry/physicalScale';
 import { useArgs } from 'storybook/preview-api';
 import { articulateLamp, lampPoseAngles } from '../../components/3D/DeskLamp/articulation';
 import { DESK_LAMP_ENAMELS } from '../../components/3D/DeskLamp/DeskLamp';
@@ -158,6 +160,22 @@ export const Desk: Story = {
   play: async ({ canvasElement, args }) => {
     if (import.meta.env.MODE !== 'test') return;
     const canvas = within(canvasElement);
+    const top = canvasElement.querySelector<HTMLElement>('.desk__top')!;
+    await expect(top.offsetHeight / top.offsetWidth).toBeCloseTo(DESK_SIZE.depth / DESK_SIZE.width, 2);
+    for (const id of ['sitePlan', 'poster', 'setTimes', 'contract']) {
+      const object = DESK_OBJECTS.find(object => object.id === id)!;
+      await expect(object.width).toBeCloseTo(mmToUnits(PAPER_MM.width), 8);
+      await expect(object.width * object.ratio).toBeCloseTo(mmToUnits(PAPER_MM.height), 8);
+    }
+    for (const selector of ['.site-plan', '.handbill__scene', '.run-sheet', '.contract']) {
+      const sheet = canvasElement.querySelector<HTMLElement>(selector)!;
+      await expect(sheet.offsetHeight / sheet.offsetWidth).toBeCloseTo(280 / 220, 2);
+    }
+    const mug = DESK_OBJECTS.find(object => object.id === 'mug')!;
+    await expect(mug.width * mug.solid!.height).toBeCloseTo(mmToUnits(mug.height), 8);
+    await expect(DEFAULT_OBJECT_PLACEMENTS.phone.scale).toBe(1);
+    await expect(DEFAULT_OBJECT_PLACEMENTS.cradle.scale).toBe(1);
+
     const lamp = canvas.getByRole('group', { name: 'Desk lamp' });
     const before = lamp.getAttribute('style');
     lamp.focus();

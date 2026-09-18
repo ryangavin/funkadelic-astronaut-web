@@ -61,3 +61,8 @@
   width: calc(var(--perspective-desk-share) * 100%);
   translate: -50% 0;
 }
+
+/* User-approved 220 × 280 mm proportions for the loose sheets; retain local drawing coordinates. */
+.perspective-desk-room :is(.contract, .handbill__scene, .site-plan, .run-sheet) {
+  aspect-ratio: 220 / 280;
+}

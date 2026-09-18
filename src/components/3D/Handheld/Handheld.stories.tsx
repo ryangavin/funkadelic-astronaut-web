@@ -123,5 +123,5 @@ export const OnDesk: Story = {
   play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
-  render: (args) => <DeskObjectStudy name="Handheld" widthMm={204} depthRatio={327/720} heightMm={23} sideColors={args.finish === 'silver' ? ['#bbbec4', '#a4a7ae', '#747780'] : args.finish === 'white' ? ['#d8d4cb', '#bbb6ac', '#898277'] : ['#17181b', '#141519', '#090a0d']} shapes={[{ path: HANDHELD_SILHOUETTE }]} note="Estimated height; depth and shadow follow the rounded shell and both shoulder buttons."><Handheld {...args} rotation={0} /></DeskObjectStudy>,
+  render: (args) => <DeskObjectStudy name="Handheld" widthMm={170} depthRatio={327/720} heightMm={23} sideColors={args.finish === 'silver' ? ['#bbbec4', '#a4a7ae', '#747780'] : args.finish === 'white' ? ['#d8d4cb', '#bbb6ac', '#898277'] : ['#17181b', '#141519', '#090a0d']} shapes={[{ path: HANDHELD_SILHOUETTE }]} note="Estimated height; depth and shadow follow the rounded shell and both shoulder buttons."><Handheld {...args} rotation={0} /></DeskObjectStudy>,
 };

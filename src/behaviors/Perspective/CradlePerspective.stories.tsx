@@ -5,7 +5,7 @@ import { Desk } from '../../components/3D/Desk/Desk';
 import { CRADLE_BALLS, CRADLE_PERIOD_MS, CRADLE_RADIUS, CRADLE_RAILS, CRADLE_REST, CRADLE_SWING, NewtonsCradle } from '../../components/3D/NewtonsCradle/NewtonsCradle';
 import { Movable, type Place } from '../Movable/Movable';
 import { GENTLE_DEPTH, GENTLE_VIEW, Perspective, type PerspectiveProps } from './Perspective';
-import { SIZES, mm } from '../../pages/Desk/PromoterDesk';
+import { mmToUnits as mm } from '../../geometry/physicalScale';
 import { projectElevation } from './elevation';
 import './CradlePerspective.css';
 
@@ -37,13 +37,13 @@ function CradleScene(args: PerspectiveProps) {
   }, [swinging]);
   const camera = { angle: args.angle ?? GENTLE_VIEW, depth: args.depth ?? GENTLE_DEPTH, width: args.width ?? 1440, surfaceHeight: 800 };
   const turn = (place.rotation ?? 0) * Math.PI / 180;
-  const unit = SIZES.cradle / 720;
+  const unit = mm(120) / 720;
   // Width is the existing 120 mm. These elevations are explicit estimates:
   // base top 8 mm, rail centre 90 mm, resting ball centre 20 mm.
   const point = (x: number, y: number, heightMm: number) => {
     const lx = (x - 360) * unit;
     const ly = (y - 300) * unit;
-    const cx = place.x + SIZES.cradle / 2;
+    const cx = place.x + mm(120) / 2;
     const cy = place.y + 600 * unit / 2;
     const projected = projectElevation(cx + lx * Math.cos(turn) - ly * Math.sin(turn), cy + lx * Math.sin(turn) + ly * Math.cos(turn), heightMm * mm(1), camera);
     const dx = projected.x - cx;
@@ -66,7 +66,7 @@ function CradleScene(args: PerspectiveProps) {
         <p>Gentle Newton’s cradle · Click to swing or stop. Drag the base; scrub the corner handle to rotate. Set Angle to 90° to compare overhead.</p>
         <Perspective {...args}>
           <Desk height={800} edge={0}>
-            <Movable {...place} width={SIZES.cradle} label="Newton’s cradle" grab="anywhere" onMove={next => setPlace(current => ({ ...current, ...next }))}>
+            <Movable {...place} width={mm(120)} label="Newton’s cradle" grab="anywhere" onMove={next => setPlace(current => ({ ...current, ...next }))}>
               <div className="cradle-perspective-study__object">
                 <NewtonsCradle sound={false} onSwing={setSwinging} />
                 <svg className="cradle-perspective-study__posts" viewBox="0 0 720 600" aria-hidden="true">

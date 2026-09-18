@@ -1,3 +1,4 @@
+import { LAMP_WIDTH, LAMP_HEIGHT } from '../../../geometry/physicalScale';
 import { checkDeskStudy } from '../../../behaviors/Perspective/DeskObjectStudy.check';
 import { DeskObjectStudy } from '../../../behaviors/Perspective/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -63,8 +64,8 @@ function ArticulatedLamp(args: Story['args']) {
     <DeskLighting><Perspective {...camera} className="perspective--lamp-study"><Desk height={900}>
       <RegisteredPool />
       <LampShadows surfaceHeight={900} />
-      <Movable {...place} width={960} className="perspective__lamp" label="Desk lamp" onMove={(to) => setPlace((at) => ({ ...at, ...to }))}>
-        <DeskLamp {...args} rotation={0} camera={camera} lightPosition={{ ...place, width: 960, height: 700 }} on={on} onToggle={(next) => { setOn(next); args?.onToggle?.(next); }} />
+      <Movable {...place} width={LAMP_WIDTH} className="perspective__lamp" label="Desk lamp" onMove={(to) => setPlace((at) => ({ ...at, ...to }))}>
+        <DeskLamp {...args} rotation={0} camera={camera} lightPosition={{ ...place, width: LAMP_WIDTH, height: LAMP_HEIGHT }} on={on} onToggle={(next) => { setOn(next); args?.onToggle?.(next); }} />
       </Movable>
     </Desk></Perspective></DeskLighting>
   </div>;

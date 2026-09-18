@@ -245,5 +245,5 @@ export const OnDesk: Story = {
   play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
-  render: (args) => <DeskObjectStudy name="Desk phone" widthMm={240} depthRatio={300/320} heightMm={SET_BODY_HEIGHT * 0.75} solid={{ height: DESK_PHONE_HEIGHT, foot: DESK_PHONE_FOOT }} shapes={[{ path: "M32 12H81Q92 12 92 25V80Q92 88 81 88H32Q23 88 23 80V25Q23 12 32 12Z" }]} note="Phone shown at 75% scale. What stands up is the moulding, not the handset lying on it; handset and cord remain attached when lifted."><DeskPhone {...args} rotation={0} sound={false} /></DeskObjectStudy>,
+  render: (args) => <DeskObjectStudy name="Desk phone" widthMm={320} depthRatio={300/320} heightMm={SET_BODY_HEIGHT} solid={{ height: DESK_PHONE_HEIGHT, foot: DESK_PHONE_FOOT }} shapes={[{ path: "M32 12H81Q92 12 92 25V80Q92 88 81 88H32Q23 88 23 80V25Q23 12 32 12Z" }]} note="320 × 300 mm artwork bounds include the cord; housing is 221 × 229 mm. What stands up is the moulding, not the handset lying on it; handset and cord remain attached when lifted."><DeskPhone {...args} rotation={0} sound={false} /></DeskObjectStudy>,
 };

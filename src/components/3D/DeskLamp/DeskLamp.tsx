@@ -1,3 +1,4 @@
+import { LAMP_HEIGHT, mmToUnits } from '../../../geometry/physicalScale';
 import type React from 'react';
 import { useContext, useId, useRef, useState } from 'react';
 import { MovableProject } from '../../../behaviors/Movable/Movable';
@@ -110,12 +111,12 @@ export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledH
     return { x: 360 + ((world.x - cx) * Math.cos(turn) + (world.y - cy) * Math.sin(turn)) / unit,
       y: 300 + (-(world.x - cx) * Math.sin(turn) + (world.y - cy) * Math.cos(turn)) / unit, scale: world.scale };
   };
-  const bulbHeight = lightPosition?.height ?? 700;
-  const constructionScale = bulbHeight / 700;
-  const base = point(600, 110, 50 * constructionScale);
-  const elbow = point(arm.elbow.x, arm.elbow.y, 460 * constructionScale);
-  const neck = point(x, y, bulbHeight + 100 * constructionScale);
-  const shade = point(x, y, bulbHeight + 100 * constructionScale);
+  const bulbHeight = lightPosition?.height ?? LAMP_HEIGHT;
+  const constructionScale = bulbHeight / LAMP_HEIGHT;
+  const base = point(600, 110, mmToUnits(25) * constructionScale);
+  const elbow = point(arm.elbow.x, arm.elbow.y, mmToUnits(230) * constructionScale);
+  const neck = point(x, y, bulbHeight + mmToUnits(50) * constructionScale);
+  const shade = point(x, y, bulbHeight + mmToUnits(50) * constructionScale);
   const rim = point(x, y, bulbHeight);
   const tubeGradient = (from: LampPoint, to: LampPoint, width: number) => {
     const length = Math.hypot(to.x - from.x, to.y - from.y) || 1;
@@ -141,7 +142,7 @@ export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledH
       x: at.x + lightPosition.width * (0.5 + dx * Math.cos(turn) - dy * Math.sin(turn)),
       y: at.y + lightPosition.width * (300 / 720 + dx * Math.sin(turn) + dy * Math.cos(turn)),
       height: lightPosition.height,
-      lamp: { base: world(600, 110, 50 * constructionScale, 110), elbow: world(arm.elbow.x, arm.elbow.y, 460 * constructionScale, 12), neck: world(x, y, bulbHeight + 100 * constructionScale, 11) },
+      lamp: { base: world(600, 110, mmToUnits(25) * constructionScale, 110), elbow: world(arm.elbow.x, arm.elbow.y, mmToUnits(230) * constructionScale, 12), neck: world(x, y, bulbHeight + mmToUnits(50) * constructionScale, 11) },
       shadowStrength: Number.isFinite(shadowStrength) ? Math.min(1, Math.max(0, shadowStrength)) : DEFAULT_SHADOW_STRENGTH,
       on,
     };
@@ -163,9 +164,9 @@ export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledH
       const surface = project(clientX, clientY);
       const unit = lightPosition.width / 720;
       const tilt = (90 - camera.angle) * Math.PI / 180;
-      const k = projectElevation(0, 0, bulbHeight + 100 * constructionScale, camera).scale;
+      const k = projectElevation(0, 0, bulbHeight + mmToUnits(50) * constructionScale, camera).scale;
       const wx = camera.width / 2 + (surface.x - camera.width / 2) / k;
-      const wy = camera.surfaceHeight + (surface.y - camera.surfaceHeight) / k + (bulbHeight + 100 * constructionScale) * Math.tan(tilt);
+      const wy = camera.surfaceHeight + (surface.y - camera.surfaceHeight) / k + (bulbHeight + mmToUnits(50) * constructionScale) * Math.tan(tilt);
       const at = standing()!;
       const ox = wx - at.x - 360 * unit, oy = wy - at.y - 300 * unit;
       return { x: 360 + (ox * Math.cos(turn) + oy * Math.sin(turn)) / unit, y: 300 + (-ox * Math.sin(turn) + oy * Math.cos(turn)) / unit };

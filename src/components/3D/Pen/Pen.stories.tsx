@@ -1,3 +1,4 @@
+import { mmToUnits } from '../../../geometry/physicalScale';
 import { elevatedLayer } from '../../../behaviors/Perspective/elevation';
 import { checkDeskStudy } from '../../../behaviors/Perspective/DeskObjectStudy.check';
 import { DeskObjectStudy } from '../../../behaviors/Perspective/DeskObjectStudy';
@@ -69,7 +70,7 @@ export const OnDesk: Story = {
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
   render: (args) => {
-    const heightMm = args.kind === 'marker' ? 6 : args.kind === 'pencil' ? 5 : 3.5;
+    const heightMm = args.kind === 'marker' ? 6 : args.kind === 'pencil' ? 5 : 7;
     // Narrow silhouettes follow the artwork instead of filling its empty SVG margins.
     const outline = args.kind === 'marker'
       ? 'M.3 18H4.2V8.3H19.4V18H23V23H96.7V30H98.9V70H96.7V77H23V82H.3Z'
@@ -78,7 +79,7 @@ export const OnDesk: Story = {
         : 'M.3 28H3.3V18H17.2V28H19.7V33H96.4L99.9 50L96.4 67H19.7V72H.3Z';
     return <DeskObjectStudy name="Pen" widthMm={149} depthRatio={60/720} heightMm={heightMm} customRelief shapes={[{ path: outline }]} note="Estimated shallow height; a darker copy of the artwork supplies the thin side edge.">
       {(place, camera) => {
-        const top = elevatedLayer(heightMm * 2, { ...place, width: 298, drawingWidth: 720, drawingHeight: 60 }, camera);
+        const top = elevatedLayer(mmToUnits(heightMm), { ...place, width: mmToUnits(149), drawingWidth: 720, drawingHeight: 60 }, camera);
         return <div style={{ position: 'relative', aspectRatio: '720 / 60' }}>
           <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', filter: 'brightness(.65)' }}>
             <Pen {...args} rotation={0} />

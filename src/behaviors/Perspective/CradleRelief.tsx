@@ -1,3 +1,4 @@
+import { mmToUnits } from '../../geometry/physicalScale';
 import { useEffect, useState } from 'react';
 import { CRADLE_BALLS, CRADLE_PERIOD_MS, CRADLE_RADIUS, CRADLE_RAILS, CRADLE_REST, CRADLE_SWING, NewtonsCradle } from '../../components/3D/NewtonsCradle/NewtonsCradle';
 import type { Place } from '../Movable/Movable';
@@ -5,7 +6,7 @@ import { projectElevation } from './elevation';
 import type { StudyCamera } from './DeskObjectStudy';
 import './CradlePerspective.css';
 
-export function CradleRelief({ place, camera, width = 240 }: { place: Place; camera: StudyCamera; width?: number }) {
+export function CradleRelief({ place, camera, width = mmToUnits(120) }: { place: Place; camera: StudyCamera; width?: number }) {
   const [swinging, setSwinging] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   useEffect(() => {
@@ -25,7 +26,7 @@ export function CradleRelief({ place, camera, width = 240 }: { place: Place; cam
     const ly = (y - 300) * unit;
     const cx = place.x + width / 2;
     const cy = place.y + 600 * unit / 2;
-    const projected = projectElevation(cx + lx * Math.cos(turn) - ly * Math.sin(turn), cy + lx * Math.sin(turn) + ly * Math.cos(turn), heightMm * 2 * width / 240, camera);
+    const projected = projectElevation(cx + lx * Math.cos(turn) - ly * Math.sin(turn), cy + lx * Math.sin(turn) + ly * Math.cos(turn), mmToUnits(heightMm) * width / mmToUnits(120), camera);
     const dx = projected.x - cx;
     const dy = projected.y - cy;
     return { x: 360 + (dx * Math.cos(turn) + dy * Math.sin(turn)) / unit, y: 300 + (-dx * Math.sin(turn) + dy * Math.cos(turn)) / unit, scale: projected.scale };

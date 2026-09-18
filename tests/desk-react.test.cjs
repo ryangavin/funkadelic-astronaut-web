@@ -13,7 +13,9 @@ test('Desk is a wooden top in sheet units whose surface measures against the des
   assert.match(component, /DESK_WOODS = \['walnut', 'oak', 'ebony', 'cherry'\]/);
   assert.match(component, /boards = 1, light = 1, edge = 22/);
   assert.match(component, /className="desk__edge"/);
-  assert.match(component, /DESK_WIDTH = 1440/);
+  // The desk is still 1440 units across; that number is pinned in physical-scale.test.cjs now,
+  // so what this checks is that the desk reads its width from there rather than carrying its own.
+  assert.match(component, /DESK_WIDTH = DESK_SIZE\.width/);
   // The grain is drawn: bands of tone bent by turbulence, pores over them.
   assert.match(component, /<feTurbulence type="fractalNoise" baseFrequency="0\.0016 0\.012"/);
   assert.match(component, /<feDisplacementMap in="SourceGraphic" in2="wave"/);
@@ -230,9 +232,11 @@ test('Movable is picked up by its body, follows the pointer in surface units, an
   assert.match(css, /\.movable\[data-movable\]:hover > \.movable__grip,\s+\.movable__grip:hover \{[\s\S]+?pointer-events: auto/);
   assert.match(css, /\.movable__grip::before \{[\s\S]+?inset: calc\(-18 \* var\(--movable-unit\)\)/);
   // The keyboard moves the thing itself, not a control inside it.
-  assert.match(behavior, /if \(!onMove \|\| \(event\.target !== event\.currentTarget && !grip\)\) return;/);
-  assert.match(behavior, /tabIndex=\{onMove \? 0 : undefined\}/);
-  assert.match(behavior, /aria-roledescription=\{onMove \? 'movable' : undefined\}/);
+  assert.match(behavior, /if \(!movable \|\| \(event\.target !== event\.currentTarget && !grip\)\) return;/);
+  // A thing is movable if anyone is listening: the owner through onMove, or the store it keeps its place in.
+  assert.match(behavior, /const movable = !!onMove \|\| !!kept;/);
+  assert.match(behavior, /tabIndex=\{movable \? 0 : undefined\}/);
+  assert.match(behavior, /aria-roledescription=\{movable \? 'movable' : undefined\}/);
   assert.match(behavior, /onDragStart=\{\(event\) => event\.preventDefault\(\)\}/);
   // Placed like a Pin, sliding when moved, and following at once while dragged.
   assert.match(css, /\.movable \{[\s\S]+?translate: calc\(var\(--movable-x\) \* var\(--movable-unit\)\) calc\(var\(--movable-y\) \* var\(--movable-unit\)\)/);

@@ -1,3 +1,4 @@
+import { DESK_SIZE } from '../../../geometry/physicalScale';
 import type React from 'react';
 import { useId } from 'react';
 import './Desk.css';
@@ -6,7 +7,7 @@ export const DESK_WOODS = ['walnut', 'oak', 'ebony', 'cherry'] as const;
 export type DeskWood = (typeof DESK_WOODS)[number];
 
 /** The desk is measured like a sheet: 1440 units across. */
-export const DESK_WIDTH = 1440;
+export const DESK_WIDTH = DESK_SIZE.width;
 
 export type DeskProps = {
   /** The timber the top is made of. */

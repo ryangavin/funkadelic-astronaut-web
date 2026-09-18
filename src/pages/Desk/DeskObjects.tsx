@@ -1,3 +1,4 @@
+import { PAPER_MM, mmToUnits } from '../../geometry/physicalScale';
 import { RunSheet, SitePlan } from './DeskPapers';
 import { Contract } from '../../components/2D/Contract/Contract';
 import { Handbill } from '../../experiments/BandIntro/Handbill';
@@ -6,6 +7,7 @@ import { DossierCover } from './DossierCover';
 import { BandDossier } from '../../sections/BandDossier/BandDossier';
 import { memo, useCallback, useRef, useState, type ReactNode } from 'react';
 import { Movable, type Place } from '../../behaviors/Movable/Movable';
+import { usePlace, usePlaces } from '../../behaviors/Movable/places';
 import { Tallied } from '../../debug/DeskPerf/tally';
 import { Inspectable, useInspection } from '../../behaviors/Inspectable/Inspectable';
 import { Solid, type Foot } from '../../behaviors/Perspective/Perspective';
@@ -31,7 +33,7 @@ import { Walkman } from '../../components/3D/Walkman/Walkman';
   together, which is the one way to move a thing's size without it standing at a
   height its own shadow disagrees with.
 */
-type ObjectSpec = { flat?: boolean; id: string; name: string; width: number; ratio: number; height: number; place: Place; content?: ReactNode; solid?: { height: number; foot: Foot; localCoordinates?: boolean }; shapes?: StudyShape[]; colors?: readonly [string, string, string]; inspect?: Inspect };
+type ObjectSpec = { flat?: boolean; id: string; name: string; width: number; widthMm: number; ratio: number; height: number; place: Place; content?: ReactNode; solid?: { height: number; foot: Foot; localCoordinates?: boolean }; shapes?: StudyShape[]; colors?: readonly [string, string, string]; inspect?: Inspect };
 /*
   What happens when a thing is picked up and looked at — and nothing at all for
   the things that are only ever scenery. A sheet is there to be read, so it
@@ -48,29 +50,29 @@ const TURN_OVER: Inspect = { fill: 0.9, grab: 'anywhere' };
 /* The dossier is drawn as a spread with the folder closed on the right of it, so the thing to bring
    up is the cover and not the empty half beside it. */
 const READ_FOLDER: Inspect = { fill: 0.86, subject: '.folder__cover' };
-const OBJECT_DRAWINGS: ObjectSpec[] = [
-  { id: 'sitePlan', name: 'Festival site plan', width: 380, ratio: 11/8.5, height: .2, flat: true, place: { x: 400, y: 455, rotation: -8 }, content: <SitePlan /> , inspect: READ },
-  { id: 'poster', name: 'Band poster', width: 400, ratio: 11/8.5, height: .2, flat: true, place: { x: 455, y: 385, rotation: -5 }, content: <Handbill front={BAND_HANDBILL_FRONT} back={BAND_HANDBILL_BACK} stock="goldenrod" spot="purple" /> , inspect: TURN_OVER },
-  { id: 'setTimes', name: 'Set times', width: 440, ratio: 11/8.5, height: .2, flat: true, place: { x: 655, y: 415, rotation: 4 }, content: <RunSheet /> , inspect: READ },
-  { id: 'contract', name: 'Performance contract', width: 460, ratio: 11/8.5, height: .2, flat: true, place: { x: 960, y: 415, rotation: -3 }, content: <Contract rotation={0} /> , inspect: READ },
-  { id: 'dossier', name: 'Band dossier', width: 1200, ratio: 960/1440, height: 1, flat: true, place: { x: 370, y: 330, rotation: -2 }, content: <BandDossier className="dossier--branded" sticker={<DossierCover />} open={false} rotation={0} tape={null} /> , inspect: READ_FOLDER },
-  { id: 'clock', name: 'Desk clock', width: 180, ratio: 560/720, height: 15, place: { x: 60, y: 65, rotation: -4 }, content: <DeskClock /> },
+const OBJECT_DRAWINGS: Omit<ObjectSpec, 'width'>[] = [
+  { id: 'sitePlan', name: 'Festival site plan', widthMm: PAPER_MM.width, ratio: PAPER_MM.height / PAPER_MM.width, height: .2, flat: true, place: { x: 400, y: 455, rotation: -8 }, content: <SitePlan /> , inspect: READ },
+  { id: 'poster', name: 'Band poster', widthMm: PAPER_MM.width, ratio: PAPER_MM.height / PAPER_MM.width, height: .2, flat: true, place: { x: 455, y: 385, rotation: -5 }, content: <Handbill front={BAND_HANDBILL_FRONT} back={BAND_HANDBILL_BACK} stock="goldenrod" spot="purple" /> , inspect: TURN_OVER },
+  { id: 'setTimes', name: 'Set times', widthMm: PAPER_MM.width, ratio: PAPER_MM.height / PAPER_MM.width, height: .2, flat: true, place: { x: 655, y: 415, rotation: 4 }, content: <RunSheet /> , inspect: READ },
+  { id: 'contract', name: 'Performance contract', widthMm: PAPER_MM.width, ratio: PAPER_MM.height / PAPER_MM.width, height: .2, flat: true, place: { x: 960, y: 415, rotation: -3 }, content: <Contract rotation={0} /> , inspect: READ },
+  { id: 'dossier', name: 'Band dossier', widthMm: 482, ratio: 960/1440, height: 1, flat: true, place: { x: 370, y: 330, rotation: -2 }, content: <BandDossier className="dossier--branded" sticker={<DossierCover />} open={false} rotation={0} tape={null} /> , inspect: READ_FOLDER },
+  { id: 'clock', name: 'Desk clock', widthMm: 90, ratio: 560/720, height: 15, place: { x: 60, y: 65, rotation: -4 }, content: <DeskClock /> },
   // CradleRelief works its own rail and ball elevations out of the width it is given.
-  { id: 'cradle', name: 'Newton’s cradle', width: 240, ratio: 600/720, height: 90, place: { x: 330, y: 65, scale: 1.2 }, shapes: [{ path: 'M3 5H97V95H3Z', heightMm: 8 }, { path: 'M8 20H92V23H8Z M8 77H92V80H8Z', heightMm: 90 }] },
-  { id: 'mug', name: 'Mug', width: 280, ratio: 1, height: MUG_TALL, place: { x: 1010, y: 570, rotation: -15 }, shapes: MUG_SILHOUETTE, solid: { height: MUG_HEIGHT, foot: MUG_FOOT }, content: <Mug shadow="contact" /> },
-  { id: 'rolodex', name: 'Rolodex', width: 274.1, ratio: 624/518, height: 107.95, place: { x: 1170, y: 330, rotation: 4 }, solid: { localCoordinates: true, height: 408/518, foot: { x: .5, y: 312/518 } }, content: <Rolodex rotation={0} loose={false} /> , inspect: HANDLE },
-  { id: 'handheld', name: 'Handheld', width: 408, ratio: 327/720, height: 23, place: { x: 30, y: 250, rotation: -5 }, content: <Handheld rotation={0} />, shapes: [{ path: HANDHELD_SILHOUETTE }], colors: ['#17181b', '#141519', '#090a0d'] , inspect: HANDLE },
-  { id: 'labelBro', name: 'Label Bro', width: 366, ratio: 772/732, height: 65, place: { x: 755, y: 515, rotation: -5 }, solid: { localCoordinates: true, height: LABEL_BRO_HEIGHT, foot: LABEL_BRO_FOOT }, content: <LabelBro rotation={0} defaultOn defaultText="BACKLINE" /> , inspect: HANDLE },
-  { id: 'pen', name: 'Pen', width: 298, ratio: 60/720, height: 3.5, place: { x: 450, y: 330, rotation: 8 }, shapes: [{ path: 'M.3 28H3.3V18H17.2V28H19.7V33H96.4L99.9 50L96.4 67H19.7V72H.3Z' }] },
-  { id: 'walkman', name: 'Walkman', width: 224, ratio: 590/720, height: 30, place: { x: 770, y: 260, rotation: -6 }, content: <Walkman rotation={0} /> , inspect: HANDLE },
-  // Its own drawing, at the desk's two units to the millimetre: the phone alone
+  { id: 'cradle', name: 'Newton’s cradle', widthMm: 120, ratio: 600/720, height: 90, place: { x: 330, y: 65 }, shapes: [{ path: 'M3 5H97V95H3Z', heightMm: 8 }, { path: 'M8 20H92V23H8Z M8 77H92V80H8Z', heightMm: 90 }] },
+  { id: 'mug', name: 'Mug', widthMm: 140, ratio: 1, height: MUG_TALL, place: { x: 1010, y: 570, rotation: -15 }, shapes: MUG_SILHOUETTE, solid: { height: MUG_HEIGHT, foot: MUG_FOOT }, content: <Mug shadow="contact" /> },
+  { id: 'rolodex', name: 'Rolodex', widthMm: 137.05, ratio: 624/518, height: 107.95, place: { x: 1170, y: 330, rotation: 4 }, solid: { localCoordinates: true, height: 408/518, foot: { x: .5, y: 312/518 } }, content: <Rolodex rotation={0} loose={false} /> , inspect: HANDLE },
+  { id: 'handheld', name: 'Handheld', widthMm: 170, ratio: 327/720, height: 23, place: { x: 30, y: 250, rotation: -5 }, content: <Handheld rotation={0} />, shapes: [{ path: HANDHELD_SILHOUETTE }], colors: ['#17181b', '#141519', '#090a0d'] , inspect: HANDLE },
+  { id: 'labelBro', name: 'Label Bro', widthMm: 183, ratio: 772/732, height: 78, place: { x: 755, y: 515, rotation: -5 }, solid: { localCoordinates: true, height: LABEL_BRO_HEIGHT, foot: LABEL_BRO_FOOT }, content: <LabelBro rotation={0} defaultOn defaultText="BACKLINE" /> , inspect: HANDLE },
+  { id: 'pen', name: 'Pen', widthMm: 149, ratio: 60/720, height: 7, place: { x: 450, y: 330, rotation: 8 }, shapes: [{ path: 'M.3 28H3.3V18H17.2V28H19.7V33H96.4L99.9 50L96.4 67H19.7V72H.3Z' }] },
+  { id: 'walkman', name: 'Walkman', widthMm: 112, ratio: 590/720, height: 30, place: { x: 770, y: 260, rotation: -6 }, content: <Walkman rotation={0} /> , inspect: HANDLE },
+  // Its own drawing, in millimetres: the phone alone
   // since the answering machine became its own component. The silhouette is the
   // 221 by 229 housing within that plan, and it stands at the moulding's height.
-  { id: 'phone', name: 'Desk phone', width: DESK_PHONE_WIDTH * 2, ratio: DESK_PHONE_DEPTH / DESK_PHONE_WIDTH, height: SET_BODY_HEIGHT, place: { x: 45, y: 415, scale: 0.8 }, solid: { height: DESK_PHONE_HEIGHT, foot: DESK_PHONE_FOOT }, content: <DeskPhone rotation={0} sound={false} />, shapes: [{ path: 'M33.1 12H81Q91.6 12 91.6 23.3V72.3Q91.6 88.3 76.6 88.3H37.5Q22.5 88.3 22.5 72.3V23.3Q22.5 12 33.1 12Z' }] , inspect: HANDLE },
+  { id: 'phone', name: 'Desk phone', widthMm: DESK_PHONE_WIDTH, ratio: DESK_PHONE_DEPTH / DESK_PHONE_WIDTH, height: SET_BODY_HEIGHT, place: { x: 45, y: 415 }, solid: { height: DESK_PHONE_HEIGHT, foot: DESK_PHONE_FOOT }, content: <DeskPhone rotation={0} sound={false} />, shapes: [{ path: 'M33.1 12H81Q91.6 12 91.6 23.3V72.3Q91.6 88.3 76.6 88.3H37.5Q22.5 88.3 22.5 72.3V23.3Q22.5 12 33.1 12Z' }] , inspect: HANDLE },
 ];
-// A wider desktop: retain relative physical sizes while fitting the 16:9 composition.
-const OBJECT_SCALE = 0.6;
-export const DESK_OBJECTS = OBJECT_DRAWINGS.map(object => ({ ...object, width: object.width * OBJECT_SCALE, height: object.height * OBJECT_SCALE, shapes: object.shapes?.map(shape => ({ ...shape, heightMm: shape.heightMm === undefined ? undefined : shape.heightMm * OBJECT_SCALE })) }));
+// Width describes the entire artwork box (including cord/empty folder spread),
+// not necessarily the physical footprint. Keep silhouettes and Solid feet local.
+export const DESK_OBJECTS: ObjectSpec[] = OBJECT_DRAWINGS.map(object => ({ ...object, width: mmToUnits(object.widthMm) }));
 export const DEFAULT_OBJECT_PLACEMENTS = Object.fromEntries(DESK_OBJECTS.map(object => [object.id, { rotation: 0, scale: 1, ...object.place }]));
 export type ObjectPlacements = Record<string, Place>;
 
@@ -101,7 +103,7 @@ const sizeOf = (object: ObjectSpec, place: Place) => {
 };
 
 function PenRelief({ place, camera, width }: { place: Place; camera: StudyCamera; width: number }) {
-  const top = elevatedLayer(7 * OBJECT_SCALE * (place.scale ?? 1), { ...place, width, drawingWidth: 720, drawingHeight: 60 }, camera);
+  const top = elevatedLayer(mmToUnits(7) * (place.scale ?? 1), { ...place, width, drawingWidth: 720, drawingHeight: 60 }, camera);
   return <div style={{ position: 'relative', aspectRatio: '720 / 60' }}>
     <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', filter: 'brightness(.65)' }}><Pen rotation={0} /></div>
     <div style={{ position: 'relative', transform: `translate(${top.x / 720 * 100}%, ${top.y / 60 * 100}%) scale(${top.scale})` }}><Pen rotation={0} /></div>
@@ -116,18 +118,25 @@ function PenRelief({ place, camera, width }: { place: Place; camera: StudyCamera
   so every shadow does move together when the lamp does.
 */
 const ObjectShadow = memo(function ObjectShadow({ object, place, height }: { object: ObjectSpec; place: Place; height: number }) {
-  const size = sizeOf(object, place);
+  /* Its size at a scale of one: whatever the thing has been grown to is read off
+     its place, in the caster, where a drag can reach it without a render. */
+  const size = { width: object.width, depth: object.width * object.ratio, heightMm: object.height };
   /* Counted apart from the thing itself: a shadow that rebuilds when its object
      moves is a different fact from the object rebuilding, and they want different fixes. */
-  return <Tallied id={`${object.name} — shadow`}><StudyLighting shadowOnly surfaceHeight={height} place={place} pivot={pivotOf(object)} width={size.width} depth={size.depth} heightMm={size.heightMm} shapes={(object.shapes ?? [{ path: ROUND_CASE }] as StudyShape[]).map(shape => ({ ...shape, heightMm: shape.heightMm === undefined ? undefined : shape.heightMm * size.scale }))} /></Tallied>;
+  return <Tallied id={`${object.name} — shadow`}><StudyLighting shadowOnly surfaceHeight={height} place={place} placeId={object.id} pivot={pivotOf(object)} width={size.width} depth={size.depth} heightMm={size.heightMm} shapes={object.shapes ?? [{ path: ROUND_CASE }] as StudyShape[]} /></Tallied>;
 });
 
 /** Which things are on the desk at all: everything, or the few named. */
 const chosen = (only?: readonly string[]) => (only ? DESK_OBJECTS.filter(object => only.includes(object.id)) : DESK_OBJECTS);
 
-export function DeskObjectShadows({ placements, height, only }: { placements: ObjectPlacements; height: number; only?: readonly string[] }) {
+/*
+  The shadows take no placements. Each follows its own thing through the store
+  and writes itself, so this renders once and then sits still however much is
+  dragged about over it.
+*/
+export function DeskObjectShadows({ height, only }: { height: number; only?: readonly string[] }) {
   return <>{chosen(only).filter(object => !object.flat).map(object =>
-    <ObjectShadow key={object.id} object={object} place={placements[object.id] ?? object.place} height={height} />)}</>;
+    <ObjectShadow key={object.id} object={object} place={DEFAULT_OBJECT_PLACEMENTS[object.id] ?? object.place} height={height} />)}</>;
 }
 
 /*
@@ -136,26 +145,46 @@ export function DeskObjectShadows({ placements, height, only }: { placements: Ob
   and every Solid measures itself off the plane the moment it renders, so a
   single drag was paying for a whole desk of measurements a frame.
 */
-export const DeskObject = memo(function DeskObject({ object, place, camera, layer, held, onFront, onMove }: { object: ObjectSpec; place: Place; camera: StudyCamera; layer: number; held: boolean; onFront: (id: string) => void; onMove: (id: string, place: Place) => void }) {
-  const size = sizeOf(object, place);
-  const drawing = object.flat ? object.content : object.id === 'pen' ? <PenRelief place={place} camera={camera} width={size.width} /> : object.id === 'cradle' ? <CradleRelief place={place} camera={camera} width={size.width} /> : object.solid ? <Solid {...object.solid}>{object.content}</Solid> : <Relief place={place} camera={camera} width={size.width} depth={size.depth} heightMm={size.heightMm} path={object.shapes?.[0].path ?? ROUND_CASE} sideColors={object.colors}>{object.content}</Relief>;
-  return <Movable {...place} width={object.width} pivot={pivotOf(object)} resizable label={object.name} z={held ? INSPECT_LAYER : layer} onGrab={() => { if (object.flat) onFront(object.id); }} grab={object.id === 'poster' ? 'anywhere' : object.flat ? 'body' : 'anywhere'} onMove={next => onMove(object.id, { ...place, ...next })}>
+/*
+  Which things have to be rebuilt when they move, and which do not.
+
+  A Relief works its sides out from where the thing is standing on the desk, so
+  it is genuinely different at a different place and has to be rendered again. A
+  Solid measures itself off the plane after the fact, and a sheet of paper is the
+  same drawing wherever it lies — neither needs a thing. So the ones that need it
+  subscribe and the rest never hear about the drag at all.
+*/
+const worksItselfOutFromWhereItStands = (object: ObjectSpec) => !object.flat && !object.solid;
+
+export const DeskObject = memo(function DeskObject({ object, place, camera, layer, held, onFront }: { object: ObjectSpec; place: Place; camera: StudyCamera; layer: number; held: boolean; onFront: (id: string) => void }) {
+  const follows = worksItselfOutFromWhereItStands(object);
+  const places = usePlaces();
+  /* Subscribed only by the things that need it; the hook is always called, and
+     given no id it subscribes to nothing. */
+  const moving = usePlace(follows ? object.id : undefined);
+  const at = moving ?? places?.get(object.id) ?? place;
+  const size = sizeOf(object, at);
+  const drawing = object.flat ? object.content : object.id === 'pen' ? <PenRelief place={at} camera={camera} width={size.width} /> : object.id === 'cradle' ? <CradleRelief place={at} camera={camera} width={size.width} /> : object.solid ? <Solid {...object.solid}>{object.content}</Solid> : <Relief place={at} camera={camera} width={size.width} depth={size.depth} heightMm={size.heightMm} path={object.shapes?.[0].path ?? ROUND_CASE} sideColors={object.colors}>{object.content}</Relief>;
+  return <Movable id={object.id} {...at} width={object.width} pivot={pivotOf(object)} resizable label={object.name} z={held ? INSPECT_LAYER : layer} onGrab={() => { if (object.flat) onFront(object.id); }} grab={object.id === 'poster' ? 'anywhere' : object.flat ? 'body' : 'anywhere'}>
     {object.inspect ? <Inspectable id={object.id} {...object.inspect}>{drawing}</Inspectable> : drawing}
   </Movable>;
 });
 
-export function DeskObjects({ placements, camera, onMove, only }: { placements: ObjectPlacements; camera: StudyCamera; onMove: (id: string, place: Place) => void; only?: readonly string[] }) {
+/*
+  The things on the desk. Where each lies is the store's, so this takes no
+  placements and hears nothing when one is dragged: the thing being moved writes
+  its own element, its shadow follows by subscription, and only a Relief — which
+  is genuinely a different drawing at a different place — renders again.
+*/
+export function DeskObjects({ camera, only }: { camera: StudyCamera; only?: readonly string[] }) {
   const [front, setFront] = useState<string>();
   const inspection = useInspection();
-  /* Both are handed down to a memoised thing, so they have to keep their identity
-     between renders or nothing is saved by memoising at all. */
-  const move = useRef(onMove);
-  move.current = onMove;
-  const moved = useCallback((id: string, next: Place) => move.current(id, next), []);
+  /* Handed down to a memoised thing, so it has to keep its identity between
+     renders or nothing is saved by memoising at all. */
   const bringForward = useCallback((id: string) => setFront(id), []);
   return <>{chosen(only).map((object, index) => {
     /* Paper stays under everything that stands up, however recently it was handled. */
     const layer = object.flat ? (front === object.id ? PAPER_LAYER + DESK_OBJECTS.length : PAPER_LAYER + index) : OBJECT_LAYER + index;
-    return <DeskObject key={object.id} object={object} place={placements[object.id] ?? object.place} camera={camera} layer={layer} held={inspection?.held === object.id} onFront={bringForward} onMove={moved} />;
+    return <DeskObject key={object.id} object={object} place={DEFAULT_OBJECT_PLACEMENTS[object.id] ?? object.place} camera={camera} layer={layer} held={inspection?.held === object.id} onFront={bringForward} />;
   })}</>;
 }

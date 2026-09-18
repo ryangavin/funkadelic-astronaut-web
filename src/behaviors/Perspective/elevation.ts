@@ -1,5 +1,5 @@
 /** Project a point above the desk back into its CSS surface plane. Distances
- * are desk units (the project uses 2 units/mm). Perspective then supplies the
+ * are desk units (see geometry/physicalScale.ts). Perspective then supplies the
  * final screen projection. Algebraically identical to stand()/unproject(). */
 export function projectElevation(
   x: number, y: number, height: number,

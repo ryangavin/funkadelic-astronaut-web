@@ -1,10 +1,11 @@
+import { LAMP_WIDTH, LAMP_HEIGHT, mmToUnits } from '../../geometry/physicalScale';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState, type ComponentProps } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 import { Movable, type Place } from '../Movable/Movable';
 import { Desk } from '../../components/3D/Desk/Desk';
 import { DeskClock } from '../../components/3D/DeskClock/DeskClock';
-import { MUG_FOOT, MUG_HEIGHT, MUG_SILHOUETTE, MUG_TALL, MUG_WIDTH, Mug } from '../../components/3D/Mug/Mug';
+import { MUG_FOOT, MUG_HEIGHT, MUG_SILHOUETTE, MUG_TALL, Mug } from '../../components/3D/Mug/Mug';
 import { LampShadows } from '../../components/3D/DeskLamp/LampShadows';
 import { DeskLamp, LampLight } from '../../components/3D/DeskLamp/DeskLamp';
 import { DeskLighting, castFrom, useDeskLight } from '../DeskLighting/DeskLighting';
@@ -39,7 +40,7 @@ function MugLighting({ place }: { place: Place }) {
   return <>
     <LampLight on={light.on} style={{ position: 'absolute', width: `${poolWidth / 1440 * 100}%`, aspectRatio: '1', left: `${(light.x - poolWidth / 2) / 1440 * 100}%`, top: `${(light.y - poolWidth / 2) / 800 * 100}%` }} />
     <LampShadows />
-    <ObjectCastShadow place={place} pivot={{ x: MUG_FOOT.x, y: MUG_FOOT.y }} width={MUG_WIDTH} depth={MUG_WIDTH} shapes={MUG_SILHOUETTE} heightMm={MUG_TALL} surfaceHeight={800} />
+    <ObjectCastShadow place={place} pivot={{ x: MUG_FOOT.x, y: MUG_FOOT.y }} width={mmToUnits(140)} depth={mmToUnits(140)} shapes={MUG_SILHOUETTE} heightMm={MUG_TALL} surfaceHeight={800} />
   </>;
 }
 
@@ -47,8 +48,8 @@ function MugLighting({ place }: { place: Place }) {
 function GentleMugScene({ shadowStrength, ...args }: NonNullable<Story['args']>) {
   const [place, setPlace] = useState<Place>({ x: 180, y: 300, rotation: 0 });
   const [lampOn, setLampOn] = useState(true);
-  // 480×400 mm lamp drawing; bulb elevation estimated at 350 mm. Desk units are 2/mm.
-  const [lamp, setLamp] = useState({ x: 400, y: 40, width: 960, rotation: 0 });
+  // 480×400 mm lamp drawing; bulb elevation estimated at 350 mm. Uses the shared physical scale.
+  const [lamp, setLamp] = useState({ x: 400, y: 40, width: LAMP_WIDTH, rotation: 0 });
   return (
     <DeskLighting><div style={{ background: '#1a1512', padding: '24px', minHeight: '100vh', boxSizing: 'border-box' }}>
       <div style={{ maxWidth: 1000, margin: '0 auto' }}>
@@ -59,9 +60,9 @@ function GentleMugScene({ shadowStrength, ...args }: NonNullable<Story['args']>)
           <Desk height={800} edge={0}>
             <MugLighting place={place} />
             <Movable {...lamp} className="perspective__lamp" label="Desk lamp" onMove={(to) => setLamp((at) => ({ ...at, ...to }))}>
-              <DeskLamp camera={{ angle: args.angle ?? GENTLE_VIEW, depth: args.depth ?? GENTLE_DEPTH, width: args.width ?? 1440, surfaceHeight: 800 }} shadowStrength={shadowStrength} lightPosition={{ ...lamp, height: 700 }} on={lampOn} onToggle={setLampOn} enamel="green" />
+              <DeskLamp camera={{ angle: args.angle ?? GENTLE_VIEW, depth: args.depth ?? GENTLE_DEPTH, width: args.width ?? 1440, surfaceHeight: 800 }} shadowStrength={shadowStrength} lightPosition={{ ...lamp, height: LAMP_HEIGHT }} on={lampOn} onToggle={setLampOn} enamel="green" />
             </Movable>
-            <Movable {...place} width={MUG_WIDTH} label="Mug" onMove={(to) => setPlace((at) => ({ ...at, ...to }))}>
+            <Movable {...place} width={mmToUnits(140)} label="Mug" onMove={(to) => setPlace((at) => ({ ...at, ...to }))}>
               <Solid height={MUG_HEIGHT} foot={MUG_FOOT}>
                 <Mug coffee={0.7} shadow="contact" />
               </Solid>

@@ -1,3 +1,4 @@
+import { DESK_SIZE, mmToUnits } from '../../geometry/physicalScale';
 import type React from 'react';
 import { memo, useId, useRef, type Ref } from 'react';
 import { useDeskLightEffect } from '../../behaviors/DeskLighting/DeskLighting';
@@ -16,15 +17,15 @@ export const ROOM_WIDTH = 1580;
 /** What is left of the frame for the desk once the room is around it. */
 export const ROOM_DESK_SHARE = DESK_WIDTH / ROOM_WIDTH;
 /** How high the desk top stands off the boards: 750 millimetres, an ordinary desk. */
-export const DESK_STAND = 900;
-/** How deep the desk is, front edge to the wall it stands against: 600 millimetres. */
-export const ROOM_DESK_DEPTH = 720;
+export const DESK_STAND = DESK_SIZE.height;
+/** How deep the desk is, front edge to the wall it stands against: 800 millimetres. */
+export const ROOM_DESK_DEPTH = DESK_SIZE.depth;
 /** How far the frame reaches below the desk's front edge, in desk units on the screen: a strip of the boards under it. */
 export const ROOM_LIP = 60;
 /** How far the boards are drawn out in front of the desk, so the frame's bottom corners are covered. */
 const FLOOR_FRONT = 400;
 /** How much floor and wall is drawn: 2.2 metres, so the frame is covered however the eye moves. */
-export const ROOM_SPAN = 2640;
+export const ROOM_SPAN = mmToUnits(2200);
 /*
   The boards run across the drawing, so what we see of them is their length.
   Only a shallow strip of floor is in frame and it is foreshortened hard, so a
