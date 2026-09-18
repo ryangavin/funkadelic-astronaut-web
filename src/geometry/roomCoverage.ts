@@ -56,7 +56,7 @@ export function roomSurfaceExtents(inputs: Parameters<typeof roomCoverage>[0], o
   if (![span, front, wallHeight, floorDepth, floorCells, wallCells].every(Number.isFinite)
       || floorCourses > ROOM_MATERIAL_BUDGET.floorCourses
       || floorCells + wallCells > ROOM_MATERIAL_BUDGET.materialCells) {
-    throw new RangeError('Room material renderer capacity exceeded (128 floor courses / 10,000 material cells). This is a rendering resource limit, not an invalid camera. Increase eye clearance, reduce room extents, or disable the room background');
+    throw new RangeError('Room material renderer capacity exceeded (128 floor courses / 10,000 material cells). This is a rendering resource limit, not an invalid camera. Adjust the camera, reduce room extents, or disable the room background');
   }
   return { span, front, wallHeight };
 }

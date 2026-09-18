@@ -37,3 +37,18 @@ export function roomSetup({ cameraMode = 'legacy', deskWidthMm = DESK_MM.width, 
     throw new RangeError('camera angle must be greater than 0 and at most 90 degrees');
   return { camera: { angle, depth, width, surfaceHeight }, stand, edge };
 }
+
+/** Reference lens: the existing 1200 mm desk, viewed 900 mm above and 650 mm back.
+ * Perspective's CSS depth is also its focal length. Compensate the outer frame
+ * so focal length in viewport pixels stays fixed as the eye moves.
+ */
+export function roomFraming(camera: { width: number; depth: number }, physical: boolean, deskShare: number, lip: number) {
+  if (!physical) return { deskShare, lip };
+  const referenceDistance = mmToUnits(Math.hypot(900, 650));
+  const effectiveLip = lip * (camera.depth / referenceDistance);
+  if (!Number.isFinite(effectiveLip)) throw new RangeError('physical frame lip must be finite');
+  return {
+    deskShare: positive('physical frame share', deskShare * (camera.width / mmToUnits(1200)) * (referenceDistance / camera.depth)),
+    lip: effectiveLip,
+  };
+}

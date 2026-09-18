@@ -1,6 +1,6 @@
 import { roomSurfaceExtents } from '../../geometry/roomCoverage';
 import { lightingSetup, type LightTuning } from '../../geometry/lightingSetup';
-import { roomSetup, positive, type PhysicalRoomInputs } from '../../geometry/roomSetup';
+import { roomSetup, roomFraming, positive, type PhysicalRoomInputs } from '../../geometry/roomSetup';
 import { mmToUnits } from '../../geometry/physicalScale';
 import { PerformanceOverlay } from '../../debug/PerformanceOverlay/PerformanceOverlay';
 import { LAMP_WIDTH, LAMP_HEIGHT } from '../../geometry/physicalScale';
@@ -66,7 +66,7 @@ export type RoomProps = PhysicalRoomInputs & {
   roomBlur?: number;
   /** How far the room falls away from the light on the desk, 0 to 1. */
   roomDim?: number;
-  /** How much of the frame's width the desk itself takes, 0 to 1. The rest is room. */
+  /** Reference desk width fraction in physical mode; fitted desk width fraction in legacy mode. */
   deskShare?: number;
   /** How far the frame reaches below the desk's front edge, in desk units: a strip of the boards under it. 0 puts the edge on the frame's bottom. */
   roomLip?: number;
@@ -165,12 +165,13 @@ export function Room(props: RoomProps) {
       for (const [name, value] of [['shadowStrength', props.shadowStrength ?? DEFAULT_SHADOW_STRENGTH], ['roomDim', props.roomDim ?? 0.32]] as const)
         if (!Number.isFinite(value) || value < 0 || value > 1) throw new RangeError(`${name} must be between 0 and 1 (normalized opacity)`);
       if (!Number.isFinite(props.roomLip ?? ROOM_LIP)) throw new RangeError('roomLip must be finite');
+      const framing = roomFraming(setup.camera, cameraMode === 'physical', props.deskShare ?? ROOM_DESK_SHARE, props.roomLip ?? ROOM_LIP);
       // Check material allocation before accepting a new scene. Failed edits keep
       // the last valid scene alive, including its object arrangement and lamp.
       if (props.room !== false) roomSurfaceExtents({
         angle: setup.camera.angle, depth: setup.camera.depth,
         deskWidth: setup.camera.width, deskDepth: setup.camera.surfaceHeight, stand: setup.stand,
-        deskShare: props.deskShare ?? ROOM_DESK_SHARE, lip: props.roomLip ?? ROOM_LIP,
+        ...framing,
       }, {
         span: props.roomSpanMm === undefined ? undefined : mmToUnits(props.roomSpanMm),
         front: props.floorFrontMm === undefined ? undefined : mmToUnits(props.floorFrontMm),
@@ -192,8 +193,9 @@ export function Room(props: RoomProps) {
   </>;
 }
 
-function RoomScene({ setup, tuning, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & { setup: ReturnType<typeof roomSetup>; tuning: LightTuning }) {
+function RoomScene({ setup, tuning, cameraMode, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & { setup: ReturnType<typeof roomSetup>; tuning: LightTuning }) {
   const { camera, stand, edge } = setup;
+  const framing = roomFraming(camera, cameraMode === 'physical', deskShare, room ? roomLip : 0);
   const span = roomSpanMm === undefined ? undefined : mmToUnits(roomSpanMm);
   const front = floorFrontMm === undefined ? undefined : mmToUnits(floorFrontMm);
   const wallHeight = wallHeightMm === undefined ? undefined : mmToUnits(wallHeightMm);
@@ -259,8 +261,8 @@ function RoomScene({ setup, tuning, showPerformance = false, lampIntensity = 1, 
     <RoomCamera.Provider value={camera}>
       {/* The frame: 16 x 9, cropping the room. Told there is a room in it, it
           becomes the container the desk takes its share of the width from. */}
-      <Inspector className={`room ${className}`.trim()} data-room={room ? '' : undefined} style={{ '--room-desk-width': camera.width, '--room-share': deskShare, '--room-lip': room ? roomLip : 0, ...style } as React.CSSProperties}><DeskLighting>
-        {room && <DeskRoom angle={camera.angle} depth={camera.depth} deskWidth={camera.width} deskDepth={camera.surfaceHeight} stand={stand} span={span} front={front} wallHeight={wallHeight} lip={roomLip} floor={floor} wall={wall} blur={roomBlur} dim={roomDim} deskShare={deskShare} shadowStrength={shadowStrength} />}
+      <Inspector className={`room ${className}`.trim()} data-room={room ? '' : undefined} data-physical={cameraMode === 'physical' ? '' : undefined} style={{ '--room-desk-width': camera.width, '--room-share': framing.deskShare, '--room-lip': framing.lip, ...style } as React.CSSProperties}><DeskLighting>
+        {room && <DeskRoom angle={camera.angle} depth={camera.depth} deskWidth={camera.width} deskDepth={camera.surfaceHeight} stand={stand} span={span} front={front} wallHeight={wallHeight} lip={framing.lip} floor={floor} wall={wall} blur={roomBlur} dim={roomDim} deskShare={framing.deskShare} shadowStrength={shadowStrength} />}
         <div className="room__stand">
           <Perspective {...camera} className="perspective--lamp-study">
             {/* The materials class is what tells the things on it they are being

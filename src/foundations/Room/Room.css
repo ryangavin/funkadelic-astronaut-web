@@ -25,7 +25,7 @@
   its share of the width, pushed up to the brick — which is measured in the
   frame's own width, so the frame has to be a container to measure against.
 */
-.room[data-room] {
+.room:is([data-room], [data-physical]) {
   container-type: inline-size;
 }
 
@@ -52,7 +52,7 @@
   up. Its shadow on the boards is the room's to draw, in the room's own
   perspective, from the lamp.
 */
-.room[data-room] .room__stand {
+.room:is([data-room], [data-physical]) .room__stand {
   top: auto;
   /* In desk units of the frame's width: the frame is the container, so cqw is its width. */
   bottom: calc(var(--room-lip, 0) * var(--room-share) * 100cqw / var(--room-desk-width, 1440));

@@ -7,9 +7,11 @@
 - angle = atan2(eyeHeightMm − deskHeightMm, viewerSetbackMm)
 - camera distance = hypot(eyeHeightMm − deskHeightMm, viewerSetbackMm) × 1.2
 
-Zero setback is overhead. Eye height must exceed tabletop height; desk dimensions and camera distance must be positive and finite. Edge and setback can be zero. Invalid numeric edits display a recoverable diagnostic while retaining the last valid scene, including placements, lamp pose and switch state. Changing physical dimensions updates desk units, floor drop, wall position, lighting surfaces, and object-shadow viewBoxes. Objects retain their physical units: a wider desk fitted into the same viewport makes them smaller on screen, not larger in millimetres.
+Zero setback is overhead. Eye height must exceed tabletop height; desk dimensions and camera distance must be positive and finite. Edge and setback can be zero. Invalid numeric edits display a recoverable diagnostic while retaining the last valid scene, including placements, lamp pose and switch state. Changing physical dimensions updates desk units, floor drop, wall position, lighting surfaces, and object-shadow viewBoxes. Objects retain their physical units. In physical mode, widening the desk reveals more tabletop without shrinking existing objects.
 
-`deskShare` and `roomLip` remain **framing**, not physical camera distance or field of view. Numeric framing controls have no aesthetic maximum. `roomSpanMm`, `floorFrontMm`, and `wallHeightMm` control how much room geometry exists; increase them if experimentation exposes its boundaries.
+Physical mode uses a fixed lens calibrated to a 1200 mm desk, eye clearance 900 mm, and setback 650 mm. `deskShare` specifies the desk's width fraction at that reference view. Moving the eye farther away makes the desk and objects smaller; doubling clearance and setback halves the projected front-edge width at the same tilt. Changing desk width does not refit the scene. `roomLip` keeps the front-edge target at a fixed screen position. The same lens applies with the room background hidden. Legacy mode retains its existing fit-to-frame behavior.
+
+`deskShare` and `roomLip` are reference framing controls; neither changes automatically to zoom with camera distance. Numeric framing controls have no aesthetic maximum. `roomSpanMm`, `floorFrontMm`, and `wallHeightMm` control how much room geometry exists; increase them if experimentation exposes its boundaries.
 
 Both **Foundations / Room / Physical Setup** and **Pages / Perspective Desk / Physical Setup** contain objects, labeled sliders and unrestricted numeric inputs. Physical readouts show millimetres plus inches (`mm / 25.4`); inches are display-only. Slider windows are convenient suggestions, not scene limits: typing a value outside the window preserves that value and parks the slider at the nearest endpoint. The inline fields maintain local experimental edits. Changing the Storybook controls resets those inline edits to the new external settings. Every advanced light-shaping value has its own labeled numeric Storybook control. Existing scenes retain their old defaults. PerspectiveDesk's saved settings include physical inputs, camera mode, and the light-tuning object.
 
@@ -74,7 +76,7 @@ resolver checks this before material arrays are created, including for explicit
 extent overrides. A near-table overhead view can be geometrically valid yet
 exceed this budget. Room shows an explicit capacity alert and retains its last
 supported scene and arrangement; the entered controls remain visible and are not
-silently clamped. Increase eye clearance, reduce explicit extents, or disable
+silently clamped. Adjust the camera, reduce explicit extents, or disable
 the room background to recover. Direct DeskRoom usage shows the capacity alert
 instead of allocating the oversized materials. This is a renderer limit rather
 than an aesthetic camera-angle restriction.

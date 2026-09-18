@@ -1,15 +1,17 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
+const { roomFraming } = require('../src/geometry/roomSetup.ts');
 const { roomCoverage } = require('../src/geometry/roomCoverage.ts');
 
 // Project the generated bounds forward independently and check the crop corners.
 test('automatic background covers the frame across physical camera and desk ranges', () => {
   for (const eye of [1000, 1650, 2400]) for (const setback of [0, 650, 3000])
-    for (const width of [360, 1440, 3600]) for (const share of [0.5, 0.8, 1]) {
-      const stand = 900, deskDepth = 960, lip = 180;
+    for (const width of [360, 1440, 3600]) for (const referenceShare of [0.5, 0.8, 1]) for (const physical of [false, true]) {
+      const stand = 900, deskDepth = 960;
       const above = eye * 1.2 - stand;
       const depth = Math.hypot(above, setback * 1.2);
       const angle = Math.atan2(above, setback * 1.2) * 180 / Math.PI;
+      const { deskShare: share, lip } = roomFraming({ width, depth }, physical, referenceShare, 180);
       const bounds = roomCoverage({ angle, depth, deskWidth: width, deskDepth, stand, deskShare: share, lip });
       const tilt = (90 - angle) * Math.PI / 180, c = Math.cos(tilt), s = Math.sin(tilt);
       const project = (y, z) => ({ y: depth * y / (depth - z), halfWidth: depth * bounds.span / 2 / (depth - z) });

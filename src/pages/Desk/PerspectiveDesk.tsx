@@ -47,7 +47,7 @@ export type PerspectiveDeskProps = RoomControls & {
   roomBlur?: number;
   /** How far the room falls away from the light on the desk, 0 to 1. */
   roomDim?: number;
-  /** How much of the frame's width the desk itself takes, 0 to 1. The rest is room. */
+  /** Reference desk width fraction in physical mode; fitted desk width fraction in legacy mode. */
   deskShare?: number;
   /** How far the frame reaches below the desk's front edge, in desk units: a strip of the boards under it. 0 puts the edge on the frame's bottom. */
   roomLip?: number;
