@@ -204,7 +204,7 @@ function DeskFloorShadow({ deskWidth, span, deskDepth, stand, floorDepth, streng
       switched.current = on;
       for (const group of [halo.current, core.current, bulbPool.current]) group?.setAttribute('opacity', on ? '1' : '0');
     }
-    bulbPool.current?.style.setProperty('filter', `brightness(${light?.intensity ?? 1})`);
+    bulbPool.current?.style.setProperty('filter', (light?.intensity ?? 1) === 1 ? '' : `brightness(${light?.intensity})`);
     bulbPool.current?.style.setProperty('visibility', light?.intensity === 0 ? 'hidden' : '');
     if (!light || !on) return;
     /*

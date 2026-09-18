@@ -7,7 +7,7 @@
 - angle = atan2(eyeHeightMm − deskHeightMm, viewerSetbackMm)
 - camera distance = hypot(eyeHeightMm − deskHeightMm, viewerSetbackMm) × 1.2
 
-Zero setback is overhead. Eye height must exceed tabletop height; desk dimensions and camera distance must be positive and finite. Edge and setback can be zero. Invalid numeric edits display a recoverable diagnostic. Changing physical dimensions updates desk units, floor drop, wall position, lighting surfaces, and object-shadow viewBoxes. Objects retain their physical units: a wider desk fitted into the same viewport makes them smaller on screen, not larger in millimetres.
+Zero setback is overhead. Eye height must exceed tabletop height; desk dimensions and camera distance must be positive and finite. Edge and setback can be zero. Invalid numeric edits display a recoverable diagnostic while retaining the last valid scene, including placements, lamp pose and switch state. Changing physical dimensions updates desk units, floor drop, wall position, lighting surfaces, and object-shadow viewBoxes. Objects retain their physical units: a wider desk fitted into the same viewport makes them smaller on screen, not larger in millimetres.
 
 `deskShare` and `roomLip` remain **framing**, not physical camera distance or field of view. Numeric framing controls have no aesthetic maximum. `roomSpanMm`, `floorFrontMm`, and `wallHeightMm` control how much room geometry exists; increase them if experimentation exposes its boundaries.
 

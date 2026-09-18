@@ -164,10 +164,16 @@ export function Room(props: RoomProps) {
       return { setup, tuning };
     } catch (error) { return { error: error instanceof Error ? error.message : 'Invalid room setup' }; }
   }, [measured, props.lightTuning, props.lampIntensity, props.lampWidth, props.roomSpanMm, props.floorFrontMm, props.wallHeightMm, props.deskShare, props.roomBlur, props.shadowStrength, props.roomDim, props.roomLip]);
-  if ('error' in resolved) return <div className="room__diagnostic" role="alert">Room setup: {resolved.error}. Update the controls to restore the scene.</div>;
+  // Numeric fields pass through incomplete values while typing. Keep the last
+  // valid scene mounted so editing never discards places, switch state or pose.
+  const previous = useRef<{ props: RoomProps; setup: ReturnType<typeof roomSetup>; tuning: LightTuning } | null>(null);
+  const error = 'error' in resolved ? resolved.error : undefined;
+  if (!('error' in resolved)) previous.current = { props, setup: resolved.setup, tuning: resolved.tuning };
+  const scene = previous.current;
   return <>
-    {cameraMode === 'physical' && <p className="room__diagnostic" role="status">Physical camera: {resolved.setup.camera.angle.toFixed(1)}°; eye clearance {(resolved.setup.camera.depth * Math.sin(resolved.setup.camera.angle * Math.PI / 180) / 1.2).toFixed(1)} mm. Artwork layers at or above the eye plane are hidden. Objects are 2.5D drawings; low views reveal their limitations.</p>}
-    <RoomScene {...props} setup={resolved.setup} tuning={resolved.tuning} />
+    {error ? <div className="room__diagnostic" role="alert">Room setup: {error}. {scene ? 'Showing the last valid scene; your arrangement is retained.' : 'Enter valid values to show the scene.'}</div>
+      : cameraMode === 'physical' && scene && <p className="room__diagnostic" role="status">Physical camera: {scene.setup.camera.angle.toFixed(1)}°; eye clearance {(scene.setup.camera.depth * Math.sin(scene.setup.camera.angle * Math.PI / 180) / 1.2).toFixed(1)} mm. Artwork layers at or above the eye plane are hidden. Objects are 2.5D drawings; low views reveal their limitations.</p>}
+    {scene && <RoomScene {...scene.props} setup={scene.setup} tuning={scene.tuning} />}
   </>;
 }
 

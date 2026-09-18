@@ -47,7 +47,7 @@ export function RoomControlPanel({ args, update, children }: { args: RoomProps &
   ] as const;
   return <div style={{ width: '100%' }}>
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, padding: 12, color: '#ead3a7', background: '#211b16', font: '13px system-ui' }}>
-      {fields.map(([key, label]) => <label key={key}>{label}<input aria-label={label} type="number" step={key === 'lampIntensity' || key === 'poolSpread' ? 0.1 : 1} value={args[key] ?? physicalDefaults[key]} onChange={event => update({ [key]: event.target.value === '' ? NaN : Number(event.target.value) })} style={{ display: 'block', width: 95 }} /></label>)}
+      {fields.map(([key, label]) => <label key={key}>{label}<input aria-label={label} type="number" step={key === 'lampIntensity' || key === 'poolSpread' ? 0.1 : 1} value={Number.isFinite(args[key] ?? physicalDefaults[key]) ? args[key] ?? physicalDefaults[key] : ''} onChange={event => update({ [key]: event.target.value === '' ? NaN : Number(event.target.value) })} style={{ display: 'block', width: 95 }} /></label>)}
     </div>
     {children}
   </div>;
