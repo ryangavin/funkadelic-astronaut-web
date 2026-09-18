@@ -1,4 +1,6 @@
-import { checkPhysicalRoom } from '../../debug/RoomControls/check';
+import { MeterStick } from '../../components/3D/MeterStick/MeterStick';
+import { Pin } from '../../components/2D/Pin/Pin';
+import { checkPhysicalLens, checkPhysicalRoom } from '../../debug/RoomControls/check';
 import { PerspectiveDesk } from '../../pages/Desk/PerspectiveDesk';
 import { physicalControls, physicalDefaults, withLightTuning, RoomExperiment, type RoomStoryControls } from '../../debug/RoomControls/controls';
 import { articulateLamp, lampPoseAngles } from '../../components/3D/DeskLamp/articulation';
@@ -89,3 +91,16 @@ export const PhysicalSetup: Story = {
     return <RoomExperiment args={args}>{values => <PerspectiveDesk {...withLightTuning(values)} showSettings={false} only={['mug', 'pen', 'handheld', 'cradle']} />}</RoomExperiment>;
   },
 };
+
+
+/** A fixed-lens reference: the meter remains the same size when the desk widens. */
+export const PhysicalLens: Story = {
+  args: { cameraMode: 'physical', eyeHeightMm: 1650, viewerSetbackMm: 650, deskShare: .8, roomLip: 180, lamp: false },
+  render: function Lens(args) {
+    return <RoomExperiment args={args}>{values => <PerspectiveDesk {...withLightTuning(values)} showSettings={false} only={['mug']}>
+      <Pin x={100} y={880} width={1200}><MeterStick /></Pin>
+    </PerspectiveDesk>}</RoomExperiment>;
+  },
+  play: checkPhysicalLens,
+};
+export const PhysicalLensWithoutBackground: Story = { ...PhysicalLens, args: { ...PhysicalLens.args, room: false } };

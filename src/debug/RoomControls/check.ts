@@ -74,10 +74,10 @@ export async function checkPhysicalRoom({ canvasElement }: { canvasElement: HTML
     expect(`${node.getAttribute('style')} ${node.getAttribute('transform')}`).not.toMatch(/NaN|Infinity/);
   const supportedCamera = camera().getAttribute('style');
   const materialCount = canvasElement.querySelectorAll('.floor__course, .floor__butt, .wall__brick').length;
-  input('Eye height (mm)', '751');
+  input('Eye height (mm)', '100000');
   await waitFor(() => expect(canvas.getByRole('alert')).toHaveTextContent('renderer capacity exceeded'));
   expect(canvas.getByRole('alert')).toHaveTextContent('last valid scene');
-  expect(canvas.getByRole('spinbutton', { name: 'Eye height (mm)' })).toHaveValue(751);
+  expect(canvas.getByRole('spinbutton', { name: 'Eye height (mm)' })).toHaveValue(100000);
   expect(camera().getAttribute('style')).toBe(supportedCamera);
   expect(canvasElement.querySelectorAll('.floor__course, .floor__butt, .wall__brick')).toHaveLength(materialCount);
   expect(lamp.style.getPropertyValue('--movable-x')).toBe(lampX);
@@ -95,4 +95,51 @@ export async function checkPhysicalRoom({ canvasElement }: { canvasElement: HTML
   await waitFor(() => expect(parseFloat(pool().style.width)).toBeCloseTo(size * 2, 5));
   input('Setback (mm)', '650');
   await waitFor(() => expect(Number(camera().style.getPropertyValue('--perspective-angle'))).toBeCloseTo(54.1623, 3));
+}
+
+
+/** Pixel measurements protect the fixed physical lens, not just its CSS inputs. */
+export async function checkPhysicalLens({ canvasElement }: { canvasElement: HTMLElement }) {
+  if (import.meta.env.MODE !== 'test') return;
+  const canvas = within(canvasElement);
+  const input = (name: string, value: number) => fireEvent.change(canvas.getByRole('spinbutton', { name }), { target: { value: String(value) } });
+  const stand = () => canvasElement.querySelector<HTMLElement>('.room__stand')!.getBoundingClientRect();
+  const camera = () => canvasElement.querySelector<HTMLElement>('.perspective')!;
+  const angle = () => Number(camera().style.getPropertyValue('--perspective-angle'));
+  const distance = () => Number(camera().style.getPropertyValue('--perspective-depth'));
+  const stick = () => canvas.getByRole('img', { name: /One meter stick/ }).getBoundingClientRect();
+  const original = stand(), originalAngle = angle(), originalDistance = distance();
+  input('Eye height (mm)', 2400);
+  await waitFor(() => expect(stand().width / original.width).toBeCloseTo(Math.hypot(900, 650) / Math.hypot(1650, 650), 3));
+  expect(angle()).toBeGreaterThan(originalAngle);
+  expect(distance()).toBeGreaterThan(originalDistance);
+  input('Eye height (mm)', 2550);
+  input('Setback (mm)', 1300);
+  await waitFor(() => expect(stand().width / original.width).toBeCloseTo(.5, 3));
+  expect(angle()).toBeCloseTo(originalAngle, 8);
+  expect(distance()).toBeCloseTo(originalDistance * 2, 8);
+  expect(stand().bottom).toBeCloseTo(original.bottom, 1);
+  input('Eye height (mm)', 1650);
+  await waitFor(() => expect(angle()).toBeLessThan(originalAngle));
+  expect(stand().width).toBeLessThan(original.width);
+  expect(distance()).toBeGreaterThan(originalDistance);
+  input('Setback (mm)', 650);
+  await waitFor(() => expect(stand().width).toBeCloseTo(original.width, 1));
+  const meterWidth = stick().width;
+  input('Desk width (mm)', 1800);
+  await waitFor(() => expect(stand().width / original.width).toBeCloseTo(1.5, 3));
+  expect(stick().width).toBeCloseTo(meterWidth, 1);
+  expect(stand().bottom).toBeCloseTo(original.bottom, 1);
+  // After both camera and frame dimensions change, a 40 px drag still inverts correctly.
+  input('Setback (mm)', 0);
+  await waitFor(() => expect(angle()).toBe(90));
+  const mug = canvas.getByRole('group', { name: /^Mug$/ });
+  const initialX = Number(mug.style.getPropertyValue('--movable-x'));
+  const unitsPerPixel = 2160 / stand().width;
+  const box = mug.getBoundingClientRect();
+  const pointer = { pointerId: 1, button: 0, buttons: 1, clientX: box.x + box.width / 2, clientY: box.y + box.height / 2 };
+  fireEvent.pointerDown(mug, pointer);
+  fireEvent.pointerMove(mug, { ...pointer, clientX: pointer.clientX + 40 });
+  fireEvent.pointerUp(mug, { ...pointer, buttons: 0, clientX: pointer.clientX + 40 });
+  await waitFor(() => expect(Math.abs(Number(mug.style.getPropertyValue('--movable-x')) - initialX - 40 * unitsPerPixel)).toBeLessThanOrEqual(1));
 }

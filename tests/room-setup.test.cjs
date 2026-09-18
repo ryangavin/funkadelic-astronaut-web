@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { roomSetup } = require('../src/geometry/roomSetup.ts');
+const { roomSetup, roomFraming } = require('../src/geometry/roomSetup.ts');
 const { lightingSetup, DEFAULT_LIGHT_TUNING } = require('../src/geometry/lightingSetup.ts');
 const { projectElevation } = require('../src/behaviors/Perspective/elevation.ts');
 const near = (a, b) => assert.ok(Math.abs(a - b) < 1e-8, `${a} != ${b}`);
@@ -57,4 +57,20 @@ test('lighting preserves defaults and permits experimental values beyond aesthet
   assert.deepEqual(lightingSetup(), DEFAULT_LIGHT_TUNING);
   assert.equal(lightingSetup({ poolSpread: 12, floorShadowTemper: 8 }).poolSpread, 12);
   for (const input of [{ shadowScaleLimit: .9 }, { shadowAttenuation: 0 }, { poolSpread: -1 }, { floorPoolSpread: Infinity }]) assert.throws(() => lightingSetup(input), RangeError);
+});
+
+test('physical lens stays fixed as camera distance or desk width changes', () => {
+  const setup = (eye, back, width = 1200) => roomSetup({ cameraMode: 'physical', eyeHeightMm: eye, viewerSetbackMm: back, deskWidthMm: width }).camera;
+  const baseline = setup(1650, 650), framing = roomFraming(baseline, true, .75, 100);
+  near(framing.deskShare, .75);
+  for (const camera of [setup(2550, 1300), setup(2550, 650), setup(1650, 1300), setup(1650, 650, 2400)]) {
+    const f = roomFraming(camera, true, .75, 100);
+    near(camera.depth * f.deskShare / camera.width, baseline.depth * framing.deskShare / baseline.width);
+    near(f.lip * f.deskShare / camera.width, framing.lip * framing.deskShare / baseline.width);
+  }
+  near(roomFraming(setup(2550, 1300), true, .75, 100).deskShare, .375);
+  near(roomFraming(setup(1650, 650, 2400), true, .75, 100).deskShare, 1.5);
+  assert.deepEqual(roomFraming(setup(2550, 1300), false, .75, 100), { deskShare: .75, lip: 100 });
+  assert.throws(() => roomFraming({width: 1440, depth: Number.MIN_VALUE}, true, .75, 100), RangeError);
+  assert.throws(() => roomFraming({width: 1440, depth: Number.MAX_VALUE}, true, .75, Number.MAX_VALUE), RangeError);
 });
