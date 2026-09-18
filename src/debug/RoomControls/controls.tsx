@@ -42,12 +42,29 @@ export function withLightTuning<T extends RoomProps & RoomStoryControls>(args: T
 /** The experiment keeps its most useful numeric controls beside the scene. */
 export function RoomControlPanel({ args, update, children }: { args: RoomProps & RoomStoryControls; update: (args: Partial<RoomProps & RoomStoryControls>) => void; children: ReactNode }) {
   const fields = [
-    ['deskWidthMm', 'Desk width (mm)'], ['deskDepthMm', 'Desk depth (mm)'], ['deskHeightMm', 'Desk height (mm)'],
-    ['eyeHeightMm', 'Eye height (mm)'], ['viewerSetbackMm', 'Setback (mm)'], ['lampIntensity', 'Light intensity'], ['poolSpread', 'Pool spread'],
+    ['deskWidthMm', 'Desk width (mm)', 300, 3000, 10, true],
+    ['deskDepthMm', 'Desk depth (mm)', 200, 1800, 10, true],
+    ['deskHeightMm', 'Desk height (mm)', 100, 1600, 10, true],
+    ['eyeHeightMm', 'Eye height (mm)', 600, 2400, 10, true],
+    ['viewerSetbackMm', 'Setback (mm)', 0, 3000, 10, true],
+    ['lampIntensity', 'Light intensity', 0, 6, 0.1, false],
+    ['poolSpread', 'Pool spread', 0, 6, 0.1, false],
   ] as const;
   return <div style={{ width: '100%' }}>
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, padding: 12, color: '#ead3a7', background: '#211b16', font: '13px system-ui' }}>
-      {fields.map(([key, label]) => <label key={key}>{label}<input aria-label={label} type="number" step={key === 'lampIntensity' || key === 'poolSpread' ? 0.1 : 1} value={Number.isFinite(args[key] ?? physicalDefaults[key]) ? args[key] ?? physicalDefaults[key] : ''} onChange={event => update({ [key]: event.target.value === '' ? NaN : Number(event.target.value) })} style={{ display: 'block', width: 95 }} /></label>)}
+      {fields.map(([key, label, min, max, step, physical]) => {
+        const value = args[key] ?? physicalDefaults[key];
+        const valid = Number.isFinite(value);
+        return <fieldset key={key} style={{ display: 'grid', gap: 6, width: 145, margin: 0, padding: 8, border: '1px solid #6d5b45' }}>
+          <legend>{label}</legend>
+          <input aria-label={`${label} slider`} type="range" min={min} max={max} step={step} value={valid ? Math.min(max, Math.max(min, value)) : min} onChange={event => update({ [key]: Number(event.target.value) })} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <input aria-label={label} type="number" step={physical ? 1 : step} value={valid ? value : ''} onChange={event => update({ [key]: event.target.value === '' ? NaN : Number(event.target.value) })} style={{ width: 72 }} />
+            {physical && <output aria-label={`${label} inches`}>{valid ? `${(value / 25.4).toFixed(2)} in` : '— in'}</output>}
+          </div>
+          <small style={{ color: '#c7bcae' }}>Slider {min}–{max}{physical ? ' mm' : ''}; type any value.</small>
+        </fieldset>;
+      })}
     </div>
     {children}
   </div>;

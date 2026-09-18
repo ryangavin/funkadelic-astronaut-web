@@ -2,13 +2,18 @@ import { expect, fireEvent, userEvent, waitFor, within } from 'storybook/test';
 
 /** Exercise real controls and placements, including recovery from invalid geometry. */
 export async function checkPhysicalRoom({ canvasElement }: { canvasElement: HTMLElement }) {
+  // Ordinary browsing must never rearrange the scene or leave stress-test settings behind.
+  if (import.meta.env.MODE !== 'test') return;
   const canvas = within(canvasElement);
   const input = (label: string, value: string) => fireEvent.change(canvas.getByRole('spinbutton', { name: label }), { target: { value } });
   const room = () => canvasElement.querySelector<HTMLElement>('.room')!;
   const camera = () => canvasElement.querySelector<HTMLElement>('.perspective')!;
   const pool = () => canvasElement.querySelector<HTMLElement>('.lamp-light')!;
   await waitFor(() => expect(pool().style.width).not.toBe(''));
-  input('Desk width (mm)', '1600');
+  expect(canvas.getByLabelText('Desk width (mm) inches')).toHaveTextContent('47.24 in');
+  fireEvent.change(canvas.getByRole('slider', { name: 'Desk width (mm) slider' }), { target: { value: '1600' } });
+  await waitFor(() => expect(canvas.getByRole('spinbutton', { name: 'Desk width (mm)' })).toHaveValue(1600));
+  expect(canvas.getByLabelText('Desk width (mm) inches')).toHaveTextContent('62.99 in');
   await waitFor(() => expect(camera().style.getPropertyValue('--perspective-width')).toBe('1920'));
   input('Desk depth (mm)', '1000');
   await waitFor(() => expect(canvasElement.querySelector('.desk-study__shadow')).toHaveAttribute('viewBox', '0 0 1920 1200'));
@@ -40,6 +45,12 @@ export async function checkPhysicalRoom({ canvasElement }: { canvasElement: HTML
   fireEvent.click(head);
   await waitFor(() => expect(canvas.getByRole('button', { name: 'Turn the lamp on' })).toBeInTheDocument());
   const aimed = shade.innerHTML;
+  input('Desk width (mm)', '3400');
+  await waitFor(() => expect(camera().style.getPropertyValue('--perspective-width')).toBe('4080'));
+  expect(canvas.getByRole('spinbutton', { name: 'Desk width (mm)' })).toHaveValue(3400);
+  expect(canvas.getByRole('slider', { name: 'Desk width (mm) slider' })).toHaveValue('3000');
+  fireEvent.change(canvas.getByRole('slider', { name: 'Desk width (mm) slider' }), { target: { value: '1600' } });
+  await waitFor(() => expect(camera().style.getPropertyValue('--perspective-width')).toBe('1920'));
   input('Eye height (mm)', '');
   await expect(canvas.getByRole('alert')).toHaveTextContent('last valid scene');
   expect(lamp.style.getPropertyValue('--movable-x')).toBe(lampX);
