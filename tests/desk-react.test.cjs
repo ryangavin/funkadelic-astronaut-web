@@ -22,7 +22,7 @@ test('Desk is a wooden top in sheet units whose surface measures against the des
   assert.match(component, /className="desk__board"/);
   assert.match(component, /className="desk__pores"/);
   // Pins work on it, and the height in desk units is measured one level in from the container.
-  assert.match(css, /\.desk \{[\s\S]+?--sheet-unit: calc\(100cqw \/ 1440\)/);
+  assert.match(css, /\.desk \{[\s\S]+?--sheet-unit: calc\(100cqw \/ var\(--desk-width, 1440\)\)/);
   assert.match(css, /\.desk \{[\s\S]+?container-type: inline-size/);
   assert.match(css, /\.desk__top \{[\s\S]+?height: calc\(var\(--desk-height\) \* var\(--sheet-unit\)\)/);
   assert.match(css, /\.desk__top \{[\s\S]+?overflow: clip/);

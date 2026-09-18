@@ -8,7 +8,7 @@ import type { Place } from '../../behaviors/Movable/Movable';
 import { usePlaceStore } from '../../behaviors/Movable/places';
 import type { DeskWood } from '../../components/3D/Desk/Desk';
 import type { DeskLampEnamel } from '../../components/3D/DeskLamp/DeskLamp';
-import { DESK_DEPTH, ROOM_LAMP, Room, useRoomCamera } from '../../foundations/Room/Room';
+import { DESK_DEPTH, ROOM_LAMP, Room, useRoomCamera, type RoomProps } from '../../foundations/Room/Room';
 import { ROOM_DESK_SHARE, ROOM_LIP } from '../../foundations/Room/DeskRoom';
 import type { FloorWood } from '../../components/3D/Floor/Floor';
 import type { WallFinish } from '../../components/3D/Wall/Wall';
@@ -16,7 +16,8 @@ import './PerspectiveDesk.css';
 
 export { DESK_DEPTH } from '../../foundations/Room/Room';
 
-export type PerspectiveDeskProps = {
+export type RoomControls = Pick<RoomProps, 'cameraMode' | 'deskWidthMm' | 'deskDepthMm' | 'deskHeightMm' | 'deskEdgeMm' | 'eyeHeightMm' | 'viewerSetbackMm' | 'roomSpanMm' | 'floorFrontMm' | 'wallHeightMm' | 'lampIntensity' | 'lightTuning'>;
+export type PerspectiveDeskProps = RoomControls & {
   objectPlacements?: ObjectPlacements;
   showObjects?: boolean;
   /** Which things are on the desk, by id. Left out, all of them are. A bench that wants
@@ -74,8 +75,13 @@ function Objects({ only }: { only?: readonly string[] }) {
   return <DeskObjects camera={useRoomCamera()} only={only} />;
 }
 
+function ObjectShadows({ only }: { only?: readonly string[] }) {
+  const camera = useRoomCamera();
+  return <DeskObjectShadows height={camera.surfaceHeight} surfaceWidth={camera.width} only={only} />;
+}
+
 /** The main desk composition: the room, and the promoter's things on the desk in it. */
-export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, showObjects = true, only, showSettings = true, onCaptureSettings, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', onArticulate, angle = GENTLE_VIEW, depth = GENTLE_DEPTH, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArrange, children }: PerspectiveDeskProps) {
+export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, showObjects = true, only, showSettings = true, onCaptureSettings, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', onArticulate, angle = GENTLE_VIEW, depth = GENTLE_DEPTH, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArrange, children, ...roomControls }: PerspectiveDeskProps) {
   /*
     Where everything lies is a store rather than state, and it is this page's
     rather than the room's, because this page is what has things to place and
@@ -101,7 +107,7 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
   const [on, setOn] = useState(lamp);
   useEffect(() => { setOn(lamp); }, [lamp]);
 
-  const capture = () => ({ angle, depth, wood, room, floor, wall, roomBlur, roomDim, deskShare, roomLip, lamp: on, shadowStrength, lampX: places.get(ROOM_LAMP)?.x, lampY: places.get(ROOM_LAMP)?.y, lampRotation: places.get(ROOM_LAMP)?.rotation, lampWidth, lampEnamel, lampLowerAngle: posed.current.lower, lampUpperAngle: posed.current.upper, objectPlacements: places.all(), showObjects });
+  const capture = () => ({ ...roomControls, angle, depth, wood, room, floor, wall, roomBlur, roomDim, deskShare, roomLip, lamp: on, shadowStrength, lampX: places.get(ROOM_LAMP)?.x, lampY: places.get(ROOM_LAMP)?.y, lampRotation: places.get(ROOM_LAMP)?.rotation, lampWidth, lampEnamel, lampLowerAngle: posed.current.lower, lampUpperAngle: posed.current.upper, objectPlacements: places.all(), showObjects });
 
   return <main className="perspective-desk-room" aria-label="Perspective desk">
     {showSettings && <aside className="perspective-desk__settings">
@@ -116,6 +122,7 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
       {exported && <details open><summary>Desk settings JSON</summary><textarea aria-label="Desk settings JSON" readOnly value={exported} onFocus={event => event.currentTarget.select()} /><button onClick={() => setExported('')}>Close</button></details>}
     </aside>}
     <Room
+      {...roomControls}
       places={places}
       angle={angle}
       depth={depth}
@@ -139,7 +146,7 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
       onLamp={next => { setOn(next); onLamp?.(next); }}
       onArticulate={angles => { posed.current = angles; onArticulate?.(angles); }}
       onArrange={onArrange}
-      shadows={showObjects && <DeskObjectShadows height={DESK_DEPTH} only={only} />}
+      shadows={showObjects && <ObjectShadows only={only} />}
     >
       {showObjects && <Objects only={only} />}
       {children}

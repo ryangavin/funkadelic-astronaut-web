@@ -134,13 +134,13 @@ function PenRelief({ place, placeId, camera, width }: { place: Place; placeId?: 
   thing redraws one shadow rather than all of them. The light is still context,
   so every shadow does move together when the lamp does.
 */
-const ObjectShadow = memo(function ObjectShadow({ object, place, height }: { object: ObjectSpec; place: Place; height: number }) {
+const ObjectShadow = memo(function ObjectShadow({ object, place, height, surfaceWidth }: { surfaceWidth?: number; object: ObjectSpec; place: Place; height: number }) {
   /* Its size at a scale of one: whatever the thing has been grown to is read off
      its place, in the caster, where a drag can reach it without a render. */
   const size = { width: object.width, depth: object.width * object.ratio, heightMm: object.height };
   /* Counted apart from the thing itself: a shadow that rebuilds when its object
      moves is a different fact from the object rebuilding, and they want different fixes. */
-  return <Tallied id={`${object.name} — shadow`}><StudyLighting shadowOnly surfaceHeight={height} place={place} placeId={object.id} pivot={pivotOf(object)} width={size.width} depth={size.depth} heightMm={size.heightMm} shapes={object.shapes ?? [{ path: ROUND_CASE }] as StudyShape[]} /></Tallied>;
+  return <Tallied id={`${object.name} — shadow`}><StudyLighting shadowOnly surfaceWidth={surfaceWidth} surfaceHeight={height} place={place} placeId={object.id} pivot={pivotOf(object)} width={size.width} depth={size.depth} heightMm={size.heightMm} shapes={object.shapes ?? [{ path: ROUND_CASE }] as StudyShape[]} /></Tallied>;
 });
 
 /** Which things are on the desk at all: everything, or the few named. */
@@ -151,9 +151,9 @@ const chosen = (only?: readonly string[]) => (only ? DESK_OBJECTS.filter(object 
   and writes itself, so this renders once and then sits still however much is
   dragged about over it.
 */
-export function DeskObjectShadows({ height, only }: { height: number; only?: readonly string[] }) {
+export function DeskObjectShadows({ height, surfaceWidth, only }: { surfaceWidth?: number; height: number; only?: readonly string[] }) {
   return <>{chosen(only).filter(object => !object.flat).map(object =>
-    <ObjectShadow key={object.id} object={object} place={DEFAULT_OBJECT_PLACEMENTS[object.id] ?? object.place} height={height} />)}</>;
+    <ObjectShadow surfaceWidth={surfaceWidth} key={object.id} object={object} place={DEFAULT_OBJECT_PLACEMENTS[object.id] ?? object.place} height={height} />)}</>;
 }
 
 /*

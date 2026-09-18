@@ -1,3 +1,5 @@
+import { checkPhysicalRoom } from '../../debug/RoomControls/check';
+import { physicalControls, physicalDefaults, withLightTuning, RoomExperiment, type RoomStoryControls } from '../../debug/RoomControls/controls';
 import { DESK_OBJECTS, DEFAULT_OBJECT_PLACEMENTS } from './DeskObjects';
 import { DESK_SIZE, PAPER_MM, mmToUnits } from '../../geometry/physicalScale';
 import { useArgs } from 'storybook/preview-api';
@@ -9,7 +11,7 @@ import { GENTLE_DEPTH, GENTLE_VIEW } from '../../behaviors/Perspective/Perspecti
 import { DESK_WOODS } from '../../components/3D/Desk/Desk';
 import { FLOOR_WOODS } from '../../components/3D/Floor/Floor';
 import { WALL_FINISHES } from '../../components/3D/Wall/Wall';
-import { PerspectiveDesk } from './PerspectiveDesk';
+import { PerspectiveDesk, type PerspectiveDeskProps } from './PerspectiveDesk';
 
 const initialAngles = lampPoseAngles(articulateLamp({ x: 200, y: 420 }));
 
@@ -19,29 +21,30 @@ const meta = {
   parameters: { layout: 'fullscreen' },
   render: function Render(args) {
     const [, updateArgs] = useArgs();
-    return <PerspectiveDesk {...args} onCaptureSettings={settings => updateArgs(settings)} />;
+    return <PerspectiveDesk {...withLightTuning(args)} onCaptureSettings={settings => updateArgs({ ...settings, ...settings.lightTuning })} />;
   },
   tags: ['autodocs'],
   argTypes: {
-    angle: { table: { category: 'Camera' }, control: { type: 'range', min: 78, max: 90, step: 1 } },
-    depth: { table: { category: 'Camera' }, control: { type: 'range', min: 4000, max: 12000, step: 100 } },
+    ...physicalControls,
+    angle: { table: { category: 'Camera' }, control: { type: 'number', step: 1 } },
+    depth: { table: { category: 'Camera' }, control: { type: 'number', step: 100 } },
     wood: { table: { category: 'Desktop' }, control: 'inline-radio', options: DESK_WOODS },
     room: { table: { category: 'Room' }, control: 'boolean' },
     floor: { table: { category: 'Room' }, control: 'inline-radio', options: FLOOR_WOODS },
     wall: { table: { category: 'Room' }, control: 'inline-radio', options: WALL_FINISHES },
-    deskShare: { table: { category: 'Room' }, control: { type: 'range', min: 0.6, max: 1, step: 0.01 } },
-    roomLip: { table: { category: 'Room' }, control: { type: 'range', min: 0, max: 300, step: 5 } },
-    roomBlur: { table: { category: 'Room' }, control: { type: 'range', min: 0, max: 3, step: 0.1 } },
+    deskShare: { table: { category: 'Room' }, control: { type: 'number', step: 0.01 } },
+    roomLip: { table: { category: 'Room' }, control: { type: 'number', step: 5 } },
+    roomBlur: { table: { category: 'Room' }, control: { type: 'number', step: 0.1 } },
     roomDim: { table: { category: 'Room' }, control: { type: 'range', min: 0, max: 1, step: 0.02 } },
     shadowStrength: { table: { category: 'Lighting' }, control: { type: 'range', min: 0, max: 1, step: .01 } },
     lamp: { control: 'boolean', table: { category: 'Lighting' } },
     lampX: { control: { type: 'number', step: 1 }, table: { category: 'Lamp placement' } },
     lampY: { control: { type: 'number', step: 1 }, table: { category: 'Lamp placement' } },
-    lampRotation: { control: { type: 'range', min: -180, max: 180, step: .1 }, table: { category: 'Lamp placement' } },
-    lampWidth: { control: { type: 'range', min: 240, max: 1440, step: 1 }, table: { category: 'Lamp appearance' } },
+    lampRotation: { control: { type: 'number', step: .1 }, table: { category: 'Lamp placement' } },
+    lampWidth: { control: { type: 'number', step: 1 }, table: { category: 'Lamp appearance' } },
     lampEnamel: { control: 'inline-radio', options: DESK_LAMP_ENAMELS, table: { category: 'Lamp appearance' } },
-    lampLowerAngle: { control: { type: 'range', min: -180, max: 180, step: .1 }, description: 'Lower arm angle in the lamp’s local drawing. Use Sync story controls to capture the current dragged pose.', table: { category: 'Lamp articulation' } },
-    lampUpperAngle: { control: { type: 'range', min: -180, max: 180, step: .1 }, description: 'Upper arm angle; stored separately to preserve the exact elbow bend.', table: { category: 'Lamp articulation' } },
+    lampLowerAngle: { control: { type: 'number', step: .1 }, description: 'Lower arm angle in the lamp’s local drawing. Use Sync story controls to capture the current dragged pose.', table: { category: 'Lamp articulation' } },
+    lampUpperAngle: { control: { type: 'number', step: .1 }, description: 'Upper arm angle; stored separately to preserve the exact elbow bend.', table: { category: 'Lamp articulation' } },
     objectPlacements: { control: 'object', table: { category: 'Desk objects' } },
     showObjects: { control: 'boolean', table: { category: 'Desk objects' } },
     showSettings: { control: 'boolean', table: { category: 'Layout tools' } },
@@ -51,8 +54,8 @@ const meta = {
     onArticulate: { table: { disable: true } },
     onLamp: { table: { disable: true } },
   },
-  args: { angle: GENTLE_VIEW, depth: GENTLE_DEPTH, wood: 'walnut', lamp: true, shadowStrength: .36, lampX: 770, lampY: 100, lampRotation: 0, lampWidth: 576, lampEnamel: 'green', lampLowerAngle: initialAngles.lower, lampUpperAngle: initialAngles.upper, onArrange: fn(), onArticulate: fn(), onLamp: fn() },
-} satisfies Meta<typeof PerspectiveDesk>;
+  args: { ...physicalDefaults, angle: GENTLE_VIEW, depth: GENTLE_DEPTH, wood: 'walnut', lamp: true, shadowStrength: .36, lampX: 770, lampY: 100, lampRotation: 0, lampWidth: 576, lampEnamel: 'green', lampLowerAngle: initialAngles.lower, lampUpperAngle: initialAngles.upper, onArrange: fn(), onArticulate: fn(), onLamp: fn() },
+} satisfies Meta<PerspectiveDeskProps & RoomStoryControls>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -194,4 +197,13 @@ export const Desk: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Turn the lamp on' }));
     head.blur();
   }
+};
+
+/** A populated experiment; all numeric ranges are yours to explore. */
+export const PhysicalSetup: Story = {
+  play: checkPhysicalRoom,
+  args: { cameraMode: 'physical', eyeHeightMm: 1650, viewerSetbackMm: 650, deskShare: 0.8, roomLip: 180 },
+  render: function Experiment(args) {
+    return <RoomExperiment args={args}>{values => <PerspectiveDesk {...withLightTuning(values)} showSettings={false} only={['mug', 'pen', 'handheld', 'cradle']} />}</RoomExperiment>;
+  },
 };

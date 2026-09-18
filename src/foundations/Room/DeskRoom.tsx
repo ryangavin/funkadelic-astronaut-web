@@ -1,3 +1,4 @@
+import { DEFAULT_LIGHT_TUNING } from '../../geometry/lightingSetup';
 import { DESK_SIZE, mmToUnits } from '../../geometry/physicalScale';
 import type React from 'react';
 import { memo, useId, useRef, type Ref } from 'react';
@@ -73,6 +74,10 @@ export type DeskRoomProps = {
   deskShare?: number;
   /** How deep the desk top is, front edge to the wall, in desk units. */
   deskDepth?: number;
+  deskWidth?: number;
+  span?: number;
+  front?: number;
+  wallHeight?: number;
   /** How high the desk top stands off the boards, in desk units. */
   stand?: number;
   /** How far the frame reaches below the desk's front edge, in desk units on the screen. */
@@ -166,10 +171,10 @@ function SoftShape({ outline, spread, weight, className, ref }: { outline: Point
   </g>;
 }
 
-function DeskFloorShadow({ deskDepth, stand, floorDepth, strength }: { deskDepth: number; stand: number; floorDepth: number; strength: number }) {
+function DeskFloorShadow({ deskWidth, span, deskDepth, stand, floorDepth, strength }: { deskWidth: number; span: number; deskDepth: number; stand: number; floorDepth: number; strength: number }) {
   const id = `desk-floor-shadow-${useId().replace(/:/g, '')}`;
-  const x0 = (ROOM_SPAN - DESK_WIDTH) / 2;
-  const foot = { x: x0, y: 0, w: DESK_WIDTH, h: deskDepth };
+  const x0 = (span - deskWidth) / 2;
+  const foot = { x: x0, y: 0, w: deskWidth, h: deskDepth };
   const corners = [
     { x: foot.x, y: foot.y },
     { x: foot.x + foot.w, y: foot.y },
@@ -199,6 +204,8 @@ function DeskFloorShadow({ deskDepth, stand, floorDepth, strength }: { deskDepth
       switched.current = on;
       for (const group of [halo.current, core.current, bulbPool.current]) group?.setAttribute('opacity', on ? '1' : '0');
     }
+    bulbPool.current?.style.setProperty('filter', `brightness(${light?.intensity ?? 1})`);
+    bulbPool.current?.style.setProperty('visibility', light?.intensity === 0 ? 'hidden' : '');
     if (!light || !on) return;
     /*
       The same projection every object on the desk casts by, with the desk top as
@@ -211,7 +218,7 @@ function DeskFloorShadow({ deskDepth, stand, floorDepth, strength }: { deskDepth
       desk and there is still a shadow off its left side, a short one, which a
       shadow pushed out by distance alone could never give.
     */
-    const ratio = Math.min(3, stand / Math.max(1, light.height)) * THROW_TEMPER;
+    const ratio = Math.min(light.tuning?.floorShadowLimit ?? DEFAULT_LIGHT_TUNING.floorShadowLimit, stand / Math.max(1, light.height)) * (light.tuning?.floorShadowTemper ?? THROW_TEMPER);
     const bulb = { x: x0 + light.x, y: light.y };
     const thrown = corners.map(c => ({ x: bulb.x + (c.x - bulb.x) * (1 + ratio), y: bulb.y + (c.y - bulb.y) * (1 + ratio) }));
     for (const [group, spread] of [[halo.current, 0.24], [core.current, 0.11]] as const) {
@@ -219,7 +226,7 @@ function DeskFloorShadow({ deskDepth, stand, floorDepth, strength }: { deskDepth
       ringsOf(thrown, spread).forEach((ring, index) => (group.children[index] as SVGPolygonElement | undefined)?.setAttribute('points', points(ring)));
     }
     /* How far the light gets across the boards: the bulb's height over them, and a little. */
-    const pool = (light.height + stand) * 1.1;
+    const pool = (light.height + stand) * (light.tuning?.floorPoolSpread ?? DEFAULT_LIGHT_TUNING.floorPoolSpread);
     for (const [name, value] of [['cx', bulb.x], ['cy', bulb.y], ['r', pool]] as const) {
       bulbPool.current?.setAttribute(name, String(value));
       poolStops.current?.setAttribute(name, String(value));
@@ -227,7 +234,7 @@ function DeskFloorShadow({ deskDepth, stand, floorDepth, strength }: { deskDepth
   });
 
   return (
-    <svg className="desk-room__shadow" viewBox={`0 0 ${ROOM_SPAN} ${floorDepth}`} preserveAspectRatio="none" aria-hidden="true">
+    <svg className="desk-room__shadow" viewBox={`0 0 ${span} ${floorDepth}`} preserveAspectRatio="none" aria-hidden="true">
       <defs>
         <radialGradient ref={poolStops} id={`${id}-pool`} gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1">
           <stop offset="0" stopColor="#ffd9a3" stopOpacity="0.5" />
@@ -293,9 +300,9 @@ function DeskFloorShadow({ deskDepth, stand, floorDepth, strength }: { deskDepth
   Held, the room renders when the room changes. The lamp still moves the shadow,
   through the light store, which is what the store is for.
 */
-export const DeskRoom = memo(function DeskRoom({ angle, depth, deskShare = ROOM_DESK_SHARE, deskDepth = ROOM_DESK_DEPTH, stand = DESK_STAND, lip = ROOM_LIP, floor = 'pine', wall = 'red', blur = 1, dim = 0.32, shadowStrength = 0.36 }: DeskRoomProps) {
+export const DeskRoom = memo(function DeskRoom({ angle, depth, deskShare = ROOM_DESK_SHARE, deskWidth = DESK_WIDTH, span = ROOM_SPAN, front = FLOOR_FRONT, wallHeight = WALL_HEIGHT, deskDepth = ROOM_DESK_DEPTH, stand = DESK_STAND, lip = ROOM_LIP, floor = 'pine', wall = 'red', blur = 1, dim = 0.32, shadowStrength = 0.36 }: DeskRoomProps) {
   const { back, down } = floorLies(angle, stand);
-  const floorDepth = deskDepth + FLOOR_FRONT;
+  const floorDepth = deskDepth + front;
   return (
     <div
       className="desk-room"
@@ -303,6 +310,7 @@ export const DeskRoom = memo(function DeskRoom({ angle, depth, deskShare = ROOM_
       style={
         {
           '--desk-room-share': deskShare,
+          '--desk-room-width': deskWidth,
           '--desk-room-eye': depth,
           '--desk-room-tilt': `${90 - angle}deg`,
           '--desk-room-stand': stand,
@@ -310,8 +318,8 @@ export const DeskRoom = memo(function DeskRoom({ angle, depth, deskShare = ROOM_
           '--desk-room-down': down,
           '--desk-room-lip': lip,
           '--desk-room-depth': deskDepth,
-          '--desk-room-front': FLOOR_FRONT,
-          '--desk-room-span': ROOM_SPAN,
+          '--desk-room-front': front,
+          '--desk-room-span': span,
           '--desk-room-blur': blur,
           '--desk-room-dim': dim,
         } as React.CSSProperties
@@ -320,15 +328,15 @@ export const DeskRoom = memo(function DeskRoom({ angle, depth, deskShare = ROOM_
       {/* The boards: the desk top's plane a desk's height down, running from in front of the desk back to the wall. */}
       <div className="desk-room__layer desk-room__layer--floor">
         <div className="desk-room__floor">
-          <Floor wood={floor} width={ROOM_SPAN} height={floorDepth} lay="across" board={FLOOR_COURSE} run={FLOOR_RUN} light={0} />
-          <DeskFloorShadow deskDepth={deskDepth} stand={stand} floorDepth={floorDepth} strength={shadowStrength} />
+          <Floor wood={floor} width={span} height={floorDepth} lay="across" board={FLOOR_COURSE} run={FLOOR_RUN} light={0} />
+          <DeskFloorShadow deskWidth={deskWidth} span={span} deskDepth={deskDepth} stand={stand} floorDepth={floorDepth} strength={shadowStrength} />
         </div>
       </div>
 
       {/* The brick, stood up on the boards where they stop, its bottom courses behind the desk. */}
       <div className="desk-room__layer desk-room__layer--wall">
         <div className="desk-room__wall">
-          <Wall finish={wall} width={ROOM_SPAN} height={WALL_HEIGHT} flat light={0} />
+          <Wall finish={wall} width={span} height={wallHeight} flat light={0} />
         </div>
       </div>
 

@@ -1,0 +1,52 @@
+import { expect, fireEvent, userEvent, waitFor, within } from 'storybook/test';
+
+/** Exercise real controls and placements, including recovery from invalid geometry. */
+export async function checkPhysicalRoom({ canvasElement }: { canvasElement: HTMLElement }) {
+  const canvas = within(canvasElement);
+  const input = (label: string, value: string) => fireEvent.change(canvas.getByRole('spinbutton', { name: label }), { target: { value } });
+  const room = () => canvasElement.querySelector<HTMLElement>('.room')!;
+  const camera = () => canvasElement.querySelector<HTMLElement>('.perspective')!;
+  const pool = () => canvasElement.querySelector<HTMLElement>('.lamp-light')!;
+  await waitFor(() => expect(pool().style.width).not.toBe(''));
+  input('Desk width (mm)', '1600');
+  await waitFor(() => expect(camera().style.getPropertyValue('--perspective-width')).toBe('1920'));
+  input('Desk depth (mm)', '1000');
+  await waitFor(() => expect(canvasElement.querySelector('.desk-study__shadow')).toHaveAttribute('viewBox', '0 0 1920 1200'));
+  expect(canvasElement.querySelector('.desk-study__shadow')).toHaveAttribute('viewBox', '0 0 1920 1200');
+  expect(canvasElement.querySelector('.lamp-cast-shadow')).toHaveAttribute('viewBox', '0 0 1920 1200');
+  const mug = canvas.getByRole('group', { name: /^Mug$/ });
+  const desk = canvasElement.querySelector<HTMLElement>('.desk')!;
+  const physicalWidth = () => parseFloat(getComputedStyle(mug).width) / parseFloat(getComputedStyle(desk).width) * 1920;
+  expect(physicalWidth()).toBeCloseTo(168, 0);
+  const before = Number(mug.style.getPropertyValue('--movable-x'));
+  mug.focus();
+  await userEvent.keyboard('{ArrowRight}{ArrowRight}');
+  expect(Number(mug.style.getPropertyValue('--movable-x'))).toBe(before + 20);
+  input('Setback (mm)', '0');
+  await waitFor(() => expect(Number(camera().style.getPropertyValue('--perspective-angle'))).toBe(90));
+  const position = Number(mug.style.getPropertyValue('--movable-x'));
+  const box = mug.getBoundingClientRect();
+  const pointer = { pointerId: 1, button: 0, buttons: 1, clientX: box.left + box.width / 2, clientY: box.top + box.height / 2 };
+  fireEvent.pointerDown(mug, pointer);
+  fireEvent.pointerMove(mug, { ...pointer, clientX: pointer.clientX + 40 });
+  fireEvent.pointerUp(mug, { ...pointer, buttons: 0, clientX: pointer.clientX + 40 });
+  await waitFor(() => expect(Number(mug.style.getPropertyValue('--movable-x'))).toBeGreaterThan(position));
+  input('Eye height (mm)', '850');
+  await waitFor(() => expect(canvasElement.querySelector('.room__diagnostic')).toHaveTextContent('100.0 mm'));
+  for (const node of canvasElement.querySelectorAll('[style], [transform]'))
+    expect(`${node.getAttribute('style')} ${node.getAttribute('transform')}`).not.toMatch(/NaN|Infinity/);
+  input('Eye height (mm)', '700');
+  await expect(canvas.getByRole('alert')).toHaveTextContent('eye height above tabletop');
+  input('Eye height (mm)', '1650');
+  await waitFor(() => expect(room()).not.toBeNull());
+  input('Light intensity', '0');
+  await waitFor(() => expect(pool().style.visibility).toBe('hidden'));
+  expect(canvasElement.querySelector<SVGCircleElement>('.desk-room__pool')!.style.visibility).toBe('hidden');
+  input('Light intensity', '3');
+  await waitFor(() => expect(pool().style.filter).toBe('brightness(3)'));
+  const size = parseFloat(pool().style.width);
+  input('Pool spread', '2.8');
+  await waitFor(() => expect(parseFloat(pool().style.width)).toBeCloseTo(size * 2, 5));
+  input('Setback (mm)', '650');
+  await waitFor(() => expect(Number(camera().style.getPropertyValue('--perspective-angle'))).toBeCloseTo(54.1623, 3));
+}

@@ -38,7 +38,7 @@
   --desk-room-blur: 1;
   --desk-room-dim: 0.32;
   /* A desk unit, in the frame: the desk is 1440 of them across its share of the width. */
-  --desk-room-unit: calc(var(--desk-room-share) * 100cqw / 1440);
+  --desk-room-unit: calc(var(--desk-room-share) * 100cqw / var(--desk-room-width, 1440));
   /* Where the hinge is: the desk's front edge, a lip up from the frame's bottom. */
   --desk-room-hinge: calc(var(--desk-room-lip) * var(--desk-room-unit));
   /* The floor's place: back and down from the desk top, then tipped like it. */

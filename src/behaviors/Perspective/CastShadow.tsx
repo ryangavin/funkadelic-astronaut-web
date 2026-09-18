@@ -1,3 +1,4 @@
+import { DEFAULT_LIGHT_TUNING } from '../../geometry/lightingSetup';
 import { useId, useRef } from 'react';
 import { DESK_SIZE, mmToUnits } from '../../geometry/physicalScale';
 import { type Place } from '../Movable/Movable';
@@ -19,6 +20,7 @@ const SHADOW_SLICES = 16;
 
 export type ShadowPlacement = {
   surfaceHeight: number;
+  surfaceWidth?: number;
   /** Where the thing is, for the first drawing of it. With a placeId, where it goes after that is the store's. */
   place: Place;
   /** What the thing is called in the surface's places. Given one, the shadow follows it without re-rendering. */
@@ -41,7 +43,7 @@ export type ShadowPlacement = {
  * silhouette scaled about the lamp's position, which is the one thing here that
  * depends on the light.
  */
-export function ObjectCastShadow({ place, placeId, pivot = { x: 0.5, y: 0.5 }, width, depth, shapes, heightMm, surfaceHeight }: ShadowPlacement) {
+export function ObjectCastShadow({ place, placeId, pivot = { x: 0.5, y: 0.5 }, width, depth, shapes, heightMm, surfaceHeight, surfaceWidth = DESK_SIZE.width }: ShadowPlacement) {
   const id = `study-shadow-${useId().replace(/:/g, '')}`;
   const cast = useRef<SVGGElement>(null);
   const stack = useRef<SVGGElement>(null);
@@ -83,7 +85,7 @@ export function ObjectCastShadow({ place, placeId, pivot = { x: 0.5, y: 0.5 }, w
     if (!light) { group.setAttribute('opacity', '0'); return; }
     const grown = here.scale ?? 1;
     const cx = here.x + width * grown / 2, cy = here.y + depth * grown / 2;
-    group.setAttribute('opacity', String(light.on ? (light.shadowStrength ?? DEFAULT_SHADOW_STRENGTH) / (1 + (Math.hypot(cx - light.x, cy - light.y) / 1000) ** 2) : 0));
+    group.setAttribute('opacity', String(light.on ? (light.shadowStrength ?? DEFAULT_SHADOW_STRENGTH) / (1 + (Math.hypot(cx - light.x, cy - light.y) / (light.tuning?.shadowAttenuation ?? DEFAULT_LIGHT_TUNING.shadowAttenuation)) ** 2) : 0));
   };
   const slices = () => {
     const stacked = stack.current, light = lit.current;
@@ -95,7 +97,7 @@ export function ObjectCastShadow({ place, placeId, pivot = { x: 0.5, y: 0.5 }, w
     for (const shape of shapes) {
       for (let index = 0; index < SHADOW_SLICES; index += 1) {
         const height = mmToUnits((shape.heightMm ?? heightMm) * grown) * index / (SHADOW_SLICES - 1);
-        const scale = Math.min(4, light.height / Math.max(1, light.height - height));
+        const scale = Math.min(light.tuning?.shadowScaleLimit ?? DEFAULT_LIGHT_TUNING.shadowScaleLimit, light.height / Math.max(1, light.height - height));
         (stacked.children[n] as SVGGElement | undefined)?.setAttribute('transform', `translate(${light.x} ${light.y}) scale(${scale}) translate(${-light.x} ${-light.y})`);
         n += 1;
       }
@@ -123,7 +125,7 @@ export function ObjectCastShadow({ place, placeId, pivot = { x: 0.5, y: 0.5 }, w
     if ((at.current.scale ?? 1) !== drawn.current) slices();
   });
 
-  return <svg className="desk-study__shadow" viewBox={`0 0 ${DESK_SIZE.width} ${surfaceHeight}`} aria-hidden="true">
+  return <svg className="desk-study__shadow" viewBox={`0 0 ${surfaceWidth} ${surfaceHeight}`} aria-hidden="true">
     <defs><filter id={id} x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="5" /></filter></defs>
     {/* Dark until the lamp says otherwise, so an unlit desk never flashes a shadow on its first frame. */}
     <g className="desk-study__cast" ref={cast} opacity="0">
@@ -137,10 +139,10 @@ export function ObjectCastShadow({ place, placeId, pivot = { x: 0.5, y: 0.5 }, w
 }
 
 /** The pool the lamp throws and its own cast arm, for a scene that owns its lamp. */
-function LampPoolLayers({ surfaceHeight }: { surfaceHeight: number }) {
+function LampPoolLayers({ surfaceHeight, surfaceWidth }: { surfaceHeight: number; surfaceWidth: number }) {
   return <>
-    <LampPool surfaceWidth={DESK_SIZE.width} surfaceHeight={surfaceHeight} />
-    <LampShadows surfaceHeight={surfaceHeight} />
+    <LampPool surfaceWidth={surfaceWidth} surfaceHeight={surfaceHeight} />
+    <LampShadows surfaceWidth={surfaceWidth} surfaceHeight={surfaceHeight} />
   </>;
 }
 
@@ -150,9 +152,9 @@ function LampPoolLayers({ surfaceHeight }: { surfaceHeight: number }) {
  * re-renders when the lamp moves; each piece below subscribes for only what it
  * actually needs.
  */
-export function StudyLighting({ place, placeId, pivot = { x: 0.5, y: 0.5 }, width, depth, shapes, heightMm, surfaceHeight, shadowOnly = false }: { shadowOnly?: boolean; surfaceHeight: number; place: Place; placeId?: string; pivot?: { x: number; y: number }; width: number; depth: number; shapes: StudyShape[]; heightMm: number }) {
+export function StudyLighting({ place, placeId, pivot = { x: 0.5, y: 0.5 }, width, depth, shapes, heightMm, surfaceHeight, surfaceWidth = DESK_SIZE.width, shadowOnly = false }: { surfaceWidth?: number; shadowOnly?: boolean; surfaceHeight: number; place: Place; placeId?: string; pivot?: { x: number; y: number }; width: number; depth: number; shapes: StudyShape[]; heightMm: number }) {
   return <>
-    {!shadowOnly && <LampPoolLayers surfaceHeight={surfaceHeight} />}
-    <ObjectCastShadow place={place} placeId={placeId} pivot={pivot} width={width} depth={depth} shapes={shapes} heightMm={heightMm} surfaceHeight={surfaceHeight} />
+    {!shadowOnly && <LampPoolLayers surfaceWidth={surfaceWidth} surfaceHeight={surfaceHeight} />}
+    <ObjectCastShadow surfaceWidth={surfaceWidth} place={place} placeId={placeId} pivot={pivot} width={width} depth={depth} shapes={shapes} heightMm={heightMm} surfaceHeight={surfaceHeight} />
   </>;
 }
