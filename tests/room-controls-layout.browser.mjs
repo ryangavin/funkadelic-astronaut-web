@@ -8,7 +8,7 @@ const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage();
   for (const story of ['debug-scale-bench', 'foundations-room', 'pages-perspective-desk']) {
-    for (const viewport of [{ width: 1280, height: 800 }, { width: 1000, height: 600 }, { width: 390, height: 844 }]) {
+    for (const viewport of [{ width: 1280, height: 800 }, { width: 1000, height: 600 }, { width: 583, height: 460 }, { width: 390, height: 844 }]) {
       await page.setViewportSize(viewport);
       await page.goto(`${origin}/storybook/iframe.html?id=${story}--physical-setup&viewMode=story`);
       const scene = page.locator('.room-controls__scene .room');
@@ -16,9 +16,9 @@ try {
       await scene.waitFor();
       const before = await scene.boundingBox();
       const controls = await sidebar.boundingBox();
-      assert.ok(before.width >= (viewport.width > 700 ? 400 : 350), 'Preview remains usefully sized');
+      assert.ok(before.width >= (viewport.width > 700 ? 400 : viewport.width > 520 ? 340 : 350), 'Preview remains usefully sized');
       assert.ok(before.y + before.height <= viewport.height + 1, 'Scene fits in the viewport');
-      if (viewport.width > 700) assert.ok(controls.x + controls.width <= before.x + 1, 'Desktop controls sit beside the scene');
+      if (viewport.width > 520) assert.ok(controls.x + controls.width <= before.x + 1, 'Desktop controls sit beside the scene');
       else assert.ok(controls.y >= before.y + before.height, 'Narrow controls sit below the scene');
       await sidebar.evaluate(element => { element.scrollTop = element.scrollHeight; });
       assert.ok(await sidebar.evaluate(element => element.scrollTop > 0), 'Controls scroll independently');
