@@ -72,7 +72,7 @@ test('A held thing is the only thing you can reach, and every control on it is s
 
 test('The desk says which of its things are worth looking at, and draws a held one over everything else', () => {
   const objects = read('src/pages/Desk/DeskObjects.tsx');
-  const desk = read('src/pages/Desk/PerspectiveDesk.tsx');
+  const room = read('src/foundations/Room/Room.tsx');
 
   // A sheet is there to be read and comes up square on; a machine comes up the way it was lying.
   assert.match(objects, /const READ: Inspect = \{ fill: 0\.9 \};/);
@@ -91,7 +91,9 @@ test('The desk says which of its things are worth looking at, and draws a held o
   assert.match(objects, /z=\{held \? INSPECT_LAYER : layer\}/);
   assert.match(objects, /\{object\.inspect \? <Inspectable id=\{object\.id\} \{\.\.\.object\.inspect\}>\{drawing\}<\/Inspectable> : drawing\}/);
 
-  // The frame is the stage a thing is brought to the middle of; the veil is drawn on the desk itself.
-  assert.match(desk, /<Inspector className="perspective-desk__frame"/);
-  assert.match(desk, /<InspectorVeil \/>/);
+  // The frame is the stage a thing is brought to the middle of; the veil is drawn on the surface itself.
+  // Both belong to the room, which is the thing with a frame to bring something to the middle of —
+  // the desk page only says which of the things standing in it are worth looking at.
+  assert.match(room, /<Inspector className=\{`room /);
+  assert.match(room, /<InspectorVeil \/>/);
 });
