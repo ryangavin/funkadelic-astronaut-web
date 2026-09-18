@@ -24,6 +24,7 @@ try {
       await fps.check();
       await page.getByRole('group', { name: 'Animation frame timing' }).waitFor();
       await fps.uncheck();
+      await page.getByRole('group', { name: 'Animation frame timing' }).waitFor({ state: 'detached', timeout: 5000 });
       assert.equal(await page.getByRole('group', { name: 'Animation frame timing' }).count(), 0, 'FPS unmounts when disabled');
       const controls = await sidebar.boundingBox();
       assert.ok(before.width >= (viewport.width > 700 ? 400 : viewport.width > 520 ? 340 : 350), 'Preview remains usefully sized');
@@ -37,9 +38,14 @@ try {
       const width = page.getByRole('spinbutton', { name: 'Desk width (mm)', exact: true });
       await width.fill('3400');
       await width.blur();
+      const inches = page.getByLabel('Desk width (mm) inches', { exact: true });
+      const slider = page.getByRole('slider', { name: 'Desk width (mm) slider', exact: true });
+      // React may commit derived readouts after the input event returns.
+      await page.waitForFunction(element => element.textContent === '133.86 in', await inches.elementHandle(), { timeout: 5000 });
+      await page.waitForFunction(element => element.value === '3000', await slider.elementHandle(), { timeout: 5000 });
       assert.equal(await width.inputValue(), '3400', 'Typed dimensions remain unrestricted');
-      assert.equal(await page.getByLabel('Desk width (mm) inches', { exact: true }).textContent(), '133.86 in');
-      assert.equal(await page.getByRole('slider', { name: 'Desk width (mm) slider', exact: true }).inputValue(), '3000');
+      assert.equal(await inches.textContent(), '133.86 in');
+      assert.equal(await slider.inputValue(), '3000');
       console.log(`PASS ${story} ${viewport.width}×${viewport.height}`);
     }
   }
