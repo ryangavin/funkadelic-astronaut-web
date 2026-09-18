@@ -181,8 +181,24 @@
   filter: none;
 }
 
+/*
+  The waveform scrolling across the screen, and the one thing on this desk that
+  is never not drawing.
+
+  It is an SVG group being translated, which Chrome will not put on a layer of
+  its own unless it is told to, so without `will-change` the whole of this
+  screen — two stroked paths, one of them blurred — is painted again every frame
+  for as long as the handheld is on the desk. That costs nothing you can see:
+  the desk at rest measures one refresh either way. What it costs is headroom,
+  and the largest drag on the desk is the one thing with none to spare — the
+  band dossier ran at sixty for the first half second of being moved and then
+  settled at forty-five, and hiding this one animation took it back to sixty for
+  the whole drag. Asking for the layer is honest here: this really is being
+  transformed, sixty times a second, forever.
+*/
 .handheld__wave-band {
   animation: handheld-drift 14s linear infinite;
+  will-change: transform;
 }
 
 /* The disc's picture sits over the wave; the wave shows again on Home. */
@@ -616,6 +632,8 @@ video.handheld__player {
 @media (prefers-reduced-motion: reduce) {
   .handheld__wave-band {
     animation: none;
+    /* Nothing is going to change, so no layer needs keeping for it. */
+    will-change: auto;
   }
 
   .handheld__key,
