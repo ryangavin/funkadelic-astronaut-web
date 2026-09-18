@@ -216,3 +216,45 @@ export const ReducedMotion: Story = {
     expect(dossier.querySelectorAll('.spilled, iframe')).toHaveLength(0);
   },
 };
+
+/** A preference change during the return must not discard the saved folder pose. */
+export const ReduceMotionDuringReturn: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const dossier = canvas.getByRole('group', { name: 'Band dossier' });
+    const original = window.matchMedia;
+    let reduced = false;
+    const motion = new EventTarget() as MediaQueryList;
+    Object.defineProperties(motion, {
+      matches: { get: () => reduced },
+      media: { value: '(prefers-reduced-motion: reduce)' },
+    });
+    window.matchMedia = query => query === motion.media ? motion : original.call(window, query);
+    const pose = () => ['--movable-x', '--movable-y', '--movable-rotation', '--movable-width']
+      .map(name => dossier.style.getPropertyValue(name));
+    try {
+      dossier.focus();
+      await userEvent.keyboard('{ArrowRight}{ArrowDown}]]+');
+      const closedPose = pose();
+      await userEvent.click(canvas.getByRole('button', { name: 'Open the press package' }));
+      await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'open'), { timeout: 3500 });
+      expect(pose()).not.toEqual(closedPose);
+      await userEvent.click(canvas.getByRole('button', { name: 'Close the press package' }));
+      await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'returning'));
+      await wait(150);
+      reduced = true;
+      motion.dispatchEvent(new Event('change'));
+      await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'closed'), { timeout: 500 });
+      expect(pose()).toEqual(closedPose);
+      expect(dossier.querySelectorAll('.spilled, iframe')).toHaveLength(0);
+      // Reopening must snapshot the restored layout, not the abandoned open pose.
+      await userEvent.click(canvas.getByRole('button', { name: 'Open the press package' }));
+      await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'open'), { timeout: 500 });
+      await userEvent.click(canvas.getByRole('button', { name: 'Close the press package' }));
+      await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'closed'), { timeout: 500 });
+      expect(pose()).toEqual(closedPose);
+    } finally {
+      window.matchMedia = original;
+    }
+  },
+};
