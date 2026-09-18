@@ -23,6 +23,7 @@ function assertFree(port) {
   });
 }
 function start(name, executable, args, env) {
+  if (stopping) return;
   const child = spawn(process.execPath, [resolve(root, executable), ...args], {
     cwd: root, env: { ...process.env, ...env }, stdio: 'inherit', detached: process.platform !== 'win32',
   });

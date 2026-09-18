@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { mkdtempSync, mkdirSync, copyFileSync, writeFileSync, readFileSync, rmSync } = require('node:fs');
+const { existsSync, mkdtempSync, mkdirSync, copyFileSync, writeFileSync, readFileSync, rmSync } = require('node:fs');
 const { tmpdir } = require('node:os');
 const { join } = require('node:path');
 const { spawn } = require('node:child_process');
@@ -29,6 +29,24 @@ async function fixture(extra = {}) {
   for (const file of ['node_modules/storybook/dist/bin/dispatcher.js', 'node_modules/vite/bin/vite.js']) {
     mkdirSync(join(root, file, '..'), { recursive: true });
     writeFileSync(join(root, file), fixtureChild);
+  }
+  if (extra.CANCEL_PREFLIGHT) {
+    const preload = join(root, 'delay-preflight.cjs');
+    writeFileSync(preload, `
+      const net = require('node:net');
+      const fs = require('node:fs');
+      const original = net.createServer;
+      net.createServer = (...args) => {
+        const server = original(...args), close = server.close.bind(server);
+        server.close = callback => close(() => {
+          fs.writeFileSync(process.env.PIDS_FILE + '.preflight', 'waiting');
+          setTimeout(callback, 300);
+        });
+        return server;
+      };
+      require('node:module').syncBuiltinESMExports();
+    `);
+    extra = { ...extra, NODE_OPTIONS: `--require=${preload}` };
   }
   const port = await freePort(), storyPort = await freePort();
   const child = spawn(process.execPath, ['scripts/dev.mjs'], { cwd: root, env: { ...process.env, PREVIEW_PORT: String(port), STORYBOOK_PORT: String(storyPort), PIDS_FILE: join(root, 'pids'), ...extra }, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -81,4 +99,14 @@ test('an occupied public port fails without starting children or moving the prev
     await f.cleanup();
     await new Promise(resolve => busy.close(resolve));
   }
+});
+
+test('cancellation during port preflight cannot launch a detached child afterwards', { timeout: 15000 }, async () => {
+  const f = await fixture({ CANCEL_PREFLIGHT: '1' });
+  try {
+    await waitFor(() => existsSync(join(f.root, 'pids.preflight')));
+    f.child.kill('SIGINT');
+    assert.equal((await f.exit)[0], 0);
+    assert.equal(existsSync(join(f.root, 'pids')), false);
+  } finally { await f.cleanup(); }
 });
