@@ -1,10 +1,9 @@
 import { useId, useRef } from 'react';
 import { DESK_SIZE, mmToUnits } from '../../geometry/physicalScale';
 import { type Place } from '../Movable/Movable';
-import { DEFAULT_SHADOW_STRENGTH, useDeskLight, useDeskLightEffect, type DeskLight } from '../DeskLighting/DeskLighting';
+import { DEFAULT_SHADOW_STRENGTH, useDeskLightEffect, type DeskLight } from '../DeskLighting/DeskLighting';
 import { usePlaceEffect } from '../Movable/places';
-import { LampLight } from '../../components/3D/DeskLamp/DeskLamp';
-import { LampShadows } from '../../components/3D/DeskLamp/LampShadows';
+import { LampPool, LampShadows } from '../../components/3D/DeskLamp/LampShadows';
 import { type StudyShape } from './elevation';
 import './CastShadow.css';
 
@@ -106,11 +105,8 @@ export function ObjectCastShadow({ place, placeId, pivot = { x: 0.5, y: 0.5 }, w
 
 /** The pool the lamp throws and its own cast arm, for a scene that owns its lamp. */
 function LampPoolLayers({ surfaceHeight }: { surfaceHeight: number }) {
-  const light = useDeskLight();
-  if (!light) return null;
-  const pool = light.height * 1.4;
   return <>
-    <LampLight on={light.on} style={{ position: 'absolute', width: `${pool / DESK_SIZE.width * 100}%`, aspectRatio: '1', left: `${(light.x - pool / 2) / DESK_SIZE.width * 100}%`, top: `${(light.y - pool / 2) / surfaceHeight * 100}%` }} />
+    <LampPool surfaceWidth={DESK_SIZE.width} surfaceHeight={surfaceHeight} />
     <LampShadows surfaceHeight={surfaceHeight} />
   </>;
 }

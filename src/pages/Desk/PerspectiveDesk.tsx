@@ -4,13 +4,13 @@ import { articulateLamp, lampPoseFromAngles, lampPoseAngles, type LampPose } fro
 import type React from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { GENTLE_DEPTH, GENTLE_VIEW, Perspective } from '../../behaviors/Perspective/Perspective';
-import { DeskLighting, DEFAULT_SHADOW_STRENGTH, useDeskLight } from '../../behaviors/DeskLighting/DeskLighting';
+import { DeskLighting, DEFAULT_SHADOW_STRENGTH } from '../../behaviors/DeskLighting/DeskLighting';
 import { Movable, type Place } from '../../behaviors/Movable/Movable';
 import { PlacesProvider, usePlaceStore } from '../../behaviors/Movable/places';
 import { Inspector, InspectorVeil } from '../../behaviors/Inspectable/Inspectable';
 import { DESK_WIDTH, Desk, type DeskWood } from '../../components/3D/Desk/Desk';
-import { DeskLamp, LampLight, type DeskLampEnamel } from '../../components/3D/DeskLamp/DeskLamp';
-import { LampShadows } from '../../components/3D/DeskLamp/LampShadows';
+import { DeskLamp, type DeskLampEnamel } from '../../components/3D/DeskLamp/DeskLamp';
+import { LampPool, LampShadows } from '../../components/3D/DeskLamp/LampShadows';
 import { DeskRoom, ROOM_DESK_DEPTH, ROOM_DESK_SHARE, ROOM_LIP } from './DeskRoom';
 import type { FloorWood } from '../../components/3D/Floor/Floor';
 import type { WallFinish } from '../../components/3D/Wall/Wall';
@@ -65,12 +65,17 @@ export type PerspectiveDeskProps = {
 /* Held, so the desk can render round it without rebuilding it. See lightPosition below. */
 const SteadyLamp = memo(DeskLamp);
 
+/*
+  The pool the lamp throws and the lamp's own cast arm.
+
+  Neither reads the light through a render any more: each subscribes and writes
+  its own geometry. This component used to call useDeskLight, so carrying the
+  lamp rebuilt the pool and rebuilt every path of the arm's shadow beneath it —
+  the last two things on the desk that the lamp still re-rendered.
+*/
 function DeskLightLayers() {
-  const light = useDeskLight();
-  if (!light) return null;
-  const size = light.height * 1.4;
   return <>
-    <LampLight on={light.on} style={{ position: 'absolute', width: `${size / DESK_WIDTH * 100}%`, aspectRatio: '1', left: `${(light.x - size / 2) / DESK_WIDTH * 100}%`, top: `${(light.y - size / 2) / DESK_DEPTH * 100}%` }} />
+    <LampPool surfaceWidth={DESK_WIDTH} surfaceHeight={DESK_DEPTH} />
     <LampShadows surfaceHeight={DESK_DEPTH} />
   </>;
 }
@@ -103,9 +108,19 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
   useEffect(() => { places.set(LAMP, { x: lampX ?? INITIAL_LAMP.x, y: lampY ?? INITIAL_LAMP.y, rotation: lampRotation ?? 0 }); }, [places, lampX, lampY, lampRotation]);
   /* A saved arrangement arriving from outside puts everything back at once. */
   useEffect(() => { for (const [id, where] of Object.entries(arranged(objectPlacements))) places.set(id, where); }, [places, objectPlacements]);
+  /*
+    What the arm is doing. This holds only what the composition's own settings
+    have asked for; while the shade is being aimed the lamp owns its arm and
+    this does not change, so the desk holds still through the gesture. Where the
+    arm actually got to is remembered beside it, for capture() to read.
+  */
   const [pose, setPose] = useState(() => lampLowerAngle !== undefined && lampUpperAngle !== undefined ? lampPoseFromAngles(lampLowerAngle, lampUpperAngle) : articulateLamp({ x: 200, y: 420 }));
+  const posed = useRef(pose);
   useEffect(() => {
-    if (lampLowerAngle !== undefined && lampUpperAngle !== undefined) setPose(lampPoseFromAngles(lampLowerAngle, lampUpperAngle));
+    if (lampLowerAngle === undefined || lampUpperAngle === undefined) return;
+    const next = lampPoseFromAngles(lampLowerAngle, lampUpperAngle);
+    posed.current = next;
+    setPose(next);
   }, [lampLowerAngle, lampUpperAngle]);
   const [exported, setExported] = useState('');
   const [copyStatus, setCopyStatus] = useState('');
@@ -126,7 +141,7 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
   */
   const lightPosition = useMemo(() => ({ x: INITIAL_LAMP.x, y: INITIAL_LAMP.y, rotation: 0, width: lampWidth, height: LAMP_HEIGHT * lampWidth / LAMP_WIDTH }), [lampWidth]);
   const articulated = useCallback((next: LampPose) => {
-    setPose(next);
+    posed.current = next;
     told.current.onArticulate?.(lampPoseAngles(next));
   }, []);
   const switched = useCallback((next: boolean) => {
@@ -139,7 +154,7 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
   told.current = { onArticulate, onLamp, lamp };
 
   const capture = () => {
-    const angles = lampPoseAngles(pose);
+    const angles = lampPoseAngles(posed.current);
     return { angle, depth, wood, room, floor, wall, roomBlur, roomDim, deskShare, roomLip, lamp: on, shadowStrength, lampX: places.get(LAMP)?.x, lampY: places.get(LAMP)?.y, lampRotation: places.get(LAMP)?.rotation, lampWidth, lampEnamel, lampLowerAngle: angles.lower, lampUpperAngle: angles.upper, objectPlacements: places.all(), showObjects };
   };
   return <main className="perspective-desk-room" aria-label="Perspective desk">

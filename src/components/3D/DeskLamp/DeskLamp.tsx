@@ -1,6 +1,6 @@
 import { LAMP_HEIGHT, mmToUnits } from '../../../geometry/physicalScale';
 import type React from 'react';
-import { useContext, useId, useRef, useState } from 'react';
+import { useContext, useEffect, useId, useRef, useState } from 'react';
 import { MovableProject } from '../../../behaviors/Movable/Movable';
 import { articulateLamp, type LampPose, type LampPoint } from './articulation';
 import './DeskLamp.css';
@@ -71,9 +71,20 @@ export type DeskLampProps = {
  */
 export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledHead, onHeadChange, camera, shadowStrength = DEFAULT_SHADOW_STRENGTH, lightPosition, placeId, on = true, onToggle, enamel = 'red', rotation = 0, className = '', style }: DeskLampProps) {
   const id = `lamp-${useId().replace(/:/g, '')}`;
-  const [ownArm, setOwnArm] = useState(() => articulateLamp(controlledHead ?? DESK_LAMP_SHADE));
-  const arm = controlledPose ?? (controlledHead && (controlledHead.x !== ownArm.head.x || controlledHead.y !== ownArm.head.y)
-    ? articulateLamp(controlledHead, ownArm, 0) : ownArm);
+  const [ownArm, setOwnArm] = useState(() => controlledPose ?? articulateLamp(controlledHead ?? DESK_LAMP_SHADE));
+  /*
+    A pose handed in is an override, not a leash. The composition pushes one in
+    when its own settings change the arm, and the lamp keeps its own arm between
+    times.
+
+    Held the other way round it was the dearest gesture on the desk: aiming the
+    shade told the composition, the composition put it in state, and the whole
+    desk re-rendered to hand the lamp back the arm it had just worked out
+    itself — every pointer report, for the length of the gesture.
+  */
+  useEffect(() => { if (controlledPose) setOwnArm(controlledPose); }, [controlledPose]);
+  const arm = controlledHead && (controlledHead.x !== ownArm.head.x || controlledHead.y !== ownArm.head.y)
+    ? articulateLamp(controlledHead, ownArm, 0) : ownArm;
   const { x, y } = arm.head;
   const { radius } = DESK_LAMP_SHADE;
   const svg = useRef<SVGSVGElement>(null);
@@ -287,6 +298,8 @@ export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledH
 
 export type LampLightProps = {
   on?: boolean;
+  /** Handed out so a caller can place the pool by writing to it, rather than by rendering it. */
+  ref?: React.Ref<HTMLDivElement>;
   /** Warmth of the light: any CSS colour. */
   color?: string;
   className?: string;
@@ -299,6 +312,6 @@ export type LampLightProps = {
  * lies in it, and again over everything at a whisper, so the papers in it
  * are lit too. Sized by its parent.
  */
-export function LampLight({ on = true, color = '#ffd9a0', className = '', style }: LampLightProps) {
-  return <div className={`lamp-light ${className}`} data-on={on ? '' : undefined} style={{ '--lamp-light-color': color, ...style } as React.CSSProperties} aria-hidden="true" />;
+export function LampLight({ on = true, color = '#ffd9a0', className = '', style, ref }: LampLightProps) {
+  return <div ref={ref} className={`lamp-light ${className}`} data-on={on ? '' : undefined} style={{ '--lamp-light-color': color, ...style } as React.CSSProperties} aria-hidden="true" />;
 }
