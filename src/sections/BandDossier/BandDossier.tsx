@@ -68,6 +68,10 @@ export type BandDossierProps = {
   stock?: FolderStock;
   /** Whether the folder lies open. */
   open?: boolean;
+  /** Requested state while a scene stages the cover separately. Defaults to open. */
+  requestedOpen?: boolean;
+  /** Loose scene contents hosted beneath the actual cover. */
+  contentsLayer?: ReactNode;
   /** Requests only: the containing scene decides what opening and closing mean. */
   onOpen?: () => void;
   onClose?: () => void;
@@ -143,6 +147,8 @@ export function BandDossier({
   stock,
   open = true,
   onOpen,
+  requestedOpen = open,
+  contentsLayer,
   onClose,
   showContents = true,
   rotation = -1,
@@ -190,6 +196,7 @@ export function BandDossier({
         stock={stock}
         open={open}
         lazyContents
+        contentsLayer={contentsLayer}
         stamps={stamps}
         stampsAt="bottom"
         sticker={sticker}
@@ -221,7 +228,7 @@ export function BandDossier({
           {children}
         </div>}
       </Folder>
-      {(onOpen || onClose) && <button type="button" className="dossier__toggle" aria-expanded={open} aria-label={open ? 'Close the press package' : 'Open the press package'} onClick={open ? onClose : onOpen} />}
+      {(onOpen || onClose) && <button type="button" className="dossier__toggle" aria-expanded={requestedOpen} aria-label={requestedOpen ? 'Close the press package' : 'Open the press package'} onClick={requestedOpen ? onClose : onOpen}><span aria-hidden="true">{requestedOpen ? 'Return' : 'Open'}<br />{requestedOpen ? '& close' : 'press kit'}</span></button>}
     </section>
   );
 }

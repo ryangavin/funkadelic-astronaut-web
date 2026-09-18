@@ -27,6 +27,7 @@
   pointer-events: auto;
   transition:
     translate var(--spill-flight) cubic-bezier(0.22, 0.75, 0.25, 1) var(--spilled-wait),
+    scale var(--spill-flight) cubic-bezier(0.22, 0.75, 0.25, 1) var(--spilled-wait),
     rotate var(--spill-flight) cubic-bezier(0.22, 0.75, 0.25, 1) var(--spilled-wait),
     left var(--spill-flight) cubic-bezier(0.22, 0.75, 0.25, 1) var(--spilled-wait),
     top var(--spill-flight) cubic-bezier(0.22, 0.75, 0.25, 1) var(--spilled-wait),
@@ -41,10 +42,12 @@
 /* Packed: gathered on the pile's point, or the container's centre, and turned.
    Drawn back on close a little quicker than they came out, then hidden. */
 .spill[data-open='false'] .spilled {
+  scale: var(--spill-packed-scale, 1);
   rotate: var(--spilled-from-rotation);
   visibility: hidden;
   transition:
     translate calc(var(--spill-flight) * 0.8) cubic-bezier(0.5, 0.05, 0.35, 1) var(--spilled-delay),
+    scale calc(var(--spill-flight) * 0.8) cubic-bezier(0.5, 0.05, 0.35, 1) var(--spilled-delay),
     rotate calc(var(--spill-flight) * 0.8) cubic-bezier(0.5, 0.05, 0.35, 1) var(--spilled-delay),
     left calc(var(--spill-flight) * 0.8) cubic-bezier(0.5, 0.05, 0.35, 1) var(--spilled-delay),
     top calc(var(--spill-flight) * 0.8) cubic-bezier(0.5, 0.05, 0.35, 1) var(--spilled-delay),
@@ -100,3 +103,5 @@
     animation: none;
   }
 }
+
+.spill[data-hide-packed="false"][data-open="false"] .spilled { visibility: visible; }
