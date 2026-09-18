@@ -25,6 +25,7 @@ const meta = {
   },
   tags: ['autodocs'],
   argTypes: {
+    showPerformance: { control: 'boolean', table: { category: 'Debug' } },
     ...physicalControls,
     angle: { table: { category: 'Camera' }, control: { type: 'number', step: 1 } },
     depth: { table: { category: 'Camera' }, control: { type: 'number', step: 100 } },
@@ -54,7 +55,7 @@ const meta = {
     onArticulate: { table: { disable: true } },
     onLamp: { table: { disable: true } },
   },
-  args: { ...physicalDefaults, angle: GENTLE_VIEW, depth: GENTLE_DEPTH, wood: 'walnut', lamp: true, shadowStrength: .36, lampX: 770, lampY: 100, lampRotation: 0, lampWidth: 576, lampEnamel: 'green', lampLowerAngle: initialAngles.lower, lampUpperAngle: initialAngles.upper, onArrange: fn(), onArticulate: fn(), onLamp: fn() },
+  args: { showPerformance: false, ...physicalDefaults, angle: GENTLE_VIEW, depth: GENTLE_DEPTH, wood: 'walnut', lamp: true, shadowStrength: .36, lampX: 770, lampY: 100, lampRotation: 0, lampWidth: 576, lampEnamel: 'green', lampLowerAngle: initialAngles.lower, lampUpperAngle: initialAngles.upper, onArrange: fn(), onArticulate: fn(), onLamp: fn() },
 } satisfies Meta<PerspectiveDeskProps & RoomStoryControls>;
 
 export default meta;
