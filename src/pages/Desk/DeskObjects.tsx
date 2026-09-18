@@ -7,7 +7,7 @@ import { DossierCover } from './DossierCover';
 import { BandDossier } from '../../sections/BandDossier/BandDossier';
 import { memo, useCallback, useRef, useState, type ReactNode } from 'react';
 import { Movable, type Place } from '../../behaviors/Movable/Movable';
-import { usePlace, usePlaces } from '../../behaviors/Movable/places';
+import { usePlace, usePlaceEffect, usePlaces } from '../../behaviors/Movable/places';
 import { Tallied } from '../../debug/DeskPerf/tally';
 import { Inspectable, useInspection } from '../../behaviors/Inspectable/Inspectable';
 import { Solid, type Foot } from '../../behaviors/Perspective/Perspective';
@@ -103,11 +103,27 @@ const sizeOf = (object: ObjectSpec, place: Place) => {
   return { scale, width: object.width * scale, depth: object.width * object.ratio * scale, heightMm: object.height * scale };
 };
 
-function PenRelief({ place, camera, width }: { place: Place; camera: StudyCamera; width: number }) {
-  const top = elevatedLayer(mmToUnits(7) * (place.scale ?? 1), { ...place, width, drawingWidth: 720, drawingHeight: 60 }, camera);
+/*
+  The pen is too shallow for a stack of layers: a darker copy of the drawing
+  lying flat is its whole side, with the pen itself lifted the 7 mm above it.
+  Where that lift lands is written from its place rather than rendered, the way
+  a Relief's layers are.
+*/
+function PenRelief({ place, placeId, camera, width }: { place: Place; placeId?: string; camera: StudyCamera; width: number }) {
+  const face = useRef<HTMLDivElement>(null);
+  const at = useRef<Place>(place);
+  if (!placeId) at.current = place;
+  usePlaceEffect(placeId, where => {
+    if (where) at.current = where;
+    const top = face.current;
+    if (!top) return;
+    const here = at.current, grown = here.scale ?? 1;
+    const lift = elevatedLayer(mmToUnits(7) * grown, { ...here, width: width * grown, drawingWidth: 720, drawingHeight: 60 }, camera);
+    top.style.transform = `translate(${lift.x / 720 * 100}%, ${lift.y / 60 * 100}%) scale(${lift.scale})`;
+  });
   return <div style={{ position: 'relative', aspectRatio: '720 / 60' }}>
     <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', filter: 'brightness(.65)' }}><Pen rotation={0} /></div>
-    <div style={{ position: 'relative', transform: `translate(${top.x / 720 * 100}%, ${top.y / 60 * 100}%) scale(${top.scale})` }}><Pen rotation={0} /></div>
+    <div ref={face} style={{ position: 'relative' }}><Pen rotation={0} /></div>
   </div>;
 }
 
@@ -147,25 +163,31 @@ export function DeskObjectShadows({ height, only }: { height: number; only?: rea
   single drag was paying for a whole desk of measurements a frame.
 */
 /*
-  Which things have to be rebuilt when they move, and which do not.
+  Which things still have to be rebuilt when they move.
 
-  A Relief works its sides out from where the thing is standing on the desk, so
-  it is genuinely different at a different place and has to be rendered again. A
-  Solid measures itself off the plane after the fact, and a sheet of paper is the
-  same drawing wherever it lies — neither needs a thing. So the ones that need it
-  subscribe and the rest never hear about the drag at all.
+  A Solid measures itself off the plane after the fact, a sheet of paper is the
+  same drawing wherever it lies, and a Relief and the pen now write their own
+  layers from a subscription — none of those needs to hear about a drag.
+
+  That leaves the cradle. Its drawing is worked out point by point from where it
+  stands, and its rails, strings and five hanging balls are all different
+  geometry rather than the same shape moved, so it is rendered again. It is also
+  the one thing here that re-renders for a reason of its own — while it is
+  swinging it redraws every frame regardless, which is what an animation is.
 */
-const worksItselfOutFromWhereItStands = (object: ObjectSpec) => !object.flat && !object.solid;
+const worksItselfOutFromWhereItStands = (object: ObjectSpec) => object.id === 'cradle';
 
 export const DeskObject = memo(function DeskObject({ object, place, camera, layer, held, onFront }: { object: ObjectSpec; place: Place; camera: StudyCamera; layer: number; held: boolean; onFront: (id: string) => void }) {
   const follows = worksItselfOutFromWhereItStands(object);
   const places = usePlaces();
-  /* Subscribed only by the things that need it; the hook is always called, and
-     given no id it subscribes to nothing. */
+  /* Subscribed only by the thing that still needs it; the hook is always called,
+     and given no id it subscribes to nothing. */
   const moving = usePlace(follows ? object.id : undefined);
   const at = moving ?? places?.get(object.id) ?? place;
   const size = sizeOf(object, at);
-  const drawing = object.flat ? object.content : object.id === 'pen' ? <PenRelief place={at} camera={camera} width={size.width} /> : object.id === 'cradle' ? <CradleRelief place={at} camera={camera} width={size.width} /> : object.solid ? <Solid {...object.solid}>{object.content}</Solid> : <Relief place={at} camera={camera} width={size.width} depth={size.depth} heightMm={size.heightMm} path={object.shapes?.[0].path ?? ROUND_CASE} sideColors={object.colors}>{object.content}</Relief>;
+  /* Sizes handed on at a scale of one: whatever the thing has been grown to is
+     read off its place, inside the drawing, where a drag can reach it without a render. */
+  const drawing = object.flat ? object.content : object.id === 'pen' ? <PenRelief place={at} placeId={object.id} camera={camera} width={object.width} /> : object.id === 'cradle' ? <CradleRelief place={at} camera={camera} width={size.width} /> : object.solid ? <Solid {...object.solid}>{object.content}</Solid> : <Relief place={at} placeId={object.id} camera={camera} width={object.width} depth={object.width * object.ratio} heightMm={object.height} path={object.shapes?.[0].path ?? ROUND_CASE} sideColors={object.colors}>{object.content}</Relief>;
   return <Movable id={object.id} {...at} width={object.width} pivot={pivotOf(object)} resizable label={object.name} z={held ? INSPECT_LAYER : layer} onGrab={() => { if (object.flat) onFront(object.id); }} grab={object.id === 'poster' ? 'anywhere' : object.flat ? 'body' : 'anywhere'}>
     {object.inspect ? <Inspectable id={object.id} {...object.inspect}>{drawing}</Inspectable> : drawing}
   </Movable>;
