@@ -90,6 +90,27 @@
   transform: var(--desk-room-lie);
 }
 
+/*
+  The boards are kept as a finished thing.
+
+  Their figure is drawn the way the desk top's is — bands of tone pushed about
+  by turbulence — and it never changes: twelve courses, each carrying a
+  displacement filter, worked out per pixel over a region wider than the frame.
+  The desk's shadow on them does change, every frame the lamp is carried about,
+  and the two were in one layer: the browser cannot know which half of a layer
+  moved, so redrawing the shadow meant working all twelve courses out again and
+  blurring the result. The lamp measured thirty-eight milliseconds a frame for it.
+
+  So the boards are given a layer of their own and the shadow moves over them,
+  which is what the room does in life. `will-change` is how that is asked for;
+  nothing here is going to be transformed, but there is no other way to say
+  “this is dear to draw and it is finished”. The shadow must stay outside it,
+  which is why this is on the boards and not on the plane they lie in.
+*/
+.desk-room__floor > .floor {
+  will-change: transform;
+}
+
 /* The desk's shadow, drawn in the floor's plane and in its units. */
 .desk-room__shadow {
   position: absolute;
