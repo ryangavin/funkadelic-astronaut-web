@@ -1,3 +1,4 @@
+import { roomCoverage } from '../../geometry/roomCoverage';
 import { DEFAULT_LIGHT_TUNING } from '../../geometry/lightingSetup';
 import { DESK_SIZE, mmToUnits } from '../../geometry/physicalScale';
 import type React from 'react';
@@ -300,8 +301,12 @@ function DeskFloorShadow({ deskWidth, span, deskDepth, stand, floorDepth, streng
   Held, the room renders when the room changes. The lamp still moves the shadow,
   through the light store, which is what the store is for.
 */
-export const DeskRoom = memo(function DeskRoom({ angle, depth, deskShare = ROOM_DESK_SHARE, deskWidth = DESK_WIDTH, span = ROOM_SPAN, front = FLOOR_FRONT, wallHeight = WALL_HEIGHT, deskDepth = ROOM_DESK_DEPTH, stand = DESK_STAND, lip = ROOM_LIP, floor = 'pine', wall = 'red', blur = 1, dim = 0.32, shadowStrength = 0.36 }: DeskRoomProps) {
+export const DeskRoom = memo(function DeskRoom({ angle, depth, deskShare = ROOM_DESK_SHARE, deskWidth = DESK_WIDTH, span: givenSpan, front: givenFront, wallHeight: givenWallHeight, deskDepth = ROOM_DESK_DEPTH, stand = DESK_STAND, lip = ROOM_LIP, floor = 'pine', wall = 'red', blur = 1, dim = 0.32, shadowStrength = 0.36 }: DeskRoomProps) {
   const { back, down } = floorLies(angle, stand);
+  const coverage = roomCoverage({ angle, depth, deskWidth, deskDepth, stand, deskShare, lip });
+  const span = givenSpan ?? Math.max(ROOM_SPAN, coverage.span);
+  const front = givenFront ?? Math.max(FLOOR_FRONT, coverage.front);
+  const wallHeight = givenWallHeight ?? Math.max(WALL_HEIGHT, coverage.wallHeight);
   const floorDepth = deskDepth + front;
   return (
     <div

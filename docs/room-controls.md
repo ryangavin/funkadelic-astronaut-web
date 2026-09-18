@@ -54,3 +54,16 @@ A local headless Chromium comparison used the existing DeskPerf `dragCost`, `dra
 The chronological frame probe agreed with these medians. On the matched Desk scene, removing the room reduced the frame median by 9.4 ms (36%); removing the desk's floor shadow reduced it by 7.1 ms (27%). These are overlapping attribution experiments, not additive savings. The measured cost is predominantly shared rendering; the small residual does not establish a distinct React/input regression. No renderer change or experimental range clamp was justified by this comparison.
 
 These are local synthetic/headless measurements, not a hardware-independent frame-rate promise. Input-to-style timing excludes browser input-queue delay; attribution hides layers and is diagnostic only. Original full physical settings, larger light pools, and other machines can have different drawing costs.
+
+Room backgrounds automatically extend the floor and wall to cover the 16:9 frame
+when their extent props are omitted. Coverage is derived from the same camera,
+desk size and framing as the objects, so changing eye height or desk width does
+not expose the sides of a finite background. Board and brick sizes, the shared
+floor/wall seam, and the lamp's floor coordinates remain in physical units.
+
+`roomSpanMm`, `floorFrontMm` and `wallHeightMm` remain exact overrides. Setting
+one deliberately disables automatic coverage for that dimension; clear it to
+restore automatic coverage. This may expose an edge when exploring finite room
+sizes. The automatic calculation adds a small bleed for antialiasing/blur and
+retains the existing minimum room dimensions rather than allocating an enormous
+fixed backdrop. It assumes Room's standard 16:9 crop.

@@ -42,7 +42,7 @@ export type RoomProps = PhysicalRoomInputs & {
   lampIntensity?: number;
   /** Advanced artistic pool/shadow shaping; defaults preserve existing scenes. */
   lightTuning?: Partial<LightTuning>;
-  /** Room geometry extents, independent of viewport framing. */
+  /** Optional exact room extents in mm. Omit to extend each surface to cover the frame. */
   roomSpanMm?: number;
   floorFrontMm?: number;
   wallHeightMm?: number;
@@ -177,11 +177,11 @@ export function Room(props: RoomProps) {
   </>;
 }
 
-function RoomScene({ setup, tuning, lampIntensity = 1, roomSpanMm = 2200, floorFrontMm = 400 / 1.2, wallHeightMm = 2400, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & { setup: ReturnType<typeof roomSetup>; tuning: LightTuning }) {
+function RoomScene({ setup, tuning, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & { setup: ReturnType<typeof roomSetup>; tuning: LightTuning }) {
   const { camera, stand, edge } = setup;
-  const span = mmToUnits(roomSpanMm);
-  const front = mmToUnits(floorFrontMm);
-  const wallHeight = mmToUnits(wallHeightMm);
+  const span = roomSpanMm === undefined ? undefined : mmToUnits(roomSpanMm);
+  const front = floorFrontMm === undefined ? undefined : mmToUnits(floorFrontMm);
+  const wallHeight = wallHeightMm === undefined ? undefined : mmToUnits(wallHeightMm);
   /*
     Where the lamp stands lives in a store, not in this component's state.
 
