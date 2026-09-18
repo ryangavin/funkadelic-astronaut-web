@@ -12,12 +12,18 @@ export type RoomArrangement = Record<string, Place>;
 export function useRoomArrangement() {
   const places = usePlaces();
   const frame = useRef(0);
-  useEffect(() => () => cancelAnimationFrame(frame.current), []);
+  const release = useRef<() => void>(() => {});
+  const stop = useCallback(() => { cancelAnimationFrame(frame.current); release.current(); }, []);
+  useEffect(() => stop, [stop]);
   return useCallback((targets: RoomArrangement, duration = 750) => {
-    cancelAnimationFrame(frame.current);
+    stop();
     if (!places) return;
+    const ids = Object.keys(targets);
+    release.current = () => { for (const id of ids) places.setArranging(id, false); };
+    for (const id of ids) places.setArranging(id, true);
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || duration <= 0) {
       for (const [id, target] of Object.entries(targets)) places.set(id, target);
+      frame.current = requestAnimationFrame(() => release.current());
       return;
     }
     const flights = Object.entries(targets).map(([id, to]) => ({ id, to, from: places.get(id) ?? to, last: places.get(id) }));
@@ -27,7 +33,11 @@ export function useRoomArrangement() {
       const ease = 1 - (1 - progress) ** 3;
       for (let index = flights.length - 1; index >= 0; index--) {
         const flight = flights[index];
-        if (places.get(flight.id) !== flight.last) { flights.splice(index, 1); continue; }
+        if (places.get(flight.id) !== flight.last) {
+          places.setArranging(flight.id, false);
+          flights.splice(index, 1);
+          continue;
+        }
         const { from, to } = flight;
         const at = progress === 1 ? to : {
           x: from.x + (to.x - from.x) * ease,
@@ -39,7 +49,9 @@ export function useRoomArrangement() {
         places.set(flight.id, at);
       }
       if (progress < 1 && flights.length) frame.current = requestAnimationFrame(tick);
+      // Paint the exact final target before restoring ordinary CSS transitions.
+      else frame.current = requestAnimationFrame(() => release.current());
     };
     frame.current = requestAnimationFrame(tick);
-  }, [places]);
+  }, [places, stop]);
 }

@@ -161,9 +161,9 @@ export function DeskObjectShadows({ height, surfaceWidth, only }: { surfaceWidth
 /*
   Which things still have to be rebuilt when they move.
 
-  A Solid measures itself off the plane after the fact, a sheet of paper is the
-  same drawing wherever it lies, and a Relief and the pen now write their own
-  layers from a subscription — none of those needs to hear about a drag.
+  A Solid measures itself off the plane through its own small subscribed
+  wrapper. A sheet is the same drawing wherever it lies, and a Relief and the
+  pen write their own layers by subscription, so none rebuilds this owner.
 
   That leaves the cradle. Its drawing is worked out point by point from where it
   stands, and its rails, strings and five hanging balls are all different
@@ -172,6 +172,13 @@ export function DeskObjectShadows({ height, surfaceWidth, only }: { surfaceWidth
   swinging it redraws every frame regardless, which is what an animation is.
 */
 const worksItselfOutFromWhereItStands = (object: ObjectSpec) => object.id === 'cradle';
+
+/** Only the solid's projection re-renders when its place changes. Its content
+ * element stays stable, so moving a phone doesn't rebuild its controls. */
+function PositionedSolid({ object }: { object: ObjectSpec }) {
+  usePlace(object.id);
+  return <Solid {...object.solid!}>{object.content}</Solid>;
+}
 
 export const DeskObject = memo(function DeskObject({ object, place, camera, layer, held, onFront }: { object: ObjectSpec; place: Place; camera: StudyCamera; layer: number; held: boolean; onFront: (id: string) => void }) {
   const follows = worksItselfOutFromWhereItStands(object);
@@ -183,7 +190,7 @@ export const DeskObject = memo(function DeskObject({ object, place, camera, laye
   const size = sizeOf(object, at);
   /* Sizes handed on at a scale of one: whatever the thing has been grown to is
      read off its place, inside the drawing, where a drag can reach it without a render. */
-  const drawing = object.flat ? object.content : object.id === 'pen' ? <PenRelief place={at} placeId={object.id} camera={camera} width={object.width} /> : object.id === 'cradle' ? <CradleRelief place={at} camera={camera} width={size.width} /> : object.solid ? <Solid {...object.solid}>{object.content}</Solid> : <Relief place={at} placeId={object.id} camera={camera} width={object.width} depth={object.width * object.ratio} heightMm={object.height} path={object.shapes?.[0].path ?? ROUND_CASE} sideColors={object.colors}>{object.content}</Relief>;
+  const drawing = object.flat ? object.content : object.id === 'pen' ? <PenRelief place={at} placeId={object.id} camera={camera} width={object.width} /> : object.id === 'cradle' ? <CradleRelief place={at} camera={camera} width={size.width} /> : object.solid ? <PositionedSolid object={object} /> : <Relief place={at} placeId={object.id} camera={camera} width={object.width} depth={object.width * object.ratio} heightMm={object.height} path={object.shapes?.[0].path ?? ROUND_CASE} sideColors={object.colors}>{object.content}</Relief>;
   return <Movable id={object.id} {...at} width={object.width} pivot={pivotOf(object)} resizable label={object.name} z={held ? INSPECT_LAYER : layer} onGrab={() => { if (object.flat) onFront(object.id); }} grab={object.id === 'poster' ? 'anywhere' : object.flat ? 'body' : 'anywhere'}>
     {object.inspect ? <Inspectable id={object.id} {...object.inspect}>{drawing}</Inspectable> : drawing}
   </Movable>;
