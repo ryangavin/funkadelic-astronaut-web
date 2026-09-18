@@ -3,17 +3,17 @@
  * final screen projection. Algebraically identical to stand()/unproject(). */
 export function projectElevation(
   x: number, y: number, height: number,
-  { angle, depth, width, surfaceHeight }: { angle: number; depth: number; width: number; surfaceHeight: number },
+  { angle, depth, width, surfaceHeight, targetY = surfaceHeight }: { angle: number; depth: number; width: number; surfaceHeight: number; targetY?: number },
 ) {
   const tilt = (90 - angle) * Math.PI / 180;
   const clearance = depth * Math.cos(tilt);
   // This 2.5D surface representation cannot express a plane through/above the eye.
   // Hide that layer explicitly instead of emitting infinity or an inverted scale.
-  if (clearance - height <= Number.EPSILON * Math.max(1, clearance, height) * 8) return { x: width / 2, y: surfaceHeight, scale: 0 };
+  if (clearance - height <= Number.EPSILON * Math.max(1, clearance, height) * 8) return { x: width / 2, y: targetY, scale: 0 };
   const scale = clearance / (clearance - height);
   return {
     x: width / 2 + (x - width / 2) * scale,
-    y: surfaceHeight + (y - surfaceHeight - height * Math.tan(tilt)) * scale,
+    y: targetY + (y - targetY - height * Math.tan(tilt)) * scale,
     scale,
   };
 }

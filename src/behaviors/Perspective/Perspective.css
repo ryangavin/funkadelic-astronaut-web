@@ -26,13 +26,13 @@
 .perspective__eye {
   perspective: calc(var(--perspective-depth) * 100cqw / var(--perspective-width));
   /* The eye is over the near edge, where whoever is looking stands. */
-  perspective-origin: 50% 100%;
+  perspective-origin: 50% var(--perspective-target, 100%);
 }
 
 .perspective__plane {
   transform: rotateX(var(--perspective-tilt));
   /* Hinged at the near edge: it stays put, and the surface recedes behind it. */
-  transform-origin: 50% 100%;
+  transform-origin: 50% var(--perspective-target, 100%);
 }
 
 /*

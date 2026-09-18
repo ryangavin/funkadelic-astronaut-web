@@ -40,7 +40,7 @@
   /* A desk unit, in the frame: the desk is 1440 of them across its share of the width. */
   --desk-room-unit: calc(var(--desk-room-share) * 100cqw / var(--desk-room-width, 1440));
   /* Where the hinge is: the desk's front edge, a lip up from the frame's bottom. */
-  --desk-room-hinge: calc(var(--desk-room-lip) * var(--desk-room-unit));
+  --desk-room-hinge: calc((1 - var(--desk-room-anchor, 1)) * 100% + var(--desk-room-lip) * var(--desk-room-unit));
   /* The floor's place: back and down from the desk top, then tipped like it. */
   --desk-room-lie: translateZ(calc(-1 * var(--desk-room-back) * var(--desk-room-unit))) translateY(calc(var(--desk-room-down) * var(--desk-room-unit))) rotateX(var(--desk-room-tilt));
   position: absolute;
@@ -85,8 +85,8 @@
   height along the tilted normal, then tipped.
 */
 .desk-room__floor {
-  bottom: calc(var(--desk-room-hinge) - var(--desk-room-front) * var(--desk-room-unit));
-  transform-origin: 50% calc(100% - var(--desk-room-front) * var(--desk-room-unit));
+  bottom: calc(var(--desk-room-hinge) - (var(--desk-room-depth) + var(--desk-room-front) - var(--desk-room-target, var(--desk-room-depth))) * var(--desk-room-unit));
+  transform-origin: 50% calc(100% - (var(--desk-room-depth) + var(--desk-room-front) - var(--desk-room-target, var(--desk-room-depth))) * var(--desk-room-unit));
   transform: var(--desk-room-lie);
 }
 
@@ -128,7 +128,7 @@
 .desk-room__wall {
   bottom: var(--desk-room-hinge);
   transform-origin: 50% 100%;
-  transform: var(--desk-room-lie) translateY(calc(-1 * var(--desk-room-depth) * var(--desk-room-unit))) rotateX(-90deg);
+  transform: var(--desk-room-lie) translateY(calc(-1 * var(--desk-room-target, var(--desk-room-depth)) * var(--desk-room-unit))) rotateX(-90deg);
 }
 
 /* The air: the lamp is low over the desk, and the wall is dimmer the higher it goes. */

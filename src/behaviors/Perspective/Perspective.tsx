@@ -23,6 +23,8 @@ export type PerspectiveProps = {
   depth?: number;
   /** The surface's design width in units, for turning the pointer's travel back into units. */
   width?: number;
+  /** Optical target on the surface; omission preserves the front-edge hinge. */
+  targetY?: number;
   children?: ReactNode;
   className?: string;
   style?: CSSProperties;
@@ -32,7 +34,7 @@ export type PerspectiveProps = {
 export type SurfacePoint = { x: number; y: number };
 
 /** The numbers the view is built from: how far the surface is tipped away, in radians, and how far off it the eye is. */
-export type View = { tilt: number; depth: number; width: number };
+export type View = { tilt: number; depth: number; width: number; targetY?: number };
 
 /**
  * Where a point on the screen falls on the tilted surface, in the surface's
@@ -56,16 +58,20 @@ export function unproject(plane: HTMLElement, view: View, clientX: number, clien
 export type PlaneMetrics = { left: number; bottom: number; across: number; ratio: number };
 
 export function measurePlane(plane: HTMLElement): PlaneMetrics {
-  const box = plane.getBoundingClientRect();
-  return { left: box.left, bottom: box.bottom, across: box.width, ratio: plane.offsetHeight / (plane.offsetWidth || 1) };
+  // Measure the untransformed eye wrapper. A center hinge or negative tilt can
+  // make either projected edge wider; that bounding box is not the unit scale.
+  const layout = plane.parentElement?.classList.contains('perspective__eye') ? plane.parentElement : plane;
+  const box = layout.getBoundingClientRect();
+  return { left: box.left, bottom: box.bottom, across: box.width, ratio: box.height / (box.width || 1) };
 }
 
 /** `unproject`, off a plane already measured. */
-export function unprojectFrom(plane: PlaneMetrics, { tilt, depth, width }: View, clientX: number, clientY: number): SurfacePoint {
+export function unprojectFrom(plane: PlaneMetrics, { tilt, depth, width, targetY }: View, clientX: number, clientY: number): SurfacePoint {
   const perUnit = plane.across / width || 1;
   const height = width * plane.ratio;
   const across = (clientX - (plane.left + plane.across / 2)) / perUnit;
-  const up = (clientY - plane.bottom) / perUnit;
+  const target = targetY ?? height;
+  const up = (clientY - plane.bottom) / perUnit + height - target;
   const cos = Math.cos(tilt);
   const sin = Math.sin(tilt);
   /* How far back up the surface that point lies, from the hinge. Past the horizon there is no surface left to land on. */
@@ -73,7 +79,7 @@ export function unprojectFrom(plane: PlaneMetrics, { tilt, depth, width }: View,
   const back = denominator > 0 ? (up * depth) / denominator : -height;
   /* What is further back is drawn smaller; across the surface, give that back. */
   const shrink = depth / (depth - back * sin);
-  return { x: width / 2 + across / shrink, y: height + back };
+  return { x: width / 2 + across / shrink, y: target + back };
 }
 
 /** The view of the surface, for the things standing on it. The plane itself they find by looking up. */
@@ -179,7 +185,7 @@ export function surfaceDepth(drawn: number, { angle = GENTLE_VIEW, depth = GENTL
  * Until a thing has one, wrap it in `Standing` and it comes back upright,
  * like a cutout stood on its foot.
  */
-export function Perspective({ angle = GENTLE_VIEW, depth = GENTLE_DEPTH, width = PERSPECTIVE_WIDTH, children, className = '', style }: PerspectiveProps) {
+export function Perspective({ angle = GENTLE_VIEW, depth = GENTLE_DEPTH, width = PERSPECTIVE_WIDTH, targetY, children, className = '', style }: PerspectiveProps) {
   const plane = useRef<HTMLDivElement>(null);
   const tilt = ((PLAN_VIEW - angle) * Math.PI) / 180;
   /*
@@ -204,7 +210,7 @@ export function Perspective({ angle = GENTLE_VIEW, depth = GENTLE_DEPTH, width =
     an honest bench — work that does nothing is worth removing before it is
     worth arguing about.
   */
-  const view = useMemo(() => ({ tilt, depth, width }), [tilt, depth, width]);
+  const view = useMemo(() => ({ tilt, depth, width, targetY }), [tilt, depth, width, targetY]);
   /*
     The plane, measured when it changes rather than on every pointer report.
 
@@ -237,15 +243,15 @@ export function Perspective({ angle = GENTLE_VIEW, depth = GENTLE_DEPTH, width =
       window.removeEventListener('resize', take);
       window.removeEventListener('scroll', take, true);
     };
-  }, [angle, depth, width]);
+  }, [angle, depth, width, targetY]);
   const project = useCallback(
     (clientX: number, clientY: number): SurfacePoint => {
       const box = measured.current ?? (plane.current ? measurePlane(plane.current) : null);
-      return box ? unprojectFrom(box, { tilt, depth, width }, clientX, clientY) : { x: clientX, y: clientY };
+      return box ? unprojectFrom(box, { tilt, depth, width, targetY }, clientX, clientY) : { x: clientX, y: clientY };
     },
-    [tilt, depth, width],
+    [tilt, depth, width, targetY],
   );
-  const vars = { '--perspective-angle': angle, '--perspective-depth': depth, '--perspective-width': width, ...style } as CSSProperties;
+  const vars = { '--perspective-angle': angle, '--perspective-depth': depth, '--perspective-width': width, '--perspective-target': targetY === undefined ? '100%' : `calc(${targetY} * 100cqw / ${width})`, ...style } as CSSProperties;
   return (
     <div className={`perspective ${className}`} style={vars}>
       {/* The eye: its perspective is in surface units, which only a descendant of the container can measure. */}
@@ -321,7 +327,7 @@ export function Solid({ localCoordinates = false, height, foot = ON_ITS_BOTTOM, 
     const plane = element.closest<HTMLElement>('.perspective__plane');
     const measure = () => {
       const stood =
-        plane && view && view.tilt > 0 ? stand(plane, view, mark.getBoundingClientRect(), side.getBoundingClientRect(), 1 - foot.x, height) : FLAT;
+        plane && view && view.tilt !== 0 ? stand(plane, view, mark.getBoundingClientRect(), side.getBoundingClientRect(), 1 - foot.x, height) : FLAT;
       if (localCoordinates) {
         const c = Math.cos(stood.turn), s = Math.sin(stood.turn);
         element.style.setProperty('--solid-rise', String(stood.splay * s + stood.rise * c));

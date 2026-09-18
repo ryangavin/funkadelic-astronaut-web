@@ -12,8 +12,8 @@ test('legacy physical dimensions and camera defaults preserve existing Room', ()
 test('eye and setback derive one physical camera without changing unit scale', () => {
   for (const [eye, desk, setback] of [[1650, 750, 900], [1800, 900, 420], [1650, 750, 0]]) {
     const { camera, stand } = roomSetup({ cameraMode: 'physical', eyeHeightMm: eye, deskHeightMm: desk, viewerSetbackMm: setback, deskWidthMm: 1600, deskDepthMm: 1000 });
-    near(camera.angle, Math.atan2(eye - desk, setback) * 180 / Math.PI);
-    near(camera.depth, Math.hypot(eye - desk, setback) * 1.2);
+    near(camera.angle, Math.atan2(eye - desk, setback - 500) * 180 / Math.PI);
+    near(camera.depth, Math.hypot(eye - desk, setback - 500) * 1.2);
     near(camera.depth * Math.sin(camera.angle * Math.PI / 180), (eye - desk) * 1.2);
     assert.equal(camera.width, 1920); assert.equal(camera.surfaceHeight, 1200); assert.equal(stand, desk * 1.2);
   }
@@ -21,7 +21,7 @@ test('eye and setback derive one physical camera without changing unit scale', (
 test('legacy camera can round trip through physical eye coordinates', () => {
   for (const angle of [15, 45, 60, 84, 90]) {
     const depth = 3200, radians = angle * Math.PI / 180;
-    const { camera } = roomSetup({ cameraMode: 'physical', eyeHeightMm: 750 + depth * Math.sin(radians) / 1.2, viewerSetbackMm: depth * Math.cos(radians) / 1.2 });
+    const { camera } = roomSetup({ cameraMode: 'physical', eyeHeightMm: 750 + depth * Math.sin(radians) / 1.2, viewerSetbackMm: 400 + depth * Math.cos(radians) / 1.2 });
     near(camera.angle, angle); near(camera.depth, depth);
   }
 });
@@ -62,15 +62,34 @@ test('lighting preserves defaults and permits experimental values beyond aesthet
 test('physical lens stays fixed as camera distance or desk width changes', () => {
   const setup = (eye, back, width = 1200) => roomSetup({ cameraMode: 'physical', eyeHeightMm: eye, viewerSetbackMm: back, deskWidthMm: width }).camera;
   const baseline = setup(1650, 650), framing = roomFraming(baseline, true, .75, 100);
-  near(framing.deskShare, .75);
-  for (const camera of [setup(2550, 1300), setup(2550, 650), setup(1650, 1300), setup(1650, 650, 2400)]) {
+  near(framing.deskShare, .75 * Math.hypot(900, 650) / Math.hypot(900, 250));
+  for (const camera of [setup(2550, 900), setup(2550, 650), setup(1650, 1300), setup(1650, 650, 2400)]) {
     const f = roomFraming(camera, true, .75, 100);
     near(camera.depth * f.deskShare / camera.width, baseline.depth * framing.deskShare / baseline.width);
     near(f.lip * f.deskShare / camera.width, framing.lip * framing.deskShare / baseline.width);
   }
-  near(roomFraming(setup(2550, 1300), true, .75, 100).deskShare, .375);
-  near(roomFraming(setup(1650, 650, 2400), true, .75, 100).deskShare, 1.5);
-  assert.deepEqual(roomFraming(setup(2550, 1300), false, .75, 100), { deskShare: .75, lip: 100 });
+  near(roomFraming(setup(2550, 900), true, .75, 100).deskShare, framing.deskShare / 2);
+  near(roomFraming(setup(1650, 650, 2400), true, .75, 100).deskShare, framing.deskShare * 2);
+  assert.deepEqual(roomFraming(setup(2550, 900), false, .75, 100), { deskShare: .75, lip: 100 });
   assert.throws(() => roomFraming({width: 1440, depth: Number.MIN_VALUE}, true, .75, 100), RangeError);
   assert.throws(() => roomFraming({width: 1440, depth: Number.MAX_VALUE}, true, .75, Number.MAX_VALUE), RangeError);
+});
+
+test('wall referenced eye aims at tabletop center and head tilt rotates without moving eye', () => {
+  for (const wallDistance of [0, 400, 800, 1300]) for (const offset of [-15, 0, 15]) {
+    const { camera } = roomSetup({cameraMode:'physical', eyeHeightMm:1650, viewerSetbackMm:wallDistance, headTiltDegrees:offset});
+    const pitch = camera.angle * Math.PI / 180;
+    near(camera.depth * Math.sin(pitch), 1080);
+    near(camera.targetY + camera.depth * Math.cos(pitch), wallDistance * 1.2);
+    near(camera.angle, Math.atan2(900, wallDistance - 400) * 180 / Math.PI + offset);
+    if (!offset) { near(camera.targetY, 480); near(camera.depth, Math.hypot(900,wallDistance-400)*1.2); }
+    const x=600,y=700,h=100, t=camera.targetY,c=Math.sin(pitch),s=Math.cos(pitch),d=camera.depth;
+    const project=(px,py,pz)=>({x:720+(px-720)*d/(d-(py-t)*s-pz*c),y:((py-t)*c-pz*s)*d/(d-(py-t)*s-pz*c)});
+    const elevated=projectElevation(x,y,h,camera), actual=project(elevated.x,elevated.y,0), expected=project(x,y,h);
+    near(actual.x,expected.x); near(actual.y,expected.y);
+  }
+  const above=roomSetup({cameraMode:'physical',eyeHeightMm:1650,viewerSetbackMm:400}).camera;
+  near(above.angle,90);
+  assert.ok(roomSetup({cameraMode:'physical',eyeHeightMm:1650,viewerSetbackMm:0}).camera.angle>90);
+  for(const headTiltDegrees of [-180,180,Infinity,NaN]) assert.throws(()=>roomSetup({cameraMode:'physical',eyeHeightMm:1650,viewerSetbackMm:650,headTiltDegrees}), /look angle/);
 });

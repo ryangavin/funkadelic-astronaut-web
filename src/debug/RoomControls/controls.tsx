@@ -12,7 +12,8 @@ export const physicalControls = {
   deskHeightMm: numeric('Physical desk', 'Tabletop height above the floor in millimetres.'),
   deskEdgeMm: numeric('Physical desk', 'Drawn front edge thickness in millimetres; zero hides it.'),
   eyeHeightMm: numeric('Physical camera', 'Eye height above the floor; must exceed tabletop height.'),
-  viewerSetbackMm: numeric('Physical camera', 'Horizontal distance back from the desk front edge. Zero is overhead.'),
+  viewerSetbackMm: numeric('Physical camera', 'Horizontal distance from the wall. Half the desk depth puts the eye over tabletop center.'),
+  headTiltDegrees: numeric('Physical camera', 'Look angle offset from tabletop center. Positive looks farther down; zero aims at center.', 1),
   lampIntensity: numeric('Lighting', 'Relative emitted pool brightness: zero emits no light, one preserves the original.', 0.1),
   roomSpanMm: numeric('Room extent', 'Exact width of floor and wall in millimetres. Leave unset for automatic frame coverage.'),
   floorFrontMm: numeric('Room extent', 'Exact floor extension in millimetres. Leave unset for automatic frame coverage.'),
@@ -29,7 +30,7 @@ export const physicalControls = {
 };
 export const physicalDefaults = {
   cameraMode: 'legacy' as const, deskWidthMm: 1200, deskDepthMm: 800, deskHeightMm: 750, deskEdgeMm: 10,
-  eyeHeightMm: 1650, viewerSetbackMm: 650, lampIntensity: 1,
+  eyeHeightMm: 1650, viewerSetbackMm: 650, headTiltDegrees: 0, lampIntensity: 1,
   ...DEFAULT_LIGHT_TUNING,
 };
 export function withLightTuning<T extends RoomProps & RoomStoryControls>(args: T) {
@@ -63,7 +64,8 @@ export function RoomControlPanel({ args, update, children }: { args: RoomProps &
     ['deskDepthMm', 'Desk depth (mm)', 200, 1800, 10, true],
     ['deskHeightMm', 'Desk height (mm)', 100, 1600, 10, true],
     ['eyeHeightMm', 'Eye height (mm)', 600, 2400, 10, true],
-    ['viewerSetbackMm', 'Setback (mm)', 0, 3000, 10, true],
+    ['viewerSetbackMm', 'Wall distance (mm)', 0, 3000, 10, true],
+    ['headTiltDegrees', 'Head tilt (degrees)', -60, 60, 1, false],
     ['lampIntensity', 'Light intensity', 0, 6, 0.1, false],
     ['poolSpread', 'Pool spread', 0, 6, 0.1, false],
   ] as const;

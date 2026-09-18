@@ -144,13 +144,13 @@ function DeskLightLayers({ width, depth }: { width: number; depth: number }) {
  */
 /** Invalid numeric edits show a recoverable diagnostic instead of broken CSS. */
 export function Room(props: RoomProps) {
-  const { cameraMode, deskWidthMm, deskDepthMm, deskHeightMm, deskEdgeMm, eyeHeightMm, viewerSetbackMm, angle, depth } = props;
+  const { cameraMode, deskWidthMm, deskDepthMm, deskHeightMm, deskEdgeMm, eyeHeightMm, viewerSetbackMm, headTiltDegrees, angle, depth } = props;
   const measured = useMemo(() => {
     try {
-      const setup = roomSetup({ cameraMode, deskWidthMm, deskDepthMm, deskHeightMm, deskEdgeMm, eyeHeightMm, viewerSetbackMm }, angle ?? GENTLE_VIEW, depth ?? GENTLE_DEPTH);
+      const setup = roomSetup({ cameraMode, deskWidthMm, deskDepthMm, deskHeightMm, deskEdgeMm, eyeHeightMm, viewerSetbackMm, headTiltDegrees }, angle ?? GENTLE_VIEW, depth ?? GENTLE_DEPTH);
       return { setup };
     } catch (error) { return { error: error instanceof Error ? error.message : 'Invalid room geometry' }; }
-  }, [cameraMode, deskWidthMm, deskDepthMm, deskHeightMm, deskEdgeMm, eyeHeightMm, viewerSetbackMm, angle, depth]);
+  }, [cameraMode, deskWidthMm, deskDepthMm, deskHeightMm, deskEdgeMm, eyeHeightMm, viewerSetbackMm, headTiltDegrees, angle, depth]);
   const resolved = useMemo(() => {
     if ('error' in measured) return { error: measured.error ?? 'Invalid room geometry' };
     try {
@@ -171,7 +171,7 @@ export function Room(props: RoomProps) {
       if (props.room !== false) roomSurfaceExtents({
         angle: setup.camera.angle, depth: setup.camera.depth,
         deskWidth: setup.camera.width, deskDepth: setup.camera.surfaceHeight, stand: setup.stand,
-        ...framing,
+        ...framing, targetY: setup.camera.targetY, frameAnchor: cameraMode === 'physical' ? .5 : 1,
       }, {
         span: props.roomSpanMm === undefined ? undefined : mmToUnits(props.roomSpanMm),
         front: props.floorFrontMm === undefined ? undefined : mmToUnits(props.floorFrontMm),
@@ -195,7 +195,7 @@ export function Room(props: RoomProps) {
 
 function RoomScene({ setup, tuning, cameraMode, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & { setup: ReturnType<typeof roomSetup>; tuning: LightTuning }) {
   const { camera, stand, edge } = setup;
-  const framing = roomFraming(camera, cameraMode === 'physical', deskShare, room ? roomLip : 0);
+  const framing = roomFraming(camera, cameraMode === 'physical', deskShare, room || cameraMode === 'physical' ? roomLip : 0);
   const span = roomSpanMm === undefined ? undefined : mmToUnits(roomSpanMm);
   const front = floorFrontMm === undefined ? undefined : mmToUnits(floorFrontMm);
   const wallHeight = wallHeightMm === undefined ? undefined : mmToUnits(wallHeightMm);
@@ -261,8 +261,8 @@ function RoomScene({ setup, tuning, cameraMode, showPerformance = false, lampInt
     <RoomCamera.Provider value={camera}>
       {/* The frame: 16 x 9, cropping the room. Told there is a room in it, it
           becomes the container the desk takes its share of the width from. */}
-      <Inspector className={`room ${className}`.trim()} data-room={room ? '' : undefined} data-physical={cameraMode === 'physical' ? '' : undefined} style={{ '--room-desk-width': camera.width, '--room-share': framing.deskShare, '--room-lip': framing.lip, ...style } as React.CSSProperties}><DeskLighting>
-        {room && <DeskRoom angle={camera.angle} depth={camera.depth} deskWidth={camera.width} deskDepth={camera.surfaceHeight} stand={stand} span={span} front={front} wallHeight={wallHeight} lip={framing.lip} floor={floor} wall={wall} blur={roomBlur} dim={roomDim} deskShare={framing.deskShare} shadowStrength={shadowStrength} />}
+      <Inspector className={`room ${className}`.trim()} data-room={room ? '' : undefined} data-physical={cameraMode === 'physical' ? '' : undefined} style={{ '--room-desk-width': camera.width, '--room-share': framing.deskShare, '--room-lip': framing.lip, '--room-target': camera.targetY ?? camera.surfaceHeight, ...style } as React.CSSProperties}><DeskLighting>
+        {room && <DeskRoom targetY={camera.targetY} frameAnchor={cameraMode === 'physical' ? .5 : 1} angle={camera.angle} depth={camera.depth} deskWidth={camera.width} deskDepth={camera.surfaceHeight} stand={stand} span={span} front={front} wallHeight={wallHeight} lip={framing.lip} floor={floor} wall={wall} blur={roomBlur} dim={roomDim} deskShare={framing.deskShare} shadowStrength={shadowStrength} />}
         <div className="room__stand">
           <Perspective {...camera} className="perspective--lamp-study">
             {/* The materials class is what tells the things on it they are being

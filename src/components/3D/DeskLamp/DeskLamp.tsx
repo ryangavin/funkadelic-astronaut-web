@@ -184,7 +184,8 @@ export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledH
       const k = projectElevation(0, 0, bulbHeight + mmToUnits(50) * constructionScale, camera).scale;
       if (k === 0) return { x, y };
       const wx = camera.width / 2 + (surface.x - camera.width / 2) / k;
-      const wy = camera.surfaceHeight + (surface.y - camera.surfaceHeight) / k + (bulbHeight + mmToUnits(50) * constructionScale) * Math.tan(tilt);
+      const target = camera.targetY ?? camera.surfaceHeight;
+      const wy = target + (surface.y - target) / k + (bulbHeight + mmToUnits(50) * constructionScale) * Math.tan(tilt);
       const at = standing()!;
       const ox = wx - at.x - 360 * unit, oy = wy - at.y - 300 * unit;
       return { x: 360 + (ox * Math.cos(turn) + oy * Math.sin(turn)) / unit, y: 300 + (-ox * Math.sin(turn) + oy * Math.cos(turn)) / unit };
