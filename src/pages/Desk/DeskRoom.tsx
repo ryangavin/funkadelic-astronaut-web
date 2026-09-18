@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useId, useRef, type Ref } from 'react';
+import { memo, useId, useRef, type Ref } from 'react';
 import { useDeskLightEffect } from '../../behaviors/DeskLighting/DeskLighting';
 import { DESK_WIDTH } from '../../components/3D/Desk/Desk';
 import { Floor, type FloorWood } from '../../components/3D/Floor/Floor';
@@ -268,7 +268,24 @@ function DeskFloorShadow({ deskDepth, stand, floorDepth, strength }: { deskDepth
  * so the room is dimmed and softened a little rather than lit as far as it
  * really would be.
  */
-export function DeskRoom({ angle, depth, deskShare = ROOM_DESK_SHARE, deskDepth = ROOM_DESK_DEPTH, stand = DESK_STAND, lip = ROOM_LIP, floor = 'pine', wall = 'red', blur = 1, dim = 0.32, shadowStrength = 0.36 }: DeskRoomProps) {
+/*
+  Memoised, and it matters more than it looks.
+
+  Nothing in this room depends on where anything on the desk is. But it is
+  rendered from the same component that owns the placements, so every step of
+  every drag used to re-render the whole of it — and DeskFloorShadow below
+  writes its geometry in a layout effect that runs after each of its own
+  renders, whether or not the lamp has moved. That put some two dozen attribute
+  writes a frame onto the shadow, none of which changed a value, and each of
+  them marked the floor to be drawn again: twelve courses of turbulence and
+  displacement rasterised afresh, then blurred, to put a shadow exactly where
+  it already was. It was measured at twenty-six milliseconds a frame — the
+  difference between a desk at twenty-three a second and one at sixty.
+
+  Held, the room renders when the room changes. The lamp still moves the shadow,
+  through the light store, which is what the store is for.
+*/
+export const DeskRoom = memo(function DeskRoom({ angle, depth, deskShare = ROOM_DESK_SHARE, deskDepth = ROOM_DESK_DEPTH, stand = DESK_STAND, lip = ROOM_LIP, floor = 'pine', wall = 'red', blur = 1, dim = 0.32, shadowStrength = 0.36 }: DeskRoomProps) {
   const { back, down } = floorLies(angle, stand);
   const floorDepth = deskDepth + FLOOR_FRONT;
   return (
@@ -312,4 +329,4 @@ export function DeskRoom({ angle, depth, deskShare = ROOM_DESK_SHARE, deskDepth 
       <div className="desk-room__haze" />
     </div>
   );
-}
+});

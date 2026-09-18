@@ -90,6 +90,16 @@ export function useDeskLightPart<T>(select: (light: DeskLight | null) => T): T {
  * writes its own attributes, which is free, instead of being rebuilt, which is
  * not. It runs after every render of its own component too, so a thing that has
  * been moved on the desk redraws its shadow with it.
+ *
+ * That last part is a trap worth naming, since it has cost a desk its frame
+ * rate once already. Running after every render is right for a shadow whose own
+ * object has moved, and wrong for everything else: a caller that re-renders for
+ * reasons of its own rewrites its geometry anyway, at the value it already had,
+ * and an attribute written back unchanged still marks its element to be drawn
+ * again. What that costs is not the write — it is whatever else shares the
+ * layer it dirtied. So anything using this wants to be sure it re-renders only
+ * when what it draws has really changed; on this desk each cast shadow is
+ * memoised per object, and the room is memoised whole.
  */
 export function useDeskLightEffect(run: (light: DeskLight | null) => void) {
   const store = useContext(Store);
