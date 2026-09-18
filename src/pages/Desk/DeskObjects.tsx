@@ -6,6 +6,7 @@ import { DossierCover } from './DossierCover';
 import { BandDossier } from '../../sections/BandDossier/BandDossier';
 import { memo, useCallback, useRef, useState, type ReactNode } from 'react';
 import { Movable, type Place } from '../../behaviors/Movable/Movable';
+import { Tallied } from '../../behaviors/DeskPerf/tally';
 import { Inspectable, useInspection } from '../../behaviors/Inspectable/Inspectable';
 import { Solid, type Foot } from '../../behaviors/Perspective/Perspective';
 import { Relief, StudyLighting, ROUND_CASE, type StudyCamera, type StudyShape } from '../../behaviors/Perspective/DeskObjectStudy';
@@ -116,7 +117,9 @@ function PenRelief({ place, camera, width }: { place: Place; camera: StudyCamera
 */
 const ObjectShadow = memo(function ObjectShadow({ object, place, height }: { object: ObjectSpec; place: Place; height: number }) {
   const size = sizeOf(object, place);
-  return <StudyLighting shadowOnly surfaceHeight={height} place={place} pivot={pivotOf(object)} width={size.width} depth={size.depth} heightMm={size.heightMm} mug={object.id === 'mug'} shapes={(object.shapes ?? [{ path: ROUND_CASE }] as StudyShape[]).map(shape => ({ ...shape, heightMm: shape.heightMm === undefined ? undefined : shape.heightMm * size.scale }))} />;
+  /* Counted apart from the thing itself: a shadow that rebuilds when its object
+     moves is a different fact from the object rebuilding, and they want different fixes. */
+  return <Tallied id={`${object.name} — shadow`}><StudyLighting shadowOnly surfaceHeight={height} place={place} pivot={pivotOf(object)} width={size.width} depth={size.depth} heightMm={size.heightMm} mug={object.id === 'mug'} shapes={(object.shapes ?? [{ path: ROUND_CASE }] as StudyShape[]).map(shape => ({ ...shape, heightMm: shape.heightMm === undefined ? undefined : shape.heightMm * size.scale }))} /></Tallied>;
 });
 
 export function DeskObjectShadows({ placements, height }: { placements: ObjectPlacements; height: number }) {

@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState, type CSSProperties, type HTMLAttributes, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
+import { Tallied } from '../DeskPerf/tally';
 import './Movable.css';
 
 /** Where a thing lies: its top-left corner in the surface's units, its tilt, and how big it is drawn. */
@@ -41,6 +42,34 @@ export const MovableScale = createContext<() => number>(() => 1);
  * the surface rather than across the screen.
  */
 export const MovableProject = createContext<((clientX: number, clientY: number) => { x: number; y: number }) | null>(null);
+
+/**
+ * Whether a thing writes its own place while it is being dragged.
+ *
+ * This is an experiment and it is off everywhere but the bench. It exists
+ * because a real hand says the desk lags the pointer by some seventy
+ * milliseconds — four frames — while the same drag measured by a dispatched
+ * event says nothing is wrong, and a hand counting pointer reports says exactly
+ * one arrives a frame, so there is nothing to coalesce and nothing to skip. If
+ * the stream is not outrunning us, the only thing left is how far each move has
+ * to travel before it is drawn.
+ *
+ * As it stands that is: pointer event, this handler, `onMove`, the owner's
+ * state, a render of the whole desk, and only then the place on this element.
+ * Turned on, the place is written straight onto the element in the handler and
+ * the owner is told once, when the thing is put down — which is what `onSettle`
+ * was always for, and how every shadow on this desk already keeps up with the
+ * lamp.
+ *
+ * What it costs while it is on: the shadow of the thing being dragged is drawn
+ * from the place React knows, so it stays where the thing started until the
+ * thing is put down. That is the honest reason this is not simply the way
+ * Movable works — doing it properly means the place becoming a store that a
+ * shadow can subscribe to, the way the light is. This is here to find out
+ * whether that is worth doing, by hand, which is the only way this particular
+ * question can be answered.
+ */
+export const MovableLive = createContext(false);
 
 const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
 
@@ -131,6 +160,9 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
   const anchor = useRef<HTMLSpanElement>(null);
   const surfaceScale = useContext(MovableScale);
   const project = useContext(MovableProject);
+  const live = useContext(MovableLive);
+  /* Where the thing has got to while the owner is not being told. */
+  const latest = useRef<Place | null>(null);
   const press = useRef<Press | null>(null);
   const [dragging, setDragging] = useState<Gesture | null>(null);
   const [gripDismissed, setGripDismissed] = useState(false);
@@ -187,7 +219,12 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
   function finish(start: Press) {
     press.current = null;
     setWatching(false);
-    let settled: Place = { x, y, rotation, scale };
+    /* Written straight to the element while the drag ran, so this is the first
+       the owner hears of any of it. Told before anything below reads `settled`. */
+    const carried = latest.current;
+    latest.current = null;
+    if (carried && onMove) onMove(carried);
+    let settled: Place = carried ?? { x, y, rotation, scale };
     /* A resize keeps its pivot by measuring where the pivot has got to, which
        trails the size it is answering by a frame; on the last of them there is
        no next frame, so it is settled here instead. */
@@ -268,6 +305,24 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
     begin(event, event.altKey ? 'turn' : 'move');
   };
 
+  /* Either hand the place to whoever owns it, or write it here and tell them later. */
+  const put = (next: Place) => {
+    /* Only a plain move goes round the owner. A turn or a resize is worked out
+       from the place as the owner last had it, so diverting those would have them
+       measuring against a number that had stopped being true. */
+    if (!live || press.current?.gesture !== 'move') {
+      onMove?.(next);
+      return;
+    }
+    latest.current = next;
+    const element = host.current;
+    if (!element) return;
+    element.style.setProperty('--movable-x', String(next.x));
+    element.style.setProperty('--movable-y', String(next.y));
+    element.style.setProperty('--movable-rotation', `${next.rotation ?? 0}deg`);
+    if (width > 0) element.style.setProperty('--movable-width', `calc(${width * (next.scale ?? 1)} * var(--movable-unit))`);
+  };
+
   const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
     const start = press.current;
     if (!start || !onMove || event.pointerId !== start.id) return;
@@ -292,7 +347,7 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
         /* The thing follows the pointer round the pivot: the side you took is the side that ends up where you point. */
         const swept = (Math.atan2(here.y - at.y, here.x - at.x) - start.angle) * 180 / Math.PI;
         const turned = start.rotation + swept;
-        onMove({ x: start.x, y: start.y, scale: start.scale, rotation: event.shiftKey ? Math.round(turned / MOVABLE_SNAP_TURN) * MOVABLE_SNAP_TURN : Math.round(turned * 2) / 2 });
+        put({ x: start.x, y: start.y, scale: start.scale, rotation: event.shiftKey ? Math.round(turned / MOVABLE_SNAP_TURN) * MOVABLE_SNAP_TURN : Math.round(turned * 2) / 2 });
         return;
       }
       /* Out from the pivot is bigger, in toward it smaller — and the pivot itself does not move.
@@ -302,18 +357,18 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
       const stands = onSurface(now.cx, now.cy);
       const drift = { x: start.anchor.x - stands.x, y: start.anchor.y - stands.y };
       const grown = resized(start.scale * away / start.reach);
-      onMove({ x: Math.round(grown.x + drift.x), y: Math.round(grown.y + drift.y), scale: grown.scale, rotation: start.rotation });
+      put({ x: Math.round(grown.x + drift.x), y: Math.round(grown.y + drift.y), scale: grown.scale, rotation: start.rotation });
       return;
     }
     if (project) {
       /* On a tilted surface the pointer's travel is worth more near the eye than far from it: map both ends of it onto the surface. */
       const from = project(start.px, start.py);
       const to = project(event.clientX, event.clientY);
-      onMove({ x: Math.round(start.x + to.x - from.x), y: Math.round(start.y + to.y - from.y), rotation: start.rotation, scale: start.scale });
+      put({ x: Math.round(start.x + to.x - from.x), y: Math.round(start.y + to.y - from.y), rotation: start.rotation, scale: start.scale });
       return;
     }
     const perUnit = surfaceScale() || 1;
-    onMove({ x: Math.round(start.x + dx / perUnit), y: Math.round(start.y + dy / perUnit), rotation: start.rotation, scale: start.scale });
+    put({ x: Math.round(start.x + dx / perUnit), y: Math.round(start.y + dy / perUnit), rotation: start.rotation, scale: start.scale });
   };
 
   /* A thing grows from its corner, so growing it alone would walk it off the spot
@@ -401,7 +456,10 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
     ...style,
   } as CSSProperties;
 
+  /* Counted by name when a bench is counting, and not wrapped in anything at all
+     when none is: a thing on a desk is the unit anyone actually asks about. */
   return (
+    <Tallied id={label ?? 'unnamed thing'}>
     <div
       {...rest}
       ref={host}
@@ -458,5 +516,6 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
         </button>
       )}
     </div>
+    </Tallied>
   );
 }

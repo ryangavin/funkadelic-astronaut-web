@@ -1,17 +1,44 @@
-/* The bench around the desk: a readout down one side, the desk itself filling the rest. */
+/*
+  The bench: the scene across the top half of the screen, and everything the
+  bench has to say about it underneath, at the full width of the page.
+
+  It used to be a column down one side, which put the desk in a slot too narrow
+  to drag anything across and left the readouts in a single tall stack that
+  nobody could see the end of. The scene is the subject, so it gets the whole
+  width and a fixed half of the height — a fixed half, so that two runs are
+  taken at the same size, which every number here depends on.
+*/
 .desk-perf {
   display: grid;
-  grid-template-columns: minmax(20rem, 24rem) 1fr;
+  grid-template-rows: 50svh auto;
   gap: 1rem;
-  align-items: start;
-  min-height: 100vh;
+  min-height: 100svh;
   padding: 1rem;
   background: #14110e;
   color: #efe7dc;
   font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-.desk-perf__panel { position: sticky; top: 1rem; display: grid; gap: .75rem; }
+/*
+  The readouts, laid across the width in as many columns as will fit rather than
+  one long column. Each is its own block and they are read in any order, so they
+  fall where they fit.
+*/
+.desk-perf__panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));
+  align-items: start;
+  gap: 1rem 1.75rem;
+}
+
+/* What the bench is and what its buttons do: across the top of the readouts, not in a column of its own. */
+.desk-perf__head {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+  align-items: start;
+  gap: .75rem 1.75rem;
+}
 .desk-perf__panel h2 { margin: 0; font-size: 1rem; letter-spacing: .04em; text-transform: uppercase; }
 .desk-perf__hint { margin: 0; color: #a99e90; }
 .desk-perf__actions { display: flex; flex-wrap: wrap; gap: .5rem; }
@@ -43,11 +70,31 @@
 .desk-perf__react { margin: 0; padding-top: .5rem; border-top: 1px solid #2e2823; color: #a99e90; }
 .desk-perf__react strong { color: #efe7dc; font-weight: 600; }
 
-.desk-perf__desk { overflow: hidden; border-radius: .25rem; }
+/*
+  The scene fills the half it has been given rather than asking for a screen of
+  its own, which is what the composition does left to itself.
+*/
+.desk-perf__desk {
+  min-height: 0;
+  overflow: hidden;
+  border-radius: .25rem;
+}
+
+.desk-perf__desk .perspective-desk-room {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  height: 100%;
+  padding: 0;
+}
+
+.desk-perf__desk .perspective-desk__frame {
+  max-width: min(100%, calc(50svh * 16 / 9));
+  max-height: 100%;
+}
 
 @media (max-width: 60rem) {
-  .desk-perf { grid-template-columns: 1fr; }
-  .desk-perf__panel { position: static; }
+  .desk-perf { grid-template-rows: 40svh auto; }
 }
 
 /* The bench's own reading of the run. A window that was not drawing is the one
@@ -116,3 +163,14 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* The one control here that changes the desk rather than measuring it. */
+.desk-perf__toggle { display: flex; gap: .5rem; align-items: flex-start; cursor: pointer; }
+.desk-perf__toggle input { margin: .2rem 0 0; cursor: pointer; }
+
+/* The head's own prose stays readable rather than stretching the width of the page. */
+.desk-perf__head h2 { grid-column: 1 / -1; }
+.desk-perf__head .desk-perf__hint { max-width: 60ch; }
+
+/* A total, set apart from the things it totals. */
+.desk-perf__table tfoot th, .desk-perf__table tfoot td { border-top: 1px solid #4a4038; border-bottom: 0; color: #a99e90; }

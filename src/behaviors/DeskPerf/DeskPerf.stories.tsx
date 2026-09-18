@@ -5,7 +5,8 @@ import { DESK_DEPTH, PerspectiveDesk } from '../../pages/Desk/PerspectiveDesk';
 import { DESK_OBJECTS, DeskObject } from '../../pages/Desk/DeskObjects';
 import { DESK_WIDTH } from '../../components/3D/Desk/Desk';
 import { GENTLE_DEPTH, GENTLE_VIEW } from '../Perspective/Perspective';
-import type { Place } from '../Movable/Movable';
+import { MovableLive, type Place } from '../Movable/Movable';
+import { RenderTally, makeTally, type Rendered } from './tally';
 import { attribute, census, dragLag, draggables, frameSeries, splitFrames, sweep, wastedWork, watchHandDrag, type Attribution, type Census, type DragLag, type FrameCost, type FrameSplit, type HandDrag, type Series, type Verdict, type Wasted } from './probe';
 import './DeskPerf.css';
 
@@ -74,6 +75,12 @@ function Bench({ only }: { only?: string }) {
   const [made, setMade] = useState<Census>();
   /* Every frame of one drag, in the order they happened. */
   const [series, setSeries] = useState<Series>();
+  /* The one experiment here that only a hand can judge: see MovableLive. */
+  const [live, setLive] = useState(false);
+  /* Who re-rendered, over whatever was last measured. Collected into a plain
+     object and read out once, for the same reason the Profiler above is. */
+  const counter = useRef(makeTally()).current;
+  const [rendered, setRendered] = useState<Rendered[]>([]);
 
   /* Counted into a ref, never into state: the desk is inside this component, so
      a profiler that set state would re-render the thing it is profiling and go
@@ -109,10 +116,12 @@ function Bench({ only }: { only?: string }) {
           ? `${held.current} — worst ${worstPx.current.toFixed(0)}px behind while properly moving, about ${worstSeen.current.toFixed(0)}ms. ${stream} Drag again to retake it.`
           : `${held.current} — never moved fast enough to measure. ${stream} Drag it briskly across the desk.`;
         held.current = '';
+        /* The drag is over, so telling React now costs nothing that was being measured. */
+        setRendered(counter.read());
       }
       return;
     }
-    if (!held.current) { worstSeen.current = 0; worstPx.current = 0; mostReports.current = 0; reportFrames.current = 0; reportTotal.current = 0; }
+    if (!held.current) { worstSeen.current = 0; worstPx.current = 0; mostReports.current = 0; reportFrames.current = 0; reportTotal.current = 0; counter.clear(); }
     if (drag.movesThisFrame > 0) { reportFrames.current += 1; reportTotal.current += drag.movesThisFrame; }
     if (drag.movesThisFrame > mostReports.current) mostReports.current = drag.movesThisFrame;
     held.current = drag.label;
@@ -125,7 +134,7 @@ function Bench({ only }: { only?: string }) {
       ? `${drag.label}: ${drag.trailingPx}px behind at ${drag.speedPxPerFrame}px a frame — ${drag.msBehind}ms (worst ${worstPx.current.toFixed(0)}px · ${worstSeen.current.toFixed(0)}ms), frame ${drag.frameMs}ms, ${drag.movesThisFrame} report${drag.movesThisFrame === 1 ? '' : 's'} this frame`
       : `${drag.label}: ${drag.trailingPx}px behind, but only ${drag.speedPxPerFrame}px a frame — move faster for a reading.`;
     line.toggleAttribute('data-slow', worstPx.current > 20);
-  }), []);
+  }), [counter]);
 
   const root = () => desk.current ?? document.body;
   const run = async (what: string, job: () => Promise<void>) => {
@@ -135,12 +144,14 @@ function Bench({ only }: { only?: string }) {
     /* Let the button's own repaint land before the clock starts. */
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     tally.current = { count: 0, totalMs: 0, worstMs: 0 };
+    counter.clear();
     /* Every run is broken down, not just the one button that asks for it: the
        question of whether a slow frame was ours or the drawing's comes up for
        all of them, and this costs nothing to have running. */
     const frames = splitFrames();
     try { await job(); } finally {
       setSplit(frames.stop());
+      setRendered(counter.read());
       setCommits(tally.current);
       setRunning('');
     }
@@ -197,7 +208,13 @@ function Bench({ only }: { only?: string }) {
   const worst = rows.find(row => row.label !== 'nothing — the desk at rest');
 
   return <div className="desk-perf">
+    <div className="desk-perf__desk" ref={desk}>
+      <RenderTally.Provider value={counter.tally}><MovableLive.Provider value={live}>
+        <Profiler id="desk" onRender={onRender}>{only ? <OneThing id={only} /> : <PerspectiveDesk showSettings={false} />}</Profiler>
+      </MovableLive.Provider></RenderTally.Provider>
+    </div>
     <aside className="desk-perf__panel">
+      <div className="desk-perf__head">
       <h2>Where the frame goes</h2>
       <p className="desk-perf__hint">
         Two different questions, and a desk can fail either one. <em>Dragging</em> is how long a frame
@@ -225,6 +242,22 @@ function Bench({ only }: { only?: string }) {
       {/* The one measurement here that is not synthetic, and so the only one
           entitled to disagree with the others. */}
       <p className="desk-perf__hand" ref={readout}>Drag something on the desk by hand.</p>
+
+      {/* Not a measurement. A real hand says the desk trails the pointer by four
+          frames while every dispatched drag says it does not, and a hand counting
+          pointer reports says one arrives a frame, so there is nothing to skip.
+          This takes the owner's state out of the path and leaves the rest alone,
+          to be judged the only way that question can be: by dragging. */}
+      <label className="desk-perf__toggle">
+        <input type="checkbox" checked={live} onChange={event => setLive(event.target.checked)} />
+        Write the place straight to the element, and tell React when it is put down
+      </label>
+      <p className="desk-perf__hint">
+        Drag something, tick this, drag it again. While it is on, the shadow of whatever you are
+        dragging stays where the thing started until you let go — that is the cost of the shortcut,
+        not a fault in it. Turning and resizing are left on the ordinary path.
+      </p>
+      </div>
 
       {!!rows.length && <table className="desk-perf__table">
         <caption>Dragging</caption>
@@ -307,6 +340,23 @@ function Bench({ only }: { only?: string }) {
         </tbody>
       </table>}
 
+      {/* Who re-rendered, and what it cost them. The desk-wide count below says
+          how busy React was; this says who was busy, which is the only form of
+          that number anyone can act on. */}
+      {!!rendered.length && <table className="desk-perf__table">
+        <caption>…and what re-rendered while it happened</caption>
+        <thead><tr><th scope="col">What</th><th scope="col">Renders</th><th scope="col">All told</th><th scope="col">Worst</th></tr></thead>
+        <tbody>{rendered.map(one => <tr key={one.id} data-slow={one.renders > 40 ? '' : undefined} data-tight={one.renders > 10 && one.renders <= 40 ? '' : undefined}>
+          <th scope="row">{one.id}</th><td>{one.renders}</td><td>{one.totalMs}ms</td><td>{one.worstMs}ms</td>
+        </tr>)}</tbody>
+        <tfoot><tr>
+          <th scope="row">Everything</th>
+          <td>{rendered.reduce((all, one) => all + one.renders, 0)}</td>
+          <td>{rendered.reduce((all, one) => all + one.totalMs, 0).toFixed(1)}ms</td>
+          <td>—</td>
+        </tr></tfoot>
+      </table>}
+
       {/* One drag, frame by frame. A median hides a step and a worst frame calls
           it a blip; laid out in order it is plainly two different drags. */}
       {series && <div className="desk-perf__series">
@@ -348,9 +398,6 @@ function Bench({ only }: { only?: string }) {
         worst <strong>{commits.worstMs.toFixed(1)}ms</strong>.
       </p>
     </aside>
-    <div className="desk-perf__desk" ref={desk}>
-      <Profiler id="desk" onRender={onRender}>{only ? <OneThing id={only} /> : <PerspectiveDesk showSettings={false} />}</Profiler>
-    </div>
   </div>;
 }
 

@@ -194,7 +194,12 @@ test('Movable is picked up by its body, follows the pointer in surface units, an
   // The pointer is captured once the press has travelled, and its travel is scaled to units.
   assert.match(behavior, /if \(Math\.hypot\(dx, dy\) < MOVABLE_DRAG_THRESHOLD\) return;/);
   assert.match(behavior, /host\.current\?\.setPointerCapture\(start\.id\)/);
-  assert.match(behavior, /onMove\(\{ x: Math\.round\(start\.x \+ dx \/ perUnit\), y: Math\.round\(start\.y \+ dy \/ perUnit\), rotation: start\.rotation, scale: start\.scale \}\)/);
+  assert.match(behavior, /put\(\{ x: Math\.round\(start\.x \+ dx \/ perUnit\), y: Math\.round\(start\.y \+ dy \/ perUnit\), rotation: start\.rotation, scale: start\.scale \}\)/);
+  // Every step of a gesture goes through `put`, which either hands the place to whoever owns it or,
+  // under MovableLive, writes it straight onto the element and tells them when the thing is put down.
+  assert.match(behavior, /export const MovableLive = createContext\(false\)/);
+  assert.match(behavior, /if \(!live \|\| press\.current\?\.gesture !== 'move'\) \{/);
+  assert.match(behavior, /if \(carried && onMove\) onMove\(carried\);/);
   assert.match(behavior, /element\.addEventListener\('click', swallow, \{ capture: true, once: true \}\)/);
   // A press is watched to its end on the window, so a release off the thing never leaves it on the pointer.
   assert.match(behavior, /window\.addEventListener\('pointerup', end, true\)/);
