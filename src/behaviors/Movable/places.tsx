@@ -33,6 +33,9 @@ export type PlaceStore = {
   /** Every place as it stands. For whoever wants to write the arrangement down. */
   all: () => Record<string, Place>;
   set: (id: string, place: Place) => void;
+  /** Frame-driven motion must bypass the drawing’s own CSS easing. Not saved. */
+  isArranging: (id: string) => boolean;
+  setArranging: (id: string, active: boolean) => void;
   /** Put a whole arrangement back, as a saved composition does. Tells everything. */
   reset: (places: Record<string, Place>) => void;
   subscribe: (id: string, listener: () => void) => () => void;
@@ -40,6 +43,7 @@ export type PlaceStore = {
 
 export function makePlaces(initial: Record<string, Place> = {}): PlaceStore {
   let places: Record<string, Place> = { ...initial };
+  const arranging = new Set<string>();
   const listeners = new Map<string, Set<() => void>>();
   const tell = (id: string) => {
     for (const listener of [...(listeners.get(id) ?? [])]) listener();
@@ -47,6 +51,12 @@ export function makePlaces(initial: Record<string, Place> = {}): PlaceStore {
   return {
     get: id => places[id],
     all: () => places,
+    isArranging: id => arranging.has(id),
+    setArranging: (id, active) => {
+      if (arranging.has(id) === active) return;
+      if (active) arranging.add(id); else arranging.delete(id);
+      tell(id);
+    },
     set: (id, place) => {
       if (places[id] === place) return;
       places = { ...places, [id]: place };

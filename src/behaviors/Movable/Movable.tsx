@@ -346,6 +346,7 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
   useLayoutEffect(() => {
     if (!kept || !places) return;
     const update = () => {
+      host.current?.toggleAttribute('data-arranging', places.isArranging(kept));
       const next = places.get(kept);
       if (next) redraw.current(next);
     };

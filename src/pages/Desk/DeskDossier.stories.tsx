@@ -95,3 +95,39 @@ export const ReachableTab: Story = {
     await waitFor(() => expect(canvasElement.querySelectorAll('.spilled')).toHaveLength(0), { timeout: 2500 });
   },
 };
+
+/** Store coordinates, rendered movement and solid projection agree mid-flight. */
+export const MotionStaysAligned: Story = {
+  args: { only: ['dossier', 'pen', 'mug', 'phone', 'rolodex', 'labelBro'], angle: 80, depth: 5000 },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const pen = canvas.getByRole('group', { name: 'Pen' });
+    const ordinaryTransition = getComputedStyle(pen).transitionProperty;
+    const solids = ['Mug', 'Desk phone', 'Rolodex', 'Label Bro'].map(name => {
+      const body = canvas.getAllByRole('group', { name }).find(element => element.classList.contains('movable'))!;
+      const solid = body.querySelector<HTMLElement>('.solid')!;
+      const projection = () => ['--solid-rise', '--solid-splay', '--solid-turn'].map(key => solid.style.getPropertyValue(key)).join(',');
+      return { body, solid, projection, before: projection(), content: solid.querySelector('.solid__upright')!.firstElementChild };
+    });
+    await userEvent.click(canvas.getByRole('button', { name: 'Open the press package' }));
+    await waitFor(() => expect(Number(pen.style.getPropertyValue('--movable-y'))).toBeLessThan(320));
+    await expect(pen).toHaveAttribute('data-arranging');
+    await expect(pen).not.toHaveAttribute('data-dragging');
+    // Computed translate is the browser's rendered value, not the requested
+    // custom property: double easing used to leave these tens of pixels apart.
+    const rendered = getComputedStyle(pen);
+    const unit = parseFloat(rendered.width) / mmToUnits(149);
+    const translation = rendered.translate.split(' ').map(parseFloat);
+    await expect(translation[0]).toBeCloseTo(x(pen) * unit, 1);
+    await expect(translation[1]).toBeCloseTo(Number(pen.style.getPropertyValue('--movable-y')) * unit, 1);
+    const lifted = getComputedStyle(pen.querySelector('.movable__lift')!);
+    await expect(parseFloat(lifted.rotate)).toBeCloseTo(parseFloat(pen.style.getPropertyValue('--movable-rotation')), 2);
+    for (const item of solids) {
+      await waitFor(() => expect(item.projection()).not.toBe(item.before));
+      await expect(item.body.querySelector('.solid')).toBe(item.solid);
+      await expect(item.solid.querySelector('.solid__upright')!.firstElementChild).toBe(item.content);
+    }
+    await waitFor(() => expect(pen).not.toHaveAttribute('data-arranging'), { timeout: 1500 });
+    await expect(getComputedStyle(pen).transitionProperty).toBe(ordinaryTransition);
+  },
+};
