@@ -303,3 +303,26 @@
   z-index: 1;
   height: 100%;
 }
+
+/* Fixed-size texture tiles and signed cell indices keep a room's crop from
+   moving the brickwork. The wall's world y grows down from its bottom seam. */
+.wall[data-material-origin] .wall__beds,
+.wall[data-material-origin] .wall__perpends {
+  background-size: calc(var(--wall-brick) * 100cqw / var(--wall-width)) calc(2 * var(--wall-course) * 100cqw / var(--wall-width));
+  background-position: calc(-1 * var(--wall-origin-x) * 100cqw / var(--wall-width)) calc(-1 * var(--wall-origin-y) * 100cqw / var(--wall-width));
+  mask-size: calc(var(--wall-brick) * 100cqw / var(--wall-width)) calc(2 * var(--wall-course) * 100cqw / var(--wall-width));
+  mask-position: calc(-1 * var(--wall-origin-x) * 100cqw / var(--wall-width)) calc(-1 * var(--wall-origin-y) * 100cqw / var(--wall-width));
+}
+.wall[data-material-origin] .wall__perpends[data-courses='odd'] {
+  background-position: calc((-1 * var(--wall-origin-x) - 0.5 * var(--wall-brick)) * 100cqw / var(--wall-width)) calc(-1 * var(--wall-origin-y) * 100cqw / var(--wall-width));
+}
+.wall[data-material-origin] .wall__grit,
+.wall[data-material-origin] .wall__brush {
+  background-position: calc(-1 * var(--wall-origin-x) * 100cqw / var(--wall-width)) calc(-1 * var(--wall-origin-y) * 100cqw / var(--wall-width));
+}
+.wall[data-material-origin] .wall__grit {
+  background-size: calc(7 * 100cqw / var(--wall-width)) calc(5 * 100cqw / var(--wall-width)), calc(11 * 100cqw / var(--wall-width)) calc(9 * 100cqw / var(--wall-width)), calc(13 * 100cqw / var(--wall-width)) calc(17 * 100cqw / var(--wall-width)), calc(19 * 100cqw / var(--wall-width)) calc(23 * 100cqw / var(--wall-width)), calc(29 * 100cqw / var(--wall-width)) calc(31 * 100cqw / var(--wall-width));
+}
+.wall[data-material-origin] .wall__brush {
+  background-size: calc(1440 * 100cqw / var(--wall-width)) calc(2880 * 100cqw / var(--wall-width));
+}

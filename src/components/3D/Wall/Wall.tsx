@@ -1,5 +1,6 @@
 import type React from 'react';
 import './Wall.css';
+import { wallMaterialBricks, type MaterialOrigin } from '../../../geometry/materialCoordinates';
 
 export const WALL_FINISHES = ['whitewash', 'red', 'buff', 'black'] as const;
 export type WallFinish = (typeof WALL_FINISHES)[number];
@@ -53,6 +54,8 @@ function variegation(width: number, height: number, brick: number, course: numbe
 }
 
 export type WallProps = {
+  /** World coordinates at the crop’s top-left; omitted preserves standalone drawing. */
+  materialOrigin?: MaterialOrigin;
   /** What the brick has been finished in. */
   finish?: WallFinish;
   /** The wall's design width in units, which is what every size here is measured against. */
@@ -91,6 +94,7 @@ export type WallProps = {
  * colour, the way the rest of this library draws things.
  */
 export function Wall({
+  materialOrigin,
   finish = 'whitewash',
   width = 1440,
   height = WALL_HEIGHT,
@@ -104,14 +108,15 @@ export function Wall({
   style,
   ...rest
 }: WallProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'children' | 'className' | 'style'>) {
-  const odd = worn > 0 ? variegation(width, height, brick, course, worn) : [];
+  const odd = worn > 0 ? (materialOrigin ? wallMaterialBricks(materialOrigin, width, height, brick, course, worn) : variegation(width, height, brick, course, worn)) : [];
   return (
     <div
       {...rest}
       className={`wall ${className}`}
       data-finish={finish}
+      data-material-origin={materialOrigin ? `${materialOrigin.x},${materialOrigin.y}` : undefined}
       data-flat={flat ? '' : undefined}
-      style={{ '--wall-width': width, '--wall-height': height, '--wall-brick': brick, '--wall-course': course, '--wall-joint': WALL_JOINT, '--wall-light': light, ...style } as React.CSSProperties}
+      style={{ '--wall-width': width, '--wall-height': height, '--wall-brick': brick, '--wall-course': course, '--wall-joint': WALL_JOINT, '--wall-light': light, '--wall-origin-x': materialOrigin?.x ?? 0, '--wall-origin-y': materialOrigin?.y ?? 0, ...style } as React.CSSProperties}
     >
       <div className="wall__face">
         {/* The bond: bed joints across the whole wall, and perpends that step
@@ -132,7 +137,8 @@ export function Wall({
               key={`${x}:${y}`}
               className="wall__brick"
               data-tone={tone}
-              style={{ '--wall-at-x': x, '--wall-at-y': y, '--wall-worn': through, '--wall-lean': lean } as React.CSSProperties}
+              data-material-cell={`${x},${y}`}
+              style={{ '--wall-at-x': x - (materialOrigin?.x ?? 0), '--wall-at-y': y - (materialOrigin?.y ?? 0), '--wall-worn': through, '--wall-lean': lean } as React.CSSProperties}
             />
           ))}
         </div>
