@@ -2,16 +2,21 @@
 
 `Room` and `PerspectiveDesk` accept the same physical setup. All physical dimensions are millimetres; `mmToUnits` remains a fixed **1.2 desk units per millimetre**, independent of browser size, framing, or object placement. Defaults remain a 1200 × 800 mm desktop at 750 mm above the floor, with a 10 mm drawn edge.
 
-`cameraMode="legacy"` is the default and uses existing `angle` and `depth` props. In `cameraMode="physical"`, supply both `eyeHeightMm` (above the floor) and `viewerSetbackMm` (horizontal distance back from the front edge). These override angle/depth. The target is the front edge midpoint:
+`cameraMode="legacy"` is the default and retains its angle/depth props and front-edge projection. Physical mode requires `eyeHeightMm` above the floor and `viewerSetbackMm`, now the horizontal eye distance **from the wall**. Zero places the eye above the back edge; half the desk depth places it above tabletop center. Leaning toward the wall is supported and can produce angles greater than 90°.
 
-- angle = atan2(eyeHeightMm − deskHeightMm, viewerSetbackMm)
-- camera distance = hypot(eyeHeightMm − deskHeightMm, viewerSetbackMm) × 1.2
+At `headTiltDegrees=0`, the eye always aims at tabletop center. In millimetres:
 
-Zero setback is overhead. Eye height must exceed tabletop height; desk dimensions and camera distance must be positive and finite. Edge and setback can be zero. Invalid numeric edits display a recoverable diagnostic while retaining the last valid scene, including placements, lamp pose and switch state. Changing physical dimensions updates desk units, floor drop, wall position, lighting surfaces, and object-shadow viewBoxes. Objects retain their physical units. In physical mode, widening the desk reveals more tabletop without shrinking existing objects.
+- clearance H = eyeHeightMm − deskHeightMm
+- signed horizontal offset B = viewerSetbackMm − deskDepthMm / 2
+- center-look angle = atan2(H, B); eye-to-center distance = hypot(H, B)
 
-Physical mode uses a fixed lens calibrated to a 1200 mm desk, eye clearance 900 mm, and setback 650 mm. `deskShare` specifies the desk's width fraction at that reference view. Moving the eye farther away makes the desk and objects smaller; doubling clearance and setback halves the projected front-edge width at the same tilt. Changing desk width does not refit the scene. `roomLip` keeps the front-edge target at a fixed screen position. The same lens applies with the room background hidden. Legacy mode retains its existing fit-to-frame behavior.
+`headTiltDegrees` adjusts pitch independently of eye position. Positive offsets look farther down; zero restores center aim. For pitch α = center-look angle + offset, the projection target is `viewerSetbackMm − H / tan(α)` measured from the wall, and projection depth is `H / sin(α)`. The target can lie outside the tabletop. These changes rotate the eye's direction without moving its physical position. This surface renderer supports downward pitches strictly between 0° and 180°; horizontal/upward directions produce a recoverable diagnostic rather than a silent clamp.
 
-`deskShare` and `roomLip` are reference framing controls; neither changes automatically to zoom with camera distance. Numeric framing controls have no aesthetic maximum. `roomSpanMm`, `floorFrontMm`, and `wallHeightMm` control how much room geometry exists; increase them if experimentation exposes its boundaries.
+The physical optical target sits at frame center with `roomLip` as a fixed upward screen offset. This applies with or without room background. Desk center remains there while dimensions or eye position change at zero head tilt; head tilt changes which point the eye aims at. Legacy keeps its front-edge/bottom framing.
+
+Physical mode retains a fixed lens calibrated to the previous 1200 mm desk and 900/650 mm eye-to-target triangle. `deskShare` is reference framing, never automatic fit-to-desk zoom. Doubling clearance and the signed horizontal eye-to-center offset halves the projected target-line width at the same pitch. Widening a desk does not shrink existing objects. `roomLip` and `deskShare` remain explicit framing choices.
+
+Eye height must exceed tabletop height. Desk dimensions and projection depth must be positive and finite; edge thickness and wall distance may be zero. Invalid edits retain the last valid scene, object placements and lamp pose. Physical dimensions update desk units, floor drop, wall location, lighting surfaces and shadow viewBoxes. Automatic background coverage uses the same target and framing; views exceeding material capacity retain the previous scene. Explicit room extents may deliberately expose boundaries.
 
 Both **Foundations / Room / Physical Setup** and **Pages / Perspective Desk / Physical Setup** contain objects, labeled sliders and unrestricted numeric inputs. Physical readouts show millimetres plus inches (`mm / 25.4`); inches are display-only. Slider windows are convenient suggestions, not scene limits: typing a value outside the window preserves that value and parks the slider at the nearest endpoint. The inline fields maintain local experimental edits. Changing the Storybook controls resets those inline edits to the new external settings. Every advanced light-shaping value has its own labeled numeric Storybook control. Existing scenes retain their old defaults. PerspectiveDesk's saved settings include physical inputs, camera mode, and the light-tuning object.
 

@@ -5,7 +5,11 @@ export type PhysicalRoomInputs = {
   cameraMode?: 'legacy' | 'physical';
   deskWidthMm?: number; deskDepthMm?: number; deskHeightMm?: number; deskEdgeMm?: number;
   /** Supply both when cameraMode is physical; angle/depth are then ignored. Eye height is above the floor. */
-  eyeHeightMm?: number; viewerSetbackMm?: number;
+  eyeHeightMm?: number;
+  /** Horizontal eye distance from the wall; zero is over the back edge. */
+  viewerSetbackMm?: number;
+  /** Pitch offset from looking at tabletop center; positive looks farther down. */
+  headTiltDegrees?: number;
 };
 
 export function positive(name: string, value: number, allowZero = false) {
@@ -16,12 +20,13 @@ export function positive(name: string, value: number, allowZero = false) {
 
 /** Millimetres stay physical; deskShare and viewport size control only framing. */
 export function roomSetup({ cameraMode = 'legacy', deskWidthMm = DESK_MM.width, deskDepthMm = DESK_MM.depth,
-  deskHeightMm = DESK_MM.height, deskEdgeMm = 10, eyeHeightMm, viewerSetbackMm }: PhysicalRoomInputs,
+  deskHeightMm = DESK_MM.height, deskEdgeMm = 10, eyeHeightMm, viewerSetbackMm, headTiltDegrees = 0 }: PhysicalRoomInputs,
   angle = 84, depth = 8000) {
   const width = positive('desk width in units', mmToUnits(positive('deskWidthMm', deskWidthMm)));
   const surfaceHeight = positive('desk depth in units', mmToUnits(positive('deskDepthMm', deskDepthMm)));
   const stand = positive('desk height in units', mmToUnits(positive('deskHeightMm', deskHeightMm)));
   const edge = positive('desk edge in units', mmToUnits(positive('deskEdgeMm', deskEdgeMm, true)), true);
+  let targetY: number | undefined;
   if (cameraMode === 'physical') {
     if (eyeHeightMm === undefined || viewerSetbackMm === undefined)
       throw new RangeError('Supply both eyeHeightMm and viewerSetbackMm');
@@ -29,13 +34,19 @@ export function roomSetup({ cameraMode = 'legacy', deskWidthMm = DESK_MM.width, 
     positive('viewerSetbackMm', viewerSetbackMm, true);
     const clearance = eyeHeightMm - deskHeightMm;
     positive('eye height above tabletop', clearance);
-    angle = Math.atan2(clearance, viewerSetbackMm) * 180 / Math.PI;
-    depth = mmToUnits(Math.hypot(clearance, viewerSetbackMm));
+    const back = viewerSetbackMm - deskDepthMm / 2;
+    angle = Math.atan2(clearance, back) * 180 / Math.PI + headTiltDegrees;
+    if (!Number.isFinite(angle) || angle <= 0 || angle >= 180)
+      throw new RangeError('physical look angle must be greater than 0 and less than 180 degrees');
+    const pitch = angle * Math.PI / 180;
+    depth = mmToUnits(clearance / Math.sin(pitch));
+    targetY = headTiltDegrees === 0 ? surfaceHeight / 2 : mmToUnits(viewerSetbackMm - clearance / Math.tan(pitch));
+    if (!Number.isFinite(targetY)) throw new RangeError('camera target must be finite');
   }
   positive('camera depth', depth);
-  if (!Number.isFinite(angle) || angle <= 0 || angle > 90)
+  if (cameraMode !== 'physical' && (!Number.isFinite(angle) || angle <= 0 || angle > 90))
     throw new RangeError('camera angle must be greater than 0 and at most 90 degrees');
-  return { camera: { angle, depth, width, surfaceHeight }, stand, edge };
+  return { camera: { angle, depth, width, surfaceHeight, ...(targetY === undefined ? {} : { targetY }) }, stand, edge };
 }
 
 /** Reference lens: the existing 1200 mm desk, viewed 900 mm above and 650 mm back.

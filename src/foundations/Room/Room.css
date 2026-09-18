@@ -76,3 +76,10 @@
 
 .room__diagnostic { box-sizing: border-box; width: 100%; margin: 0; padding: 10px 16px; color: #ead3a7; background: #211b16; font: 13px/1.5 system-ui; }
 .room__diagnostic[role='alert'] { border: 1px solid #df965f; }
+
+/* Physical optics aim at a surface target centered in the frame. The reference
+   lip is a fixed upward lens shift; changing distance never moves the aim point. */
+.room[data-physical] .room__stand {
+  bottom: auto;
+  top: calc(50% - (var(--room-lip) + var(--room-target)) * var(--room-share) * 100cqw / var(--room-desk-width));
+}
