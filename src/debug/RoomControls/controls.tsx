@@ -1,5 +1,6 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { DEFAULT_LIGHT_TUNING, type LightTuning } from '../../geometry/lightingSetup';
+import './controls.css';
 import type { RoomProps } from '../../foundations/Room/Room';
 
 export type RoomStoryControls = Partial<LightTuning>;
@@ -41,6 +42,22 @@ export function withLightTuning<T extends RoomProps & RoomStoryControls>(args: T
 
 /** The experiment keeps its most useful numeric controls beside the scene. */
 export function RoomControlPanel({ args, update, children }: { args: RoomProps & RoomStoryControls; update: (args: Partial<RoomProps & RoomStoryControls>) => void; children: ReactNode }) {
+  const panel = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const element = panel.current!;
+    const measure = () => {
+      let bottomPadding = 0;
+      for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+        bottomPadding += parseFloat(getComputedStyle(parent).paddingBottom) || 0;
+      }
+      element.style.setProperty('--controls-top', `${element.getBoundingClientRect().top + window.scrollY + bottomPadding}px`);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element.parentElement!);
+    window.addEventListener('resize', measure);
+    return () => { observer.disconnect(); window.removeEventListener('resize', measure); };
+  }, []);
   const fields = [
     ['deskWidthMm', 'Desk width (mm)', 300, 3000, 10, true],
     ['deskDepthMm', 'Desk depth (mm)', 200, 1800, 10, true],
@@ -50,12 +67,13 @@ export function RoomControlPanel({ args, update, children }: { args: RoomProps &
     ['lampIntensity', 'Light intensity', 0, 6, 0.1, false],
     ['poolSpread', 'Pool spread', 0, 6, 0.1, false],
   ] as const;
-  return <div style={{ width: '100%' }}>
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, padding: 12, color: '#ead3a7', background: '#211b16', font: '13px system-ui' }}>
+  return <div ref={panel} className="room-controls">
+    <aside className="room-controls__sidebar" aria-label="Room controls" tabIndex={0}>
+      <div className="room-controls__fields">
       {fields.map(([key, label, min, max, step, physical]) => {
         const value = args[key] ?? physicalDefaults[key];
         const valid = Number.isFinite(value);
-        return <fieldset key={key} style={{ display: 'grid', gap: 6, width: 145, margin: 0, padding: 8, border: '1px solid #6d5b45' }}>
+        return <fieldset key={key} className="room-controls__field">
           <legend>{label}</legend>
           <input aria-label={`${label} slider`} type="range" min={min} max={max} step={step} value={valid ? Math.min(max, Math.max(min, value)) : min} onChange={event => update({ [key]: Number(event.target.value) })} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -69,7 +87,8 @@ export function RoomControlPanel({ args, update, children }: { args: RoomProps &
     <p style={{ margin: 0, padding: '0 12px 12px', color: '#c7bcae', background: '#211b16', font: '13px system-ui' }}>
       Very low views or large room extents can exceed background rendering capacity. An alert explains the limit; the last supported view stays visible until you adjust the values.
     </p>
-    {children}
+    </aside>
+    <div className="room-controls__scene" role="region" aria-label="Room preview" tabIndex={0}>{children}</div>
   </div>;
 }
 
