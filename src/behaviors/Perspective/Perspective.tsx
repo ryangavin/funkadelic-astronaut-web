@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useRef, type CSSProperties, type ReactNode } from 'react';
 import { MovableProject } from '../Movable/Movable';
 import './Perspective.css';
 
@@ -160,6 +160,29 @@ export function surfaceDepth(drawn: number, { angle = GENTLE_VIEW, depth = GENTL
 export function Perspective({ angle = GENTLE_VIEW, depth = GENTLE_DEPTH, width = PERSPECTIVE_WIDTH, children, className = '', style }: PerspectiveProps) {
   const plane = useRef<HTMLDivElement>(null);
   const tilt = ((PLAN_VIEW - angle) * Math.PI) / 180;
+  /*
+    The view is three numbers that hardly ever change — where the eye is, how far
+    off it is, and how wide the surface is drawn — so it is held rather than made
+    afresh each render.
+
+    Handed down as a new object every time it quietly undid every `memo` on the
+    surface, because a context reaches past one: every Solid and every
+    Inspectable re-rendered on each step of a drag however carefully the things
+    above them were memoised, and a Solid measures itself off the plane the
+    moment it renders. Measured on the bench, that was twenty-five boxes read
+    off the DOM a frame — mid-frame, so each one makes the browser work out
+    style and layout there and then — and twenty-seven custom properties a
+    frame written back at the value they already held, on a desk where one thing
+    had moved. Holding it takes those to three and none.
+
+    It is worth being plain that this bought no time. The desk is rasterisation-
+    bound: with the room's floor left alone the frame lands on the refresh either
+    way, so all of that work was fitting inside a budget it was not the reason
+    for missing. What it buys is headroom on a slower machine than this one, and
+    an honest bench — work that does nothing is worth removing before it is
+    worth arguing about.
+  */
+  const view = useMemo(() => ({ tilt, depth, width }), [tilt, depth, width]);
   const project = useCallback(
     (clientX: number, clientY: number): SurfacePoint => (plane.current ? unproject(plane.current, { tilt, depth, width }, clientX, clientY) : { x: clientX, y: clientY }),
     [tilt, depth, width],
@@ -170,7 +193,7 @@ export function Perspective({ angle = GENTLE_VIEW, depth = GENTLE_DEPTH, width =
       {/* The eye: its perspective is in surface units, which only a descendant of the container can measure. */}
       <div className="perspective__eye">
         <div className="perspective__plane" ref={plane}>
-          <PerspectiveView.Provider value={{ tilt, depth, width }}>
+          <PerspectiveView.Provider value={view}>
             <MovableProject.Provider value={project}>{children}</MovableProject.Provider>
           </PerspectiveView.Provider>
         </div>
