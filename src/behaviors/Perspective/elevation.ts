@@ -32,3 +32,12 @@ export function elevatedLayer(
   const y = (-dx * Math.sin(turn) + dy * Math.cos(turn)) / unitsPerPixel;
   return { x, y, scale: projected.scale };
 }
+
+/** The view a horizontal layer is elevated through: an object's surface, seen from somewhere. */
+export type StudyCamera = Parameters<typeof elevatedLayer>[2];
+
+/** One outline of a thing in plan, and how far above the desk that part of it reaches. */
+export type StudyShape = { path: string; heightMm?: number };
+
+/** The default footprint: a rounded square, for a thing that has not been drawn one. */
+export const ROUND_CASE = 'M8 0H92Q100 0 100 8V92Q100 100 92 100H8Q0 100 0 92V8Q0 0 8 0Z';

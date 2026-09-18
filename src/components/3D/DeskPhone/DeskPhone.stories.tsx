@@ -1,5 +1,5 @@
-import { checkDeskStudy } from '../../../behaviors/Perspective/DeskObjectStudy.check';
-import { DeskObjectStudy } from '../../../behaviors/Perspective/DeskObjectStudy';
+import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../debug/ObjectStudy/DeskObjectStudy';
 import type { CSSProperties } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';

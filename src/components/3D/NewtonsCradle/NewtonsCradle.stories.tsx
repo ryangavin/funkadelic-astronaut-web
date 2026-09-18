@@ -1,6 +1,6 @@
-import { checkDeskStudy } from '../../../behaviors/Perspective/DeskObjectStudy.check';
+import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
 import { CradleRelief } from '../../../behaviors/Perspective/CradleRelief';
-import { DeskObjectStudy } from '../../../behaviors/Perspective/DeskObjectStudy';
+import { DeskObjectStudy } from '../../../debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { CRADLE_BALLS, NewtonsCradle } from './NewtonsCradle';

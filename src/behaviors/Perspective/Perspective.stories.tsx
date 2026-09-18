@@ -11,7 +11,7 @@ import { DeskLamp, LampLight } from '../../components/3D/DeskLamp/DeskLamp';
 import { DeskLighting, castFrom, useDeskLight } from '../DeskLighting/DeskLighting';
 import { Pen } from '../../components/3D/Pen/Pen';
 import { StickyNote } from '../../components/2D/StickyNote/StickyNote';
-import { ObjectCastShadow } from './DeskObjectStudy';
+import { ObjectCastShadow } from './CastShadow';
 import { GENTLE_VIEW, GENTLE_DEPTH, PLAN_VIEW, Perspective, STANDING_VIEW, Solid, Standing } from './Perspective';
 
 const meta = {

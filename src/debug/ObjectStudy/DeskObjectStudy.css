@@ -4,10 +4,6 @@
 .desk-study__controls input { width: 100px; }
 .desk-study p { max-width: 100ch; color: #c7bcae; }
 .desk-study__viewport { overflow: auto; }
-.desk-study__shadow { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
-.desk-study__relief { position: relative; }
-.desk-study__sides { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-.desk-study__face { position: relative; width: 100%; height: 100%; transform-origin: 50% 50%; }
 /* Keep material bevels and internal control shading; remove only baked desk shadows in this inspection scene. */
 :is(.desk-study, .desk-study-materials) .pen svg { filter: none; }
 :is(.desk-study, .desk-study-materials) .desk-clock__case { box-shadow: inset 0 1px rgb(255 255 255 / .18), inset 0 -1px rgb(0 0 0 / .5); }

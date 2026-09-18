@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { CRADLE_BALLS, CRADLE_PERIOD_MS, CRADLE_RADIUS, CRADLE_RAILS, CRADLE_REST, CRADLE_SWING, NewtonsCradle } from '../../components/3D/NewtonsCradle/NewtonsCradle';
 import type { Place } from '../Movable/Movable';
 import { projectElevation } from './elevation';
-import type { StudyCamera } from './DeskObjectStudy';
+import type { StudyCamera } from './elevation';
 import './CradlePerspective.css';
 
 export function CradleRelief({ place, camera, width = mmToUnits(120) }: { place: Place; camera: StudyCamera; width?: number }) {

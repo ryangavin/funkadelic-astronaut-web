@@ -1,6 +1,6 @@
 import { LAMP_WIDTH, LAMP_HEIGHT } from '../../../geometry/physicalScale';
-import { checkDeskStudy } from '../../../behaviors/Perspective/DeskObjectStudy.check';
-import { DeskObjectStudy } from '../../../behaviors/Perspective/DeskObjectStudy';
+import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, fn, userEvent, within } from 'storybook/test';

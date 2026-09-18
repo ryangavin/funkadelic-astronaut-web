@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import demoTape from '../../../../assets/audio/demo-tape.mp3';
 import { AnsweringMachine, type DeskPhoneMessage } from './AnsweringMachine';
-import { DeskObjectStudy } from '../../../behaviors/Perspective/DeskObjectStudy';
-import { checkDeskStudy } from '../../../behaviors/Perspective/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../debug/ObjectStudy/DeskObjectStudy';
+import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
 import { Walkman } from '../Walkman/Walkman';
 const MESSAGES: DeskPhoneMessage[] = [
   { caller: 'Marguerite at the Pond Room', time: 'Tue 9.14am', src: demoTape },
