@@ -5,6 +5,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode
 import { GENTLE_DEPTH, GENTLE_VIEW, Perspective } from '../../behaviors/Perspective/Perspective';
 import { DeskLighting, DEFAULT_SHADOW_STRENGTH, useDeskLight } from '../../behaviors/DeskLighting/DeskLighting';
 import { Movable, type Place } from '../../behaviors/Movable/Movable';
+import { PlacesProvider, usePlaceStore } from '../../behaviors/Movable/places';
 import { Inspector, InspectorVeil } from '../../behaviors/Inspectable/Inspectable';
 import { DESK_WIDTH, Desk, type DeskWood } from '../../components/3D/Desk/Desk';
 import { DeskLamp, LampLight, type DeskLampEnamel } from '../../components/3D/DeskLamp/DeskLamp';
@@ -16,6 +17,8 @@ import './PerspectiveDesk.css';
 
 export const DESK_DEPTH = ROOM_DESK_DEPTH;
 const INITIAL_LAMP: Place = { x: 770, y: 100, rotation: 0 };
+/** What the lamp is called in the desk's places. */
+const LAMP = 'lamp';
 
 export type PerspectiveDeskProps = {
   objectPlacements?: ObjectPlacements;
@@ -85,8 +88,18 @@ function arranged(saved: ObjectPlacements = {}): ObjectPlacements {
 
 /** The main desk composition, starting with its surface and working lamp. */
 export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, showObjects = true, only, showSettings = true, onCaptureSettings, lampX, lampY, lampRotation, lampWidth = 576, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', onArticulate, angle = GENTLE_VIEW, depth = GENTLE_DEPTH, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArrange, children }: PerspectiveDeskProps) {
-  const [place, setPlace] = useState({ x: lampX ?? INITIAL_LAMP.x, y: lampY ?? INITIAL_LAMP.y, rotation: lampRotation ?? 0 });
-  useEffect(() => { setPlace({ x: lampX ?? INITIAL_LAMP.x, y: lampY ?? INITIAL_LAMP.y, rotation: lampRotation ?? 0 }); }, [lampX, lampY, lampRotation]);
+  /*
+    Where the lamp stands lives in a store, not in this component's state.
+
+    Held here it was state that every step of a drag had to set, so carrying the
+    lamp re-rendered the whole desk sixty times a second -- and the lamp is the
+    dearest thing on it to render, at some 30ms a drag by the bench's count. Now
+    the Movable writes its place straight to the store, the lamp reads the light
+    off the same subscription without rendering, and this component hears
+    nothing until the lamp is put down.
+  */
+  const places = usePlaceStore({ [LAMP]: { x: lampX ?? INITIAL_LAMP.x, y: lampY ?? INITIAL_LAMP.y, rotation: lampRotation ?? 0 } });
+  useEffect(() => { places.set(LAMP, { x: lampX ?? INITIAL_LAMP.x, y: lampY ?? INITIAL_LAMP.y, rotation: lampRotation ?? 0 }); }, [places, lampX, lampY, lampRotation]);
   const [pose, setPose] = useState(() => lampLowerAngle !== undefined && lampUpperAngle !== undefined ? lampPoseFromAngles(lampLowerAngle, lampUpperAngle) : articulateLamp({ x: 200, y: 420 }));
   useEffect(() => {
     if (lampLowerAngle !== undefined && lampUpperAngle !== undefined) setPose(lampPoseFromAngles(lampLowerAngle, lampUpperAngle));
@@ -110,7 +123,7 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
     every drag rebuilt it, and it was handed a fresh lightPosition and two fresh
     callbacks each time, so there was nothing to memoise against either.
   */
-  const lightPosition = useMemo(() => ({ x: place.x, y: place.y, rotation: place.rotation, width: lampWidth, height: 700 * lampWidth / 960 }), [place.x, place.y, place.rotation, lampWidth]);
+  const lightPosition = useMemo(() => ({ x: INITIAL_LAMP.x, y: INITIAL_LAMP.y, rotation: 0, width: lampWidth, height: 700 * lampWidth / 960 }), [lampWidth]);
   const articulated = useCallback((next: LampPose) => {
     setPose(next);
     told.current.onArticulate?.(lampPoseAngles(next));
@@ -126,7 +139,7 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
 
   const capture = () => {
     const angles = lampPoseAngles(pose);
-    return { angle, depth, wood, room, floor, wall, roomBlur, roomDim, deskShare, roomLip, lamp: on, shadowStrength, lampX: place.x, lampY: place.y, lampRotation: place.rotation, lampWidth, lampEnamel, lampLowerAngle: angles.lower, lampUpperAngle: angles.upper, objectPlacements: placements, showObjects };
+    return { angle, depth, wood, room, floor, wall, roomBlur, roomDim, deskShare, roomLip, lamp: on, shadowStrength, lampX: places.get(LAMP)?.x, lampY: places.get(LAMP)?.y, lampRotation: places.get(LAMP)?.rotation, lampWidth, lampEnamel, lampLowerAngle: angles.lower, lampUpperAngle: angles.upper, objectPlacements: placements, showObjects };
   };
   return <main className="perspective-desk-room" aria-label="Perspective desk">
     {showSettings && <aside className="perspective-desk__settings">
@@ -140,7 +153,7 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
       <span role="status">{copyStatus}</span>
       {exported && <details open><summary>Desk settings JSON</summary><textarea aria-label="Desk settings JSON" readOnly value={exported} onFocus={event => event.currentTarget.select()} /><button onClick={() => setExported('')}>Close</button></details>}
     </aside>}
-    <Inspector className="perspective-desk__frame" data-room={room ? '' : undefined} style={{ '--perspective-desk-share': deskShare, '--perspective-desk-lip': room ? roomLip : 0 } as React.CSSProperties}><DeskLighting>
+    <PlacesProvider store={places}><Inspector className="perspective-desk__frame" data-room={room ? '' : undefined} style={{ '--perspective-desk-share': deskShare, '--perspective-desk-lip': room ? roomLip : 0 } as React.CSSProperties}><DeskLighting>
       {room && <DeskRoom angle={angle} depth={depth} deskDepth={DESK_DEPTH} lip={roomLip} floor={floor} wall={wall} blur={roomBlur} dim={roomDim} deskShare={deskShare} shadowStrength={shadowStrength} />}
       <div className="perspective-desk__stand">
       <Perspective {...camera} className="perspective--lamp-study">
@@ -153,12 +166,12 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
           {/* The lamp's own place is kept here so it follows the pointer, and whoever
               owns it is told once, when it is put down: a story that writes every
               step back into its controls re-renders the desk under the drag. */}
-          <Movable {...place} width={lampWidth} label="Desk lamp" className="perspective__lamp" onMove={next => setPlace(current => ({ ...current, ...next }))} onSettle={next => onArrange?.(next)}>
-            <SteadyLamp camera={camera} lightPosition={lightPosition} shadowStrength={shadowStrength} on={on} enamel={lampEnamel} pose={pose} onPoseChange={articulated} onToggle={switched} />
+          <Movable id={LAMP} {...INITIAL_LAMP} width={lampWidth} label="Desk lamp" className="perspective__lamp" onMove={() => {}} onSettle={next => onArrange?.(next)}>
+            <SteadyLamp camera={camera} placeId={LAMP} lightPosition={lightPosition} shadowStrength={shadowStrength} on={on} enamel={lampEnamel} pose={pose} onPoseChange={articulated} onToggle={switched} />
           </Movable>
         </Desk>
       </Perspective>
     </div>
-    </DeskLighting></Inspector>
+    </DeskLighting></Inspector></PlacesProvider>
   </main>;
 }

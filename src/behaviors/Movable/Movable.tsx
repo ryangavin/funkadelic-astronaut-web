@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, type CSSProperties, type HTMLAttributes, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
 import { Tallied } from '../DeskPerf/tally';
+import { usePlaces } from './places';
 import './Movable.css';
 
 /** Where a thing lies: its top-left corner in the surface's units, its tilt, and how big it is drawn. */
@@ -104,6 +105,14 @@ export type MovableProps = Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'cl
     z?: number;
     /** Accessible name of the thing, for the group the keyboard moves. */
     label?: string;
+    /**
+     * What it is called in the surface's places, if the surface keeps any. Given
+     * one, this is where its place lives: a drag writes straight here and to the
+     * store, and whoever owns the surface is told when it is put down. Without
+     * one the place is a prop and every step goes round the owner, which is a
+     * render of the whole surface each time the pointer moves.
+     */
+    id?: string;
     /** What it turns and grows about, as fractions of its own box. Defaults to the middle of it.
         A drawing whose weight sits off the middle of its own box — a phone with room beside it for
         the cord — should say where it really stands, or it swings about a point that is not there. */
@@ -155,14 +164,20 @@ export type MovableProps = Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'cl
  * job. Whoever owns the place decides what it means: a desk keeps a map of
  * where everything is and hands each thing its own.
  */
-export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, label, pivot = MIDDLE, resizable = false, grab = 'body', onMove, onGrab, onDrop, onSettle, children, className = '', style, ...rest }: MovableProps) {
+export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, label, id, pivot = MIDDLE, resizable = false, grab = 'body', onMove, onGrab, onDrop, onSettle, children, className = '', style, ...rest }: MovableProps) {
   const host = useRef<HTMLDivElement>(null);
   const anchor = useRef<HTMLSpanElement>(null);
   const surfaceScale = useContext(MovableScale);
   const project = useContext(MovableProject);
-  const live = useContext(MovableLive);
+  const places = usePlaces();
+  /* A place of its own in the surface's store is the real thing; the context is the bench's A/B. */
+  const kept = id && places ? id : undefined;
+  const live = useContext(MovableLive) || !!kept;
   /* Where the thing has got to while the owner is not being told. */
   const latest = useRef<Place | null>(null);
+  /* What the surface says it is at, which outranks the props once it has a place of its own. */
+  const here = (kept && places?.get(kept)) || { x, y, rotation, scale };
+  const atX = here.x, atY = here.y, atRotation = here.rotation ?? 0, atScale = here.scale ?? 1;
   const press = useRef<Press | null>(null);
   const [dragging, setDragging] = useState<Gesture | null>(null);
   const [gripDismissed, setGripDismissed] = useState(false);
@@ -224,7 +239,7 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
     const carried = latest.current;
     latest.current = null;
     if (carried && onMove) onMove(carried);
-    let settled: Place = carried ?? { x, y, rotation, scale };
+    let settled: Place = carried ?? { x: atX, y: atY, rotation: atRotation, scale: atScale };
     /* A resize keeps its pivot by measuring where the pivot has got to, which
        trails the size it is answering by a frame; on the last of them there is
        no next frame, so it is settled here instead. */
@@ -234,7 +249,7 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
       const dx = start.anchor.x - stands.x;
       const dy = start.anchor.y - stands.y;
       if (Math.abs(dx) >= 0.5 || Math.abs(dy) >= 0.5) {
-        settled = { x: Math.round(x + dx), y: Math.round(y + dy), rotation, scale };
+        settled = { x: Math.round(atX + dx), y: Math.round(atY + dy), rotation: atRotation, scale: atScale };
         onMove(settled);
       }
     }
@@ -269,10 +284,10 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
     press.current = {
       id: event.pointerId,
       gesture,
-      x,
-      y,
-      rotation,
-      scale,
+      x: atX,
+      y: atY,
+      rotation: atRotation,
+      scale: atScale,
       px: event.clientX,
       py: event.clientY,
       pivot: on,
@@ -305,22 +320,34 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
     begin(event, event.altKey ? 'turn' : 'move');
   };
 
-  /* Either hand the place to whoever owns it, or write it here and tell them later. */
-  const put = (next: Place) => {
-    /* Only a plain move goes round the owner. A turn or a resize is worked out
-       from the place as the owner last had it, so diverting those would have them
-       measuring against a number that had stopped being true. */
-    if (!live || press.current?.gesture !== 'move') {
-      onMove?.(next);
-      return;
-    }
-    latest.current = next;
+  /* What the element is drawn at, written by hand so no render is needed for it. */
+  const draw = (next: Place) => {
     const element = host.current;
     if (!element) return;
     element.style.setProperty('--movable-x', String(next.x));
     element.style.setProperty('--movable-y', String(next.y));
     element.style.setProperty('--movable-rotation', `${next.rotation ?? 0}deg`);
     if (width > 0) element.style.setProperty('--movable-width', `calc(${width * (next.scale ?? 1)} * var(--movable-unit))`);
+  };
+
+  /* Where the thing has got to. With a place of its own that is the store's, and
+     the store is told first so anything drawing from the place — a shadow, the
+     light a lamp carries — is working from the same frame. */
+  const carry = (next: Place) => {
+    if (kept) {
+      latest.current = next;
+      places?.set(kept, next);
+      draw(next);
+      return;
+    }
+    /* The bench's A/B has no store behind it, so the props it would work a turn
+       or a resize out from go stale. Only a plain move is diverted there. */
+    if (live && press.current?.gesture === 'move') {
+      latest.current = next;
+      draw(next);
+      return;
+    }
+    onMove?.(next);
   };
 
   const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
@@ -347,7 +374,7 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
         /* The thing follows the pointer round the pivot: the side you took is the side that ends up where you point. */
         const swept = (Math.atan2(here.y - at.y, here.x - at.x) - start.angle) * 180 / Math.PI;
         const turned = start.rotation + swept;
-        put({ x: start.x, y: start.y, scale: start.scale, rotation: event.shiftKey ? Math.round(turned / MOVABLE_SNAP_TURN) * MOVABLE_SNAP_TURN : Math.round(turned * 2) / 2 });
+        carry({ x: start.x, y: start.y, scale: start.scale, rotation: event.shiftKey ? Math.round(turned / MOVABLE_SNAP_TURN) * MOVABLE_SNAP_TURN : Math.round(turned * 2) / 2 });
         return;
       }
       /* Out from the pivot is bigger, in toward it smaller — and the pivot itself does not move.
@@ -357,18 +384,18 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
       const stands = onSurface(now.cx, now.cy);
       const drift = { x: start.anchor.x - stands.x, y: start.anchor.y - stands.y };
       const grown = resized(start.scale * away / start.reach);
-      put({ x: Math.round(grown.x + drift.x), y: Math.round(grown.y + drift.y), scale: grown.scale, rotation: start.rotation });
+      carry({ x: Math.round(grown.x + drift.x), y: Math.round(grown.y + drift.y), scale: grown.scale, rotation: start.rotation });
       return;
     }
     if (project) {
       /* On a tilted surface the pointer's travel is worth more near the eye than far from it: map both ends of it onto the surface. */
       const from = project(start.px, start.py);
       const to = project(event.clientX, event.clientY);
-      put({ x: Math.round(start.x + to.x - from.x), y: Math.round(start.y + to.y - from.y), rotation: start.rotation, scale: start.scale });
+      carry({ x: Math.round(start.x + to.x - from.x), y: Math.round(start.y + to.y - from.y), rotation: start.rotation, scale: start.scale });
       return;
     }
     const perUnit = surfaceScale() || 1;
-    put({ x: Math.round(start.x + dx / perUnit), y: Math.round(start.y + dy / perUnit), rotation: start.rotation, scale: start.scale });
+    carry({ x: Math.round(start.x + dx / perUnit), y: Math.round(start.y + dy / perUnit), rotation: start.rotation, scale: start.scale });
   };
 
   /* A thing grows from its corner, so growing it alone would walk it off the spot
@@ -377,14 +404,14 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
      does with the width it is given is the child's business. */
   const resized = (next: number) => {
     const size = Math.round(clamp(next, MOVABLE_MIN_SCALE, MOVABLE_MAX_SCALE) * 100) / 100;
-    const was = width * scale;
+    const was = width * atScale;
     const now = width * size;
     const box = host.current;
     const perUnit = box && box.offsetWidth ? box.offsetWidth / was : 0;
     const tall = box && perUnit ? box.offsetHeight / perUnit : 0;
     return {
-      x: x + pivot.x * (was - now),
-      y: y + pivot.y * tall * (1 - now / was),
+      x: atX + pivot.x * (was - now),
+      y: atY + pivot.y * tall * (1 - now / was),
       scale: size,
     };
   };
@@ -407,13 +434,13 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
     const sizes: Record<string, number> = { '-': -grow, _: -grow, '=': grow, '+': grow };
     /* A key is a whole gesture: the thing moves and is at rest again. */
     const put = (next: Place) => {
-      onMove(next);
+      carry(next);
       onSettle?.(next);
     };
     const resize = (by: number) => {
       setGripDismissed(false);
-      const grown = resized(scale + by);
-      put({ x: Math.round(grown.x), y: Math.round(grown.y), scale: grown.scale, rotation });
+      const grown = resized(atScale + by);
+      put({ x: Math.round(grown.x), y: Math.round(grown.y), scale: grown.scale, rotation: atRotation });
     };
     if (onSize && event.key in moves) {
       event.preventDefault();
@@ -423,13 +450,13 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
     if (grip && !onSize && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
       event.preventDefault();
       setGripDismissed(false);
-      put({ x, y, scale, rotation: rotation + (event.key === 'ArrowLeft' ? -turn : turn) });
+      put({ x: atX, y: atY, scale: atScale, rotation: atRotation + (event.key === 'ArrowLeft' ? -turn : turn) });
       return;
     }
     if (event.key in turns) {
       event.preventDefault();
       setGripDismissed(false);
-      put({ x, y, scale, rotation: rotation + turns[event.key] });
+      put({ x: atX, y: atY, scale: atScale, rotation: atRotation + turns[event.key] });
       return;
     }
     if (sizeable && event.key in sizes) {
@@ -441,16 +468,16 @@ export function Movable({ x, y, rotation = 0, scale = 1, width = 0, unit, z, lab
     const move = moves[event.key];
     if (!move) return;
     event.preventDefault();
-    put({ x: x + move[0], y: y + move[1], rotation, scale });
+    put({ x: atX + move[0], y: atY + move[1], rotation: atRotation, scale: atScale });
   };
 
   const vars = {
-    '--movable-x': x,
-    '--movable-y': y,
-    '--movable-rotation': `${rotation}deg`,
+    '--movable-x': here.x,
+    '--movable-y': here.y,
+    '--movable-rotation': `${here.rotation ?? 0}deg`,
     '--movable-pivot-x': pivot.x,
     '--movable-pivot-y': pivot.y,
-    '--movable-width': width > 0 ? `calc(${width * scale} * var(--movable-unit))` : 'auto',
+    '--movable-width': width > 0 ? `calc(${width * (here.scale ?? 1)} * var(--movable-unit))` : 'auto',
     '--movable-unit': unit,
     '--movable-z': z,
     ...style,

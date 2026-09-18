@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 export const DEFAULT_SHADOW_STRENGTH = 0.36;
 
@@ -153,6 +153,20 @@ export function useDeskLightEffect(run: (light: DeskLight | null) => void) {
   useLayoutEffect(() => { latest.current(store?.get() ?? null); });
   /* The subscription outlives those renders. */
   useLayoutEffect(() => store?.subscribe(() => latest.current(store.get())), [store]);
+}
+
+/**
+ * A way to put the light where it is without rendering to do it.
+ *
+ * `useRegisterDeskLight` is the ordinary way and works off a render, which is
+ * right while the lamp's own place is a prop. Once the place lives in a store
+ * the lamp does not re-render when it is carried about — that being the whole
+ * point — so the light has to be written from the same subscription that moves
+ * the lamp, and this is what writes it.
+ */
+export function useDeskLightWriter() {
+  const store = useContext(Store);
+  return useCallback((light: DeskLight | null) => { store?.set(light); }, [store]);
 }
 
 /** The lamp registers its bulb; consumers never need to know the lamp's artwork geometry. */
