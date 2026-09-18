@@ -433,7 +433,7 @@ export const DESK_LAYERS: Layer[] = [
     },
   },
   { name: 'the lamp’s pool of light', strip: hiding('.lamp-light, .desk-lamp__pool') },
-  { name: 'the whole lighting layer', strip: hiding('.perspective-desk__lighting') },
+  { name: 'the whole lighting layer', strip: hiding('.room__lighting') },
   { name: 'the room behind the desk', strip: hiding('.desk-room, .desk-room__wall, .desk-room__floor') },
 ];
 

@@ -12,7 +12,7 @@ export const MACHINE_WIDTH = 180;
 /** How deep, in millimetres. */
 export const MACHINE_DEPTH = 120;
 
-export type DeskPhoneMessage = {
+export type AnsweringMachineMessage = {
   /** Who left it, as it would go on the message pad. */
   caller?: string;
   /** When it came in: a date, a time, however the desk writes them down. */
@@ -25,15 +25,15 @@ export type DeskPhoneMessage = {
 
 export type AnsweringMachineProps = {
   /** What is on the tape, oldest first. An empty tape is a fair state: the counter reads nought. */
-  messages?: DeskPhoneMessage[];
+  messages?: AnsweringMachineMessage[];
   /** How loud the recordings play, 0 to 1. */
   volume?: number;
   /** Whether the machine beeps between messages. The recordings play either way. */
   sound?: boolean;
   /** A message starts playing. */
-  onPlay?: (message: DeskPhoneMessage, index: number) => void;
+  onPlay?: (message: AnsweringMachineMessage, index: number) => void;
   /** A message has run out. */
-  onMessageEnded?: (message: DeskPhoneMessage, index: number) => void;
+  onMessageEnded?: (message: AnsweringMachineMessage, index: number) => void;
   /** Stop was pressed, or a message would not play. */
   onStop?: () => void;
   /** The last message has run out and the tape has come back to the top. */
@@ -85,11 +85,11 @@ const LIT: Record<string, string> = {
 function Counter({ text }: { text: string }) {
   const cells = [...text.padStart(2, ' ')].slice(-2);
   return (
-    <svg className="desk-phone__led" viewBox="0 0 44 34" aria-hidden="true" focusable="false">
+    <svg className="answering-machine__led" viewBox="0 0 44 34" aria-hidden="true" focusable="false">
       {cells.map((char, cell) => (
         <g key={cell} transform={`translate(${cell * 22} 0)`}>
           {Object.entries(BARS).map(([bar, points]) => (
-            <polygon key={bar} className="desk-phone__led-bar" data-lit={(LIT[char] ?? '').includes(bar) ? '' : undefined} points={points} />
+            <polygon key={bar} className="answering-machine__led-bar" data-lit={(LIT[char] ?? '').includes(bar) ? '' : undefined} points={points} />
           ))}
         </g>
       ))}
@@ -119,9 +119,9 @@ const Halt = () => (
 );
 
 /**
- * The answering machine beside the phone: the counter, the four keys, the
- * microcassette behind its door and the lamps. It plays the messages through
- * a plain audio element, one after another, beeping between them.
+ * The answering machine: the counter, the four keys, the cassette behind its
+ * door and the lamps. It plays the messages through a plain audio element, one
+ * after another, beeping between them.
  */
 export function AnsweringMachine({
   messages = [],
@@ -143,7 +143,7 @@ export function AnsweringMachine({
 
   const count = messages.length;
   const at = Math.min(index, Math.max(0, count - 1));
-  const current: DeskPhoneMessage | undefined = messages[at];
+  const current: AnsweringMachineMessage | undefined = messages[at];
   const tally = !playing && !cued && !fault;
 
   /* A new tape — a different run of recordings, not merely the same array built
@@ -255,57 +255,61 @@ export function AnsweringMachine({
 
   return (
     <div
-      className={`answering-machine desk-phone__machine ${className}`}
+      className={`answering-machine ${className}`}
       data-playing={playing ? '' : undefined}
       data-waiting={!playing && count > 0 ? '' : undefined}
       role="group"
       aria-label="Answering machine"
     >
-      {/* The door: a smoked lid over the microcassette well. */}
-      <div className="desk-phone__door">
-        <div className="desk-phone__well">
+      {/* The moulding. It is a layer rather than the box round it because it is
+          drawn in the machine's own units, which only what is inside can spend. */}
+      <span className="answering-machine__case" aria-hidden="true" />
+
+      {/* The door: a smoked lid over the cassette well. */}
+      <div className="answering-machine__door">
+        <div className="answering-machine__well">
           <Cassette className="answering-machine__cassette" label="MESSAGES" progress={count ? at / count : 0} />
         </div>
-        <span className="desk-phone__door-lip" aria-hidden="true" />
+        <span className="answering-machine__door-lip" aria-hidden="true" />
       </div>
 
       {/* The readout and the lamps. */}
-      <div className="desk-phone__readout" data-reading={reading}>
+      <div className="answering-machine__readout" data-reading={reading}>
         <Counter text={reading} />
-        <span className="desk-phone__readout-print">messages</span>
+        <span className="answering-machine__readout-print">messages</span>
       </div>
-      <div className="desk-phone__lamps">
-        <span className="desk-phone__lamp" data-lamp="power" data-lit="" />
-        <span className="desk-phone__lamp" data-lamp="message" data-lit={count ? '' : undefined} />
+      <div className="answering-machine__lamps">
+        <span className="answering-machine__lamp" data-lamp="power" data-lit="" />
+        <span className="answering-machine__lamp" data-lamp="message" data-lit={count ? '' : undefined} />
       </div>
 
       {/* The transport. */}
-      <div className="desk-phone__keys">
-        <button type="button" className="desk-phone__key" aria-label="Back one message" disabled={!count} onClick={step(-1)}>
+      <div className="answering-machine__keys">
+        <button type="button" className="answering-machine__key" aria-label="Back one message" disabled={!count} onClick={step(-1)}>
           <Back />
           <span>back</span>
         </button>
-        <button type="button" className="desk-phone__key" aria-label="Play messages" aria-pressed={playing} disabled={!count} onClick={play}>
+        <button type="button" className="answering-machine__key" aria-label="Play messages" aria-pressed={playing} disabled={!count} onClick={play}>
           <Play />
           <span>play</span>
         </button>
-        <button type="button" className="desk-phone__key" aria-label="Skip to next message" disabled={!count} onClick={step(1)}>
+        <button type="button" className="answering-machine__key" aria-label="Skip to next message" disabled={!count} onClick={step(1)}>
           <Skip />
           <span>skip</span>
         </button>
-        <button type="button" className="desk-phone__key" aria-label="Stop" disabled={!count} onClick={halt}>
+        <button type="button" className="answering-machine__key" aria-label="Stop" disabled={!count} onClick={halt}>
           <Halt />
           <span>stop</span>
         </button>
       </div>
 
-      <span className="desk-phone__machine-print" aria-hidden="true">
+      <span className="answering-machine__print" aria-hidden="true">
         telephone answering system
         <em>cassette · remote</em>
       </span>
 
       <audio ref={audio} src={current?.src} preload="metadata" onEnded={ended} onError={failed} />
-      <p className="desk-phone__status" role="status" aria-live="polite">
+      <p className="answering-machine__status" role="status" aria-live="polite">
         {status}
       </p>
     </div>

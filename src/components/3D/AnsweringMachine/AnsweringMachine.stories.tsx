@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import demoTape from '../../../../assets/audio/demo-tape.mp3';
-import { AnsweringMachine, type DeskPhoneMessage } from './AnsweringMachine';
+import { AnsweringMachine, type AnsweringMachineMessage } from './AnsweringMachine';
 import { DeskObjectStudy } from '../../../debug/ObjectStudy/DeskObjectStudy';
 import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
 import { Walkman } from '../Walkman/Walkman';
-const MESSAGES: DeskPhoneMessage[] = [
+const MESSAGES: AnsweringMachineMessage[] = [
   { caller: 'Marguerite at the Pond Room', time: 'Tue 9.14am', src: demoTape },
   { caller: 'Dill — sound, Barrier Brewing', time: 'Tue 6.02pm', src: demoTape },
   { caller: 'unknown number', time: 'Wed 1.41am', src: demoTape },
@@ -14,7 +14,7 @@ const MESSAGES: DeskPhoneMessage[] = [
 const meta = { title: 'Components/3D/Answering Machine', component: AnsweringMachine, parameters: { layout: 'centered' }, tags: ['autodocs'], args: { messages: MESSAGES, sound: false, volume: 0.8, onPlay: fn(), onStop: fn(), onMessageEnded: fn(), onEnded: fn() }, decorators: [(Story, context) => context.parameters.composition ? <Story /> : <div style={{width: 540, padding: 40, background: '#5a3a25'}}><Story /></div>] } satisfies Meta<typeof AnsweringMachine>;
 export default meta;
 type Story = StoryObj<typeof meta>;
-const parts = (element: HTMLElement) => ({ machine: element.querySelector<HTMLElement>('.answering-machine')!, readout: element.querySelector<HTMLElement>('.desk-phone__readout')! });
+const parts = (element: HTMLElement) => ({ machine: element.querySelector<HTMLElement>('.answering-machine')!, readout: element.querySelector<HTMLElement>('.answering-machine__readout')! });
 export const Ready: Story = {};
 /** Play walks the tape and the counter walks with it; skip and back step between messages. */
 export const Playback: Story = {

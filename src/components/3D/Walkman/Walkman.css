@@ -139,13 +139,23 @@
   overflow: hidden;
 }
 
+/* The cassette is a drawing of a cassette and nothing else: it is 400 by 254 in
+   its own coordinates and fills whatever it is given. Where it lies and how big
+   it is belong to whatever is holding it — the well of this player below, the
+   door of the answering machine, the bare desk — because those are the things
+   that have a plan to place it on. */
 .cassette {
-  position: absolute;
   display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* In the player: through the window, seated on the spindles. */
+.walkman .cassette {
+  position: absolute;
   top: calc(6 * var(--walkman-unit));
   left: 50%;
   width: calc(590 * var(--walkman-unit));
-  height: auto;
   translate: -50% 0;
   filter: drop-shadow(0 calc(3 * var(--walkman-unit)) calc(3 * var(--walkman-unit)) rgb(0 0 0 / 0.5));
 }

@@ -88,7 +88,7 @@
   padding: 0;
 }
 
-.desk-perf__desk .perspective-desk__frame {
+.desk-perf__desk .room {
   max-width: min(100%, calc(50svh * 16 / 9));
   max-height: 100%;
 }

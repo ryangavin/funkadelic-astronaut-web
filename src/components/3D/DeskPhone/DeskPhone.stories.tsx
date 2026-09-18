@@ -60,8 +60,6 @@ const parts = (canvasElement: HTMLElement) => {
     set: canvasElement.querySelector<HTMLElement>('.desk-phone__set')!,
     dial: canvasElement.querySelector<HTMLElement>('.desk-phone__dial')!,
     handset: canvasElement.querySelector<HTMLElement>('.desk-phone__handset')!,
-    machine: canvasElement.querySelector<HTMLElement>('.desk-phone__machine')!,
-    readout: canvasElement.querySelector<HTMLElement>('.desk-phone__readout')!,
     line: root.querySelector<HTMLElement>(':scope > .desk-phone__status')!,
   };
 };
@@ -70,7 +68,7 @@ const parts = (canvasElement: HTMLElement) => {
 export const BookingLine: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const { root, set, dial, handset, machine } = parts(canvasElement);
+    const { root, set, dial, handset } = parts(canvasElement);
 
     await expect(canvas.getByRole('group', { name: 'Desk phone: 718 555 0164' })).toBeInTheDocument();
 

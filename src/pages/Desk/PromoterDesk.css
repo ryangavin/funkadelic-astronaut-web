@@ -232,20 +232,17 @@
 
 /* --- On the desk ------------------------------------------------------ */
 
-/* A spare tape out of the player: the cassette drawn as in the Walkman, lying on its own. */
+/* A spare tape out of the player, lying on the desk on its own. It needs no unit
+   of its own: the cassette fills what it is given and is drawn in its own
+   coordinates within that. */
 .promoter-desk__tape {
   --walkman-label-band: #c9432f;
   --walkman-label-ink: #2b3a6b;
-  --walkman-unit: calc(100cqw / 720);
   display: block;
   width: 100%;
-  container-type: inline-size;
 }
 
 .promoter-desk__tape .cassette {
-  position: static;
-  width: 100%;
-  translate: 0 0;
   filter: drop-shadow(2px 4px 3px rgb(10 5 2 / 0.5));
 }
 

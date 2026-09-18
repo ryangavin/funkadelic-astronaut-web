@@ -84,13 +84,6 @@
   background: var(--wall-body);
 }
 
-.wall__filters {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-}
-
 .wall__bond {
   position: absolute;
   inset: 0;

@@ -1,0 +1,75 @@
+/*
+  The frame the room is seen through: 16 x 9, as wide as it is given and no
+  taller than the window leaves it. A composition with chrome of its own around
+  the frame says how much of the window that chrome has taken, in
+  --room-window-margin, so the frame still fits without it.
+*/
+.room {
+  --room-share: 0.75;
+  position: relative;
+  width: 100%;
+  max-width: calc((100svh - var(--room-window-margin, 0px)) * 16 / 9);
+  aspect-ratio: 16 / 9;
+  margin: 0 auto;
+  /*
+    The frame is the picture, and it is 16 x 9 whatever stands in it: the floor's
+    far end and the wall's top are cropped by it, and so is a desk deeper than it
+    — a desk is 3 : 2 in plan, so on its own it is cut off at the front rather
+    than let spill down the page.
+  */
+  overflow: clip;
+}
+
+/*
+  With a room behind it the desk no longer is the frame: it stands in it, at
+  its share of the width, pushed up to the brick — which is measured in the
+  frame's own width, so the frame has to be a container to measure against.
+*/
+.room[data-room] {
+  container-type: inline-size;
+}
+
+/*
+  The desk hangs in the frame rather than standing in its flow, so the frame
+  keeps its 16 x 9 whatever the desk's own proportions are. A desk is 3 : 2 in
+  plan — deeper than the frame is tall — and in flow it simply pushed the
+  frame's bottom down past the ratio it was asked for. Out of flow it is
+  cropped by the frame instead, from the front edge.
+*/
+.room__stand {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+/*
+  The desk stands in the room by its front edge, which is the hinge everything
+  else is measured from: a lip up from the frame's bottom, so the floor shows
+  past its feet, in desk units of the desk's share of the width. The room's
+  floor, wall and the desk's own legs are placed from that same edge, so the
+  desk's back edge lands on the brick by measurement rather than by lining it
+  up. Its shadow on the boards is the room's to draw, in the room's own
+  perspective, from the lamp.
+*/
+.room[data-room] .room__stand {
+  top: auto;
+  /* In desk units of the frame's width: the frame is the container, so cqw is its width. */
+  bottom: calc(var(--room-lip, 0) * var(--room-share) * 100cqw / 1440);
+  left: 50%;
+  width: calc(var(--room-share) * 100%);
+  translate: -50% 0;
+}
+
+/* Raised objects may project past the physical desktop into the room. */
+.room .desk__top {
+  overflow: visible;
+}
+
+/* Only light and shadows stop at the wood's boundary. */
+.room__lighting {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  pointer-events: none;
+}

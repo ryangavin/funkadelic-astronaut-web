@@ -1,25 +1,20 @@
-import { LAMP_WIDTH, LAMP_HEIGHT } from '../../geometry/physicalScale';
+import { LAMP_WIDTH } from '../../geometry/physicalScale';
 import { DeskObjects, DeskObjectShadows, DEFAULT_OBJECT_PLACEMENTS, type ObjectPlacements } from './DeskObjects';
-import { articulateLamp, lampPoseFromAngles, lampPoseAngles, type LampPose } from '../../components/3D/DeskLamp/articulation';
-import type React from 'react';
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { GENTLE_DEPTH, GENTLE_VIEW, Perspective } from '../../behaviors/Perspective/Perspective';
-import { DeskLighting, DEFAULT_SHADOW_STRENGTH } from '../../behaviors/DeskLighting/DeskLighting';
-import { Movable, type Place } from '../../behaviors/Movable/Movable';
-import { PlacesProvider, usePlaceStore } from '../../behaviors/Movable/places';
-import { Inspector, InspectorVeil } from '../../behaviors/Inspectable/Inspectable';
-import { DESK_WIDTH, Desk, type DeskWood } from '../../components/3D/Desk/Desk';
-import { DeskLamp, type DeskLampEnamel } from '../../components/3D/DeskLamp/DeskLamp';
-import { LampPool, LampShadows } from '../../components/3D/DeskLamp/LampShadows';
-import { DeskRoom, ROOM_DESK_DEPTH, ROOM_DESK_SHARE, ROOM_LIP } from './DeskRoom';
+import { articulateLamp, lampPoseAngles } from '../../components/3D/DeskLamp/articulation';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { GENTLE_DEPTH, GENTLE_VIEW } from '../../behaviors/Perspective/Perspective';
+import { DEFAULT_SHADOW_STRENGTH } from '../../behaviors/DeskLighting/DeskLighting';
+import type { Place } from '../../behaviors/Movable/Movable';
+import { usePlaceStore } from '../../behaviors/Movable/places';
+import type { DeskWood } from '../../components/3D/Desk/Desk';
+import type { DeskLampEnamel } from '../../components/3D/DeskLamp/DeskLamp';
+import { DESK_DEPTH, ROOM_LAMP, Room, useRoomCamera } from '../../foundations/Room/Room';
+import { ROOM_DESK_SHARE, ROOM_LIP } from '../../foundations/Room/DeskRoom';
 import type { FloorWood } from '../../components/3D/Floor/Floor';
 import type { WallFinish } from '../../components/3D/Wall/Wall';
 import './PerspectiveDesk.css';
 
-export const DESK_DEPTH = ROOM_DESK_DEPTH;
-const INITIAL_LAMP: Place = { x: 770, y: 100, rotation: 0 };
-/** What the lamp is called in the desk's places. */
-const LAMP = 'lamp';
+export { DESK_DEPTH } from '../../foundations/Room/Room';
 
 export type PerspectiveDeskProps = {
   objectPlacements?: ObjectPlacements;
@@ -62,24 +57,6 @@ export type PerspectiveDeskProps = {
   children?: ReactNode;
 };
 
-/* Held, so the desk can render round it without rebuilding it. See lightPosition below. */
-const SteadyLamp = memo(DeskLamp);
-
-/*
-  The pool the lamp throws and the lamp's own cast arm.
-
-  Neither reads the light through a render any more: each subscribes and writes
-  its own geometry. This component used to call useDeskLight, so carrying the
-  lamp rebuilt the pool and rebuilt every path of the arm's shadow beneath it —
-  the last two things on the desk that the lamp still re-rendered.
-*/
-function DeskLightLayers() {
-  return <>
-    <LampPool surfaceWidth={DESK_WIDTH} surfaceHeight={DESK_DEPTH} />
-    <LampShadows surfaceHeight={DESK_DEPTH} />
-  </>;
-}
-
 /*
   A saved arrangement on top of where things start. It is merged a thing at a
   time rather than a map at a time, so an arrangement captured before a thing
@@ -92,71 +69,40 @@ function arranged(saved: ObjectPlacements = {}): ObjectPlacements {
   return all;
 }
 
-/** The main desk composition, starting with its surface and working lamp. */
+/** The things on the desk, drawn through the eye the room is seen from. */
+function Objects({ only }: { only?: readonly string[] }) {
+  return <DeskObjects camera={useRoomCamera()} only={only} />;
+}
+
+/** The main desk composition: the room, and the promoter's things on the desk in it. */
 export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, showObjects = true, only, showSettings = true, onCaptureSettings, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', onArticulate, angle = GENTLE_VIEW, depth = GENTLE_DEPTH, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArrange, children }: PerspectiveDeskProps) {
   /*
-    Where the lamp stands lives in a store, not in this component's state.
-
-    Held here it was state that every step of a drag had to set, so carrying the
-    lamp re-rendered the whole desk sixty times a second -- and the lamp is the
-    dearest thing on it to render, at some 30ms a drag by the bench's count. Now
-    the Movable writes its place straight to the store, the lamp reads the light
-    off the same subscription without rendering, and this component hears
-    nothing until the lamp is put down.
+    Where everything lies is a store rather than state, and it is this page's
+    rather than the room's, because this page is what has things to place and
+    what has to read the whole arrangement back when the settings are captured.
+    Held as state it was every step of a drag re-rendering the whole desk;
+    the room takes the same store and keeps the lamp's place in it.
   */
-  const places = usePlaceStore({ ...arranged(objectPlacements), [LAMP]: { x: lampX ?? INITIAL_LAMP.x, y: lampY ?? INITIAL_LAMP.y, rotation: lampRotation ?? 0 } });
-  useEffect(() => { places.set(LAMP, { x: lampX ?? INITIAL_LAMP.x, y: lampY ?? INITIAL_LAMP.y, rotation: lampRotation ?? 0 }); }, [places, lampX, lampY, lampRotation]);
+  const places = usePlaceStore(arranged(objectPlacements));
   /* A saved arrangement arriving from outside puts everything back at once. */
   useEffect(() => { for (const [id, where] of Object.entries(arranged(objectPlacements))) places.set(id, where); }, [places, objectPlacements]);
   /*
-    What the arm is doing. This holds only what the composition's own settings
-    have asked for; while the shade is being aimed the lamp owns its arm and
-    this does not change, so the desk holds still through the gesture. Where the
-    arm actually got to is remembered beside it, for capture() to read.
+    Where the arm actually got to, for capture() to read. The room owns the arm
+    while the shade is being aimed and tells us when it has moved, so this is a
+    ref rather than state: nothing on the desk has to be drawn again for it.
   */
-  const [pose, setPose] = useState(() => lampLowerAngle !== undefined && lampUpperAngle !== undefined ? lampPoseFromAngles(lampLowerAngle, lampUpperAngle) : articulateLamp({ x: 200, y: 420 }));
-  const posed = useRef(pose);
+  const posed = useRef(lampLowerAngle !== undefined && lampUpperAngle !== undefined ? { lower: lampLowerAngle, upper: lampUpperAngle } : lampPoseAngles(articulateLamp({ x: 200, y: 420 })));
   useEffect(() => {
     if (lampLowerAngle === undefined || lampUpperAngle === undefined) return;
-    const next = lampPoseFromAngles(lampLowerAngle, lampUpperAngle);
-    posed.current = next;
-    setPose(next);
+    posed.current = { lower: lampLowerAngle, upper: lampUpperAngle };
   }, [lampLowerAngle, lampUpperAngle]);
   const [exported, setExported] = useState('');
   const [copyStatus, setCopyStatus] = useState('');
-  const [override, setOverride] = useState<{ initial: boolean; on: boolean }>();
-  const on = override?.initial === lamp ? override.on : lamp;
-  /* Handed to every thing on the desk, which is memoised: a fresh camera each
-     render would redraw the whole desk on every step of a drag. */
-  const camera = useMemo(() => ({ angle, depth, width: DESK_WIDTH, surfaceHeight: DESK_DEPTH }), [angle, depth]);
-  /*
-    Everything the lamp is handed, held still.
+  const [on, setOn] = useState(lamp);
+  useEffect(() => { setOn(lamp); }, [lamp]);
 
-    The bench found the lamp re-rendering forty-nine times and spending 33.7ms
-    while a sheet of paper was dragged across the other side of the desk — nine
-    tenths of all the React on the desk, for a thing nobody had touched. It was
-    not the lamp's fault: it sits in this component's render, so every step of
-    every drag rebuilt it, and it was handed a fresh lightPosition and two fresh
-    callbacks each time, so there was nothing to memoise against either.
-  */
-  const lightPosition = useMemo(() => ({ x: INITIAL_LAMP.x, y: INITIAL_LAMP.y, rotation: 0, width: lampWidth, height: LAMP_HEIGHT * lampWidth / LAMP_WIDTH }), [lampWidth]);
-  const articulated = useCallback((next: LampPose) => {
-    posed.current = next;
-    told.current.onArticulate?.(lampPoseAngles(next));
-  }, []);
-  const switched = useCallback((next: boolean) => {
-    setOverride({ initial: told.current.lamp, on: next });
-    told.current.onLamp?.(next);
-  }, []);
-  /* The callbacks above must keep their identity, so what they call is read when
-     they run rather than captured when they are made. */
-  const told = useRef({ onArticulate, onLamp, lamp });
-  told.current = { onArticulate, onLamp, lamp };
+  const capture = () => ({ angle, depth, wood, room, floor, wall, roomBlur, roomDim, deskShare, roomLip, lamp: on, shadowStrength, lampX: places.get(ROOM_LAMP)?.x, lampY: places.get(ROOM_LAMP)?.y, lampRotation: places.get(ROOM_LAMP)?.rotation, lampWidth, lampEnamel, lampLowerAngle: posed.current.lower, lampUpperAngle: posed.current.upper, objectPlacements: places.all(), showObjects });
 
-  const capture = () => {
-    const angles = lampPoseAngles(posed.current);
-    return { angle, depth, wood, room, floor, wall, roomBlur, roomDim, deskShare, roomLip, lamp: on, shadowStrength, lampX: places.get(LAMP)?.x, lampY: places.get(LAMP)?.y, lampRotation: places.get(LAMP)?.rotation, lampWidth, lampEnamel, lampLowerAngle: angles.lower, lampUpperAngle: angles.upper, objectPlacements: places.all(), showObjects };
-  };
   return <main className="perspective-desk-room" aria-label="Perspective desk">
     {showSettings && <aside className="perspective-desk__settings">
       <button onClick={async () => {
@@ -169,25 +115,34 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
       <span role="status">{copyStatus}</span>
       {exported && <details open><summary>Desk settings JSON</summary><textarea aria-label="Desk settings JSON" readOnly value={exported} onFocus={event => event.currentTarget.select()} /><button onClick={() => setExported('')}>Close</button></details>}
     </aside>}
-    <PlacesProvider store={places}><Inspector className="perspective-desk__frame" data-room={room ? '' : undefined} style={{ '--perspective-desk-share': deskShare, '--perspective-desk-lip': room ? roomLip : 0 } as React.CSSProperties}><DeskLighting>
-      {room && <DeskRoom angle={angle} depth={depth} deskDepth={DESK_DEPTH} lip={roomLip} floor={floor} wall={wall} blur={roomBlur} dim={roomDim} deskShare={deskShare} shadowStrength={shadowStrength} />}
-      <div className="perspective-desk__stand">
-      <Perspective {...camera} className="perspective--lamp-study">
-        <Desk className="desk-study-materials" wood={wood} height={DESK_DEPTH} edge={12}>
-          <div className="perspective-desk__lighting" aria-hidden="true"><DeskLightLayers />{showObjects && <DeskObjectShadows height={DESK_DEPTH} only={only} />}</div>
-          {/* Drawn on the desk itself, so it takes the desk's perspective and pushes everything under it away. */}
-          <InspectorVeil />
-          {showObjects && <DeskObjects camera={camera} only={only} />}
-          {children}
-          {/* The lamp's own place is kept here so it follows the pointer, and whoever
-              owns it is told once, when it is put down: a story that writes every
-              step back into its controls re-renders the desk under the drag. */}
-          <Movable id={LAMP} {...INITIAL_LAMP} width={lampWidth} label="Desk lamp" className="perspective__lamp" onMove={() => {}} onSettle={next => onArrange?.(next)}>
-            <SteadyLamp camera={camera} placeId={LAMP} lightPosition={lightPosition} shadowStrength={shadowStrength} on={on} enamel={lampEnamel} pose={pose} onPoseChange={articulated} onToggle={switched} />
-          </Movable>
-        </Desk>
-      </Perspective>
-    </div>
-    </DeskLighting></Inspector></PlacesProvider>
+    <Room
+      places={places}
+      angle={angle}
+      depth={depth}
+      wood={wood}
+      room={room}
+      floor={floor}
+      wall={wall}
+      roomBlur={roomBlur}
+      roomDim={roomDim}
+      deskShare={deskShare}
+      roomLip={roomLip}
+      lamp={lamp}
+      lampX={lampX}
+      lampY={lampY}
+      lampRotation={lampRotation}
+      lampWidth={lampWidth}
+      lampLowerAngle={lampLowerAngle}
+      lampUpperAngle={lampUpperAngle}
+      lampEnamel={lampEnamel}
+      shadowStrength={shadowStrength}
+      onLamp={next => { setOn(next); onLamp?.(next); }}
+      onArticulate={angles => { posed.current = angles; onArticulate?.(angles); }}
+      onArrange={onArrange}
+      shadows={showObjects && <DeskObjectShadows height={DESK_DEPTH} only={only} />}
+    >
+      {showObjects && <Objects only={only} />}
+      {children}
+    </Room>
   </main>;
 }

@@ -4,11 +4,10 @@
   is one unit, so the whole plan is 320 across by 300 deep and every part below
   is the size it is in the hand.
 
-  It is a plan and nothing but a plan. Neither object draws its own volume:
-  there is no sloping face on the answering machine, no shading down the
-  phone's flanks, no roundness on the handset. From straight overhead a
-  moulding has an outline, a colour, whatever is recessed into it and whatever
-  shadow it throws, and that is the whole of it.
+  It is a plan and nothing but a plan. It does not draw its own volume: there
+  is no shading down the phone's flanks, no roundness on the handset. From
+  straight overhead a moulding has an outline, a colour, whatever is recessed
+  into it and whatever shadow it throws, and that is the whole of it.
 
   Height is declared instead of drawn. The set is 137 millimetres high with the
   handset on, but what stands up is the moulding under it: 68.5 to the rim of
@@ -28,9 +27,9 @@
   o'clock. The handset cord leaves the left-hand side of the base and lies on
   the desk in 26-millimetre coils.
 
-  The answering machine is 230 by 200 and thirty-odd years younger than the
-  phone, so it is beige whatever colour the set is: they never did match on
-  anybody's desk. It keeps its own palette below.
+  The answering machine that used to stand beside it on this plan is its own
+  object now, at its own size and in its own units, and keeps its colours with
+  it: they never did match on anybody's desk.
 
   Finishes are the Western Electric colour range: the 1949 black, then ivory,
   cherry red, aqua blue and moss green from 1954.
@@ -42,19 +41,6 @@
   /* What a Solid's two numbers are worth here, as lengths in this drawing. */
   --desk-phone-rise: calc(var(--solid-rise, 0) * 320 * var(--desk-phone-unit));
   --desk-phone-splay: calc(var(--solid-splay, 0) * 320 * var(--desk-phone-unit));
-  /* The machine is 65 millimetres against the set's 137, so it lifts by that much of it. */
-  --desk-phone-machine-share: calc(65 / 137);
-  /* The machine's own colours, fixed: beige plastic, brown print, a red LED. */
-  --desk-phone-machine: #d9ceb6;
-  --desk-phone-machine-side: #9e937a;
-  --desk-phone-machine-edge: #8d8269;
-  --desk-phone-machine-print: #554b3b;
-  --desk-phone-machine-key: #67614f;
-  --desk-phone-machine-key-down: #4a4539;
-  --desk-phone-machine-key-legend: #ece7d9;
-  --desk-phone-led: #ff4326;
-  --desk-phone-led-ghost: rgb(255 67 38 / 0.035);
-  --desk-phone-led-glass: #2b0f0a;
   --desk-phone-focus: #f2b134;
   display: block;
   position: relative;
@@ -220,35 +206,6 @@
   transform: matrix(1, 0, calc(var(--solid-splay, 0) * -320), calc(var(--solid-rise, 0) * 320), 0, 0);
 }
 
-.desk-phone__machine-foot,
-.desk-phone__machine-wall {
-  position: absolute;
-  left: calc(319 * var(--desk-phone-unit));
-  width: calc(230 * var(--desk-phone-unit));
-  background: var(--desk-phone-machine-side);
-}
-
-.desk-phone__machine-foot {
-  top: calc(44 * var(--desk-phone-unit));
-  height: calc(200 * var(--desk-phone-unit));
-  border-radius: calc(9 * var(--desk-phone-unit)) calc(9 * var(--desk-phone-unit)) calc(14 * var(--desk-phone-unit))
-    calc(14 * var(--desk-phone-unit));
-}
-
-.desk-phone__machine-wall {
-  top: calc(143.5 * var(--desk-phone-unit));
-  height: calc(1 * var(--desk-phone-unit));
-  transform-origin: 50% 100%;
-  transform: matrix(
-    1,
-    0,
-    calc(var(--solid-splay, 0) * -560 * 65 / 137),
-    calc(var(--solid-rise, 0) * 320 * 65 / 137),
-    0,
-    0
-  );
-}
-
 /* --- However the pair was laid down ------------------------------------ */
 
 /*
@@ -277,13 +234,6 @@
 .desk-phone__set-foot,
 .desk-phone__set {
   transform-origin: calc(110.5 * var(--desk-phone-unit)) calc(114.5 * var(--desk-phone-unit));
-  rotate: var(--solid-turn, 0deg);
-}
-
-/* The machine turns about the same foot, which is off to the left of its box. */
-.desk-phone__machine-foot,
-.desk-phone__machine {
-  transform-origin: calc(-136.5 * var(--desk-phone-unit)) calc(106.5 * var(--desk-phone-unit));
   rotate: var(--solid-turn, 0deg);
 }
 
@@ -599,26 +549,7 @@
   white-space: nowrap;
 }
 
-@keyframes desk-phone-spin {
-  to {
-    rotate: 360deg;
-  }
-}
-
-@keyframes desk-phone-blink {
-  50% {
-    background: rgb(0 0 0 / 0.3);
-    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.3);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .desk-phone__tape-hub,
-  .desk-phone__machine[data-waiting] .desk-phone__lamp[data-lamp='message'][data-lit] {
-    animation: none;
-  }
-
-  .desk-phone__key,
   .desk-phone__handset {
     transition: none;
   }
