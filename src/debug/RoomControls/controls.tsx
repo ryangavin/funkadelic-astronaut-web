@@ -13,9 +13,9 @@ export const physicalControls = {
   eyeHeightMm: numeric('Physical camera', 'Eye height above the floor; must exceed tabletop height.'),
   viewerSetbackMm: numeric('Physical camera', 'Horizontal distance back from the desk front edge. Zero is overhead.'),
   lampIntensity: numeric('Lighting', 'Relative emitted pool brightness: zero emits no light, one preserves the original.', 0.1),
-  roomSpanMm: numeric('Room extent', 'Width of floor and wall in millimetres. Increase when framing exposes an edge.'),
-  floorFrontMm: numeric('Room extent', 'Floor extension in front of the desk, in millimetres.'),
-  wallHeightMm: numeric('Room extent', 'Wall height in millimetres.'),
+  roomSpanMm: numeric('Room extent', 'Exact width of floor and wall in millimetres. Leave unset for automatic frame coverage.'),
+  floorFrontMm: numeric('Room extent', 'Exact floor extension in millimetres. Leave unset for automatic frame coverage.'),
+  wallHeightMm: numeric('Room extent', 'Exact wall height in millimetres. Leave unset for automatic frame coverage.'),
   poolSpread: numeric('Light shaping', 'Desk pool diameter as a multiple of bulb height.', 0.1),
   floorPoolSpread: numeric('Light shaping', 'Floor pool radius as a multiple of bulb-to-floor height.', 0.1),
   poolFalloff: numeric('Light shaping', 'Lamp shadow mask radius as a multiple of bulb height.', 0.1),
@@ -29,7 +29,7 @@ export const physicalControls = {
 export const physicalDefaults = {
   cameraMode: 'legacy' as const, deskWidthMm: 1200, deskDepthMm: 800, deskHeightMm: 750, deskEdgeMm: 10,
   eyeHeightMm: 1650, viewerSetbackMm: 650, lampIntensity: 1,
-  roomSpanMm: 2200, floorFrontMm: 400 / 1.2, wallHeightMm: 2400, ...DEFAULT_LIGHT_TUNING,
+  ...DEFAULT_LIGHT_TUNING,
 };
 export function withLightTuning<T extends RoomProps & RoomStoryControls>(args: T) {
   const { poolSpread, floorPoolSpread, poolFalloff, shadowReach, shadowScaleLimit, shadowAttenuation, floorShadowLimit, floorShadowTemper, ...rest } = args;
