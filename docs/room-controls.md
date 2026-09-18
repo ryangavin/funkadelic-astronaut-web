@@ -11,7 +11,7 @@ Zero setback is overhead. Eye height must exceed tabletop height; desk dimension
 
 `deskShare` and `roomLip` remain **framing**, not physical camera distance or field of view. Numeric framing controls have no aesthetic maximum. `roomSpanMm`, `floorFrontMm`, and `wallHeightMm` control how much room geometry exists; increase them if experimentation exposes its boundaries.
 
-Both **Foundations / Room / Physical Setup** and **Pages / Perspective Desk / Physical Setup** contain objects and open numeric controls. The inline fields maintain local experimental edits. Changing the Storybook controls resets those inline edits to the new external settings. Every advanced light-shaping value has its own labeled numeric Storybook control. Existing scenes retain their old defaults. PerspectiveDesk's saved settings include physical inputs, camera mode, and the light-tuning object.
+Both **Foundations / Room / Physical Setup** and **Pages / Perspective Desk / Physical Setup** contain objects, labeled sliders and unrestricted numeric inputs. Physical readouts show millimetres plus inches (`mm / 25.4`); inches are display-only. Slider windows are convenient suggestions, not scene limits: typing a value outside the window preserves that value and parks the slider at the nearest endpoint. The inline fields maintain local experimental edits. Changing the Storybook controls resets those inline edits to the new external settings. Every advanced light-shaping value has its own labeled numeric Storybook control. Existing scenes retain their old defaults. PerspectiveDesk's saved settings include physical inputs, camera mode, and the light-tuning object.
 
 ## Light
 
@@ -37,3 +37,20 @@ These are visual shaping controls, not claimed physically based lighting. Numeri
 The room surfaces use perspective, while objects are 2.5D artwork. This is not a free-flight 3D renderer. Near-horizontal views can expose cutout/extrusion artifacts; no aesthetic angle clamp hides them. Elevated artwork planes at or above the camera eye clearance cannot be represented by projection back onto the tabletop. They are explicitly hidden with zero scale rather than producing infinity or inverted drawings. Physical mode displays its eye clearance and this rule. Only machine-precision tolerance is used at equality. Lowering an object or raising the eye restores the layer. Some independently drawn Solid objects use an approximate extrusion rather than this elevated-layer rule.
 
 Stores and imperative subscriptions remain responsible for dragging and lighting. Physical camera changes refresh pointer-projection measurements; ordinary light changes retain the camera object's identity.
+
+The Physical Setup interaction checks run only in test mode. Ordinary Storybook browsing leaves the initial dimensions, lighting and placements untouched; it does not replay the resizing/dragging stress test.
+
+## Preview performance check (2026-09-18)
+
+Before the test-mode guard, opening either Physical Setup story replayed its interaction test in the normal preview: desk size ended at 1600 × 1000 mm, light intensity at 3, pool spread at 2.8, and the lamp was moved and aimed. Those were unintended test settings, not the scene defaults. Normal browsing now retains 1200 × 800 mm, intensity 1, spread 1.4 and the supplied lamp placement.
+
+A local headless Chromium comparison used the existing DeskPerf `dragCost`, `dragLag`, `frameSeries` and `attribute` probes. Both stories were set to angle 78°, camera distance 5700, a 1200 × 800 mm desk, identical four-object placements (cradle, mug, handheld, pen), lamp position 396/17 and pose, intensity 1, spread 1.4, and an 1100 × 618.75 px room frame. Experimental controls were hidden during measurement. Three 32-move samples per interaction produced:
+
+| Story | Lamp drag median frame (samples) | Lamp aim median frame (samples) | Synthetic input-to-style commit, drag / aim |
+| --- | --- | --- | --- |
+| Foundations / Room / Physical Setup | 27.9 / 28.1 / 28.0 ms | 27.5 / 27.0 / 27.1 ms | 0.5 / 1.7 ms |
+| Pages / Perspective Desk / Desk | 26.2 / 26.2 / 26.1 ms | 25.5 / 25.6 / 25.6 ms | 0.4 / 1.7 ms |
+
+The chronological frame probe agreed with these medians. On the matched Desk scene, removing the room reduced the frame median by 9.4 ms (36%); removing the desk's floor shadow reduced it by 7.1 ms (27%). These are overlapping attribution experiments, not additive savings. The measured cost is predominantly shared rendering; the small residual does not establish a distinct React/input regression. No renderer change or experimental range clamp was justified by this comparison.
+
+These are local synthetic/headless measurements, not a hardware-independent frame-rate promise. Input-to-style timing excludes browser input-queue delay; attribution hides layers and is diagnostic only. Original full physical settings, larger light pools, and other machines can have different drawing costs.
