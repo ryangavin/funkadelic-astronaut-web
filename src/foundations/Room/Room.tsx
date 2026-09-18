@@ -1,3 +1,6 @@
+import { lightingSetup, type LightTuning } from '../../geometry/lightingSetup';
+import { roomSetup, positive, type PhysicalRoomInputs } from '../../geometry/roomSetup';
+import { mmToUnits } from '../../geometry/physicalScale';
 import { LAMP_WIDTH, LAMP_HEIGHT } from '../../geometry/physicalScale';
 import { articulateLamp, lampPoseFromAngles, lampPoseAngles, type LampPose } from '../../components/3D/DeskLamp/articulation';
 import type React from 'react';
@@ -34,7 +37,15 @@ export const ROOM_LAMP_PLACE: Place = { x: 770, y: 100, rotation: 0 };
 const RoomCamera = createContext<StudyCamera>({ angle: GENTLE_VIEW, depth: GENTLE_DEPTH, width: DESK_WIDTH, surfaceHeight: DESK_DEPTH });
 export const useRoomCamera = () => useContext(RoomCamera);
 
-export type RoomProps = {
+export type RoomProps = PhysicalRoomInputs & {
+  /** Relative lamp pool brightness; 1 preserves the original light. No aesthetic maximum. */
+  lampIntensity?: number;
+  /** Advanced artistic pool/shadow shaping; defaults preserve existing scenes. */
+  lightTuning?: Partial<LightTuning>;
+  /** Room geometry extents, independent of viewport framing. */
+  roomSpanMm?: number;
+  floorFrontMm?: number;
+  wallHeightMm?: number;
   /** How far above the desk the eye is, in degrees. 90 is straight down, the way everything is drawn. */
   angle?: number;
   /** How far the eye is from the desk, in desk units: far away converges gently, near sharply. */
@@ -100,10 +111,10 @@ const SteadyLamp = memo(DeskLamp);
   lamp rebuilt the pool and rebuilt every path of the arm's shadow beneath it —
   the last two things on the desk that the lamp still re-rendered.
 */
-function DeskLightLayers() {
+function DeskLightLayers({ width, depth }: { width: number; depth: number }) {
   return <>
-    <LampPool surfaceWidth={DESK_WIDTH} surfaceHeight={DESK_DEPTH} />
-    <LampShadows surfaceHeight={DESK_DEPTH} />
+    <LampPool surfaceWidth={width} surfaceHeight={depth} />
+    <LampShadows surfaceWidth={width} surfaceHeight={depth} />
   </>;
 }
 
@@ -127,7 +138,44 @@ function DeskLightLayers() {
  * Anything given as children is laid on the desk, in desk units, inside the
  * desk's perspective; what those things throw goes in `shadows`.
  */
-export function Room({ angle = GENTLE_VIEW, depth = GENTLE_DEPTH, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps) {
+/** Invalid numeric edits show a recoverable diagnostic instead of broken CSS. */
+export function Room(props: RoomProps) {
+  const { cameraMode, deskWidthMm, deskDepthMm, deskHeightMm, deskEdgeMm, eyeHeightMm, viewerSetbackMm, angle, depth } = props;
+  const measured = useMemo(() => {
+    try {
+      const setup = roomSetup({ cameraMode, deskWidthMm, deskDepthMm, deskHeightMm, deskEdgeMm, eyeHeightMm, viewerSetbackMm }, angle ?? GENTLE_VIEW, depth ?? GENTLE_DEPTH);
+      return { setup };
+    } catch (error) { return { error: error instanceof Error ? error.message : 'Invalid room geometry' }; }
+  }, [cameraMode, deskWidthMm, deskDepthMm, deskHeightMm, deskEdgeMm, eyeHeightMm, viewerSetbackMm, angle, depth]);
+  const resolved = useMemo(() => {
+    if ('error' in measured) return { error: measured.error ?? 'Invalid room geometry' };
+    try {
+      const setup = measured.setup;
+      const tuning = lightingSetup(props.lightTuning);
+      for (const [name, value, zero] of [
+        ['lampIntensity', props.lampIntensity ?? 1, true], ['lampWidth', props.lampWidth ?? LAMP_WIDTH, false],
+        ['roomSpanMm', props.roomSpanMm ?? 2200, false], ['floorFrontMm', props.floorFrontMm ?? 400 / 1.2, true],
+        ['wallHeightMm', props.wallHeightMm ?? 2400, false], ['deskShare', props.deskShare ?? ROOM_DESK_SHARE, false],
+        ['roomBlur', props.roomBlur ?? 1, true],
+      ] as const) positive(name, value, zero);
+      for (const [name, value] of [['shadowStrength', props.shadowStrength ?? DEFAULT_SHADOW_STRENGTH], ['roomDim', props.roomDim ?? 0.32]] as const)
+        if (!Number.isFinite(value) || value < 0 || value > 1) throw new RangeError(`${name} must be between 0 and 1 (normalized opacity)`);
+      if (!Number.isFinite(props.roomLip ?? ROOM_LIP)) throw new RangeError('roomLip must be finite');
+      return { setup, tuning };
+    } catch (error) { return { error: error instanceof Error ? error.message : 'Invalid room setup' }; }
+  }, [measured, props.lightTuning, props.lampIntensity, props.lampWidth, props.roomSpanMm, props.floorFrontMm, props.wallHeightMm, props.deskShare, props.roomBlur, props.shadowStrength, props.roomDim, props.roomLip]);
+  if ('error' in resolved) return <div className="room__diagnostic" role="alert">Room setup: {resolved.error}. Update the controls to restore the scene.</div>;
+  return <>
+    {cameraMode === 'physical' && <p className="room__diagnostic" role="status">Physical camera: {resolved.setup.camera.angle.toFixed(1)}°; eye clearance {(resolved.setup.camera.depth * Math.sin(resolved.setup.camera.angle * Math.PI / 180) / 1.2).toFixed(1)} mm. Artwork layers at or above the eye plane are hidden. Objects are 2.5D drawings; low views reveal their limitations.</p>}
+    <RoomScene {...props} setup={resolved.setup} tuning={resolved.tuning} />
+  </>;
+}
+
+function RoomScene({ setup, tuning, lampIntensity = 1, roomSpanMm = 2200, floorFrontMm = 400 / 1.2, wallHeightMm = 2400, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & { setup: ReturnType<typeof roomSetup>; tuning: LightTuning }) {
+  const { camera, stand, edge } = setup;
+  const span = mmToUnits(roomSpanMm);
+  const front = mmToUnits(floorFrontMm);
+  const wallHeight = mmToUnits(wallHeightMm);
   /*
     Where the lamp stands lives in a store, not in this component's state.
 
@@ -164,7 +212,7 @@ export function Room({ angle = GENTLE_VIEW, depth = GENTLE_DEPTH, wood = 'walnut
   const on = override?.initial === lamp ? override.on : lamp;
   /* Handed to every thing on the desk, which is memoised: a fresh camera each
      render would redraw the whole desk on every step of a drag. */
-  const camera = useMemo(() => ({ angle, depth, width: DESK_WIDTH, surfaceHeight: DESK_DEPTH }), [angle, depth]);
+
   /*
     Everything the lamp is handed, held still.
 
@@ -190,15 +238,15 @@ export function Room({ angle = GENTLE_VIEW, depth = GENTLE_DEPTH, wood = 'walnut
     <RoomCamera.Provider value={camera}>
       {/* The frame: 16 x 9, cropping the room. Told there is a room in it, it
           becomes the container the desk takes its share of the width from. */}
-      <Inspector className={`room ${className}`.trim()} data-room={room ? '' : undefined} style={{ '--room-share': deskShare, '--room-lip': room ? roomLip : 0, ...style } as React.CSSProperties}><DeskLighting>
-        {room && <DeskRoom angle={angle} depth={depth} deskDepth={DESK_DEPTH} lip={roomLip} floor={floor} wall={wall} blur={roomBlur} dim={roomDim} deskShare={deskShare} shadowStrength={shadowStrength} />}
+      <Inspector className={`room ${className}`.trim()} data-room={room ? '' : undefined} style={{ '--room-desk-width': camera.width, '--room-share': deskShare, '--room-lip': room ? roomLip : 0, ...style } as React.CSSProperties}><DeskLighting>
+        {room && <DeskRoom angle={camera.angle} depth={camera.depth} deskWidth={camera.width} deskDepth={camera.surfaceHeight} stand={stand} span={span} front={front} wallHeight={wallHeight} lip={roomLip} floor={floor} wall={wall} blur={roomBlur} dim={roomDim} deskShare={deskShare} shadowStrength={shadowStrength} />}
         <div className="room__stand">
           <Perspective {...camera} className="perspective--lamp-study">
             {/* The materials class is what tells the things on it they are being
                 seen in the round rather than flat in a plan: no print filter on a
                 pen, a lip of light along a moulded case. */}
-            <Desk className="desk-study-materials" wood={wood} height={DESK_DEPTH} edge={12}>
-              <div className="room__lighting" aria-hidden="true"><DeskLightLayers />{shadows}</div>
+            <Desk className="desk-study-materials" wood={wood} width={camera.width} height={camera.surfaceHeight} edge={edge}>
+              <div className="room__lighting" aria-hidden="true"><DeskLightLayers width={camera.width} depth={camera.surfaceHeight} />{shadows}</div>
               {/* Drawn on the desk itself, so it takes the desk's perspective and pushes everything under it away. */}
               <InspectorVeil />
               {children}
@@ -206,7 +254,7 @@ export function Room({ angle = GENTLE_VIEW, depth = GENTLE_DEPTH, wood = 'walnut
                   owns it is told once, when it is put down: a composition that writes every
                   step back into its controls re-renders the desk under the drag. */}
               <Movable id={ROOM_LAMP} {...lampAt} width={lampWidth} label="Desk lamp" className="perspective__lamp" onMove={() => {}} onSettle={next => onArrange?.(next)}>
-                <SteadyLamp camera={camera} placeId={ROOM_LAMP} lightPosition={lightPosition} shadowStrength={shadowStrength} on={on} enamel={lampEnamel} pose={pose} onPoseChange={articulated} onToggle={switched} />
+                <SteadyLamp tuning={tuning} intensity={lampIntensity} camera={camera} placeId={ROOM_LAMP} lightPosition={lightPosition} shadowStrength={shadowStrength} on={on} enamel={lampEnamel} pose={pose} onPoseChange={articulated} onToggle={switched} />
               </Movable>
             </Desk>
           </Perspective>

@@ -6,7 +6,11 @@ export function projectElevation(
   { angle, depth, width, surfaceHeight }: { angle: number; depth: number; width: number; surfaceHeight: number },
 ) {
   const tilt = (90 - angle) * Math.PI / 180;
-  const scale = depth * Math.cos(tilt) / (depth * Math.cos(tilt) - height);
+  const clearance = depth * Math.cos(tilt);
+  // This 2.5D surface representation cannot express a plane through/above the eye.
+  // Hide that layer explicitly instead of emitting infinity or an inverted scale.
+  if (clearance - height <= Number.EPSILON * Math.max(1, clearance, height) * 8) return { x: width / 2, y: surfaceHeight, scale: 0 };
+  const scale = clearance / (clearance - height);
   return {
     x: width / 2 + (x - width / 2) * scale,
     y: surfaceHeight + (y - surfaceHeight - height * Math.tan(tilt)) * scale,

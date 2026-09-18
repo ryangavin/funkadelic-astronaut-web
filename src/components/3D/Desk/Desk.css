@@ -7,7 +7,7 @@
 */
 
 .desk {
-  --sheet-unit: calc(100cqw / 1440);
+  --sheet-unit: calc(100cqw / var(--desk-width, 1440));
   --desk-height: 810;
   --desk-light: 1;
   --desk-boards: 1;

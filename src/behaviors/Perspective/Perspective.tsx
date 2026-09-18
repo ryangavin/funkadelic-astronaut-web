@@ -237,7 +237,7 @@ export function Perspective({ angle = GENTLE_VIEW, depth = GENTLE_DEPTH, width =
       window.removeEventListener('resize', take);
       window.removeEventListener('scroll', take, true);
     };
-  }, []);
+  }, [angle, depth, width]);
   const project = useCallback(
     (clientX: number, clientY: number): SurfacePoint => {
       const box = measured.current ?? (plane.current ? measurePlane(plane.current) : null);

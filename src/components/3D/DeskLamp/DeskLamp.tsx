@@ -1,3 +1,4 @@
+import type { LightTuning } from '../../../geometry/lightingSetup';
 import { LAMP_HEIGHT, mmToUnits } from '../../../geometry/physicalScale';
 import type React from 'react';
 import { useContext, useEffect, useId, useRef, useState } from 'react';
@@ -48,6 +49,9 @@ export type DeskLampProps = {
   camera?: Parameters<typeof projectElevation>[3];
   /** Darkness of shadows this light casts on the desk, from 0 (none) to 1 (strongest). */
   shadowStrength?: number;
+  /** Relative brightness of the emitted light pools. */
+  intensity?: number;
+  tuning?: LightTuning;
   /** Opt in to scene lighting: lamp box placement and bulb elevation in desk units. */
   lightPosition?: { x: number; y: number; width: number; height: number; rotation?: number };
   /** Whether it is switched on. Clicking the shade switches it. */
@@ -69,7 +73,7 @@ export type DeskLampProps = {
  * drawn separately, by `LampLight`, beneath whatever lies in it. The shade is
  * the switch. Measured in 720ths of the box, which is 480 by 400 mm.
  */
-export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledHead, onHeadChange, camera, shadowStrength = DEFAULT_SHADOW_STRENGTH, lightPosition, placeId, on = true, onToggle, enamel = 'red', rotation = 0, className = '', style }: DeskLampProps) {
+export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledHead, onHeadChange, camera, tuning, intensity = 1, shadowStrength = DEFAULT_SHADOW_STRENGTH, lightPosition, placeId, on = true, onToggle, enamel = 'red', rotation = 0, className = '', style }: DeskLampProps) {
   const id = `lamp-${useId().replace(/:/g, '')}`;
   const [ownArm, setOwnArm] = useState(() => controlledPose ?? articulateLamp(controlledHead ?? DESK_LAMP_SHADE));
   /*
@@ -155,7 +159,9 @@ export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledH
       height: lightPosition.height,
       lamp: { base: world(600, 110, mmToUnits(25) * constructionScale, 110), elbow: world(arm.elbow.x, arm.elbow.y, mmToUnits(230) * constructionScale, 12), neck: world(x, y, bulbHeight + mmToUnits(50) * constructionScale, 11) },
       shadowStrength: Number.isFinite(shadowStrength) ? Math.min(1, Math.max(0, shadowStrength)) : DEFAULT_SHADOW_STRENGTH,
-      on,
+      on: on && intensity > 0,
+      intensity,
+      tuning,
     };
   };
   /* Without a place of its own the light follows the props, as it always did. */
@@ -176,6 +182,7 @@ export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledH
       const unit = lightPosition.width / 720;
       const tilt = (90 - camera.angle) * Math.PI / 180;
       const k = projectElevation(0, 0, bulbHeight + mmToUnits(50) * constructionScale, camera).scale;
+      if (k === 0) return { x, y };
       const wx = camera.width / 2 + (surface.x - camera.width / 2) / k;
       const wy = camera.surfaceHeight + (surface.y - camera.surfaceHeight) / k + (bulbHeight + mmToUnits(50) * constructionScale) * Math.tan(tilt);
       const at = standing()!;
