@@ -3,8 +3,7 @@ import { RunSheet, SitePlan } from './DeskPapers';
 import { Contract } from '../../components/2D/Contract/Contract';
 import { Handbill } from '../../experiments/BandIntro/Handbill';
 import { BAND_HANDBILL_FRONT, BAND_HANDBILL_BACK } from '../../experiments/BandIntro/Handbill.band';
-import { DossierCover } from './DossierCover';
-import { BandDossier } from '../../sections/BandDossier/BandDossier';
+import { DeskDossier } from './DeskDossier';
 import { memo, useCallback, useRef, useState, type ReactNode } from 'react';
 import { Movable, type Place } from '../../behaviors/Movable/Movable';
 import { usePlace, usePlaceEffect, usePlaces } from '../../behaviors/Movable/places';
@@ -48,15 +47,12 @@ const HANDLE: Inspect = { fill: 0.7, upright: false };
 /* The handbill is one big button to turn it over, so nothing is left of its face to pick it up by:
    it comes up on the first press, and is turned over while it is up. */
 const TURN_OVER: Inspect = { fill: 0.9, grab: 'anywhere' };
-/* The dossier is drawn as a spread with the folder closed on the right of it, so the thing to bring
-   up is the cover and not the empty half beside it. */
-const READ_FOLDER: Inspect = { fill: 0.86, subject: '.folder__cover' };
 const OBJECT_DRAWINGS: Omit<ObjectSpec, 'width'>[] = [
   { id: 'sitePlan', name: 'Festival site plan', widthMm: PAPER_MM.width, ratio: PAPER_MM.height / PAPER_MM.width, height: .2, flat: true, place: { x: 400, y: 455, rotation: -8 }, content: <SitePlan /> , inspect: READ },
   { id: 'poster', name: 'Band poster', widthMm: PAPER_MM.width, ratio: PAPER_MM.height / PAPER_MM.width, height: .2, flat: true, place: { x: 455, y: 385, rotation: -5 }, content: <Handbill front={BAND_HANDBILL_FRONT} back={BAND_HANDBILL_BACK} stock="goldenrod" spot="purple" /> , inspect: TURN_OVER },
   { id: 'setTimes', name: 'Set times', widthMm: PAPER_MM.width, ratio: PAPER_MM.height / PAPER_MM.width, height: .2, flat: true, place: { x: 655, y: 415, rotation: 4 }, content: <RunSheet /> , inspect: READ },
   { id: 'contract', name: 'Performance contract', widthMm: PAPER_MM.width, ratio: PAPER_MM.height / PAPER_MM.width, height: .2, flat: true, place: { x: 960, y: 415, rotation: -3 }, content: <Contract rotation={0} /> , inspect: READ },
-  { id: 'dossier', name: 'Band dossier', widthMm: 482, ratio: 960/1440, height: 1, flat: true, place: { x: 370, y: 330, rotation: -2 }, content: <BandDossier className="dossier--branded" sticker={<DossierCover />} open={false} rotation={0} tape={null} /> , inspect: READ_FOLDER },
+  { id: 'dossier', name: 'Band dossier', widthMm: 482, ratio: 915/1440, height: 1, flat: true, place: { x: 200, y: 330, rotation: -2 } },
   { id: 'clock', name: 'Desk clock', widthMm: 90, ratio: 560/720, height: 15, place: { x: 60, y: 65, rotation: -4 }, content: <DeskClock /> },
   // CradleRelief works its own rail and ball elevations out of the width it is given.
   { id: 'cradle', name: 'Newton’s cradle', widthMm: 120, ratio: 600/720, height: 90, place: { x: 330, y: 65 }, shapes: [{ path: 'M3 5H97V95H3Z', heightMm: 8 }, { path: 'M8 20H92V23H8Z M8 77H92V80H8Z', heightMm: 90 }] },
@@ -208,6 +204,7 @@ export function DeskObjects({ camera, only }: { camera: StudyCamera; only?: read
   return <>{chosen(only).map((object, index) => {
     /* Paper stays under everything that stands up, however recently it was handled. */
     const layer = object.flat ? (front === object.id ? PAPER_LAYER + DESK_OBJECTS.length : PAPER_LAYER + index) : OBJECT_LAYER + index;
+    if (object.id === 'dossier') return <DeskDossier key={object.id} width={object.width} place={DEFAULT_OBJECT_PLACEMENTS[object.id]} layer={layer} onFront={bringForward} />;
     return <DeskObject key={object.id} object={object} place={DEFAULT_OBJECT_PLACEMENTS[object.id] ?? object.place} camera={camera} layer={layer} held={inspection?.held === object.id} onFront={bringForward} />;
   })}</>;
 }
