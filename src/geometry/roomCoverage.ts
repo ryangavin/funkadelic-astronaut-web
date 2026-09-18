@@ -36,3 +36,27 @@ export function roomCoverage({ angle, depth: d, deskWidth, deskDepth, stand, des
   }
   return { span, front, wallHeight };
 }
+
+/** Limits of this DOM-based material renderer, not restrictions on valid cameras.
+ * Count work before Floor builds course/joint arrays or Wall scans brick cells.
+ * The course bound also limits independent SVG grain-filter surfaces.
+ */
+export const ROOM_MATERIAL_BUDGET = { floorCourses: 128, materialCells: 10000 };
+export function roomSurfaceExtents(inputs: Parameters<typeof roomCoverage>[0], overrides: {
+  span?: number; front?: number; wallHeight?: number;
+} = {}) {
+  const coverage = roomCoverage(inputs);
+  const span = overrides.span ?? Math.max(2640, coverage.span);
+  const front = overrides.front ?? Math.max(400, coverage.front);
+  const wallHeight = overrides.wallHeight ?? Math.max(2880, coverage.wallHeight);
+  const floorDepth = inputs.deskDepth + front;
+  const floorCourses = Math.ceil(floorDepth / 96);
+  const floorCells = floorCourses * (Math.ceil(span / 360) + 3);
+  const wallCells = Math.ceil(wallHeight / 90) * (Math.ceil(span / 270) + 2);
+  if (![span, front, wallHeight, floorDepth, floorCells, wallCells].every(Number.isFinite)
+      || floorCourses > ROOM_MATERIAL_BUDGET.floorCourses
+      || floorCells + wallCells > ROOM_MATERIAL_BUDGET.materialCells) {
+    throw new RangeError('Room material renderer capacity exceeded (128 floor courses / 10,000 material cells). This is a rendering resource limit, not an invalid camera. Increase eye clearance, reduce room extents, or disable the room background');
+  }
+  return { span, front, wallHeight };
+}

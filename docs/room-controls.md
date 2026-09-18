@@ -67,3 +67,14 @@ restore automatic coverage. This may expose an edge when exploring finite room
 sizes. The automatic calculation adds a small bleed for antialiasing/blur and
 retains the existing minimum room dimensions rather than allocating an enormous
 fixed backdrop. It assumes Room's standard 16:9 crop.
+
+Supported views also have a material-rendering resource bound: at most 128
+filtered floor courses and 10,000 estimated floor/brick cells. The shared extent
+resolver checks this before material arrays are created, including for explicit
+extent overrides. A near-table overhead view can be geometrically valid yet
+exceed this budget. Room shows an explicit capacity alert and retains its last
+supported scene and arrangement; the entered controls remain visible and are not
+silently clamped. Increase eye clearance, reduce explicit extents, or disable
+the room background to recover. Direct DeskRoom usage shows the capacity alert
+instead of allocating the oversized materials. This is a renderer limit rather
+than an aesthetic camera-angle restriction.

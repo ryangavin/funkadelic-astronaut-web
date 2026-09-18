@@ -29,3 +29,18 @@ test('automatic background covers the frame across physical camera and desk rang
       if (seam.y >= top && seam.y <= bottom) assert.ok(seam.halfWidth >= width / share / 2 - 1e-6);
     }
 });
+
+const { roomSurfaceExtents } = require('../src/geometry/roomCoverage.ts');
+const setup = { angle: 54.162347, depth: 1332.066, deskWidth: 1440, deskDepth: 960, stand: 900, deskShare: 0.8, lip: 180 };
+test('near-table overhead cameras fail cheaply before allocating material arrays', () => {
+  for (const clearance of [1.2, 0.12, 0.00012]) {
+    assert.throws(() => roomSurfaceExtents({ ...setup, angle: 90, depth: clearance }), /renderer capacity exceeded.*rendering resource limit/);
+  }
+});
+test('renderer budget also guards explicit dimensions and filtered course counts', () => {
+  for (const overrides of [{ span: 1e9 }, { front: 1e9 }, { wallHeight: 1e9 }, { front: 96 * 129 }]) {
+    assert.throws(() => roomSurfaceExtents(setup, overrides), /renderer capacity exceeded/);
+  }
+  assert.deepEqual(roomSurfaceExtents(setup, { span: 2640, front: 400, wallHeight: 2880 }), { span: 2640, front: 400, wallHeight: 2880 });
+  assert.ok(roomSurfaceExtents(setup).span > 2640);
+});
