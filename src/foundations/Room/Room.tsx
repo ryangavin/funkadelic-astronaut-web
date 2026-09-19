@@ -39,6 +39,11 @@ export const ROOM_LAMP_PLACE: Place = { x: 770, y: 100, rotation: 0 };
 const RoomCamera = createContext<StudyCamera>({ angle: GENTLE_VIEW, depth: GENTLE_DEPTH, width: DESK_WIDTH, surfaceHeight: DESK_DEPTH });
 export const useRoomCamera = () => useContext(RoomCamera);
 
+export type RoomSceneGeometry = { setup: ReturnType<typeof roomSetup>; extents: ReturnType<typeof roomSurfaceExtents> | null };
+const AcceptedRoom = createContext<RoomSceneGeometry | null>(null);
+/** The exact geometry retained by the visible scene, including failed-edit fallback. */
+export const useRoomSceneGeometry = () => useContext(AcceptedRoom);
+
 export type RoomProps = PhysicalRoomInputs & {
   /** Tiny screen-aligned animation-frame timing; disabled means no sampling. */
   showPerformance?: boolean;
@@ -170,7 +175,7 @@ export function Room(props: RoomProps) {
       const framing = roomFraming(setup.camera, cameraMode === 'physical', props.deskShare ?? ROOM_DESK_SHARE, props.roomLip ?? ROOM_LIP);
       // Check material allocation before accepting a new scene. Failed edits keep
       // the last valid scene alive, including its object arrangement and lamp.
-      if (props.room !== false) roomSurfaceExtents({
+      const extents = props.room !== false ? roomSurfaceExtents({
         angle: setup.camera.angle, depth: setup.camera.depth,
         deskWidth: setup.camera.width, deskDepth: setup.camera.surfaceHeight, stand: setup.stand,
         ...framing, targetY: setup.camera.targetY, frameAnchor: cameraMode === 'physical' ? .5 : 1,
@@ -178,24 +183,24 @@ export function Room(props: RoomProps) {
         span: props.roomSpanMm === undefined ? undefined : mmToUnits(props.roomSpanMm),
         front: props.floorFrontMm === undefined ? undefined : mmToUnits(props.floorFrontMm),
         wallHeight: props.wallHeightMm === undefined ? undefined : mmToUnits(props.wallHeightMm),
-      });
-      return { setup, tuning };
+      }) : null;
+      return { setup, tuning, extents };
     } catch (error) { return { error: error instanceof Error ? error.message : 'Invalid room setup' }; }
   }, [measured, props.room, props.lightTuning, props.lampIntensity, props.lampWidth, props.roomSpanMm, props.floorFrontMm, props.wallHeightMm, props.deskShare, props.roomBlur, props.shadowStrength, props.roomDim, props.roomLip]);
   // Numeric fields pass through incomplete values while typing. Keep the last
   // valid scene mounted so editing never discards places, switch state or pose.
-  const previous = useRef<{ props: RoomProps; setup: ReturnType<typeof roomSetup>; tuning: LightTuning } | null>(null);
+  const previous = useRef<RoomSceneGeometry & { props: RoomProps; tuning: LightTuning } | null>(null);
   const error = 'error' in resolved ? resolved.error : undefined;
-  if (!('error' in resolved)) previous.current = { props, setup: resolved.setup, tuning: resolved.tuning };
+  if (!('error' in resolved)) previous.current = { props, setup: resolved.setup, tuning: resolved.tuning, extents: resolved.extents };
   const scene = previous.current;
   return <>
     {error && <div className="room__diagnostic" role="alert">Room setup: {error}. {scene ? 'Showing the last valid scene; your arrangement is retained.' : 'Enter valid values to show the scene.'}</div>}
-    {scene && <RoomScene {...scene.props} showPerformance={props.showPerformance} setup={scene.setup} tuning={scene.tuning} />}
+    {scene && <RoomScene {...scene.props} showPerformance={props.showPerformance} setup={scene.setup} tuning={scene.tuning} extents={scene.extents} />}
     {!error && cameraMode === 'physical' && scene && <p className="room__diagnostic" role="status">Physical camera: {scene.setup.camera.angle.toFixed(1)}°; eye clearance {(scene.setup.camera.depth * Math.sin(scene.setup.camera.angle * Math.PI / 180) / 1.2).toFixed(1)} mm. Artwork layers at or above the eye plane are hidden. Objects are 2.5D drawings; low views reveal their limitations.</p>}
   </>;
 }
 
-function RoomScene({ setup, tuning, cameraMode, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, showLamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & { setup: ReturnType<typeof roomSetup>; tuning: LightTuning }) {
+function RoomScene({ setup, extents, tuning, cameraMode, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, showLamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & RoomSceneGeometry & { tuning: LightTuning }) {
   const { camera, stand, edge } = setup;
   const framing = roomFraming(camera, cameraMode === 'physical', deskShare, room || cameraMode === 'physical' ? roomLip : 0);
   const span = roomSpanMm === undefined ? undefined : mmToUnits(roomSpanMm);
@@ -259,7 +264,8 @@ function RoomScene({ setup, tuning, cameraMode, showPerformance = false, lampInt
   const told = useRef({ onArticulate, onLamp, lamp });
   told.current = { onArticulate, onLamp, lamp };
 
-  return <PlacesProvider store={places}>
+  const accepted = useMemo(() => ({ setup, extents }), [setup, extents]);
+  return <AcceptedRoom.Provider value={accepted}><PlacesProvider store={places}>
     <RoomCamera.Provider value={camera}>
       {/* The frame: 16 x 9, cropping the room. Told there is a room in it, it
           becomes the container the desk takes its share of the width from. */}
@@ -288,5 +294,5 @@ function RoomScene({ setup, tuning, cameraMode, showPerformance = false, lampInt
       {showPerformance && <PerformanceOverlay />}
       </Inspector>
     </RoomCamera.Provider>
-  </PlacesProvider>;
+  </PlacesProvider></AcceptedRoom.Provider>;
 }
