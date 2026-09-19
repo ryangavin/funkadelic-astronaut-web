@@ -71,3 +71,17 @@ export const IndustrialWindow: Story = {
     <Wall {...args}><WallWindow /></Wall>
   </div>,
 };
+
+/** The room keeps its inexpensive flat surface, with cell-local red-stock weathering. */
+export const FlatWeathered: Story = {
+  args: { finish: 'red', flat: true, weathered: true, height: 620 },
+  play: async ({ canvasElement }) => {
+    const grit = canvasElement.querySelector('.wall__grit')!;
+    const brush = canvasElement.querySelector('.wall__brush')!;
+    await expect(getComputedStyle(grit).display).toBe('none');
+    await expect(getComputedStyle(brush).display).toBe('none');
+    const brick = canvasElement.querySelector('.wall__brick')!;
+    await expect(getComputedStyle(brick).backgroundImage).toContain('gradient');
+    await expect(getComputedStyle(brick, '::after').clipPath).toContain('polygon');
+  },
+};

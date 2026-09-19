@@ -72,6 +72,8 @@ export type WallProps = {
   light?: number;
   /** Drawn flat: no grit under the paint and no brushwork over it, and the odd bricks are plain blocks of another tone. */
   flat?: boolean;
+  /** Keep inexpensive per-brick weathering in flat room artwork, without grit or brush layers. */
+  weathered?: boolean;
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
@@ -103,13 +105,14 @@ export function Wall({
   worn = 22,
   light = 1,
   flat = false,
+  weathered = false,
   children,
   className = '',
   style,
   ...rest
 }: WallProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'children' | 'className' | 'style'>) {
   // Bare stock varies through the firing, beyond the bricks with worn paint.
-  const variationRate = finish === 'red' && !flat && worn > 0 ? Math.min(100, worn * 3) : worn;
+  const variationRate = finish === 'red' && (!flat || weathered) && worn > 0 ? Math.min(100, worn * 3) : worn;
   const odd = worn > 0 ? (materialOrigin ? wallMaterialBricks(materialOrigin, width, height, brick, course, variationRate) : variegation(width, height, brick, course, variationRate)) : [];
   return (
     <div
@@ -118,6 +121,7 @@ export function Wall({
       data-finish={finish}
       data-material-origin={materialOrigin ? `${materialOrigin.x},${materialOrigin.y}` : undefined}
       data-flat={flat ? '' : undefined}
+      data-weathered={weathered ? '' : undefined}
       style={{ '--wall-width': width, '--wall-height': height, '--wall-brick': brick, '--wall-course': course, '--wall-joint': WALL_JOINT, '--wall-light': light, '--wall-origin-x': materialOrigin?.x ?? 0, '--wall-origin-y': materialOrigin?.y ?? 0, ...style } as React.CSSProperties}
     >
       <div className="wall__face">
