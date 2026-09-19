@@ -9,7 +9,7 @@ try {
  await page.goto(`${process.env.PREVIEW_URL}/storybook/iframe.html?id=debug-scale-bench--physical-setup&viewMode=story`);
  await page.getByRole('img',{name:'Wastebasket, 360 mm tall and 290 mm across'}).waitFor();
  const input=async(name,value)=>{const field=page.getByRole('spinbutton',{name,exact:true});await field.fill(String(value));await field.blur();};
- for(const [angle,fov,wall,height] of [[74.5,110,660,770],[40,110,1600,770],[90,85,660,750],[115,85,660,750]]) {
+ for(const [angle,fov,wall,height] of [[20,100,1800,770],[74.5,110,660,770],[40,110,1600,770],[90,85,660,750],[115,85,660,750]]) {
   await input('Horizontal field of view (degrees)',fov);await input('Wall distance (mm)',wall);await input('Head tilt from horizontal (degrees)',angle);await input('Desk height (mm)',height);
   assert.equal(await page.getByRole('alert').count(),0);
   const {camera,stand,edge}=roomSetup({cameraMode:'physical',eyeHeightMm:1650,viewerSetbackMm:wall,headTiltDegrees:angle,deskHeightMm:height});
@@ -27,27 +27,28 @@ try {
   assert.ok(await page.locator('[data-floor-object="Desk leg 1"]').count());
   assert.equal(await page.getByRole('img',{name:'Wastebasket, 360 mm tall and 290 mm across'}).count(),1);
   assert.equal(await page.locator('.scale-plant--below').count(),1);
-  const binFoot=await page.getByRole('img',{name:'Wastebasket, 360 mm tall and 290 mm across'}).evaluate(svg=>{
-    const rect=svg.closest('.solid').querySelector('.solid__stands').getBoundingClientRect();return{x:rect.x,y:rect.y};
-  });
-  const expectedBin=projectFloorPoint({x:1440,y:186,z:0},camera,stand,framing.deskShare,framing.lip,.5);
-  assert.ok(Math.abs(binFoot.x-frame.x-expectedBin.x*frame.width/1440)<.2,'Solid bin foot matches world floor x');
-  assert.ok(Math.abs(binFoot.y-frame.y-expectedBin.y*frame.height/810)<.2,'Solid bin foot matches world floor y');
+  for(const [label,x,y,height] of [['Wastebasket, 360 mm tall and 290 mm across',1200,155,360],['Terracotta pot, 320 mm tall and 310 mm across',-1200,280,320]]) {
+   const object=page.getByRole('img',{name:label});
+   for(const [selector,px,z] of [['[data-cylinder-base-point]',x,0],['[data-cylinder-rim]',x,height],['[data-cylinder-rim-left]',x-(height===360?145:155),height],['[data-cylinder-rim-right]',x+(height===360?145:155),height]]) {
+    const actual=await object.locator(selector).evaluate(point=>{const b=point.getBoundingClientRect();return{x:b.x,y:b.y};});
+    const expected=projectFloorPoint({x:px*1.2,y:y*1.2,z:z*1.2},camera,stand,framing.deskShare,framing.lip,.5);
+    assert.ok(Math.abs(actual.x-frame.x-expected.x*frame.width/1440)<.25,`${label} ${selector} true world x at${angle}`);
+    assert.ok(Math.abs(actual.y-frame.y-expected.y*frame.height/810)<.25,`${label} ${selector} true world y at${angle}`);
+   }
+  }
   assert.ok(!/NaN|Infinity/.test(await page.locator('.room__floor-geometry').first().innerHTML()));
  }
- // Check the actual affine stem artwork, not a different elevation helper.
+ // The raised stem begins at the true tabletop-plane crossing.
  await input('Desk height (mm)',750);await input('Head tilt from horizontal (degrees)',40);
- const drawnCut=await page.locator('.scale-plant--above [data-plant-layer-height="950"]').first().evaluate(svg=>{
-   const path=svg.querySelector('g > path');
-   const start=path.getPointAtLength(0),matrix=path.getScreenCTM();
-   const actual=new DOMPoint(start.x,start.y).matrixTransform(matrix);
-   const expected=new DOMPoint(180,180-360*750/950).matrixTransform(matrix);
-   return Math.hypot(actual.x-expected.x,actual.y-expected.y);
- });
- assert.ok(drawnCut<.01,'foreground stem starts at Solid tabletop-height cut');
- // The pot clears this desk, but raised leaves overlap its edge. Their painted
+ const drawnCut=await page.locator('.scale-plant--above [data-plant-layer-height="950"] [data-stem-start]').first().evaluate(point=>{const b=point.getBoundingClientRect();return{x:b.x,y:b.y};});
+ const cutSetup=roomSetup({cameraMode:'physical',eyeHeightMm:1650,viewerSetbackMm:660,headTiltDegrees:40,deskHeightMm:750});
+ const cutFraming=roomFraming(cutSetup.camera,true,.8,180,85),cutFrame=await page.locator('.room').boundingBox();
+ const trueCut=projectFloorPoint({x:-1440,y:336,z:900},cutSetup.camera,cutSetup.stand,cutFraming.deskShare,cutFraming.lip,.5);
+ assert.ok(Math.abs(drawnCut.x-cutFrame.x-trueCut.x*cutFrame.width/1440)<.25);
+ assert.ok(Math.abs(drawnCut.y-cutFrame.y-trueCut.y*cutFrame.height/810)<.25);
+ // A wide tabletop overlaps the raised canopy in this camera view. Their painted
  // layer must actually win browser hit testing over the tabletop.
- await input('Desk width (mm)',2000);await input('Head tilt from horizontal (degrees)',90);
+ await input('Desk width (mm)',2800);await input('Head tilt from horizontal (degrees)',90);
  await input('Desk height (mm)',750);await input('Horizontal field of view (degrees)',110);
  const overlap=await page.evaluate(()=>{
    const desk=document.querySelector('.desk__top').getBoundingClientRect();
@@ -70,5 +71,5 @@ try {
  const before=await page.locator('.room__floor-geometry').first().innerHTML();
  await input('Eye height (mm)',700);assert.equal(await page.getByRole('alert').count(),1);
  assert.equal(await page.locator('.room__floor-geometry').first().innerHTML(),before);
- console.log('PASS physical feet match transformed floor at four camera/lens poses; scale props and invalid fallback retained');
+ console.log('PASS physical feet match transformed floor at five camera/lens poses, with exact base/rim diameters and tabletop cut; scale props and invalid fallback retained');
 } finally {await browser.close();}
