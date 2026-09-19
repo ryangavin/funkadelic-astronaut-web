@@ -35,6 +35,16 @@ try {
   assert.ok(Math.abs(binFoot.y-frame.y-expectedBin.y*frame.height/810)<.2,'Solid bin foot matches world floor y');
   assert.ok(!/NaN|Infinity/.test(await page.locator('.room__floor-geometry').first().innerHTML()));
  }
+ // Check the actual affine stem artwork, not a different elevation helper.
+ await input('Desk height (mm)',750);await input('Head tilt from horizontal (degrees)',40);
+ const drawnCut=await page.locator('.scale-plant--above [data-plant-layer-height="950"]').first().evaluate(svg=>{
+   const path=svg.querySelector('g > path');
+   const start=path.getPointAtLength(0),matrix=path.getScreenCTM();
+   const actual=new DOMPoint(start.x,start.y).matrixTransform(matrix);
+   const expected=new DOMPoint(180,180-360*750/950).matrixTransform(matrix);
+   return Math.hypot(actual.x-expected.x,actual.y-expected.y);
+ });
+ assert.ok(drawnCut<.01,'foreground stem starts at Solid tabletop-height cut');
  // The pot clears this desk, but raised leaves overlap its edge. Their painted
  // layer must actually win browser hit testing over the tabletop.
  await input('Desk width (mm)',2000);await input('Head tilt from horizontal (degrees)',90);

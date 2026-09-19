@@ -5,9 +5,7 @@ export const FLOOR_REFERENCES = {
   bin: { x: 1200, y: 155, ...WASTEBASKET_MM },
 } as const;
 
-/** Fraction along a Solid's projected height where the tabletop cuts its side. */
-export function tabletopSplit(height:number,tableHeight:number,eyeHeight:number) {
-  if(height<=tableHeight)return 1;
-  if(height>=eyeHeight)return 0;
-  return (tableHeight/(eyeHeight-tableHeight))/(height/(eyeHeight-height));
+/** Solid's rise and splay are linear in height before the plane projection. */
+export function tabletopSplit(height:number,tableHeight:number) {
+  return Math.min(1,tableHeight/height);
 }
