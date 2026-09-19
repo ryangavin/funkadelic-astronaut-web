@@ -24,6 +24,7 @@ const meta = {
     objectPlacements: { control: 'object', table: { category: 'Sizing' } },
     deskWidthMm: physicalControls.deskWidthMm,
     deskDepthMm: physicalControls.deskDepthMm,
+    deskHeightMm: physicalControls.deskHeightMm,
     deskShare: { table: { category: 'Framing' }, control: { type: 'range', min: 0.3, max: 1, step: 0.01 }, description: 'How much of the frame the reference desk takes.' },
     roomLip: { table: { category: 'Framing' }, control: { type: 'number', step: 5 } },
     eyeHeightMm: physicalControls.eyeHeightMm,
@@ -31,7 +32,7 @@ const meta = {
     headTiltDegrees: physicalControls.headTiltDegrees,
     horizontalFieldOfViewDegrees: physicalControls.horizontalFieldOfViewDegrees,
     wood: { table: { category: 'Desktop' }, control: 'inline-radio', options: DESK_WOODS },
-    ...Object.fromEntries(['windowHeightMm', 'windowSillHeightMm', 'deskHeightMm', 'deskEdgeMm', 'lampIntensity', 'showPerformance', 'roomSpanMm', 'floorFrontMm', 'wallHeightMm', 'poolSpread', 'floorPoolSpread', 'poolFalloff', 'shadowReach', 'shadowScaleLimit', 'shadowAttenuation', 'floorShadowLimit', 'floorShadowTemper', 'lightTuning', 'showCamera',
+    ...Object.fromEntries(['windowHeightMm', 'windowSillHeightMm', 'deskEdgeMm', 'lampIntensity', 'showPerformance', 'roomSpanMm', 'floorFrontMm', 'wallHeightMm', 'poolSpread', 'floorPoolSpread', 'poolFalloff', 'shadowReach', 'shadowScaleLimit', 'shadowAttenuation', 'floorShadowLimit', 'floorShadowTemper', 'lightTuning', 'showCamera',
       'room', 'floor', 'wall', 'roomBlur', 'roomDim', 'lamp', 'shadowStrength', 'lampX', 'lampY', 'lampRotation', 'lampWidth', 'lampEnamel', 'lampLowerAngle', 'lampUpperAngle', 'showObjects',
       'onArrange', 'onArticulate', 'onLamp', 'onCaptureSettings', 'children'].map(key => [key, { table: { disable: true } }])),
   },
@@ -62,7 +63,9 @@ export const PapersFirst: Story = {
     await expect(canvas.getByLabelText('Paper target')).toHaveTextContent('260 px');
     // The eye is what the strip moves; the desk's size is a panel control, and it is what changes the ruler's share of the desk.
     await expect(canvas.getByRole('complementary', { name: 'Physical camera' })).toBeInTheDocument();
+    await expect(canvas.getByRole('slider', { name: 'Desk height' })).toHaveValue('750');
     roomSeam(canvasElement).set({ deskWidthMm: 1800 });
+    await waitFor(() => expect(canvas.getByLabelText('Desk width value')).toHaveTextContent('1800 mm'));
     await waitFor(() => expect(parseFloat(getComputedStyle(ruler).width) / parseFloat(getComputedStyle(desk).width)).toBeCloseTo(304.8 / 1800, 3));
     // Pixels per millimetre follow the desk that is actually there.
     await waitFor(() => expect(parseFloat(canvas.getByLabelText('Pixels per millimetre').textContent!)).toBeCloseTo(parseFloat(canvas.getByLabelText('Desk width on screen').textContent!) / 1800, 2));

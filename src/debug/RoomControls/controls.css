@@ -41,6 +41,8 @@
   border: 1px solid #6d5b45;
 }
 
+.camera-strip__group { display: grid; gap: 8px; margin: 0; padding: 0; border: 0; }
+.camera-strip__group > legend { padding: 0 0 2px; color: #ead3a7; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
 .camera-strip__field { display: grid; gap: 2px; margin: 0; padding: 0; border: 0; }
 .camera-strip__field legend { padding: 0; color: #c7bcae; font-size: 11px; }
 .camera-strip__field input[type='range'] { width: 100%; min-width: 0; margin: 0; }

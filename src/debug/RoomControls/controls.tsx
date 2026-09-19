@@ -57,6 +57,15 @@ export const CAMERA_FIELDS = [
   { key: 'horizontalFieldOfViewDegrees', label: 'Field of view', min: 20, max: 110, step: 1, unit: '°' },
 ] as const;
 
+/** The desk itself, in millimetres: how wide and deep the top is, and how high it stands off the floor. */
+export const DESK_FIELDS = [
+  { key: 'deskWidthMm', label: 'Desk width', min: 300, max: 3000, step: 25, unit: 'mm' },
+  { key: 'deskDepthMm', label: 'Desk depth', min: 200, max: 1800, step: 25, unit: 'mm' },
+  { key: 'deskHeightMm', label: 'Desk height', min: 100, max: 1600, step: 25, unit: 'mm' },
+] as const;
+
+type StripField = (typeof CAMERA_FIELDS | typeof DESK_FIELDS)[number];
+
 type RoomArgs = RoomProps & RoomStoryControls;
 /** Play functions have no native way to set args, so the scene publishes one. */
 export type RoomSeam = { args: RoomArgs; set: (next: Partial<RoomArgs>) => void; live: (next: Partial<RoomArgs>) => void };
@@ -71,15 +80,16 @@ export function roomSeam(canvasElement: HTMLElement): RoomSeam {
 
 const reading = (unit: 'mm' | '°', value: number) => unit === 'mm' ? `${value.toFixed(0)} mm · ${(value / 25.4).toFixed(1)} in` : `${value.toFixed(0)}${unit}`;
 
-/** Camera sliders sit in the preview so a drag redraws without the manager round trip. */
+/** Camera and desk sliders sit in the preview so a drag redraws without the manager round trip. */
 function CameraStrip({ seam }: { seam: RoomSeam }) {
-  const value = (key: (typeof CAMERA_FIELDS)[number]['key']) => {
+  const value = (key: StripField['key']) => {
     const given = seam.args[key];
     if (Number.isFinite(given)) return given as number;
     return key === 'horizontalFieldOfViewDegrees' ? referenceFieldOfView(seam.args.deskShare ?? ROOM_DESK_SHARE) : physicalDefaults[key];
   };
-  return <aside className="camera-strip" aria-label="Physical camera">
-    {CAMERA_FIELDS.map(({ key, label, min, max, step, unit }) => {
+  const group = (name: string, fields: readonly StripField[]) => <fieldset className="camera-strip__group" aria-label={name}>
+    <legend>{name}</legend>
+    {fields.map(({ key, label, min, max, step, unit }) => {
       const current = value(key);
       return <fieldset key={key} className="camera-strip__field">
         <legend>{label}</legend>
@@ -97,6 +107,10 @@ function CameraStrip({ seam }: { seam: RoomSeam }) {
         <output aria-label={`${label} value`}>{reading(unit, current)}</output>
       </fieldset>;
     })}
+  </fieldset>;
+  return <aside className="camera-strip" aria-label="Physical camera">
+    {group('Eye', CAMERA_FIELDS)}
+    {group('Desk', DESK_FIELDS)}
   </aside>;
 }
 
