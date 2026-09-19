@@ -27,7 +27,7 @@ try {
   const validEye=await data('eye'),validTarget=await data('target');
   await input('Eye height (mm)','');assert.match(await page.getByRole('alert').textContent(),/last valid/);
   assert.deepEqual(await data('eye'),validEye);assert.deepEqual(await data('target'),validTarget);
-  await input('Eye height (mm)','2200');assert.equal(await page.getByRole('alert').count(),0);
+  await input('Eye height (mm)','2200');await page.getByRole('alert').waitFor({state:'detached',timeout:5000});
   const camera=await page.locator('.room__stand > .perspective').getAttribute('style');
   await drawing.scrollIntoViewIfNeeded();await drawing.focus();await page.keyboard.press('ArrowRight');
   assert.equal(await drawing.getAttribute('data-orbit'),'-18,24');
