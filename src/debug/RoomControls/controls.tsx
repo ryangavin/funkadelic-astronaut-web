@@ -1,6 +1,6 @@
 import { ROOM_DESK_SHARE } from '../../foundations/Room/DeskRoom';
 import { DEFAULT_HEAD_TILT_DEGREES, referenceFieldOfView } from '../../geometry/roomSetup';
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { DEFAULT_LIGHT_TUNING, type LightTuning } from '../../geometry/lightingSetup';
 import './controls.css';
 import type { RoomProps } from '../../foundations/Room/Room';
@@ -8,6 +8,8 @@ import type { RoomProps } from '../../foundations/Room/Room';
 export type RoomStoryControls = Partial<LightTuning>;
 const numeric = (category: string, description: string, step = 1) => ({ control: { type: 'number' as const, step }, table: { category }, description });
 export const physicalControls = {
+  windowHeightMm: numeric('Window', 'Opening height in millimetres.'),
+  windowSillHeightMm: numeric('Window', 'Bottom of the opening above the floor in millimetres.'),
   cameraMode: { control: 'inline-radio' as const, options: ['legacy', 'physical'], description: 'Legacy uses angle/depth; physical uses eye height and setback.' },
   deskWidthMm: numeric('Physical desk', 'Width in millimetres. Changes the surface, not object measurements.'),
   deskDepthMm: numeric('Physical desk', 'Front-to-back desktop depth in millimetres, distinct from camera distance.'),
@@ -32,7 +34,7 @@ export const physicalControls = {
   lightTuning: { table: { disable: true } },
 };
 export const physicalDefaults = {
-  cameraMode: 'legacy' as const, deskWidthMm: 1200, deskDepthMm: 800, deskHeightMm: 750, deskEdgeMm: 10,
+  windowHeightMm: 1000, windowSillHeightMm: 1000, cameraMode: 'legacy' as const, deskWidthMm: 1200, deskDepthMm: 800, deskHeightMm: 750, deskEdgeMm: 10,
   eyeHeightMm: 1650, viewerSetbackMm: 650, headTiltDegrees: DEFAULT_HEAD_TILT_DEGREES, lampIntensity: 1,
   ...DEFAULT_LIGHT_TUNING,
 };
@@ -70,6 +72,8 @@ export function RoomControlPanel({ args, update, children }: { args: RoomProps &
     ['viewerSetbackMm', 'Wall distance (mm)', 0, 3000, 10, true],
     ['headTiltDegrees', 'Head tilt from horizontal (degrees)', 1, 179, 1, false],
     ['horizontalFieldOfViewDegrees', 'Horizontal field of view (degrees)', 20, 110, 1, false],
+    ['windowHeightMm', 'Window height (mm)', 300, 1800, 10, true],
+    ['windowSillHeightMm', 'Window sill height (mm)', 0, 2200, 10, true],
     ['lampIntensity', 'Light intensity', 0, 6, 0.1, false],
     ['poolSpread', 'Pool spread', 0, 6, 0.1, false],
   ] as const;
@@ -99,10 +103,16 @@ export function RoomControlPanel({ args, update, children }: { args: RoomProps &
   </div>;
 }
 
-/** Inline edits are local; changing external Storybook args starts a fresh experiment. */
-export function RoomExperiment<T extends RoomProps & RoomStoryControls>({ args, children }: { args: T; children: (args: T) => ReactNode }) {
-  const [edits, setEdits] = useState<Partial<T>>({});
-  useEffect(() => setEdits({}), [args]);
-  const current = { ...args, ...edits };
-  return <RoomControlPanel args={current} update={next => setEdits(previous => ({ ...previous, ...next }))}>{children(current)}</RoomControlPanel>;
+/** Story renders supply Storybook's updateArgs so edits remain saveable and resettable. */
+export function RoomExperiment<T extends RoomProps & RoomStoryControls>({ args, update, children }: { args: T; update: (args: Partial<T>) => void; children: (args: T) => ReactNode }) {
+  // Render keystrokes immediately while Storybook broadcasts the args update.
+  // Every edit is also sent to its args store; incoming controls/reset take precedence.
+  const [pending, setPending] = useState({ source: args, current: args });
+  const current = pending.source === args ? pending.current : args;
+  if (pending.source !== args) setPending({ source: args, current: args });
+  const change = (next: Partial<RoomProps & RoomStoryControls>) => {
+    setPending(previous => ({ source: args, current: { ...(previous.source === args ? previous.current : args), ...next } }));
+    update(next as Partial<T>);
+  };
+  return <RoomControlPanel args={current} update={change}>{children(current)}</RoomControlPanel>;
 }

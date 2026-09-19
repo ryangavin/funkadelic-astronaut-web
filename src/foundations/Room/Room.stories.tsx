@@ -1,3 +1,4 @@
+import { useArgs } from 'storybook/preview-api';
 import { MeterStick } from '../../components/3D/MeterStick/MeterStick';
 import { Pin } from '../../components/2D/Pin/Pin';
 import { checkPhysicalLens, checkPhysicalRoom } from '../../debug/RoomControls/check';
@@ -88,7 +89,8 @@ export const PhysicalSetup: Story = {
   play: checkPhysicalRoom,
   args: { cameraMode: 'physical', eyeHeightMm: 1650, viewerSetbackMm: 650, deskShare: 0.8, roomLip: 180 },
   render: function Experiment(args) {
-    return <RoomExperiment args={args}>{values => <PerspectiveDesk {...withLightTuning(values)} showSettings={false} only={['mug', 'pen', 'handheld', 'cradle']} />}</RoomExperiment>;
+    const [currentArgs, updateArgs] = useArgs<typeof args>();
+    return <RoomExperiment args={currentArgs} update={updateArgs}>{values => <PerspectiveDesk {...withLightTuning(values)} showSettings={false} only={['mug', 'pen', 'handheld', 'cradle']} />}</RoomExperiment>;
   },
 };
 
@@ -97,7 +99,8 @@ export const PhysicalSetup: Story = {
 export const PhysicalLens: Story = {
   args: { cameraMode: 'physical', eyeHeightMm: 1650, viewerSetbackMm: 650, deskShare: .8, roomLip: 180, lamp: false },
   render: function Lens(args) {
-    return <RoomExperiment args={args}>{values => <PerspectiveDesk {...withLightTuning(values)} showSettings={false} only={['mug']}>
+    const [currentArgs, updateArgs] = useArgs<typeof args>();
+    return <RoomExperiment args={currentArgs} update={updateArgs}>{values => <PerspectiveDesk {...withLightTuning(values)} showSettings={false} only={['mug']}>
       <Pin x={100} y={880} width={1200}><MeterStick /></Pin>
     </PerspectiveDesk>}</RoomExperiment>;
   },
