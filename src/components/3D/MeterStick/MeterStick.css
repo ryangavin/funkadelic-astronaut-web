@@ -2,7 +2,6 @@
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 1000 / 40;
   overflow: hidden;
   user-select: none;
 }

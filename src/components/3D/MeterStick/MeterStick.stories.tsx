@@ -7,7 +7,8 @@ const meta = {
   title: 'Components/3D/Meter Stick',
   component: MeterStick,
   parameters: { layout: 'fullscreen' },
-  args: { inches: true },
+  args: { inches: true, variant: 'meter' },
+  argTypes: { variant: { control: 'select', options: ['meter', 'twelveInch', 'tenCentimeter'] } },
   tags: ['autodocs'],
 } satisfies Meta<typeof MeterStick>;
 export default meta;
@@ -56,3 +57,39 @@ export const OnDesk: Story = {
     await expect(stick.getAttribute('style')).toBe(before);
   },
 };
+
+/** The measuring edges are exactly twelve inches (304.8 mm) apart. */
+export const TwelveInch: Story = {
+  args: { variant: 'twelveInch' },
+  render: args => <div style={{ padding: '80px 24px', background: '#493a2a', maxWidth: 900 }}><MeterStick {...args} /></div>,
+  play: async ({ canvasElement }) => {
+    const svg = within(canvasElement).getByRole('img', { name: /Twelve-inch ruler/ });
+    await expect(svg).toHaveAttribute('viewBox', '0 0 304.8 40');
+    await expect(svg.querySelector('path.meter-stick__inches')?.getAttribute('d')).toMatch(/M304\.8 40v-8$/);
+    await expect(svg.querySelector('g.meter-stick__inches')?.lastElementChild).toHaveAttribute('x', '304.8');
+    await expect(svg.querySelector('g.meter-stick__inches')?.lastElementChild).toHaveTextContent('12');
+    await checkLabelSpacing(svg);
+  },
+};
+
+export const TenCentimeter: Story = {
+  args: { variant: 'tenCentimeter' },
+  render: args => <div style={{ padding: '80px 24px', background: '#493a2a', maxWidth: 400 }}><MeterStick {...args} /></div>,
+  play: async ({ canvasElement }) => {
+    const svg = within(canvasElement).getByRole('img', { name: /Ten-centimeter stick/ });
+    await expect(svg).toHaveAttribute('viewBox', '0 0 100 40');
+    await expect(svg.querySelector('.meter-stick__ticks')?.getAttribute('d')).toMatch(/M100 0v10$/);
+    await expect(svg.querySelector('.meter-stick__numbers')?.lastElementChild).toHaveTextContent('10');
+    await checkLabelSpacing(svg);
+  },
+};
+
+async function checkLabelSpacing(svg: HTMLElement) {
+  for (const group of svg.querySelectorAll('g.meter-stick__numbers')) {
+    const boxes = [...group.querySelectorAll<SVGGraphicsElement>('text')].map(text => text.getBBox());
+    for (let i = 1; i < boxes.length; i++) await expect(boxes[i].x).toBeGreaterThan(boxes[i - 1].x + boxes[i - 1].width);
+  }
+  const brand = svg.querySelector<SVGGraphicsElement>('.meter-stick__brand')!.getBBox();
+  const unit = svg.querySelector<SVGGraphicsElement>('.meter-stick__unit')!.getBBox();
+  await expect(brand.x + brand.width).toBeLessThan(unit.x);
+}
