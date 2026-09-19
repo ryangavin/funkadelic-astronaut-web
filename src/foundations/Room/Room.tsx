@@ -1,3 +1,5 @@
+import { RoomFloorGeometry } from './RoomFloorGeometry';
+import type { RoomFloorMesh } from './floorGeometry';
 import { roomSurfaceExtents } from '../../geometry/roomCoverage';
 import { lightingSetup, type LightTuning } from '../../geometry/lightingSetup';
 import { roomSetup, roomFraming, positive, type PhysicalRoomInputs } from '../../geometry/roomSetup';
@@ -45,6 +47,8 @@ const AcceptedRoom = createContext<RoomSceneGeometry | null>(null);
 export const useRoomSceneGeometry = () => useContext(AcceptedRoom);
 
 export type RoomProps = PhysicalRoomInputs & {
+  /** Optional fixed world-space floor meshes, in desk units from the wall-floor seam. */
+  floorObjects?: readonly RoomFloorMesh[];
   /** Physical horizontal lens angle, strictly between 0 and 180 degrees. Omit to preserve deskShare reference framing. */
   horizontalFieldOfViewDegrees?: number;
   /** Tiny screen-aligned animation-frame timing; disabled means no sampling. */
@@ -200,7 +204,7 @@ export function Room(props: RoomProps) {
   </>;
 }
 
-function RoomScene({ setup, extents, tuning, cameraMode, horizontalFieldOfViewDegrees, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & RoomSceneGeometry & { tuning: LightTuning }) {
+function RoomScene({ setup, extents, tuning, cameraMode, floorObjects, horizontalFieldOfViewDegrees, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & RoomSceneGeometry & { tuning: LightTuning }) {
   const { camera, stand, edge } = setup;
   const framing = roomFraming(camera, cameraMode === 'physical', deskShare, room || cameraMode === 'physical' ? roomLip : 0, horizontalFieldOfViewDegrees);
   const span = roomSpanMm === undefined ? undefined : mmToUnits(roomSpanMm);
@@ -273,6 +277,7 @@ function RoomScene({ setup, extents, tuning, cameraMode, horizontalFieldOfViewDe
           becomes the container the desk takes its share of the width from. */}
       <Inspector className={`room ${className}`.trim()} data-room={room ? '' : undefined} data-physical={cameraMode === 'physical' ? '' : undefined} style={{ '--room-desk-width': camera.width, '--room-share': framing.deskShare, '--room-lip': framing.lip, '--room-target': camera.targetY ?? camera.surfaceHeight, ...style } as React.CSSProperties}><DeskLighting>
         {room && <DeskRoom targetY={camera.targetY} frameAnchor={cameraMode === 'physical' ? .5 : 1} angle={camera.angle} depth={camera.depth} deskWidth={camera.width} deskDepth={camera.surfaceHeight} stand={stand} span={span} front={front} wallHeight={wallHeight} lip={framing.lip} floor={floor} wall={wall} blur={roomBlur} dim={roomDim} deskShare={framing.deskShare} shadowStrength={shadowStrength} />}
+        {room && <RoomFloorGeometry camera={camera} stand={stand} edge={edge} share={framing.deskShare} lip={framing.lip} anchor={cameraMode === 'physical' ? .5 : 1} objects={floorObjects} />}
         <div className="room__stand">
           <Perspective {...camera} className="perspective--lamp-study">
             {/* The materials class is what tells the things on it they are being
@@ -292,6 +297,7 @@ function RoomScene({ setup, extents, tuning, cameraMode, horizontalFieldOfViewDe
             </Desk>
           </Perspective>
         </div>
+        {room && <RoomFloorGeometry camera={camera} stand={stand} edge={edge} share={framing.deskShare} lip={framing.lip} anchor={cameraMode === 'physical' ? .5 : 1} objects={floorObjects} above />}
       </DeskLighting>
       {showPerformance && <PerformanceOverlay />}
       </Inspector>
