@@ -354,7 +354,7 @@ export const DeskRoom = memo(function DeskRoom({ windowHeightMm, windowSillHeigh
       {/* The brick, stood up on the boards where they stop, its bottom courses behind the desk. */}
       <div className="desk-room__layer desk-room__layer--wall">
         <div className="desk-room__wall">
-          <Wall materialOrigin={{ x: -span / 2, y: -wallHeight }} finish={wall} width={span} height={wallHeight} flat light={0} />
+          <Wall materialOrigin={{ x: -span / 2, y: -wallHeight }} finish={wall} width={span} height={wallHeight} flat weathered light={0} />
           <WallWindow height={windowHeightMm} sill={windowSillHeightMm} />
         </div>
       </div>
