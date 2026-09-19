@@ -1,3 +1,4 @@
+import { deskLegs } from '../../foundations/Room/floorGeometry.ts';
 import { unitsToMm } from '../../geometry/physicalScale.ts';
 import type { RoomSceneGeometry } from '../../foundations/Room/Room';
 import type { DeskLight } from '../../behaviors/DeskLighting/DeskLighting';
@@ -9,7 +10,7 @@ export function diagramGeometry({ setup, extents, lensFieldOfViewDegrees }: Room
   const eye = { x: 0, y: target.y + unitsToMm(camera.depth) * Math.cos(pitch), z: height + unitsToMm(camera.depth) * Math.sin(pitch) };
   const center = { x: 0, y: depth / 2, z: height };
   const point = (value: { x: number; y: number; height: number }): Point3 => ({ x: unitsToMm(value.x) - width / 2, y: unitsToMm(value.y), z: height + unitsToMm(value.height) });
-  return { width, depth, height, lensFieldOfViewDegrees, edge: unitsToMm(edge), eye, target, center, pitch: camera.angle,
+  return { legs: deskLegs(camera.width,camera.surfaceHeight,stand,edge).map(leg=>({x:unitsToMm(leg.x),y:unitsToMm(leg.y),bottom:0,top:unitsToMm(leg.top),size:unitsToMm(leg.size)})), width, depth, height, lensFieldOfViewDegrees, edge: unitsToMm(edge), eye, target, center, pitch: camera.angle,
     span: extents ? unitsToMm(extents.span) : width, floorDepth: extents ? depth + unitsToMm(extents.front) : depth, wallHeight: extents ? unitsToMm(extents.wallHeight) : 0,
     lamp: light?.lamp ? { base: point(light.lamp.base), elbow: point(light.lamp.elbow), neck: point(light.lamp.neck), shade: point(light.lamp.shade ?? light.lamp.neck), bulb: point(light), baseRadius: unitsToMm(light.lamp.base.radius), shadeRadius: unitsToMm(light.lamp.shade?.radius ?? light.lamp.neck.radius * 130 / 11), on: light.on } : null,
   };

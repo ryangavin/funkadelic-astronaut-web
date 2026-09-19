@@ -1,3 +1,4 @@
+import { boxFaces } from '../../foundations/Room/floorGeometry';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDeskLight } from '../../behaviors/DeskLighting/DeskLighting';
@@ -26,7 +27,7 @@ function RoomDiagram({ model: m }: { model: ReturnType<typeof diagramGeometry> }
   const desk = [p(-m.width/2,0,m.height),p(m.width/2,0,m.height),p(m.width/2,m.depth,m.height),p(-m.width/2,m.depth,m.height)];
   const floor = [p(-m.span/2,0,0),p(m.span/2,0,0),p(m.span/2,m.floorDepth,0),p(-m.span/2,m.floorDepth,0)];
   const wall = [p(-m.span/2,0,0),p(m.span/2,0,0),p(m.span/2,0,m.wallHeight),p(-m.span/2,0,m.wallHeight)];
-  const faces = [face(floor,'#dedbd1','Floor'), ...(m.wallHeight ? [face(wall,'#d5dce1','Wall')] : []), face(desk,'#a87950','Desk'), face([desk[2],desk[3],p(-m.width/2,m.depth,m.height-m.edge),p(m.width/2,m.depth,m.height-m.edge)],'#806044','Desk edge')];
+  const faces = [...m.legs.flatMap((leg,i)=>boxFaces(leg.x,leg.y,leg.bottom,leg.top,leg.size).map((item,j)=>face(item.points,item.fill,`Leg ${i+1} face ${j}`))), face(floor,'#dedbd1','Floor'), ...(m.wallHeight ? [face(wall,'#d5dce1','Wall')] : []), face(desk,'#a87950','Desk'), face([desk[2],desk[3],p(-m.width/2,m.depth,m.height-m.edge),p(m.width/2,m.depth,m.height-m.edge)],'#806044','Desk edge')];
   const raw = (point: Point3) => projectDiagram(point, orbit.yaw, orbit.pitch);
   const bounds = [...floor,...wall,...desk,m.eye,m.target,...(m.lamp ? [m.lamp.base,m.lamp.elbow,m.lamp.neck,m.lamp.shade] : [])].map(raw);
   const minX = Math.min(...bounds.map(a=>a.x)), maxX = Math.max(...bounds.map(a=>a.x));
@@ -55,7 +56,6 @@ function RoomDiagram({ model: m }: { model: ReturnType<typeof diagramGeometry> }
       {faces.sort((a,b)=>a.points.reduce((sum,point)=>sum+raw(point).depth,0)/a.points.length-b.points.reduce((sum,point)=>sum+raw(point).depth,0)/b.points.length).map(item=><polygon key={item.name} aria-label={item.name} points={points(item.points)} fill={item.fill} fillOpacity=".72" stroke="#66737b" strokeWidth="1"/>)}
       {Array.from({length:Math.min(25,Math.floor(m.floorDepth/500)+1)},(_,i)=>line(p(-m.span/2,i*500,0),p(m.span/2,i*500,0),'#879299',false,.5,`row${i}`))}
       {Array.from({length:Math.min(25,Math.floor(m.span/500)+1)},(_,i)=>{const x=(i-Math.floor(m.span/1000))*500;return line(p(x,0,0),p(x,m.floorDepth,0),'#879299',false,.5,`col${i}`);})}
-      {desk.map((point,i)=>line(point,p(point.x,point.y,0),'#79614e',false,2,`leg${i}`))}
       {line(p(0,0,0),foot,'#476579',true)}{line(foot,m.eye,'#476579',true)}
       {line(m.eye,m.target,'#bf6238',false,2)}
       {line(m.eye,p(0,m.eye.y-Math.min(350,(m.eye.z-m.height)*.35),m.eye.z),'#bf6238',true,1)}
