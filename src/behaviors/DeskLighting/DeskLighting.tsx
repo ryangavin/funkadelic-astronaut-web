@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useLayoutEffect, use
 export const DEFAULT_SHADOW_STRENGTH = 0.36;
 
 export type LightOccluderPoint = { x: number; y: number; height: number; radius: number };
-export type LampOccluder = { base: LightOccluderPoint; elbow: LightOccluderPoint; neck: LightOccluderPoint };
+export type LampOccluder = { base: LightOccluderPoint; elbow: LightOccluderPoint; neck: LightOccluderPoint; shade?: LightOccluderPoint };
 export type DeskLight = { x: number; y: number; height: number; on: boolean; intensity?: number; tuning?: LightTuning; shadowStrength?: number; lamp?: LampOccluder };
 
 /*
