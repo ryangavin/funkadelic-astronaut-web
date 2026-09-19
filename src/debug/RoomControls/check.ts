@@ -60,6 +60,7 @@ export async function checkPhysicalRoom({ canvasElement }: { canvasElement: HTML
   expect(shade.innerHTML).toBe(aimed);
   await userEvent.click(canvas.getByRole('button', { name: 'Turn the lamp on' }));
   input('Wall distance (mm)', '500');
+  input('Head tilt from horizontal (degrees)', '90');
   await waitFor(() => expect(Number(camera().style.getPropertyValue('--perspective-angle'))).toBe(90));
   const position = Number(mug.style.getPropertyValue('--movable-x'));
   const box = mug.getBoundingClientRect();
@@ -94,7 +95,7 @@ export async function checkPhysicalRoom({ canvasElement }: { canvasElement: HTML
   input('Pool spread', '2.8');
   await waitFor(() => expect(parseFloat(pool().style.width)).toBeCloseTo(size * 2, 5));
   input('Wall distance (mm)', '650');
-  await waitFor(() => expect(Number(camera().style.getPropertyValue('--perspective-angle'))).toBeCloseTo(80.5377, 3));
+  await waitFor(() => expect(Number(camera().style.getPropertyValue('--perspective-angle'))).toBe(90));
 }
 
 
@@ -110,14 +111,44 @@ export async function checkPhysicalLens({ canvasElement }: { canvasElement: HTML
   const stick = () => canvas.getByRole('img', { name: /One meter stick/ }).getBoundingClientRect();
   const targetScreenY = () => {
     const eye = canvasElement.querySelector<HTMLElement>('.perspective__eye')!.getBoundingClientRect();
-    const target = 480;
+    const target = parseFloat(camera().style.getPropertyValue('--perspective-target').replace('calc(', ''));
     return eye.top + target * stand().width / Number(camera().style.getPropertyValue('--perspective-width'));
   };
+  // Real transformed DOM landmarks on the floor and wall must not follow the desk.
+  const markers: HTMLElement[] = [];
+  for (const [surface, offset] of [['floor', 'top:calc(1100 * var(--desk-room-unit))'], ['wall', 'bottom:calc(700 * var(--desk-room-unit))']]) {
+    const plane=canvasElement.querySelector(`.desk-room__${surface}`);
+    if (!plane) continue;
+    const marker=document.createElement('i');
+    marker.style.cssText=`position:absolute;left:calc(50% + 200 * var(--desk-room-unit));${offset};width:0;height:0`;
+    plane.append(marker); markers.push(marker);
+  }
+  const positions=markers.map(marker=>marker.getBoundingClientRect());
+  for (const [height, deskDepth] of [[500,600],[1100,1400],[750,800]]) {
+    input('Desk height (mm)',height); input('Desk depth (mm)',deskDepth);
+    await waitFor(()=>expect(canvasElement.querySelector('.desk-study__shadow')).toHaveAttribute('viewBox', `0 0 1440 ${deskDepth*1.2}`));
+    expect(angle()).toBeCloseTo(74.47588900324574,8);
+    await waitFor(()=>{
+      expect(canvas.queryByRole('alert')).toBeNull();
+      markers.forEach((marker,index)=>{
+        const actual=marker.getBoundingClientRect();
+        expect(actual.x).toBeCloseTo(positions[index].x,0);
+        expect(actual.y).toBeCloseTo(positions[index].y,0);
+      });
+    });
+  }
+  markers.forEach(marker=>marker.remove());
+  const acceptedCamera=camera().getAttribute('style');
+  input('Head tilt from horizontal (degrees)',0);
+  await waitFor(()=>expect(canvas.getByRole('alert')).toHaveTextContent('last valid scene'));
+  expect(camera().getAttribute('style')).toBe(acceptedCamera);
+  input('Head tilt from horizontal (degrees)',74.47588900324574);
+  await waitFor(()=>expect(canvas.queryByRole('alert')).toBeNull());
   const originalTarget = targetScreenY();
   const original = stand(), originalAngle = angle(), originalDistance = distance();
   input('Eye height (mm)', 2400);
-  await waitFor(() => expect(stand().width / original.width).toBeCloseTo(Math.hypot(900, 250) / Math.hypot(1650, 250), 3));
-  expect(angle()).toBeGreaterThan(originalAngle);
+  await waitFor(() => expect(stand().width / original.width).toBeCloseTo(900 / 1650, 3));
+  expect(angle()).toBe(originalAngle);
   expect(distance()).toBeGreaterThan(originalDistance);
   input('Eye height (mm)', 2550);
   input('Wall distance (mm)', 900);
@@ -126,9 +157,9 @@ export async function checkPhysicalLens({ canvasElement }: { canvasElement: HTML
   expect(distance()).toBeCloseTo(originalDistance * 2, 8);
   expect(targetScreenY()).toBeCloseTo(originalTarget, 1);
   input('Eye height (mm)', 1650);
-  await waitFor(() => expect(angle()).toBeLessThan(originalAngle));
-  expect(stand().width).toBeLessThan(original.width);
-  expect(distance()).toBeGreaterThan(originalDistance);
+  await waitFor(() => expect(stand().width).toBeCloseTo(original.width, 1));
+  expect(angle()).toBe(originalAngle);
+  expect(distance()).toBe(originalDistance);
   input('Wall distance (mm)', 650);
   await waitFor(() => expect(stand().width).toBeCloseTo(original.width, 1));
   const meterWidth = stick().width;
@@ -137,9 +168,10 @@ export async function checkPhysicalLens({ canvasElement }: { canvasElement: HTML
   expect(stick().width).toBeCloseTo(meterWidth, 1);
   expect(targetScreenY()).toBeCloseTo(originalTarget, 1);
   // After both camera and frame dimensions change, a 40 px drag still inverts correctly.
-  for (const wallDistance of [0, 400, 800, 1200]) {
+  for (const [wallDistance, pitch] of [[0,115], [400,90], [800,65], [1200,74.47588900324574]]) {
+    input('Head tilt from horizontal (degrees)', pitch);
     input('Wall distance (mm)', wallDistance);
-    await waitFor(() => expect(angle()).toBeCloseTo(Math.atan2(900, wallDistance - 400) * 180 / Math.PI, 6));
+    await waitFor(() => expect(angle()).toBeCloseTo(pitch, 6));
     expect(targetScreenY()).toBeCloseTo(originalTarget, 1);
     const mug = canvas.getByRole('group', { name: /^Mug$/ });
     const pivot = mug.querySelector<HTMLElement>('.movable__pivot')!;
@@ -164,12 +196,12 @@ export async function checkPhysicalLens({ canvasElement }: { canvasElement: HTML
     }
   }
   input('Wall distance (mm)', 650);
-  input('Head tilt (degrees)', 15);
-  await waitFor(() => expect(angle()).toBeCloseTo(Math.atan2(900,250)*180/Math.PI+15, 6));
+  input('Head tilt from horizontal (degrees)', 85);
+  await waitFor(() => expect(angle()).toBe(85));
   const target = Number.parseFloat(camera().style.getPropertyValue('--perspective-target').replace('calc(', ''));
   expect(distance()*Math.sin(angle()*Math.PI/180)).toBeCloseTo(1080, 6);
   expect(target+distance()*Math.cos(angle()*Math.PI/180)).toBeCloseTo(780, 6);
-  input('Head tilt (degrees)', 0);
+  input('Head tilt from horizontal (degrees)', 90);
   input('Wall distance (mm)', 400);
   await waitFor(() => expect(angle()).toBe(90));
   const mug = canvas.getByRole('group', { name: /^Mug$/ });

@@ -48,15 +48,15 @@ test('renderer budget also guards explicit dimensions and filtered course counts
 });
 
 
-test('center and tilted-head cameras cover frame rays on both sides of overhead', () => {
+test('absolute pitched cameras cover frame rays on both sides of overhead', () => {
   const { roomSetup, roomFraming } = require('../src/geometry/roomSetup.ts');
-  for (const wallDistance of [0,400,800,1300]) for (const headTiltDegrees of [-10,0,10]) {
+  for (const wallDistance of [0,400,800,1300]) for (const headTiltDegrees of [65,90,115]) {
     const {camera,stand}=roomSetup({cameraMode:'physical',eyeHeightMm:1650,viewerSetbackMm:wallDistance,headTiltDegrees});
     const framing=roomFraming(camera,true,.8,60);
     const inputs={angle:camera.angle,depth:camera.depth,deskWidth:camera.width,deskDepth:camera.surfaceHeight,stand,...framing,targetY:camera.targetY,frameAnchor:.5};
     // At the wall a pitched-up frame can look through/behind that plane. There
     // is no finite visible wall/floor backdrop for those rays; retain the guard.
-    if (wallDistance===0 && headTiltDegrees===-10) { assert.throws(()=>roomSurfaceExtents(inputs), /capacity/); continue; }
+    if (wallDistance===0 && headTiltDegrees!==115) { assert.throws(()=>roomSurfaceExtents(inputs), /capacity/); continue; }
     const bounds=roomSurfaceExtents(inputs);
     const pitch=camera.angle*Math.PI/180,c=Math.sin(pitch),s=Math.cos(pitch),d=camera.depth;
     const half=camera.width/framing.deskShare/2;

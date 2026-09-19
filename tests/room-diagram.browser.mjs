@@ -15,7 +15,7 @@ try {
   await input('Eye height (mm)','2200');near((await data('eye')).z,2200);
   await input('Wall distance (mm)','900');near((await data('eye')).y,900);
   const originalEye=await data('eye'),originalTarget=await data('target');
-  await input('Head tilt (degrees)','10');assert.deepEqual(await data('eye'),originalEye);assert.notDeepEqual(await data('target'),originalTarget);
+  await input('Head tilt from horizontal (degrees)','85');near((await data('eye')).y,originalEye.y);near((await data('eye')).z,originalEye.z);assert.notDeepEqual(await data('target'),originalTarget);
   const validEye=await data('eye'),validTarget=await data('target');
   await input('Eye height (mm)','');assert.match(await page.getByRole('alert').textContent(),/last valid/);
   assert.deepEqual(await data('eye'),validEye);assert.deepEqual(await data('target'),validTarget);
@@ -34,7 +34,7 @@ try {
   const moved=await data('lamp');await page.keyboard.press(']');assert.notDeepEqual((await data('lamp')).neck,moved.neck);
   const switcher=page.getByRole('button',{name:'Turn the lamp off',exact:true});await switcher.focus();const aimed=await data('lamp');await page.keyboard.press('ArrowRight');assert.notDeepEqual((await data('lamp')).neck,aimed.neck);
   await page.keyboard.press('Enter');assert.equal((await data('lamp')).on,false);
-  await input('Eye height (mm)','2400');await input('Wall distance (mm)','1800');await input('Head tilt (degrees)','0');
+  await input('Eye height (mm)','2400');await input('Wall distance (mm)','1800');await input('Head tilt from horizontal (degrees)','55');
   // Pointer aim must also track the live rotated placement.
   const head=page.getByRole('button',{name:'Turn the lamp on',exact:true});await head.scrollIntoViewIfNeeded();box=await head.boundingBox();
   const roomBox=await page.locator('.room').boundingBox();

@@ -1,5 +1,7 @@
 import { DESK_MM, mmToUnits } from './physicalScale.ts';
 
+export const DEFAULT_HEAD_TILT_DEGREES = 74.47588900324574;
+
 export type PhysicalRoomInputs = {
   /** Legacy ignores physical eye values; physical derives angle/depth from the eye. */
   cameraMode?: 'legacy' | 'physical';
@@ -8,7 +10,7 @@ export type PhysicalRoomInputs = {
   eyeHeightMm?: number;
   /** Horizontal eye distance from the wall; zero is over the back edge. */
   viewerSetbackMm?: number;
-  /** Pitch offset from looking at tabletop center; positive looks farther down. */
+  /** Absolute downward pitch from horizontal, strictly between 0 and 180 degrees. */
   headTiltDegrees?: number;
 };
 
@@ -20,7 +22,7 @@ export function positive(name: string, value: number, allowZero = false) {
 
 /** Millimetres stay physical; deskShare and viewport size control only framing. */
 export function roomSetup({ cameraMode = 'legacy', deskWidthMm = DESK_MM.width, deskDepthMm = DESK_MM.depth,
-  deskHeightMm = DESK_MM.height, deskEdgeMm = 10, eyeHeightMm, viewerSetbackMm, headTiltDegrees = 0 }: PhysicalRoomInputs,
+  deskHeightMm = DESK_MM.height, deskEdgeMm = 10, eyeHeightMm, viewerSetbackMm, headTiltDegrees = DEFAULT_HEAD_TILT_DEGREES }: PhysicalRoomInputs,
   angle = 84, depth = 8000) {
   const width = positive('desk width in units', mmToUnits(positive('deskWidthMm', deskWidthMm)));
   const surfaceHeight = positive('desk depth in units', mmToUnits(positive('deskDepthMm', deskDepthMm)));
@@ -34,13 +36,13 @@ export function roomSetup({ cameraMode = 'legacy', deskWidthMm = DESK_MM.width, 
     positive('viewerSetbackMm', viewerSetbackMm, true);
     const clearance = eyeHeightMm - deskHeightMm;
     positive('eye height above tabletop', clearance);
-    const back = viewerSetbackMm - deskDepthMm / 2;
-    angle = Math.atan2(clearance, back) * 180 / Math.PI + headTiltDegrees;
+    angle = headTiltDegrees;
     if (!Number.isFinite(angle) || angle <= 0 || angle >= 180)
       throw new RangeError('physical look angle must be greater than 0 and less than 180 degrees');
     const pitch = angle * Math.PI / 180;
     depth = mmToUnits(clearance / Math.sin(pitch));
-    targetY = headTiltDegrees === 0 ? surfaceHeight / 2 : mmToUnits(viewerSetbackMm - clearance / Math.tan(pitch));
+    // CSS projection uses the gaze intersection with the desk plane; it never drives the eye or pitch.
+    targetY = mmToUnits(viewerSetbackMm - clearance / Math.tan(pitch));
     if (!Number.isFinite(targetY)) throw new RangeError('camera target must be finite');
   }
   positive('camera depth', depth);

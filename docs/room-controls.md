@@ -2,19 +2,15 @@
 
 `Room` and `PerspectiveDesk` accept the same physical setup. All physical dimensions are millimetres; `mmToUnits` remains a fixed **1.2 desk units per millimetre**, independent of browser size, framing, or object placement. Defaults remain a 1200 × 800 mm desktop at 750 mm above the floor, with a 10 mm drawn edge.
 
-`cameraMode="legacy"` is the default and retains its angle/depth props and front-edge projection. Physical mode requires `eyeHeightMm` above the floor and `viewerSetbackMm`, now the horizontal eye distance **from the wall**. Zero places the eye above the back edge; half the desk depth places it above tabletop center. Leaning toward the wall is supported and can produce angles greater than 90°.
+`cameraMode="legacy"` is the default and retains its angle/depth props and front-edge projection. Physical mode requires `eyeHeightMm` above the floor and `viewerSetbackMm`, the horizontal eye distance **from the wall**.
 
-At `headTiltDegrees=0`, the eye always aims at tabletop center. In millimetres:
+`headTiltDegrees` is the absolute downward pitch from horizontal: 90° looks straight down; angles above 90° look toward increasing wall distance. The stable default is 74.47588900324574°. Eye position and gaze come directly from these three props. Changing desk height or depth never turns the camera toward tabletop center or any other tracked point.
 
-- clearance H = eyeHeightMm − deskHeightMm
-- signed horizontal offset B = viewerSetbackMm − deskDepthMm / 2
-- center-look angle = atan2(H, B); eye-to-center distance = hypot(H, B)
+For clearance H = eyeHeightMm − deskHeightMm and pitch α = headTiltDegrees, the CSS representation uses the gaze/desk-plane intersection `viewerSetbackMm − H / tan(α)` and projection depth `H / sin(α)`. This intersection is a derived coordinate, not a camera target input, and may lie outside the tabletop. This surface renderer supports downward pitches strictly between 0° and 180°; invalid directions produce a recoverable diagnostic rather than a silent clamp. Previously copied offset-based settings must be converted to their desired absolute pitch; explicit zero is invalid.
 
-`headTiltDegrees` adjusts pitch independently of eye position. Positive offsets look farther down; zero restores center aim. For pitch α = center-look angle + offset, the projection target is `viewerSetbackMm − H / tan(α)` measured from the wall, and projection depth is `H / sin(α)`. The target can lie outside the tabletop. These changes rotate the eye's direction without moving its physical position. This surface renderer supports downward pitches strictly between 0° and 180°; horizontal/upward directions produce a recoverable diagnostic rather than a silent clamp.
+The principal point sits at frame center with `roomLip` as a fixed upward screen offset, with or without the room background. Floor and wall landmarks remain fixed when desk dimensions change at fixed eye, pitch and lens; the tabletop moves through that view. Legacy keeps its front-edge/bottom framing.
 
-The physical optical target sits at frame center with `roomLip` as a fixed upward screen offset. This applies with or without room background. Desk center remains there while dimensions or eye position change at zero head tilt; head tilt changes which point the eye aims at. Legacy keeps its front-edge/bottom framing.
-
-Physical mode retains a fixed lens calibrated to the previous 1200 mm desk and 900/650 mm eye-to-target triangle. `deskShare` is reference framing, never automatic fit-to-desk zoom. Doubling clearance and the signed horizontal eye-to-center offset halves the projected target-line width at the same pitch. Widening a desk does not shrink existing objects. `roomLip` and `deskShare` remain explicit framing choices.
+Physical mode retains a fixed lens calibrated to the previous 1200 mm desk and 900/650 mm reference triangle. `deskShare` is reference framing, never automatic fit-to-desk zoom. Doubling clearance at the same pitch halves the projected width at the gaze/desk intersection. Widening a desk does not shrink existing objects. `roomLip` and `deskShare` remain explicit framing choices.
 
 Eye height must exceed tabletop height. Desk dimensions and projection depth must be positive and finite; edge thickness and wall distance may be zero. Invalid edits retain the last valid scene, object placements and lamp pose. Physical dimensions update desk units, floor drop, wall location, lighting surfaces and shadow viewBoxes. Automatic background coverage uses the same target and framing; views exceeding material capacity retain the previous scene. Explicit room extents may deliberately expose boundaries.
 
