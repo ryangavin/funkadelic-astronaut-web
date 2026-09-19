@@ -1,4 +1,4 @@
-import { SCALE_FLOOR_OBJECTS } from './floorObjects';
+import { FloorReferences } from './FloorReferences';
 import { useState } from 'react';
 import { RoomDiagramPortal } from '../RoomDiagram/RoomDiagram';
 import { Movable, type Place } from '../../behaviors/Movable/Movable';
@@ -30,5 +30,5 @@ function Stick({ shadow = false }: { shadow?: boolean }) {
 export function ScaleBench(props: Omit<RoomProps, 'places' | 'shadows' | 'children'>) {
   const places = usePlaceStore({ [ID]: PLACE, [ROOM_LAMP]: ROOM_LAMP_PLACE });
   const [diagramRoot, setDiagramRoot] = useState<HTMLDivElement | null>(null);
-  return <div className="scale-bench"><Room floorObjects={SCALE_FLOOR_OBJECTS} {...props} places={places} shadows={<Stick shadow />}><Stick /><RoomDiagramPortal target={diagramRoot} /></Room><div ref={setDiagramRoot} /></div>;
+  return <div className="scale-bench"><Room floorContent={<FloorReferences />} {...props} places={places} shadows={<Stick shadow />}><Stick /><RoomDiagramPortal target={diagramRoot} /></Room><div ref={setDiagramRoot} /></div>;
 }

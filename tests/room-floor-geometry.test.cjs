@@ -1,7 +1,6 @@
 const assert=require('node:assert/strict');const test=require('node:test');
 const {deskLegs,clipHeight,projectFloorPoint}=require('../src/foundations/Room/floorGeometry.ts');
 const {roomSetup,roomFraming}=require('../src/geometry/roomSetup.ts');
-const {SCALE_FLOOR_OBJECTS}=require('../src/debug/ScaleBench/floorObjects.ts');
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
 test('four inset legs join floor to underside across desk dimensions',()=>{
  for(const width of [100,1440,2400])for(const depth of [100,960,1600])for(const stand of [600,924,1200]){
@@ -25,9 +24,4 @@ test('tabletop split preserves physical crossings without placing low geometry o
  const below=clipHeight(poly,50,false),above=clipHeight(poly,50,true);
  assert.ok(below.every(p=>p.z<=50));assert.ok(above.every(p=>p.z>=50));
  assert.deepEqual(below.filter(p=>p.z===50),above.filter(p=>p.z===50));
-});
-test('ScaleBench props have fixed physical heights and floor contact independent of camera',()=>{
- const [plant,bin]=SCALE_FLOOR_OBJECTS;const zs=mesh=>mesh.faces.flatMap(f=>f.points.map(p=>p.z));
- near(Math.min(...zs(plant)),0);near(Math.max(...zs(plant)),1140);
- near(Math.min(...zs(bin)),0);near(Math.max(...zs(bin)),432);
 });
