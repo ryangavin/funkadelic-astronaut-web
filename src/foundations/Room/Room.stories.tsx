@@ -8,7 +8,6 @@ import { articulateLamp, lampPoseAngles } from '../../components/3D/DeskLamp/art
 import { DESK_LAMP_ENAMELS } from '../../components/3D/DeskLamp/DeskLamp';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
-import { GENTLE_DEPTH, GENTLE_VIEW } from '../../behaviors/Perspective/Perspective';
 import { DESK_WOODS } from '../../components/3D/Desk/Desk';
 import { FLOOR_WOODS } from '../../components/3D/Floor/Floor';
 import { WALL_FINISHES } from '../../components/3D/Wall/Wall';
@@ -31,10 +30,7 @@ const meta = {
   decorators: [Story => <div className="room-story"><Story /></div>],
   tags: ['autodocs'],
   argTypes: {
-    showPerformance: { control: 'boolean', table: { category: 'Debug' } },
     ...physicalControls,
-    angle: { table: { category: 'Camera' }, control: { type: 'number', step: 1 } },
-    depth: { table: { category: 'Camera' }, control: { type: 'number', step: 100 } },
     wood: { table: { category: 'Desktop' }, control: 'inline-radio', options: DESK_WOODS },
     room: { table: { category: 'Room' }, control: 'boolean' },
     floor: { table: { category: 'Room' }, control: 'inline-radio', options: FLOOR_WOODS },
@@ -59,7 +55,7 @@ const meta = {
     onArticulate: { table: { disable: true } },
     onLamp: { table: { disable: true } },
   },
-  args: { showPerformance: false, ...physicalDefaults, angle: 78, depth: 5700, wood: 'walnut', room: true, floor: 'pine', wall: 'red', lamp: true, shadowStrength: .36, lampX: 396, lampY: 17, lampRotation: 0, lampWidth: 576, lampEnamel: 'green', lampLowerAngle: -142.6818247177271, lampUpperAngle: 110.41274403236815, onArrange: fn(), onArticulate: fn(), onLamp: fn() },
+  args: { showPerformance: false, ...physicalDefaults, deskShare: .8, roomLip: 180, wood: 'walnut', room: true, floor: 'pine', wall: 'red', lamp: true, shadowStrength: .36, lampX: 396, lampY: 17, lampRotation: 0, lampWidth: 576, lampEnamel: 'green', lampLowerAngle: -142.6818247177271, lampUpperAngle: 110.41274403236815, onArrange: fn(), onArticulate: fn(), onLamp: fn() },
 } satisfies Meta<RoomProps & RoomStoryControls>;
 
 export default meta;
@@ -70,12 +66,12 @@ export const Empty: Story = {};
 
 /** Straight down at it, the way everything in this library is drawn, with the room taken away. */
 export const Plan: Story = {
-  args: { angle: 90, depth: GENTLE_DEPTH, room: false, deskShare: 1, roomLip: 0 },
+  args: { headTiltDegrees: 90, eyeHeightMm: 3000, viewerSetbackMm: 400, room: false, deskShare: 1, roomLip: 0 },
 };
 
-/** The gentle view the behaviors default to: a little off overhead, from a long way back. */
+/** From a standing height, a little off overhead, with the lamp folded the way the behaviors default to. */
 export const Gentle: Story = {
-  args: { angle: GENTLE_VIEW, depth: GENTLE_DEPTH, lampLowerAngle: initialAngles.lower, lampUpperAngle: initialAngles.upper },
+  args: { headTiltDegrees: 84, eyeHeightMm: 2100, viewerSetbackMm: 500, lampLowerAngle: initialAngles.lower, lampUpperAngle: initialAngles.upper },
 };
 
 /** Without the lamp there is nothing lighting the room, and only the dark under the desk is left. */
@@ -87,7 +83,7 @@ export const LampOff: Story = {
 /** A populated experiment; all numeric ranges are yours to explore. */
 export const PhysicalSetup: Story = {
   play: checkPhysicalRoom,
-  args: { cameraMode: 'physical', eyeHeightMm: 1650, viewerSetbackMm: 650, deskShare: 0.8, roomLip: 180 },
+  args: { eyeHeightMm: 1650, viewerSetbackMm: 650, deskShare: 0.8, roomLip: 180 },
   render: function Experiment(args) {
     const [currentArgs, updateArgs] = useArgs<typeof args>();
     return <RoomExperiment args={currentArgs} update={updateArgs}>{values => <PerspectiveDesk {...withLightTuning(values)} showSettings={false} only={['mug', 'pen', 'handheld', 'cradle']} />}</RoomExperiment>;
@@ -97,7 +93,7 @@ export const PhysicalSetup: Story = {
 
 /** A fixed-lens reference: the meter remains the same size when the desk widens. */
 export const PhysicalLens: Story = {
-  args: { cameraMode: 'physical', eyeHeightMm: 1650, viewerSetbackMm: 650, deskShare: .8, roomLip: 180, lamp: false },
+  args: { eyeHeightMm: 1650, viewerSetbackMm: 650, deskShare: .8, roomLip: 180, lamp: false },
   render: function Lens(args) {
     const [currentArgs, updateArgs] = useArgs<typeof args>();
     return <RoomExperiment args={currentArgs} update={updateArgs}>{values => <PerspectiveDesk {...withLightTuning(values)} showSettings={false} only={['mug']}>

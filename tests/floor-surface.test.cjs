@@ -4,8 +4,8 @@ const {floorCamera}=require('../src/foundations/Room/floorSurface.ts');
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
 test('floor Perspective adapter preserves world eye, lens and principal point',()=>{
  for(const angle of [40,74.5,90,115])for(const height of [500,770,1100])for(const fov of [55,110]){
-  const {camera,stand}=roomSetup({cameraMode:'physical',eyeHeightMm:1650,viewerSetbackMm:660,headTiltDegrees:angle,deskHeightMm:height});
-  const f=roomFraming(camera,true,.8,180,fov),floor=floorCamera(camera,stand,f.deskShare,f.lip),a=angle*Math.PI/180;
+  const {camera,stand}=roomSetup({eyeHeightMm:1650,viewerSetbackMm:660,headTiltDegrees:angle,deskHeightMm:height});
+  const f=roomFraming(camera,.8,180,fov),floor=floorCamera(camera,stand,f.deskShare,f.lip),a=angle*Math.PI/180;
   near(floor.camera.depth*Math.sin(a),1980);near(floor.camera.targetY+floor.camera.depth*Math.cos(a),792);
   near(floor.camera.depth*floor.share,camera.depth*f.deskShare);near(floor.lip*floor.share,f.lip*f.deskShare);
  }

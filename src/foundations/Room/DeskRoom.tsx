@@ -78,7 +78,6 @@ export type DeskRoomProps = {
   deskDepth?: number;
   deskWidth?: number;
   targetY?: number;
-  frameAnchor?: number;
   span?: number;
   front?: number;
   wallHeight?: number;
@@ -304,12 +303,12 @@ function DeskFloorShadow({ deskWidth, span, deskDepth, stand, floorDepth, streng
   Held, the room renders when the room changes. The lamp still moves the shadow,
   through the light store, which is what the store is for.
 */
-export const DeskRoom = memo(function DeskRoom({ windowHeightMm, windowSillHeightMm, angle, depth, deskShare = ROOM_DESK_SHARE, deskWidth = DESK_WIDTH, span: givenSpan, front: givenFront, wallHeight: givenWallHeight, deskDepth = ROOM_DESK_DEPTH, targetY = deskDepth, frameAnchor = 1, stand = DESK_STAND, lip = ROOM_LIP, floor = 'pine', wall = 'red', blur = 1, dim = 0.32, shadowStrength = 0.36 }: DeskRoomProps) {
+export const DeskRoom = memo(function DeskRoom({ windowHeightMm, windowSillHeightMm, angle, depth, deskShare = ROOM_DESK_SHARE, deskWidth = DESK_WIDTH, span: givenSpan, front: givenFront, wallHeight: givenWallHeight, deskDepth = ROOM_DESK_DEPTH, targetY = deskDepth, stand = DESK_STAND, lip = ROOM_LIP, floor = 'pine', wall = 'red', blur = 1, dim = 0.32, shadowStrength = 0.36 }: DeskRoomProps) {
   const { back, down } = floorLies(angle, stand);
   let extents;
   try {
     extents = roomSurfaceExtents(
-      { angle, depth, deskWidth, deskDepth, stand, deskShare, lip, targetY, frameAnchor },
+      { angle, depth, deskWidth, deskDepth, stand, deskShare, lip, targetY },
       { span: givenSpan, front: givenFront, wallHeight: givenWallHeight },
     );
   } catch (error) {
@@ -334,7 +333,6 @@ export const DeskRoom = memo(function DeskRoom({ windowHeightMm, windowSillHeigh
           '--desk-room-down': down,
           '--desk-room-lip': lip,
           '--desk-room-target': targetY,
-          '--desk-room-anchor': frameAnchor,
           '--desk-room-depth': deskDepth,
           '--desk-room-front': front,
           '--desk-room-span': span,

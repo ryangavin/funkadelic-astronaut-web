@@ -2,11 +2,12 @@ import { DESK_MM, mmToUnits } from './physicalScale.ts';
 
 export const DEFAULT_HEAD_TILT_DEGREES = 74.47588900324574;
 
+/** The reference eye: 1650 mm up and 650 mm out from the wall, looking down at the desk. */
+export const DEFAULT_EYE = { eyeHeightMm: 1650, viewerSetbackMm: 650 } as const;
+
 export type PhysicalRoomInputs = {
-  /** Legacy ignores physical eye values; physical derives angle/depth from the eye. */
-  cameraMode?: 'legacy' | 'physical';
   deskWidthMm?: number; deskDepthMm?: number; deskHeightMm?: number; deskEdgeMm?: number;
-  /** Supply both when cameraMode is physical; angle/depth are then ignored. Eye height is above the floor. */
+  /** Eye height above the floor; the camera's angle and distance are derived from it. */
   eyeHeightMm?: number;
   /** Horizontal eye distance from the wall; zero is over the back edge. */
   viewerSetbackMm?: number;
@@ -20,35 +21,26 @@ export function positive(name: string, value: number, allowZero = false) {
   return value;
 }
 
-/** Millimetres stay physical; deskShare and viewport size control only framing. */
-export function roomSetup({ cameraMode = 'legacy', deskWidthMm = DESK_MM.width, deskDepthMm = DESK_MM.depth,
-  deskHeightMm = DESK_MM.height, deskEdgeMm = 10, eyeHeightMm, viewerSetbackMm, headTiltDegrees = DEFAULT_HEAD_TILT_DEGREES }: PhysicalRoomInputs,
-  angle = 84, depth = 8000) {
+/** Millimetres stay physical; deskShare and viewport size control only framing. The camera is an eye in the room, nothing else. */
+export function roomSetup({ deskWidthMm = DESK_MM.width, deskDepthMm = DESK_MM.depth,
+  deskHeightMm = DESK_MM.height, deskEdgeMm = 10, eyeHeightMm = DEFAULT_EYE.eyeHeightMm, viewerSetbackMm = DEFAULT_EYE.viewerSetbackMm, headTiltDegrees = DEFAULT_HEAD_TILT_DEGREES }: PhysicalRoomInputs = {}) {
   const width = positive('desk width in units', mmToUnits(positive('deskWidthMm', deskWidthMm)));
   const surfaceHeight = positive('desk depth in units', mmToUnits(positive('deskDepthMm', deskDepthMm)));
   const stand = positive('desk height in units', mmToUnits(positive('deskHeightMm', deskHeightMm)));
   const edge = positive('desk edge in units', mmToUnits(positive('deskEdgeMm', deskEdgeMm, true)), true);
-  let targetY: number | undefined;
-  if (cameraMode === 'physical') {
-    if (eyeHeightMm === undefined || viewerSetbackMm === undefined)
-      throw new RangeError('Supply both eyeHeightMm and viewerSetbackMm');
-    positive('eyeHeightMm', eyeHeightMm);
-    positive('viewerSetbackMm', viewerSetbackMm, true);
-    const clearance = eyeHeightMm - deskHeightMm;
-    positive('eye height above tabletop', clearance);
-    angle = headTiltDegrees;
-    if (!Number.isFinite(angle) || angle <= 0 || angle >= 180)
-      throw new RangeError('physical look angle must be greater than 0 and less than 180 degrees');
-    const pitch = angle * Math.PI / 180;
-    depth = mmToUnits(clearance / Math.sin(pitch));
-    // CSS projection uses the gaze intersection with the desk plane; it never drives the eye or pitch.
-    targetY = mmToUnits(viewerSetbackMm - clearance / Math.tan(pitch));
-    if (!Number.isFinite(targetY)) throw new RangeError('camera target must be finite');
-  }
-  positive('camera depth', depth);
-  if (cameraMode !== 'physical' && (!Number.isFinite(angle) || angle <= 0 || angle > 90))
-    throw new RangeError('camera angle must be greater than 0 and at most 90 degrees');
-  return { camera: { angle, depth, width, surfaceHeight, ...(targetY === undefined ? {} : { targetY }) }, stand, edge };
+  positive('eyeHeightMm', eyeHeightMm);
+  positive('viewerSetbackMm', viewerSetbackMm, true);
+  const clearance = eyeHeightMm - deskHeightMm;
+  positive('eye height above tabletop', clearance);
+  const angle = headTiltDegrees;
+  if (!Number.isFinite(angle) || angle <= 0 || angle >= 180)
+    throw new RangeError('physical look angle must be greater than 0 and less than 180 degrees');
+  const pitch = angle * Math.PI / 180;
+  const depth = positive('camera depth', mmToUnits(clearance / Math.sin(pitch)));
+  // CSS projection uses the gaze intersection with the desk plane; it never drives the eye or pitch.
+  const targetY = mmToUnits(viewerSetbackMm - clearance / Math.tan(pitch));
+  if (!Number.isFinite(targetY)) throw new RangeError('camera target must be finite');
+  return { camera: { angle, depth, width, surfaceHeight, targetY }, stand, edge };
 }
 
 /** Horizontal field of view of the original reference framing. */
@@ -60,8 +52,7 @@ export function referenceFieldOfView(deskShare: number) {
  * Perspective's CSS depth is also its focal length. Compensate the outer frame
  * so focal length in viewport pixels stays fixed as the eye moves.
  */
-export function roomFraming(camera: { width: number; depth: number }, physical: boolean, deskShare: number, lip: number, horizontalFieldOfViewDegrees?: number) {
-  if (!physical) return { deskShare, lip };
+export function roomFraming(camera: { width: number; depth: number }, deskShare: number, lip: number, horizontalFieldOfViewDegrees?: number) {
   const referenceDistance = mmToUnits(Math.hypot(900, 650));
   const fieldOfView = horizontalFieldOfViewDegrees ?? referenceFieldOfView(deskShare);
   if (!Number.isFinite(fieldOfView) || fieldOfView <= 0 || fieldOfView >= 180)

@@ -10,4 +10,4 @@
 .room-diagram p { margin:6px 0 0; color:#5a666d; }
 .room-diagram__center { color:#326b8f; }.room-diagram__gaze { color:#a6512e; }
 /* Only the bench adds a companion below the frame; the right column scrolls. */
-.room-controls__scene .scale-bench .room { max-width:100%; }
+.room-scene .scale-bench .room { max-width:100%; }

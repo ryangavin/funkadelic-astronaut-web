@@ -1,21 +1,24 @@
 import { expect, fireEvent, userEvent, waitFor, within } from 'storybook/test';
+import { ROOM_DESK_SHARE } from '../../foundations/Room/DeskRoom';
+import { referenceFieldOfView } from '../../geometry/roomSetup';
+import { roomSeam } from './controls';
 
 /** Exercise real controls and placements, including recovery from invalid geometry. */
 export async function checkPhysicalRoom({ canvasElement }: { canvasElement: HTMLElement }) {
   // Ordinary browsing must never rearrange the scene or leave stress-test settings behind.
   if (import.meta.env.MODE !== 'test') return;
   const canvas = within(canvasElement);
-  const input = (label: string, value: string) => fireEvent.change(canvas.getByRole('spinbutton', { name: label }), { target: { value } });
+  // Controls live in Storybook's props panel, which is outside the canvas; drive the args directly.
+  const seam = () => roomSeam(canvasElement);
+  const set = (next: Parameters<ReturnType<typeof seam>['set']>[0]) => seam().set(next);
   const room = () => canvasElement.querySelector<HTMLElement>('.room')!;
   const camera = () => canvasElement.querySelector<HTMLElement>('.perspective')!;
   const pool = () => canvasElement.querySelector<HTMLElement>('.lamp-light')!;
   await waitFor(() => expect(pool().style.width).not.toBe(''));
-  expect(canvas.getByLabelText('Desk width (mm) inches')).toHaveTextContent('47.24 in');
-  fireEvent.change(canvas.getByRole('slider', { name: 'Desk width (mm) slider' }), { target: { value: '1600' } });
-  await waitFor(() => expect(canvas.getByRole('spinbutton', { name: 'Desk width (mm)' })).toHaveValue(1600));
-  expect(canvas.getByLabelText('Desk width (mm) inches')).toHaveTextContent('62.99 in');
+  set({ deskWidthMm: 1600 });
+  await waitFor(() => expect(seam().args.deskWidthMm).toBe(1600));
   await waitFor(() => expect(camera().style.getPropertyValue('--perspective-width')).toBe('1920'));
-  input('Desk depth (mm)', '1000');
+  set({ deskDepthMm: 1000 });
   await waitFor(() => expect(canvasElement.querySelector('.desk-study__shadow')).toHaveAttribute('viewBox', '0 0 1920 1200'));
   expect(canvasElement.querySelector('.desk-study__shadow')).toHaveAttribute('viewBox', '0 0 1920 1200');
   expect(canvasElement.querySelector('.lamp-cast-shadow')).toHaveAttribute('viewBox', '0 0 1920 1200');
@@ -45,22 +48,20 @@ export async function checkPhysicalRoom({ canvasElement }: { canvasElement: HTML
   fireEvent.click(head);
   await waitFor(() => expect(canvas.getByRole('button', { name: 'Turn the lamp on' })).toBeInTheDocument());
   const aimed = shade.innerHTML;
-  input('Desk width (mm)', '3400');
+  set({ deskWidthMm: 3400 });
   await waitFor(() => expect(camera().style.getPropertyValue('--perspective-width')).toBe('4080'));
-  expect(canvas.getByRole('spinbutton', { name: 'Desk width (mm)' })).toHaveValue(3400);
-  expect(canvas.getByRole('slider', { name: 'Desk width (mm) slider' })).toHaveValue('3000');
-  fireEvent.change(canvas.getByRole('slider', { name: 'Desk width (mm) slider' }), { target: { value: '1600' } });
+  expect(seam().args.deskWidthMm).toBe(3400);
+  set({ deskWidthMm: 1600 });
   await waitFor(() => expect(camera().style.getPropertyValue('--perspective-width')).toBe('1920'));
-  input('Eye height (mm)', '');
-  await expect(canvas.getByRole('alert')).toHaveTextContent('last valid scene');
+  set({ eyeHeightMm: NaN });
+  await waitFor(() => expect(canvas.getByRole('alert')).toHaveTextContent('last valid scene'));
   expect(lamp.style.getPropertyValue('--movable-x')).toBe(lampX);
-  input('Eye height (mm)', '1650');
+  set({ eyeHeightMm: 1650 });
   await waitFor(() => expect(canvas.queryByRole('alert')).toBeNull());
   expect(lamp.style.getPropertyValue('--movable-x')).toBe(lampX);
   expect(shade.innerHTML).toBe(aimed);
   await userEvent.click(canvas.getByRole('button', { name: 'Turn the lamp on' }));
-  input('Wall distance (mm)', '500');
-  input('Head tilt from horizontal (degrees)', '90');
+  set({ viewerSetbackMm: 500, headTiltDegrees: 90 });
   await waitFor(() => expect(Number(camera().style.getPropertyValue('--perspective-angle'))).toBe(90));
   const position = Number(mug.style.getPropertyValue('--movable-x'));
   const box = mug.getBoundingClientRect();
@@ -69,32 +70,32 @@ export async function checkPhysicalRoom({ canvasElement }: { canvasElement: HTML
   fireEvent.pointerMove(mug, { ...pointer, clientX: pointer.clientX + 40 });
   fireEvent.pointerUp(mug, { ...pointer, buttons: 0, clientX: pointer.clientX + 40 });
   await waitFor(() => expect(Number(mug.style.getPropertyValue('--movable-x'))).toBeGreaterThan(position));
-  input('Eye height (mm)', '850');
+  set({ eyeHeightMm: 850 });
   await waitFor(() => expect(canvasElement.querySelector('.room__diagnostic')).toHaveTextContent('100.0 mm'));
   for (const node of canvasElement.querySelectorAll('[style], [transform]'))
     expect(`${node.getAttribute('style')} ${node.getAttribute('transform')}`).not.toMatch(/NaN|Infinity/);
   const supportedCamera = camera().getAttribute('style');
   const materialCount = canvasElement.querySelectorAll('.floor__course, .floor__butt, .wall__brick').length;
-  input('Eye height (mm)', '100000');
+  set({ eyeHeightMm: 100000 });
   await waitFor(() => expect(canvas.getByRole('alert')).toHaveTextContent('renderer capacity exceeded'));
   expect(canvas.getByRole('alert')).toHaveTextContent('last valid scene');
-  expect(canvas.getByRole('spinbutton', { name: 'Eye height (mm)' })).toHaveValue(100000);
+  expect(seam().args.eyeHeightMm).toBe(100000);
   expect(camera().getAttribute('style')).toBe(supportedCamera);
   expect(canvasElement.querySelectorAll('.floor__course, .floor__butt, .wall__brick')).toHaveLength(materialCount);
   expect(lamp.style.getPropertyValue('--movable-x')).toBe(lampX);
-  input('Eye height (mm)', '700');
-  await expect(canvas.getByRole('alert')).toHaveTextContent('eye height above tabletop');
-  input('Eye height (mm)', '1650');
+  set({ eyeHeightMm: 700 });
+  await waitFor(() => expect(canvas.getByRole('alert')).toHaveTextContent('eye height above tabletop'));
+  set({ eyeHeightMm: 1650 });
   await waitFor(() => expect(room()).not.toBeNull());
-  input('Light intensity', '0');
+  set({ lampIntensity: 0 });
   await waitFor(() => expect(pool().style.visibility).toBe('hidden'));
   expect(canvasElement.querySelector<SVGCircleElement>('.desk-room__pool')!.style.visibility).toBe('hidden');
-  input('Light intensity', '3');
+  set({ lampIntensity: 3 });
   await waitFor(() => expect(pool().style.filter).toBe('brightness(3)'));
   const size = parseFloat(pool().style.width);
-  input('Pool spread', '2.8');
+  set({ poolSpread: 2.8 });
   await waitFor(() => expect(parseFloat(pool().style.width)).toBeCloseTo(size * 2, 5));
-  input('Wall distance (mm)', '650');
+  set({ viewerSetbackMm: 650 });
   await waitFor(() => expect(Number(camera().style.getPropertyValue('--perspective-angle'))).toBe(90));
 }
 
@@ -103,7 +104,8 @@ export async function checkPhysicalRoom({ canvasElement }: { canvasElement: HTML
 export async function checkPhysicalLens({ canvasElement }: { canvasElement: HTMLElement }) {
   if (import.meta.env.MODE !== 'test') return;
   const canvas = within(canvasElement);
-  const input = (name: string, value: number) => fireEvent.change(canvas.getByRole('spinbutton', { name }), { target: { value: String(value) } });
+  const seam = () => roomSeam(canvasElement);
+  const set = (next: Parameters<ReturnType<typeof seam>['set']>[0]) => seam().set(next);
   const stand = () => canvasElement.querySelector<HTMLElement>('.room__stand')!.getBoundingClientRect();
   const camera = () => canvasElement.querySelector<HTMLElement>('.perspective')!;
   const angle = () => Number(camera().style.getPropertyValue('--perspective-angle'));
@@ -125,7 +127,7 @@ export async function checkPhysicalLens({ canvasElement }: { canvasElement: HTML
   }
   const positions=markers.map(marker=>marker.getBoundingClientRect());
   for (const [height, deskDepth] of [[500,600],[1100,1400],[750,800]]) {
-    input('Desk height (mm)',height); input('Desk depth (mm)',deskDepth);
+    set({ deskHeightMm: height, deskDepthMm: deskDepth });
     await waitFor(()=>expect(canvasElement.querySelector('.desk-study__shadow')).toHaveAttribute('viewBox', `0 0 1440 ${deskDepth*1.2}`));
     expect(angle()).toBeCloseTo(74.47588900324574,8);
     await waitFor(()=>{
@@ -139,16 +141,16 @@ export async function checkPhysicalLens({ canvasElement }: { canvasElement: HTML
   }
   markers.forEach(marker=>marker.remove());
   const acceptedCamera=camera().getAttribute('style');
-  input('Head tilt from horizontal (degrees)',0);
+  set({ headTiltDegrees: 0 });
   await waitFor(()=>expect(canvas.getByRole('alert')).toHaveTextContent('last valid scene'));
   expect(camera().getAttribute('style')).toBe(acceptedCamera);
-  input('Head tilt from horizontal (degrees)',74.47588900324574);
+  set({ headTiltDegrees: 74.47588900324574 });
   await waitFor(()=>expect(canvas.queryByRole('alert')).toBeNull());
-  const initialFov=Number((canvas.getByRole('spinbutton',{name:'Horizontal field of view (degrees)'}) as HTMLInputElement).value);
+  const initialFov=seam().args.horizontalFieldOfViewDegrees ?? referenceFieldOfView(seam().args.deskShare ?? ROOM_DESK_SHARE);
   const initialWidth=stand().width, initialStick=stick().width, initialPrincipal=targetScreenY();
   const initialPose=camera().getAttribute('style');
   for(const fov of [55,85]) {
-    input('Horizontal field of view (degrees)',fov);
+    set({ horizontalFieldOfViewDegrees: fov });
     const ratio=Math.tan(initialFov*Math.PI/360)/Math.tan(fov*Math.PI/360);
     await waitFor(()=>expect(stand().width/initialWidth).toBeCloseTo(ratio,3));
     expect(camera().getAttribute('style')).toBe(initialPose);
@@ -156,38 +158,36 @@ export async function checkPhysicalLens({ canvasElement }: { canvasElement: HTML
     expect(targetScreenY()).toBeCloseTo(initialPrincipal,1);
   }
   const validWidth=stand().width;
-  input('Horizontal field of view (degrees)',180);
+  set({ horizontalFieldOfViewDegrees: 180 });
   await waitFor(()=>expect(canvas.getByRole('alert')).toHaveTextContent('field of view'));
   expect(stand().width).toBeCloseTo(validWidth,1);
-  input('Horizontal field of view (degrees)',initialFov);
+  set({ horizontalFieldOfViewDegrees: initialFov });
   await waitFor(()=>expect(canvas.queryByRole('alert')).toBeNull());
   const originalTarget = targetScreenY();
   const original = stand(), originalAngle = angle(), originalDistance = distance();
-  input('Eye height (mm)', 2400);
+  set({ eyeHeightMm: 2400 });
   await waitFor(() => expect(stand().width / original.width).toBeCloseTo(900 / 1650, 3));
   expect(angle()).toBe(originalAngle);
   expect(distance()).toBeGreaterThan(originalDistance);
-  input('Eye height (mm)', 2550);
-  input('Wall distance (mm)', 900);
+  set({ eyeHeightMm: 2550, viewerSetbackMm: 900 });
   await waitFor(() => expect(stand().width / original.width).toBeCloseTo(.5, 3));
   expect(angle()).toBeCloseTo(originalAngle, 8);
   expect(distance()).toBeCloseTo(originalDistance * 2, 8);
   expect(targetScreenY()).toBeCloseTo(originalTarget, 1);
-  input('Eye height (mm)', 1650);
+  set({ eyeHeightMm: 1650 });
   await waitFor(() => expect(stand().width).toBeCloseTo(original.width, 1));
   expect(angle()).toBe(originalAngle);
   expect(distance()).toBe(originalDistance);
-  input('Wall distance (mm)', 650);
+  set({ viewerSetbackMm: 650 });
   await waitFor(() => expect(stand().width).toBeCloseTo(original.width, 1));
   const meterWidth = stick().width;
-  input('Desk width (mm)', 1800);
+  set({ deskWidthMm: 1800 });
   await waitFor(() => expect(stand().width / original.width).toBeCloseTo(1.5, 3));
   expect(stick().width).toBeCloseTo(meterWidth, 1);
   expect(targetScreenY()).toBeCloseTo(originalTarget, 1);
   // After both camera and frame dimensions change, a 40 px drag still inverts correctly.
   for (const [wallDistance, pitch] of [[0,115], [400,90], [800,65], [1200,74.47588900324574]]) {
-    input('Head tilt from horizontal (degrees)', pitch);
-    input('Wall distance (mm)', wallDistance);
+    set({ headTiltDegrees: pitch, viewerSetbackMm: wallDistance });
     await waitFor(() => expect(angle()).toBeCloseTo(pitch, 6));
     expect(targetScreenY()).toBeCloseTo(originalTarget, 1);
     const mug = canvas.getByRole('group', { name: /^Mug$/ });
@@ -212,18 +212,20 @@ export async function checkPhysicalLens({ canvasElement }: { canvasElement: HTML
       expect(shade.innerHTML).not.toMatch(/NaN|Infinity/);
     }
   }
-  input('Wall distance (mm)', 650);
-  input('Head tilt from horizontal (degrees)', 85);
+  set({ viewerSetbackMm: 650, headTiltDegrees: 85 });
   await waitFor(() => expect(angle()).toBe(85));
   const target = Number.parseFloat(camera().style.getPropertyValue('--perspective-target').replace('calc(', ''));
   expect(distance()*Math.sin(angle()*Math.PI/180)).toBeCloseTo(1080, 6);
   expect(target+distance()*Math.cos(angle()*Math.PI/180)).toBeCloseTo(780, 6);
-  input('Head tilt from horizontal (degrees)', 90);
-  input('Wall distance (mm)', 400);
+  set({ headTiltDegrees: 90, viewerSetbackMm: 400 });
   await waitFor(() => expect(angle()).toBe(90));
   const mug = canvas.getByRole('group', { name: /^Mug$/ });
-  input('Horizontal field of view (degrees)',85);
-  await waitFor(()=>expect(Number((canvas.getByRole('spinbutton',{name:'Horizontal field of view (degrees)'}) as HTMLInputElement).value)).toBe(85));
+  const framedWidth = stand().width;
+  set({ horizontalFieldOfViewDegrees: 85 });
+  await waitFor(()=>expect(Math.abs(stand().width - framedWidth)).toBeGreaterThan(1));
+  // Measure the lens only once reframing has stopped; a mid-transition width skews the scale.
+  let previous = Number.NaN;
+  await waitFor(() => { const width = stand().width; const settled = Math.abs(width - previous) < .5; previous = width; expect(settled).toBe(true); });
   const initialX = Number(mug.style.getPropertyValue('--movable-x'));
   const unitsPerPixel = 2160 / stand().width;
   const box = mug.getBoundingClientRect();

@@ -39,8 +39,8 @@
   --desk-room-dim: 0.32;
   /* A desk unit, in the frame: the desk is 1440 of them across its share of the width. */
   --desk-room-unit: calc(var(--desk-room-share) * 100cqw / var(--desk-room-width, 1440));
-  /* Where the hinge is: the desk's front edge, a lip up from the frame's bottom. */
-  --desk-room-hinge: calc((1 - var(--desk-room-anchor, 1)) * 100% + var(--desk-room-lip) * var(--desk-room-unit));
+  /* Where the hinge is: the gaze lands in the middle of the frame, and the desk's front edge is a lip up from there. */
+  --desk-room-hinge: calc(50% + var(--desk-room-lip) * var(--desk-room-unit));
   /* The floor's place: back and down from the desk top, then tipped like it. */
   --desk-room-lie: translateZ(calc(-1 * var(--desk-room-back) * var(--desk-room-unit))) translateY(calc(var(--desk-room-down) * var(--desk-room-unit))) rotateX(var(--desk-room-tilt));
   position: absolute;

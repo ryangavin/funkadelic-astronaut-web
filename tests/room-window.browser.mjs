@@ -23,11 +23,11 @@ try {
   await input('Head tilt from horizontal (degrees)','headTiltDegrees',angle);
   await input('Eye height (mm)','eyeHeightMm',eye);
   await input('Desk height (mm)','deskHeightMm',height);
-  const a=await args(),{camera,stand}=roomSetup(a),f=roomFraming(camera,true,a.deskShare,a.roomLip,a.horizontalFieldOfViewDegrees);
+  const a=await args(),{camera,stand}=roomSetup(a),f=roomFraming(camera,a.deskShare,a.roomLip,a.horizontalFieldOfViewDegrees);
   const frame=await page.locator('.room').boundingBox();
   for(const [x,y,z] of [[0,1000,900],[1100,0,1700]]) {
    const actual=await page.locator('.wall-window').evaluate((svg,{x,y})=>{const mark=document.createElementNS('http://www.w3.org/2000/svg','rect');for(const [key,value] of Object.entries({x,y,width:.001,height:.001}))mark.setAttribute(key,String(value));svg.append(mark);const q=mark.getBoundingClientRect();mark.remove();return{x:q.x,y:q.y};},{x,y});
-   const expected=projectFloorPoint({x:(x-550)*1.2,y:0,z:z*1.2},camera,stand,f.deskShare,f.lip,.5);
+   const expected=projectFloorPoint({x:(x-550)*1.2,y:0,z:z*1.2},camera,stand,f.deskShare,f.lip);
    assert.ok(Math.abs(actual.x-frame.x-expected.x*frame.width/1440)<.5,`window anchored x at ${angle}: ${actual.x} vs ${frame.x+expected.x*frame.width/1440}`);
    assert.ok(Math.abs(actual.y-frame.y-expected.y*frame.height/810)<.5,`window anchored z at ${angle}: ${actual.y} vs ${frame.y+expected.y*frame.height/810}`);
   }

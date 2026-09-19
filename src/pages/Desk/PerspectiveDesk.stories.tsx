@@ -7,7 +7,6 @@ import { articulateLamp, lampPoseAngles } from '../../components/3D/DeskLamp/art
 import { DESK_LAMP_ENAMELS } from '../../components/3D/DeskLamp/DeskLamp';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
-import { GENTLE_DEPTH, GENTLE_VIEW } from '../../behaviors/Perspective/Perspective';
 import { DESK_WOODS } from '../../components/3D/Desk/Desk';
 import { FLOOR_WOODS } from '../../components/3D/Floor/Floor';
 import { WALL_FINISHES } from '../../components/3D/Wall/Wall';
@@ -25,10 +24,7 @@ const meta = {
   },
   tags: ['autodocs'],
   argTypes: {
-    showPerformance: { control: 'boolean', table: { category: 'Debug' } },
     ...physicalControls,
-    angle: { table: { category: 'Camera' }, control: { type: 'number', step: 1 } },
-    depth: { table: { category: 'Camera' }, control: { type: 'number', step: 100 } },
     wood: { table: { category: 'Desktop' }, control: 'inline-radio', options: DESK_WOODS },
     room: { table: { category: 'Room' }, control: 'boolean' },
     floor: { table: { category: 'Room' }, control: 'inline-radio', options: FLOOR_WOODS },
@@ -55,7 +51,7 @@ const meta = {
     onArticulate: { table: { disable: true } },
     onLamp: { table: { disable: true } },
   },
-  args: { showPerformance: false, ...physicalDefaults, angle: GENTLE_VIEW, depth: GENTLE_DEPTH, wood: 'walnut', lamp: true, shadowStrength: .36, lampX: 770, lampY: 100, lampRotation: 0, lampWidth: 576, lampEnamel: 'green', lampLowerAngle: initialAngles.lower, lampUpperAngle: initialAngles.upper, onArrange: fn(), onArticulate: fn(), onLamp: fn() },
+  args: { showPerformance: false, ...physicalDefaults, wood: 'walnut', lamp: true, shadowStrength: .36, lampX: 770, lampY: 100, lampRotation: 0, lampWidth: 576, lampEnamel: 'green', lampLowerAngle: initialAngles.lower, lampUpperAngle: initialAngles.upper, onArrange: fn(), onArticulate: fn(), onLamp: fn() },
 } satisfies Meta<PerspectiveDeskProps & RoomStoryControls>;
 
 export default meta;
@@ -64,8 +60,9 @@ type Story = StoryObj<typeof meta>;
 /** The starting point for the main desk: a clear surface and an articulated lamp. */
 export const Desk: Story = {
   args: {
-    angle: 78,
-    depth: 5700,
+    showCamera: false,
+    deskShare: .8,
+    roomLip: 180,
     lampX: 396,
     lampY: 17,
     lampLowerAngle: -142.6818247177271,
@@ -203,7 +200,7 @@ export const Desk: Story = {
 /** A populated experiment; all numeric ranges are yours to explore. */
 export const PhysicalSetup: Story = {
   play: checkPhysicalRoom,
-  args: { cameraMode: 'physical', eyeHeightMm: 1650, viewerSetbackMm: 650, deskShare: 0.8, roomLip: 180 },
+  args: { eyeHeightMm: 1650, viewerSetbackMm: 650, deskShare: 0.8, roomLip: 180 },
   render: function Experiment(args) {
     const [currentArgs, updateArgs] = useArgs<typeof args>();
     return <RoomExperiment args={currentArgs} update={updateArgs}>{values => <PerspectiveDesk {...withLightTuning(values)} headTiltDegrees={values.headTiltDegrees} showSettings={false} only={['mug', 'pen', 'handheld', 'cradle']} />}</RoomExperiment>;

@@ -24,9 +24,9 @@ export function clipHeight(points:WorldPoint[],height:number,above:boolean) {
   }
   return result;
 }
-export function projectFloorPoint(point:WorldPoint,camera:{angle:number;depth:number;width:number;surfaceHeight:number;targetY?:number},stand:number,share:number,lip:number,anchor:number) {
+export function projectFloorPoint(point:WorldPoint,camera:{angle:number;depth:number;width:number;surfaceHeight:number;targetY?:number},stand:number,share:number,lip:number) {
   const alpha=camera.angle*Math.PI/180,c=Math.sin(alpha),s=Math.cos(alpha);
   const y=point.y-(camera.targetY??camera.surfaceHeight),h=point.z-stand;
   const distance=camera.depth-y*s-h*c, scale=1440*share/camera.width;
-  return {x:720+point.x*camera.depth/distance*scale,y:810*anchor-lip*scale+(y*c-h*s)*camera.depth/distance*scale,distance};
+  return {x:720+point.x*camera.depth/distance*scale,y:405-lip*scale+(y*c-h*s)*camera.depth/distance*scale,distance};
 }

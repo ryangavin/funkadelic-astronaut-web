@@ -75,7 +75,7 @@ export function DeskObjectStudy({ name, widthMm = 120, depthRatio = 1, heightMm 
     </div>
     <p>{bare ? 'Move and articulate the lamp to inspect the desktop.' : `${widthMm} mm artwork width · ${heightMm} mm height. ${note ?? 'Height is estimated; shadow uses an approximate solid silhouette.'}`} Drag the object or lamp base; drag the shade to aim and click it to switch.</p>
     <div className="desk-study__viewport"><div style={{ width: `${zoom * 100}%`, minWidth: 720 }}>
-      <Room places={places} angle={angle} shadowStrength={strength} lampX={LAMP_PLACE.x} lampY={LAMP_PLACE.y}
+      <Room places={places} headTiltDegrees={angle} shadowStrength={strength} lampX={LAMP_PLACE.x} lampY={LAMP_PLACE.y}
         shadows={!bare && <StudyShadow initialPlace={initialPlace} width={width} depth={depth} pivot={pivotHere} shapes={shapes} heightMm={heightMm} />}>
         {!bare && <StudyObject name={name} initialPlace={initialPlace} width={width} depth={depth} pivot={pivotHere} solid={solid} customRelief={customRelief} sideColors={sideColors} heightMm={heightMm} shapes={shapes}>{children}</StudyObject>}
       </Room>

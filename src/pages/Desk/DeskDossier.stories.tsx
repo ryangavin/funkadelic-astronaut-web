@@ -108,7 +108,7 @@ export const ReachableTab: Story = {
 
 /** Store coordinates, rendered movement and solid projection agree mid-flight. */
 export const MotionStaysAligned: Story = {
-  args: { only: ['dossier', 'pen', 'mug', 'phone', 'rolodex', 'labelBro'], angle: 80, depth: 5000 },
+  args: { only: ['dossier', 'pen', 'mug', 'phone', 'rolodex', 'labelBro'], headTiltDegrees: 80, eyeHeightMm: 2400, viewerSetbackMm: 700 },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const pen = canvas.getByRole('group', { name: 'Pen' });
@@ -144,7 +144,7 @@ export const MotionStaysAligned: Story = {
 
 /** Papers stay opaque and mounted under the actual cover through both swings. */
 export const CoverOcclusion: Story = {
-  args: { only: ['dossier'], cameraMode: 'physical', eyeHeightMm: 2100, viewerSetbackMm: 750 },
+  args: { only: ['dossier'], eyeHeightMm: 2100, viewerSetbackMm: 750 },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const dossier = canvas.getByRole('group', { name: 'Band dossier' });

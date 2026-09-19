@@ -6,17 +6,18 @@ const { roomCoverage } = require('../src/geometry/roomCoverage.ts');
 // Project the generated bounds forward independently and check the crop corners.
 test('automatic background covers the frame across physical camera and desk ranges', () => {
   for (const eye of [1000, 1650, 2400]) for (const setback of [0, 650, 3000])
-    for (const width of [360, 1440, 3600]) for (const referenceShare of [0.5, 0.8, 1]) for (const physical of [false, true]) {
+    for (const width of [360, 1440, 3600]) for (const referenceShare of [0.5, 0.8, 1]) {
       const stand = 900, deskDepth = 960;
       const above = eye * 1.2 - stand;
       const depth = Math.hypot(above, setback * 1.2);
       const angle = Math.atan2(above, setback * 1.2) * 180 / Math.PI;
-      const { deskShare: share, lip } = roomFraming({ width, depth }, physical, referenceShare, 180);
+      const { deskShare: share, lip } = roomFraming({ width, depth }, referenceShare, 180);
       const bounds = roomCoverage({ angle, depth, deskWidth: width, deskDepth, stand, deskShare: share, lip });
       const tilt = (90 - angle) * Math.PI / 180, c = Math.cos(tilt), s = Math.sin(tilt);
       const project = (y, z) => ({ y: depth * y / (depth - z), halfWidth: depth * bounds.span / 2 / (depth - z) });
       const seam = project(stand * s - deskDepth * c, -stand * c - deskDepth * s);
-      const top = lip - width / share * 9 / 16, bottom = lip;
+      // The gaze lands in the middle of the frame: half of it is above the lip, half below.
+      const top = lip - width / share * 9 / 32, bottom = lip + width / share * 9 / 32;
       assert.ok(Object.values(bounds).every(Number.isFinite));
       if (bottom > seam.y) {
         const near = project(stand * s + bounds.front * c, -stand * c + bounds.front * s);
@@ -51,9 +52,9 @@ test('renderer budget also guards explicit dimensions and filtered course counts
 test('absolute pitched cameras cover frame rays on both sides of overhead', () => {
   const { roomSetup, roomFraming } = require('../src/geometry/roomSetup.ts');
   for (const wallDistance of [0,400,800,1300]) for (const headTiltDegrees of [65,90,115]) {
-    const {camera,stand}=roomSetup({cameraMode:'physical',eyeHeightMm:1650,viewerSetbackMm:wallDistance,headTiltDegrees});
-    const framing=roomFraming(camera,true,.8,60);
-    const inputs={angle:camera.angle,depth:camera.depth,deskWidth:camera.width,deskDepth:camera.surfaceHeight,stand,...framing,targetY:camera.targetY,frameAnchor:.5};
+    const {camera,stand}=roomSetup({eyeHeightMm:1650,viewerSetbackMm:wallDistance,headTiltDegrees});
+    const framing=roomFraming(camera,.8,60);
+    const inputs={angle:camera.angle,depth:camera.depth,deskWidth:camera.width,deskDepth:camera.surfaceHeight,stand,...framing,targetY:camera.targetY};
     // At the wall a pitched-up frame can look through/behind that plane. There
     // is no finite visible wall/floor backdrop for those rays; retain the guard.
     if (wallDistance===0 && headTiltDegrees!==115) { assert.throws(()=>roomSurfaceExtents(inputs), /capacity/); continue; }
@@ -74,11 +75,11 @@ test('absolute pitched cameras cover frame rays on both sides of overhead', () =
 
 test('explicit horizontal lenses retain bounded coverage at wide and narrow angles', () => {
   const {roomSetup,roomFraming}=require('../src/geometry/roomSetup.ts');
-  const {camera,stand}=roomSetup({cameraMode:'physical',eyeHeightMm:1650,viewerSetbackMm:650});
+  const {camera,stand}=roomSetup({eyeHeightMm:1650,viewerSetbackMm:650});
   let lastSpan=0;
   for(const fov of [30,55,85,110]) {
-    const framing=roomFraming(camera,true,.8,180,fov);
-    const bounds=roomSurfaceExtents({angle:camera.angle,depth:camera.depth,deskWidth:camera.width,deskDepth:camera.surfaceHeight,stand,...framing,targetY:camera.targetY,frameAnchor:.5});
+    const framing=roomFraming(camera,.8,180,fov);
+    const bounds=roomSurfaceExtents({angle:camera.angle,depth:camera.depth,deskWidth:camera.width,deskDepth:camera.surfaceHeight,stand,...framing,targetY:camera.targetY});
     assert.ok(bounds.span>=lastSpan); lastSpan=bounds.span;
     assert.ok(Object.values(bounds).every(Number.isFinite));
   }

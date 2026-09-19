@@ -1,29 +1,32 @@
+import { useLayoutEffect, useReducer, useRef, type ReactNode } from 'react';
 import { ROOM_DESK_SHARE } from '../../foundations/Room/DeskRoom';
 import { DEFAULT_HEAD_TILT_DEGREES, referenceFieldOfView } from '../../geometry/roomSetup';
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { DEFAULT_LIGHT_TUNING, type LightTuning } from '../../geometry/lightingSetup';
 import './controls.css';
 import type { RoomProps } from '../../foundations/Room/Room';
 
 export type RoomStoryControls = Partial<LightTuning>;
 const numeric = (category: string, description: string, step = 1) => ({ control: { type: 'number' as const, step }, table: { category }, description });
+/** Storybook's own slider; the panel is the only control surface, so bounds live here. */
+const ranged = (category: string, description: string, min: number, max: number, step = 1) => ({ control: { type: 'range' as const, min, max, step }, table: { category }, description });
 export const physicalControls = {
-  windowHeightMm: numeric('Window', 'Opening height in millimetres.'),
-  windowSillHeightMm: numeric('Window', 'Bottom of the opening above the floor in millimetres.'),
-  cameraMode: { control: 'inline-radio' as const, options: ['legacy', 'physical'], description: 'Legacy uses angle/depth; physical uses eye height and setback.' },
-  deskWidthMm: numeric('Physical desk', 'Width in millimetres. Changes the surface, not object measurements.'),
-  deskDepthMm: numeric('Physical desk', 'Front-to-back desktop depth in millimetres, distinct from camera distance.'),
-  deskHeightMm: numeric('Physical desk', 'Tabletop height above the floor in millimetres.'),
+  windowHeightMm: ranged('Window', 'Opening height in millimetres.', 300, 1800, 25),
+  windowSillHeightMm: ranged('Window', 'Bottom of the opening above the floor in millimetres.', 0, 2200, 25),
+  deskWidthMm: ranged('Physical desk', 'Width in millimetres. Changes the surface, not object measurements.', 300, 3000, 25),
+  deskDepthMm: ranged('Physical desk', 'Front-to-back desktop depth in millimetres, distinct from camera distance.', 200, 1800, 25),
+  deskHeightMm: ranged('Physical desk', 'Tabletop height above the floor in millimetres.', 100, 1600, 25),
   deskEdgeMm: numeric('Physical desk', 'Drawn front edge thickness in millimetres; zero hides it.'),
-  eyeHeightMm: numeric('Physical camera', 'Eye height above the floor; must exceed tabletop height.'),
-  viewerSetbackMm: numeric('Physical camera', 'Horizontal eye distance from the wall; independent of desk dimensions.'),
-  headTiltDegrees: numeric('Physical camera', 'Absolute downward angle from horizontal: greater than 0 and less than 180 degrees; 90 looks straight down.', 1),
-  horizontalFieldOfViewDegrees: numeric('Physical camera', 'Horizontal lens angle, strictly between 0 and 180 degrees. Wider shows more without moving the eye or gaze; unset preserves reference framing.'),
-  lampIntensity: numeric('Lighting', 'Relative emitted pool brightness: zero emits no light, one preserves the original.', 0.1),
+  eyeHeightMm: ranged('Physical camera', 'Eye height above the floor; must exceed tabletop height. Far above human height is legitimate.', 600, 12000, 25),
+  viewerSetbackMm: ranged('Physical camera', 'Horizontal eye distance from the wall; independent of desk dimensions.', 0, 12000, 25),
+  headTiltDegrees: ranged('Physical camera', 'Absolute downward angle from horizontal: greater than 0 and less than 180 degrees; 90 looks straight down.', 1, 179, 1),
+  horizontalFieldOfViewDegrees: ranged('Physical camera', 'Horizontal lens angle, strictly between 0 and 180 degrees. Wider shows more without moving the eye or gaze; unset preserves reference framing.', 20, 110, 1),
+  lampIntensity: ranged('Lighting', 'Relative emitted pool brightness: zero emits no light, one preserves the original.', 0, 6, 0.1),
+  showPerformance: { control: 'boolean' as const, table: { category: 'Debug' }, description: 'Screen-aligned animation-frame timing overlay.' },
+  showCamera: { control: 'boolean' as const, table: { category: 'Debug' }, description: 'A line under the frame saying where the derived camera ended up.' },
   roomSpanMm: numeric('Room extent', 'Exact width of floor and wall in millimetres. Leave unset for automatic frame coverage.'),
   floorFrontMm: numeric('Room extent', 'Exact floor extension in millimetres. Leave unset for automatic frame coverage.'),
   wallHeightMm: numeric('Room extent', 'Exact wall height in millimetres. Leave unset for automatic frame coverage.'),
-  poolSpread: numeric('Light shaping', 'Desk pool diameter as a multiple of bulb height.', 0.1),
+  poolSpread: ranged('Light shaping', 'Desk pool diameter as a multiple of bulb height.', 0, 6, 0.1),
   floorPoolSpread: numeric('Light shaping', 'Floor pool radius as a multiple of bulb-to-floor height.', 0.1),
   poolFalloff: numeric('Light shaping', 'Lamp shadow mask radius as a multiple of bulb height.', 0.1),
   shadowReach: numeric('Light shaping', 'Artistic lamp shadow reach limit in desk units (1.2 units/mm).'),
@@ -34,7 +37,7 @@ export const physicalControls = {
   lightTuning: { table: { disable: true } },
 };
 export const physicalDefaults = {
-  windowHeightMm: 1000, windowSillHeightMm: 1000, cameraMode: 'legacy' as const, deskWidthMm: 1200, deskDepthMm: 800, deskHeightMm: 750, deskEdgeMm: 10,
+  windowHeightMm: 1000, windowSillHeightMm: 1000, showCamera: true, deskWidthMm: 1200, deskDepthMm: 800, deskHeightMm: 750, deskEdgeMm: 10,
   eyeHeightMm: 1650, viewerSetbackMm: 650, headTiltDegrees: DEFAULT_HEAD_TILT_DEGREES, lampIntensity: 1,
   ...DEFAULT_LIGHT_TUNING,
 };
@@ -46,16 +49,70 @@ export function withLightTuning<T extends RoomProps & RoomStoryControls>(args: T
   return { ...rest, lightTuning: tuning };
 }
 
-/** The experiment keeps its most useful numeric controls beside the scene. */
-export function RoomControlPanel({ args, update, children }: { args: RoomProps & RoomStoryControls; update: (args: Partial<RoomProps & RoomStoryControls>) => void; children: ReactNode }) {
-  const panel = useRef<HTMLDivElement>(null);
+/** The four the eye is dialled in with; everything else stays in Storybook's panel. */
+export const CAMERA_FIELDS = [
+  { key: 'eyeHeightMm', label: 'Eye height', min: 600, max: 12000, step: 25, unit: 'mm' },
+  { key: 'viewerSetbackMm', label: 'Wall distance', min: 0, max: 12000, step: 25, unit: 'mm' },
+  { key: 'headTiltDegrees', label: 'Head tilt', min: 1, max: 179, step: 1, unit: '°' },
+  { key: 'horizontalFieldOfViewDegrees', label: 'Field of view', min: 20, max: 110, step: 1, unit: '°' },
+] as const;
+
+type RoomArgs = RoomProps & RoomStoryControls;
+/** Play functions have no native way to set args, so the scene publishes one. */
+export type RoomSeam = { args: RoomArgs; set: (next: Partial<RoomArgs>) => void; live: (next: Partial<RoomArgs>) => void };
+type SeamHost = HTMLDivElement & { __roomSeam?: RoomSeam };
+
+/** Read the seam a rendered room experiment published for its play function. */
+export function roomSeam(canvasElement: HTMLElement): RoomSeam {
+  const host = canvasElement.querySelector<SeamHost>('.room-scene');
+  if (!host?.__roomSeam) throw new Error('No room scene is rendered; RoomExperiment publishes the seam.');
+  return host.__roomSeam;
+}
+
+const reading = (unit: 'mm' | '°', value: number) => unit === 'mm' ? `${value.toFixed(0)} mm · ${(value / 25.4).toFixed(1)} in` : `${value.toFixed(0)}${unit}`;
+
+/** Camera sliders sit in the preview so a drag redraws without the manager round trip. */
+function CameraStrip({ seam }: { seam: RoomSeam }) {
+  const value = (key: (typeof CAMERA_FIELDS)[number]['key']) => {
+    const given = seam.args[key];
+    if (Number.isFinite(given)) return given as number;
+    return key === 'horizontalFieldOfViewDegrees' ? referenceFieldOfView(seam.args.deskShare ?? ROOM_DESK_SHARE) : physicalDefaults[key];
+  };
+  return <aside className="camera-strip" aria-label="Physical camera">
+    {CAMERA_FIELDS.map(({ key, label, min, max, step, unit }) => {
+      const current = value(key);
+      return <fieldset key={key} className="camera-strip__field">
+        <legend>{label}</legend>
+        <input
+          aria-label={label}
+          type="range"
+          min={min} max={max} step={step}
+          value={Math.min(max, Math.max(min, current))}
+          // Dragging stays in the preview; releasing writes the value back to the story args.
+          onChange={event => seam.live({ [key]: Number(event.target.value) })}
+          onPointerUp={event => seam.set({ [key]: Number(event.currentTarget.value) })}
+          onKeyUp={event => seam.set({ [key]: Number(event.currentTarget.value) })}
+          onBlur={event => seam.set({ [key]: Number(event.currentTarget.value) })}
+        />
+        <output aria-label={`${label} value`}>{reading(unit, current)}</output>
+      </fieldset>;
+    })}
+  </aside>;
+}
+
+/**
+ * Sizing context for the scene. Sizing stays on the frame and containment on the scene
+ * inside it: one element doing both feeds its own ResizeObserver.
+ */
+export function RoomScene({ seam, children }: { seam: RoomSeam; children: ReactNode }) {
+  const frame = useRef<HTMLDivElement>(null);
+  // The frame claims the viewport below wherever the story places it.
   useLayoutEffect(() => {
-    const element = panel.current!;
+    const element = frame.current!;
     const measure = () => {
       let bottomPadding = 0;
-      for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+      for (let parent = element.parentElement; parent; parent = parent.parentElement)
         bottomPadding += parseFloat(getComputedStyle(parent).paddingBottom) || 0;
-      }
       element.style.setProperty('--controls-top', `${element.getBoundingClientRect().top + window.scrollY + bottomPadding}px`);
     };
     measure();
@@ -64,55 +121,29 @@ export function RoomControlPanel({ args, update, children }: { args: RoomProps &
     window.addEventListener('resize', measure);
     return () => { observer.disconnect(); window.removeEventListener('resize', measure); };
   }, []);
-  const fields = [
-    ['deskWidthMm', 'Desk width (mm)', 300, 3000, 10, true],
-    ['deskDepthMm', 'Desk depth (mm)', 200, 1800, 10, true],
-    ['deskHeightMm', 'Desk height (mm)', 100, 1600, 10, true],
-    ['eyeHeightMm', 'Eye height (mm)', 600, 2400, 10, true],
-    ['viewerSetbackMm', 'Wall distance (mm)', 0, 3000, 10, true],
-    ['headTiltDegrees', 'Head tilt from horizontal (degrees)', 1, 179, 1, false],
-    ['horizontalFieldOfViewDegrees', 'Horizontal field of view (degrees)', 20, 110, 1, false],
-    ['windowHeightMm', 'Window height (mm)', 300, 1800, 10, true],
-    ['windowSillHeightMm', 'Window sill height (mm)', 0, 2200, 10, true],
-    ['lampIntensity', 'Light intensity', 0, 6, 0.1, false],
-    ['poolSpread', 'Pool spread', 0, 6, 0.1, false],
-  ] as const;
-  return <div ref={panel} className="room-controls">
-    <aside className="room-controls__sidebar" aria-label="Room controls" tabIndex={0}>
-      <div className="room-controls__fields">
-      {fields.map(([key, label, min, max, step, physical]) => {
-        const value = key === 'horizontalFieldOfViewDegrees' ? args[key] ?? referenceFieldOfView(args.deskShare ?? ROOM_DESK_SHARE) : args[key] ?? physicalDefaults[key];
-        const valid = Number.isFinite(value);
-        return <fieldset key={key} className="room-controls__field">
-          <legend>{label}</legend>
-          <input aria-label={`${label} slider`} type="range" min={min} max={max} step={step} value={valid ? Math.min(max, Math.max(min, value)) : min} onChange={event => update({ [key]: Number(event.target.value) })} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <input aria-label={label} type="number" step={physical ? 1 : step} value={valid ? value : ''} onChange={event => update({ [key]: event.target.value === '' ? NaN : Number(event.target.value) })} style={{ width: 72 }} />
-            {physical && <output aria-label={`${label} inches`}>{valid ? `${(value / 25.4).toFixed(2)} in` : '— in'}</output>}
-          </div>
-          <small style={{ color: '#c7bcae' }}>{key === 'horizontalFieldOfViewDegrees' ? 'Physical lens: 0° < FOV < 180°. Larger angles show more.' : key === 'headTiltDegrees' ? 'Downward angle: 0° < tilt < 180°; 90° is straight down.' : <>Slider {min}–{max}{physical ? ' mm' : ''}; type any value.</>}</small>
-        </fieldset>;
-      })}
-    </div>
-    <label className="room-controls__performance">
-      <input type="checkbox" checked={args.showPerformance ?? false} onChange={event => update({ showPerformance: event.target.checked })} />
-      Show FPS overlay
-    </label>
-    </aside>
-    <div className="room-controls__scene" role="region" aria-label="Room preview" tabIndex={0}>{children}</div>
+  return <div className="room-frame" ref={frame}>
+    <div
+      className="room-scene"
+      role="region"
+      aria-label="Room preview"
+      tabIndex={0}
+      ref={(node: SeamHost | null) => { if (node) node.__roomSeam = seam; }}
+    >{children}</div>
+    <CameraStrip seam={seam} />
   </div>;
 }
 
 /** Story renders supply Storybook's updateArgs so edits remain saveable and resettable. */
 export function RoomExperiment<T extends RoomProps & RoomStoryControls>({ args, update, children }: { args: T; update: (args: Partial<T>) => void; children: (args: T) => ReactNode }) {
-  // Render keystrokes immediately while Storybook broadcasts the args update.
-  // Every edit is also sent to its args store; incoming controls/reset take precedence.
-  const [pending, setPending] = useState({ source: args, current: args });
-  const current = pending.source === args ? pending.current : args;
-  if (pending.source !== args) setPending({ source: args, current: args });
-  const change = (next: Partial<RoomProps & RoomStoryControls>) => {
-    setPending(previous => ({ source: args, current: { ...(previous.source === args ? previous.current : args), ...next } }));
-    update(next as Partial<T>);
+  // Panel edits arrive as new args and render the scene once; nothing is buffered on that path.
+  // Local edits also stick, because the test runner has no manager channel to echo args back.
+  const local = useRef<Partial<T>>({});
+  const [, rerender] = useReducer((tick: number) => tick + 1, 0);
+  const current = Object.keys(local.current).length ? { ...args, ...local.current } : args;
+  const live = (next: Partial<RoomArgs>) => {
+    local.current = { ...local.current, ...next as Partial<T> };
+    rerender();
   };
-  return <RoomControlPanel args={current} update={change}>{children(current)}</RoomControlPanel>;
+  const set = (next: Partial<RoomArgs>) => { live(next); update(next as Partial<T>); };
+  return <RoomScene seam={{ args: current, set, live }}>{children(current)}</RoomScene>;
 }

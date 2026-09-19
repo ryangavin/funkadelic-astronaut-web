@@ -1,3 +1,4 @@
+import { DESK_MM, UNITS_PER_MM } from '../../../geometry/physicalScale';
 import { Solid } from '../../../behaviors/Perspective/Perspective';
 import { PerspectiveDesk } from '../../../pages/Desk/PerspectiveDesk';
 import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
@@ -122,7 +123,7 @@ function MugOnTheMove() {
   });
 
   return (
-    <Room angle={90} room={false} lamp={false} deskShare={1} roomLip={0}>
+    <Room headTiltDegrees={90} eyeHeightMm={2250} viewerSetbackMm={800} room={false} lamp={false} deskShare={1} roomLip={0}>
         {/* The wood's own rings lie under everything on it. */}
         <CoffeeRings rings={trail.on(DESK)} />
         <Movable {...thing('sheet')}>
@@ -245,7 +246,7 @@ export const Footprints: Story = {
   render: function FootprintScene() {
     const [wide, setWide] = useState(false);
     return <><button onClick={() => setWide(value => !value)}>Change desk dimensions</button>
-      <PerspectiveDesk only={['mug']} showSettings={false} lamp={false} cameraMode="physical" eyeHeightMm={1800} viewerSetbackMm={500} deskWidthMm={wide ? 1600 : 1200} deskDepthMm={wide ? 1000 : 800} />
+      <PerspectiveDesk only={['mug']} showSettings={false} lamp={false} eyeHeightMm={1800} viewerSetbackMm={500} deskWidthMm={wide ? 1600 : 1200} deskDepthMm={wide ? 1000 : 800} />
     </>;
   },
   play: async ({ canvasElement }) => {
@@ -308,14 +309,22 @@ export const Footprints: Story = {
   },
 };
 
+/** Where the eye is when it is `distance` desk units along a gaze at `tilt` degrees that lands on the desk's front edge. */
+const eyeAlongGaze = (tilt: number, distance: number) => {
+  const pitch = tilt * Math.PI / 180, clearance = distance * Math.sin(pitch) / UNITS_PER_MM;
+  return { eyeHeightMm: DESK_MM.height + clearance, viewerSetbackMm: DESK_MM.depth + clearance / Math.tan(pitch) };
+};
+
 /** Exact cylinder endpoints at shallow views, away from the optical axis. */
 export const ExactProjection: Story = {
   parameters: { layout: 'fullscreen', composition: true },
   render: function ProjectionScene(_, { parameters }) {
     const [angle, setAngle] = useState(25);
     const [place, setPlace] = useState({ x: 980, y: 300, rotation: 38, scale: 1.25 });
+    /* The eye 1800 desk units along the gaze, aimed at the desk's front edge, at either tilt. */
+    const eye = eyeAlongGaze(angle, 1800);
     return <><button onClick={() => setAngle(angle === 25 ? 70 : 25)}>Change angle</button>
-      <Room angle={angle} depth={1800} room={false} lamp={false} deskShare={1} roomLip={0}>
+      <Room headTiltDegrees={angle} {...eye} room={false} lamp={false} deskShare={1} roomLip={0}>
         <Movable {...place} width={168} resizable label="Mug" onMove={to => setPlace(at => ({ ...at, ...to }))}>
           {parameters.exactSolid ? <Solid height={MUG_HEIGHT} foot={MUG_FOOT}><Mug /></Solid> : <Mug />}
         </Movable>

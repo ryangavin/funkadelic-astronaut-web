@@ -12,11 +12,11 @@ try {
  for(const [angle,fov,wall,height] of [[20,100,1800,770],[74.5,110,660,770],[40,110,1600,770],[90,85,660,750],[115,85,660,750]]) {
   await input('Horizontal field of view (degrees)',fov);await input('Wall distance (mm)',wall);await input('Head tilt from horizontal (degrees)',angle);await input('Desk height (mm)',height);
   assert.equal(await page.getByRole('alert').count(),0);
-  const {camera,stand,edge}=roomSetup({cameraMode:'physical',eyeHeightMm:1650,viewerSetbackMm:wall,headTiltDegrees:angle,deskHeightMm:height});
-  const framing=roomFraming(camera,true,.8,180,fov),legs=deskLegs(camera.width,camera.surfaceHeight,stand,edge);
+  const {camera,stand,edge}=roomSetup({eyeHeightMm:1650,viewerSetbackMm:wall,headTiltDegrees:angle,deskHeightMm:height});
+  const framing=roomFraming(camera,.8,180,fov),legs=deskLegs(camera.width,camera.surfaceHeight,stand,edge);
   const frame=await page.locator('.room').boundingBox();
   for(const leg of legs) {
-   const expected=projectFloorPoint({x:leg.x,y:leg.y,z:0},camera,stand,framing.deskShare,framing.lip,.5);
+   const expected=projectFloorPoint({x:leg.x,y:leg.y,z:0},camera,stand,framing.deskShare,framing.lip);
    const actual=await page.locator('.desk-room__floor').evaluate((floor,leg)=>{
     const marker=document.createElement('i');marker.style.cssText=`position:absolute;left:calc(50% + ${leg.x} * var(--desk-room-unit));top:calc(${leg.y} * var(--desk-room-unit));width:0;height:0`;
     floor.append(marker);const b=marker.getBoundingClientRect();marker.remove();return{x:b.x,y:b.y};
@@ -31,7 +31,7 @@ try {
    const object=page.getByRole('img',{name:label});
    for(const [selector,px,z] of [['[data-cylinder-base-point]',x,0],['[data-cylinder-rim]',x,height],['[data-cylinder-rim-left]',x-(height===360?145:155),height],['[data-cylinder-rim-right]',x+(height===360?145:155),height]]) {
     const actual=await object.locator(selector).evaluate(point=>{const b=point.getBoundingClientRect();return{x:b.x,y:b.y};});
-    const expected=projectFloorPoint({x:px*1.2,y:y*1.2,z:z*1.2},camera,stand,framing.deskShare,framing.lip,.5);
+    const expected=projectFloorPoint({x:px*1.2,y:y*1.2,z:z*1.2},camera,stand,framing.deskShare,framing.lip);
     assert.ok(Math.abs(actual.x-frame.x-expected.x*frame.width/1440)<.25,`${label} ${selector} true world x at${angle}`);
     assert.ok(Math.abs(actual.y-frame.y-expected.y*frame.height/810)<.25,`${label} ${selector} true world y at${angle}`);
    }
@@ -41,9 +41,9 @@ try {
  // The raised stem begins at the true tabletop-plane crossing.
  await input('Desk height (mm)',750);await input('Head tilt from horizontal (degrees)',40);
  const drawnCut=await page.locator('.scale-plant--above [data-plant-layer-height="950"] [data-stem-start]').first().evaluate(point=>{const b=point.getBoundingClientRect();return{x:b.x,y:b.y};});
- const cutSetup=roomSetup({cameraMode:'physical',eyeHeightMm:1650,viewerSetbackMm:660,headTiltDegrees:40,deskHeightMm:750});
- const cutFraming=roomFraming(cutSetup.camera,true,.8,180,85),cutFrame=await page.locator('.room').boundingBox();
- const trueCut=projectFloorPoint({x:-1440,y:336,z:900},cutSetup.camera,cutSetup.stand,cutFraming.deskShare,cutFraming.lip,.5);
+ const cutSetup=roomSetup({eyeHeightMm:1650,viewerSetbackMm:660,headTiltDegrees:40,deskHeightMm:750});
+ const cutFraming=roomFraming(cutSetup.camera,.8,180,85),cutFrame=await page.locator('.room').boundingBox();
+ const trueCut=projectFloorPoint({x:-1440,y:336,z:900},cutSetup.camera,cutSetup.stand,cutFraming.deskShare,cutFraming.lip);
  assert.ok(Math.abs(drawnCut.x-cutFrame.x-trueCut.x*cutFrame.width/1440)<.25);
  assert.ok(Math.abs(drawnCut.y-cutFrame.y-trueCut.y*cutFrame.height/810)<.25);
  // A wide tabletop overlaps the raised canopy in this camera view. Their painted

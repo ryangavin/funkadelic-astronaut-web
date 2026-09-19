@@ -10,10 +10,10 @@ test('four inset legs join floor to underside across desk dimensions',()=>{
 });
 test('physical floor projection agrees with direct world camera at both sides of overhead and varying FOV',()=>{
  for(const angle of [40,74.5,90,115])for(const fov of [55,110])for(const height of [500,770,1100]){
-  const {camera,stand}=roomSetup({cameraMode:'physical',eyeHeightMm:1650,viewerSetbackMm:660,headTiltDegrees:angle,deskHeightMm:height});
-  const framing=roomFraming(camera,true,.8,180,fov),a=angle*Math.PI/180,F=720/Math.tan(fov*Math.PI/360);
+  const {camera,stand}=roomSetup({eyeHeightMm:1650,viewerSetbackMm:660,headTiltDegrees:angle,deskHeightMm:height});
+  const framing=roomFraming(camera,.8,180,fov),a=angle*Math.PI/180,F=720/Math.tan(fov*Math.PI/360);
   for(const point of [{x:0,y:500,z:0},{x:-1440,y:420,z:384},{x:300,y:800,z:stand-12}]){
-   const result=projectFloorPoint(point,camera,stand,framing.deskShare,framing.lip,.5);
+   const result=projectFloorPoint(point,camera,stand,framing.deskShare,framing.lip);
    const dy=point.y-792,dz=point.z-1980,d=-dy*Math.cos(a)-dz*Math.sin(a);
    near(result.x,720+F*point.x/d);near(result.y,405-144+F*(dy*Math.sin(a)-dz*Math.cos(a))/d);
   }

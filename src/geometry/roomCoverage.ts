@@ -2,16 +2,17 @@
  * Only the visible parts are required; material sizes and the desk stay unchanged.
  * Explicit extents override these automatic values at the call site.
  */
-export function roomCoverage({ angle, depth: d, deskWidth, deskDepth, stand, deskShare, lip, targetY = deskDepth, frameAnchor = 1 }: {
+export function roomCoverage({ angle, depth: d, deskWidth, deskDepth, stand, deskShare, lip, targetY = deskDepth }: {
   angle: number; depth: number; deskWidth: number; deskDepth: number;
-  stand: number; deskShare: number; lip: number; targetY?: number; frameAnchor?: number;
+  stand: number; deskShare: number; lip: number; targetY?: number;
 }) {
   const tilt = (90 - angle) * Math.PI / 180;
   const c = Math.cos(tilt), s = Math.sin(tilt);
   const width = deskWidth / deskShare;
   const bleed = width * 0.004;
-  const top = lip - width * 9 / 16 * frameAnchor - bleed;
-  const bottom = lip + width * 9 / 16 * (1 - frameAnchor) + bleed;
+  // The gaze lands in the middle of the frame, so half of it is above the target and half below.
+  const top = lip - width * 9 / 32 - bleed;
+  const bottom = lip + width * 9 / 32 + bleed;
   const eyeHeight = d * c, eyeY = targetY + d * s;
   const seamZ = -stand * c - targetY * s;
   const seamY = d * (stand * s - targetY * c) / (d - seamZ);

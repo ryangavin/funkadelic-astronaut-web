@@ -3,9 +3,9 @@ import type { CSSProperties, ReactNode } from 'react';
 import { Perspective } from '../../behaviors/Perspective/Perspective';
 import type { roomSetup } from '../../geometry/roomSetup';
 import { floorCamera } from './floorSurface';
-export function RoomFloorSurface({camera,stand,share,lip,anchor,children}:{camera:ReturnType<typeof roomSetup>['camera'];stand:number;share:number;lip:number;anchor:number;children:ReactNode}) {
+export function RoomFloorSurface({camera,stand,share,lip,children}:{camera:ReturnType<typeof roomSetup>['camera'];stand:number;share:number;lip:number;children:ReactNode}) {
   const floor=floorCamera(camera,stand,share,lip);
-  const top=anchor*100-(floor.lip+floor.camera.targetY)*floor.share/camera.width*1600/9;
+  const top=50-(floor.lip+floor.camera.targetY)*floor.share/camera.width*1600/9;
   return <div className="room__floor-surface" style={{position:'absolute',left:'50%',top:`${top}%`,width:`${floor.share*100}%`,translate:'-50% 0',pointerEvents:'none','--floor-world-width':camera.width} as CSSProperties}>
     <Perspective {...floor.camera}><div style={{position:'relative',aspectRatio:`${camera.width} / ${camera.surfaceHeight}`}}>{children}</div></Perspective>
   </div>;

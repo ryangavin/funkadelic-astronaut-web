@@ -80,10 +80,17 @@ export async function checkDeskStudy({ canvasElement }: { canvasElement: HTMLEle
     await userEvent.click(canvas.getByRole('button', { name: 'Reset positions' }));
     await expect(object.getAttribute('style')).toBe(before);
     if (geometry) {
+      // Turning the head moves the thing on the screen, and turning it back
+      // puts the raised artwork exactly where it was: it is drawn from the view, not remembered.
       const view = canvas.getByRole('slider', { name: 'View angle' });
+      const tilt = () => canvasElement.querySelector<HTMLElement>('.perspective')!.style.getPropertyValue('--perspective-angle');
+      const seenBefore = object.getBoundingClientRect().top;
       fireEvent.change(view, { target: { value: '83' } });
-      await waitFor(() => expect(geometry()).not.toBe(raisedBefore));
+      await waitFor(() => expect(tilt()).toBe('83'));
+      await waitFor(() => expect(object.getBoundingClientRect().top).not.toBe(seenBefore));
       fireEvent.change(view, { target: { value: '84' } });
+      await waitFor(() => expect(tilt()).toBe('84'));
+      await waitFor(() => expect(object.getBoundingClientRect().top).toBe(seenBefore));
       await waitFor(() => expect(geometry()).toBe(raisedBefore));
     }
   } else {
