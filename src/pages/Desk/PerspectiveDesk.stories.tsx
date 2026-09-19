@@ -205,6 +205,7 @@ export const PhysicalSetup: Story = {
   play: checkPhysicalRoom,
   args: { cameraMode: 'physical', eyeHeightMm: 1650, viewerSetbackMm: 650, deskShare: 0.8, roomLip: 180 },
   render: function Experiment(args) {
-    return <RoomExperiment args={args}>{values => <PerspectiveDesk {...withLightTuning(values)} headTiltDegrees={values.headTiltDegrees} showSettings={false} only={['mug', 'pen', 'handheld', 'cradle']} />}</RoomExperiment>;
+    const [currentArgs, updateArgs] = useArgs<typeof args>();
+    return <RoomExperiment args={currentArgs} update={updateArgs}>{values => <PerspectiveDesk {...withLightTuning(values)} headTiltDegrees={values.headTiltDegrees} showSettings={false} only={['mug', 'pen', 'handheld', 'cradle']} />}</RoomExperiment>;
   },
 };

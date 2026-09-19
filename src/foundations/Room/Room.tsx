@@ -47,6 +47,9 @@ const AcceptedRoom = createContext<RoomSceneGeometry | null>(null);
 export const useRoomSceneGeometry = () => useContext(AcceptedRoom);
 
 export type RoomProps = PhysicalRoomInputs & {
+  /** Wall opening height and bottom height above the floor, in millimetres. */
+  windowHeightMm?: number;
+  windowSillHeightMm?: number;
   /** Optional fixed world-space floor meshes, in desk units from the wall-floor seam. */
   floorObjects?: readonly RoomFloorMesh[];
   /** Physical horizontal lens angle, strictly between 0 and 180 degrees. Omit to preserve deskShare reference framing. */
@@ -168,6 +171,7 @@ export function Room(props: RoomProps) {
       const setup = measured.setup;
       const tuning = lightingSetup(props.lightTuning);
       for (const [name, value, zero] of [
+        ['windowHeightMm', props.windowHeightMm ?? 1000, false], ['windowSillHeightMm', props.windowSillHeightMm ?? 1000, true],
         ['lampIntensity', props.lampIntensity ?? 1, true], ['lampWidth', props.lampWidth ?? LAMP_WIDTH, false],
         ['roomSpanMm', props.roomSpanMm ?? 2200, false], ['floorFrontMm', props.floorFrontMm ?? 400 / 1.2, true],
         ['wallHeightMm', props.wallHeightMm ?? 2400, false], ['deskShare', props.deskShare ?? ROOM_DESK_SHARE, false],
@@ -190,7 +194,7 @@ export function Room(props: RoomProps) {
       }) : null;
       return { setup, tuning, extents };
     } catch (error) { return { error: error instanceof Error ? error.message : 'Invalid room setup' }; }
-  }, [measured, props.room, props.lightTuning, props.lampIntensity, props.lampWidth, props.roomSpanMm, props.floorFrontMm, props.wallHeightMm, props.deskShare, props.roomBlur, props.shadowStrength, props.roomDim, props.roomLip, props.horizontalFieldOfViewDegrees]);
+  }, [measured, props.windowHeightMm, props.windowSillHeightMm, props.room, props.lightTuning, props.lampIntensity, props.lampWidth, props.roomSpanMm, props.floorFrontMm, props.wallHeightMm, props.deskShare, props.roomBlur, props.shadowStrength, props.roomDim, props.roomLip, props.horizontalFieldOfViewDegrees]);
   // Numeric fields pass through incomplete values while typing. Keep the last
   // valid scene mounted so editing never discards places, switch state or pose.
   const previous = useRef<RoomSceneGeometry & { props: RoomProps; tuning: LightTuning } | null>(null);
@@ -204,7 +208,7 @@ export function Room(props: RoomProps) {
   </>;
 }
 
-function RoomScene({ setup, extents, tuning, cameraMode, floorObjects, horizontalFieldOfViewDegrees, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & RoomSceneGeometry & { tuning: LightTuning }) {
+function RoomScene({ windowHeightMm, windowSillHeightMm, setup, extents, tuning, cameraMode, floorObjects, horizontalFieldOfViewDegrees, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & RoomSceneGeometry & { tuning: LightTuning }) {
   const { camera, stand, edge } = setup;
   const framing = roomFraming(camera, cameraMode === 'physical', deskShare, room || cameraMode === 'physical' ? roomLip : 0, horizontalFieldOfViewDegrees);
   const span = roomSpanMm === undefined ? undefined : mmToUnits(roomSpanMm);
@@ -276,7 +280,7 @@ function RoomScene({ setup, extents, tuning, cameraMode, floorObjects, horizonta
       {/* The frame: 16 x 9, cropping the room. Told there is a room in it, it
           becomes the container the desk takes its share of the width from. */}
       <Inspector className={`room ${className}`.trim()} data-room={room ? '' : undefined} data-physical={cameraMode === 'physical' ? '' : undefined} style={{ '--room-desk-width': camera.width, '--room-share': framing.deskShare, '--room-lip': framing.lip, '--room-target': camera.targetY ?? camera.surfaceHeight, ...style } as React.CSSProperties}><DeskLighting>
-        {room && <DeskRoom targetY={camera.targetY} frameAnchor={cameraMode === 'physical' ? .5 : 1} angle={camera.angle} depth={camera.depth} deskWidth={camera.width} deskDepth={camera.surfaceHeight} stand={stand} span={span} front={front} wallHeight={wallHeight} lip={framing.lip} floor={floor} wall={wall} blur={roomBlur} dim={roomDim} deskShare={framing.deskShare} shadowStrength={shadowStrength} />}
+        {room && <DeskRoom windowHeightMm={windowHeightMm} windowSillHeightMm={windowSillHeightMm} targetY={camera.targetY} frameAnchor={cameraMode === 'physical' ? .5 : 1} angle={camera.angle} depth={camera.depth} deskWidth={camera.width} deskDepth={camera.surfaceHeight} stand={stand} span={span} front={front} wallHeight={wallHeight} lip={framing.lip} floor={floor} wall={wall} blur={roomBlur} dim={roomDim} deskShare={framing.deskShare} shadowStrength={shadowStrength} />}
         {room && <RoomFloorGeometry camera={camera} stand={stand} edge={edge} share={framing.deskShare} lip={framing.lip} anchor={cameraMode === 'physical' ? .5 : 1} objects={floorObjects} />}
         <div className="room__stand">
           <Perspective {...camera} className="perspective--lamp-study">

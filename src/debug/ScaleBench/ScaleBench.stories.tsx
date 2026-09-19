@@ -1,3 +1,4 @@
+import { useArgs } from 'storybook/preview-api';
 import { expect, fireEvent, waitFor, within } from 'storybook/test';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { physicalControls, physicalDefaults, withLightTuning, RoomExperiment, type RoomStoryControls } from '../RoomControls/controls';
@@ -11,7 +12,8 @@ const meta = {
   argTypes: { ...physicalControls },
   args: { ...physicalDefaults, cameraMode: 'physical', eyeHeightMm: 1650, viewerSetbackMm: 650, deskShare: .8, roomLip: 180 },
   render: function Experiment(args) {
-    return <RoomExperiment args={args}>{values => <ScaleBench {...withLightTuning(values)} />}</RoomExperiment>;
+    const [currentArgs, updateArgs] = useArgs<typeof args>();
+    return <RoomExperiment args={currentArgs} update={updateArgs}>{values => <ScaleBench {...withLightTuning(values)} />}</RoomExperiment>;
   },
 } satisfies Meta<RoomProps & RoomStoryControls>;
 export default meta;

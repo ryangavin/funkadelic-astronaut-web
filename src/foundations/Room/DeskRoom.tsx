@@ -1,3 +1,4 @@
+import { WallWindow } from '../../components/3D/WallWindow/WallWindow';
 import { roomSurfaceExtents } from '../../geometry/roomCoverage';
 import { DEFAULT_LIGHT_TUNING } from '../../geometry/lightingSetup';
 import { DESK_SIZE, mmToUnits } from '../../geometry/physicalScale';
@@ -65,6 +66,8 @@ export function floorLies(angle: number, stand: number) {
 }
 
 export type DeskRoomProps = {
+  windowHeightMm?: number;
+  windowSillHeightMm?: number;
   /** How far above the surface the eye is, in degrees: the same camera the desk is seen from. */
   angle: number;
   /** How far the eye is, in desk units: the same distance the desk is seen from. */
@@ -301,7 +304,7 @@ function DeskFloorShadow({ deskWidth, span, deskDepth, stand, floorDepth, streng
   Held, the room renders when the room changes. The lamp still moves the shadow,
   through the light store, which is what the store is for.
 */
-export const DeskRoom = memo(function DeskRoom({ angle, depth, deskShare = ROOM_DESK_SHARE, deskWidth = DESK_WIDTH, span: givenSpan, front: givenFront, wallHeight: givenWallHeight, deskDepth = ROOM_DESK_DEPTH, targetY = deskDepth, frameAnchor = 1, stand = DESK_STAND, lip = ROOM_LIP, floor = 'pine', wall = 'red', blur = 1, dim = 0.32, shadowStrength = 0.36 }: DeskRoomProps) {
+export const DeskRoom = memo(function DeskRoom({ windowHeightMm, windowSillHeightMm, angle, depth, deskShare = ROOM_DESK_SHARE, deskWidth = DESK_WIDTH, span: givenSpan, front: givenFront, wallHeight: givenWallHeight, deskDepth = ROOM_DESK_DEPTH, targetY = deskDepth, frameAnchor = 1, stand = DESK_STAND, lip = ROOM_LIP, floor = 'pine', wall = 'red', blur = 1, dim = 0.32, shadowStrength = 0.36 }: DeskRoomProps) {
   const { back, down } = floorLies(angle, stand);
   let extents;
   try {
@@ -352,6 +355,7 @@ export const DeskRoom = memo(function DeskRoom({ angle, depth, deskShare = ROOM_
       <div className="desk-room__layer desk-room__layer--wall">
         <div className="desk-room__wall">
           <Wall materialOrigin={{ x: -span / 2, y: -wallHeight }} finish={wall} width={span} height={wallHeight} flat light={0} />
+          <WallWindow height={windowHeightMm} sill={windowSillHeightMm} />
         </div>
       </div>
 
