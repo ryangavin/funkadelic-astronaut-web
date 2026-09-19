@@ -39,7 +39,7 @@ function RoomDiagram({ model: m }: { model: ReturnType<typeof diagramGeometry> }
   const arc = (from:number,to:number,r:number) => Array.from({length:25},(_,index)=>{const angle=(from+(to-from)*index/24)*Math.PI/180;return p(m.eye.x,m.eye.y-r*Math.cos(angle),m.eye.z-r*Math.sin(angle));});
   const circle = (at:Point3,radius:number,fill:string,labelText:string) => {const q=project(at);return <circle aria-label={labelText} cx={q.x} cy={q.y} r={Math.max(2,radius*scale)} fill={fill} stroke="#33414b" strokeWidth="1"/>;};
   const ring = (at:Point3,radius:number) => Array.from({length:33},(_,i)=>p(at.x+radius*Math.cos(i*Math.PI/16),at.y+radius*Math.sin(i*Math.PI/16),at.z));
-  const foot=p(0,m.eye.y,0),corner=p(0,m.eye.y,m.height);
+  const foot=p(0,m.eye.y,0);
   const orbitBy=(yaw:number,pitch:number)=>setOrbit(old=>({yaw:old.yaw+yaw,pitch:Math.max(-80,Math.min(90,old.pitch+pitch))}));
   return <section ref={section} className="room-diagram" aria-label="Room geometry diagram" data-eye={JSON.stringify(m.eye)} data-target={JSON.stringify(m.target)} data-lamp={JSON.stringify(m.lamp)}>
     <header><strong>Room diagram</strong><span>Drag to orbit · arrow keys rotate</span></header>
@@ -57,11 +57,9 @@ function RoomDiagram({ model: m }: { model: ReturnType<typeof diagramGeometry> }
       {Array.from({length:Math.min(25,Math.floor(m.span/500)+1)},(_,i)=>{const x=(i-Math.floor(m.span/1000))*500;return line(p(x,0,0),p(x,m.floorDepth,0),'#879299',false,.5,`col${i}`);})}
       {desk.map((point,i)=>line(point,p(point.x,point.y,0),'#79614e',false,2,`leg${i}`))}
       {line(p(0,0,0),foot,'#476579',true)}{line(foot,m.eye,'#476579',true)}
-      {line(m.eye,corner,'#407da2',true)}{line(corner,m.center,'#407da2',true)}{line(m.eye,m.center,'#407da2',true)}
       {line(m.eye,m.target,'#bf6238',false,2)}
       {line(m.eye,p(0,m.eye.y-Math.min(350,(m.eye.z-m.height)*.35),m.eye.z),'#bf6238',true,1)}
       <polyline points={points(arc(0,m.pitch,Math.min(350,(m.eye.z-m.height)*.35)))} fill="none" stroke="#bf6238" strokeWidth="2" />
-      {Math.abs(m.tilt)>.01&&<polyline points={points(arc(m.basePitch,m.pitch,Math.min(460,(m.eye.z-m.height)*.46)))} fill="none" stroke="#8162aa" strokeWidth="3"/>}
       {m.lamp&&<g aria-label="Simplified lamp">
         <polygon points={points(ring(m.lamp.base,m.lamp.baseRadius))} fill="#47634f" stroke="#293c2f"/>
         {line(m.lamp.base,m.lamp.elbow,'#506574',false,3)}{line(m.lamp.elbow,m.lamp.neck,'#506574',false,3)}
@@ -74,8 +72,8 @@ function RoomDiagram({ model: m }: { model: ReturnType<typeof diagramGeometry> }
       {label(p(m.width/2,m.depth,m.height/2),`${Math.round(m.height)} mm`)}
       {label(p(0,m.eye.y/2,0),`${Math.round(m.eye.y)} mm from wall`)}
     </svg>
-    <div className="room-diagram__readouts"><span>Eye {Math.round(m.eye.z)} mm</span><span>Pitch {m.pitch.toFixed(1)}°</span><span>Tilt {m.tilt.toFixed(1)}°</span><span>Grid 500 mm</span></div>
+    <div className="room-diagram__readouts"><span>Eye {Math.round(m.eye.z)} mm</span><span>Head tilt {m.pitch.toFixed(1)}° from horizontal</span><span>Grid 500 mm</span></div>
     <div className="room-diagram__readouts"><span>Floor {Math.round(m.span)} × {Math.round(m.floorDepth)} mm</span><span>Wall {Math.round(m.wallHeight)} mm high</span></div>
-    <p><span className="room-diagram__center">Dashed blue: tabletop center</span> · <span className="room-diagram__gaze">Orange: gaze</span>. Head marker is schematic; lamp uses the scene’s simplified construction.</p>
+    <p><span className="room-diagram__center">Blue: tabletop center reference</span> · <span className="room-diagram__gaze">Orange: gaze</span>. Head marker is schematic; lamp uses the scene’s simplified construction.</p>
   </section>;
 }

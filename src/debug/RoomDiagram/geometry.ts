@@ -8,9 +8,8 @@ export function diagramGeometry({ setup, extents }: RoomSceneGeometry, light: De
   const target = { x: 0, y: unitsToMm(camera.targetY ?? camera.surfaceHeight), z: height };
   const eye = { x: 0, y: target.y + unitsToMm(camera.depth) * Math.cos(pitch), z: height + unitsToMm(camera.depth) * Math.sin(pitch) };
   const center = { x: 0, y: depth / 2, z: height };
-  const basePitch = Math.atan2(eye.z - height, eye.y - center.y) * 180 / Math.PI;
   const point = (value: { x: number; y: number; height: number }): Point3 => ({ x: unitsToMm(value.x) - width / 2, y: unitsToMm(value.y), z: height + unitsToMm(value.height) });
-  return { width, depth, height, edge: unitsToMm(edge), eye, target, center, pitch: camera.angle, basePitch, tilt: camera.angle - basePitch,
+  return { width, depth, height, edge: unitsToMm(edge), eye, target, center, pitch: camera.angle,
     span: extents ? unitsToMm(extents.span) : width, floorDepth: extents ? depth + unitsToMm(extents.front) : depth, wallHeight: extents ? unitsToMm(extents.wallHeight) : 0,
     lamp: light?.lamp ? { base: point(light.lamp.base), elbow: point(light.lamp.elbow), neck: point(light.lamp.neck), shade: point(light.lamp.shade ?? light.lamp.neck), bulb: point(light), baseRadius: unitsToMm(light.lamp.base.radius), shadeRadius: unitsToMm(light.lamp.shade?.radius ?? light.lamp.neck.radius * 130 / 11), on: light.on } : null,
   };
