@@ -12,32 +12,11 @@
   aspect-ratio: 1;
 }
 
-/*
-  The rim and the drink are the top layer, up where the mug's height
-  puts them: a Solid on a tilted surface says how far up the surface that is and
-  how far it leans out from the eye's line. Without one, both are nothing, the
-  side has no height, and the mug is the flat drawing it always was.
-*/
-.mug__top {
-  translate: calc(var(--solid-splay, 0) * 240px) calc(var(--solid-rise, 0) * -240px);
-}
-
-/* The base is on the desk, where the mug stands. */
-.mug__base,
-.mug__wall-glaze {
-  fill: var(--mug-glaze);
-}
-
-/*
-  The side, squashed from its own 163 units tall into whatever gap the rim has
-  left above the base, and leaning with it. Its foot stays on the desk. At no
-  gap at all it has no height and is hidden under the rim, which is the mug
-  seen from straight above.
-*/
-.mug__wall {
-  transform-origin: 104px 120px;
-  transform: matrix(1, 0, calc(var(--solid-splay, 0) * -240 / 163), calc(var(--solid-rise, 0) * 240 / 163), 0, 0);
-}
+.mug { position: relative; }
+.mug__measure { position: absolute; top: 50%; width: 0; height: 0; pointer-events: none; }
+.mug__measure--center { left: 50%; }
+.mug__measure--edge { left: 100%; }
+.mug__base, .mug__wall-glaze { fill: var(--mug-glaze); }
 
 .mug__art {
   display: block;
@@ -133,3 +112,7 @@
   overflow: clip;
   pointer-events: none;
 }
+
+/* Placement and its exact elevated artwork settle together, including keys. */
+.movable:has(.mug),
+.movable:has(.mug) > .movable__lift { transition: none; }

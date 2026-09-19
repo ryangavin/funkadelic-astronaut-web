@@ -1,6 +1,8 @@
 import { mmToUnits } from '../../../geometry/physicalScale';
 import type React from 'react';
 import { useId } from 'react';
+import { useMugLayer } from './projection';
+import { BASE_LAYER, cylinderSide } from '../Wastebasket/cylinder';
 import './Mug.css';
 
 export type MugProps = {
@@ -39,26 +41,19 @@ export const MUG_SILHOUETTE = [{ path: 'M50 20.8A29.2 29.2 0 1 0 50 79.2A29.2 29
 
 const clamp = (value: number) => Math.min(1, Math.max(0, Number.isFinite(value) ? value : 0));
 
-/**
- * A coffee mug seen straight down: the thick rim of the glaze, the inside wall
- * shading away from the window, the surface of the drink with the window's
- * reflection and a few bubbles gathered at the edge. Cast shadows are supplied
- * by the scene light. Sized by its parent.
- *
- * It is 95 mm tall, and on a surface seen at an angle that height is worth
- * something. Stand it in a `Solid` of {@link MUG_HEIGHT} and the rim rises off
- * the desk and leans away from the eye, the side slides out
- * from under them, and the base stays where the mug is standing. Without one,
- * or seen from straight above, all of that is worth nothing and the drawing is
- * exactly what it always was.
- */
+/** Layered ceramic artwork with an exact elevated rim and a grounded base.
+ * Outside a Perspective it retains its original overhead drawing. */
 export function Mug({ shadow = 'none', glaze = '#e8dfcc', coffee = 0.7, drink = '#3a2113', className = '', style }: MugProps) {
   const id = `mug-${useId().replace(/:/g, '')}`;
   const level = clamp(coffee);
+  const { host, layer } = useMugLayer(MUG_HEIGHT);
+  const wall = cylinderSide(BASE_LAYER, 62, layer, 70, { x: 104, y: 120 });
   /* The surface sinks a little as it empties: seen from above it is nearer the bottom, so a shade smaller. */
   const surface = 54 - (1 - level) * 5;
   return (
-    <div className={`mug ${shadow === 'contact' ? 'mug--contact' : ''} ${className}`} style={{ '--mug-glaze': glaze, '--mug-drink': drink, ...style } as React.CSSProperties}>
+    <div ref={host} className={`mug ${shadow === 'contact' ? 'mug--contact' : ''} ${className}`} style={{ '--mug-glaze': glaze, '--mug-drink': drink, ...style } as React.CSSProperties}>
+      <span className="mug__measure mug__measure--center" aria-hidden="true" />
+      <span className="mug__measure mug__measure--edge" aria-hidden="true" />
       <svg className="mug__art" viewBox="-16 0 240 240" aria-hidden="true" focusable="false">
         <defs>
           {/* A sheen on the glaze from the window. It only lifts: what shades the glaze is the cylinder it is part of. */}
@@ -79,29 +74,13 @@ export function Mug({ shadow = 'none', glaze = '#e8dfcc', coffee = 0.7, drink = 
           </radialGradient>
           {/* A cylinder under the window: bright a third of the way across, dark round both edges.
               In user space, so the wall and the base below it are lit as one piece. */}
-          <linearGradient id={`${id}-side`} gradientUnits="userSpaceOnUse" x1="34" y1="0" x2="174" y2="0">
+          <linearGradient id={`${id}-side`} gradientUnits="userSpaceOnUse" x1={Math.min(42, 104 + layer.x - 70 * layer.scale)} y1="0" x2={Math.max(166, 104 + layer.x + 70 * layer.scale)} y2="0">
             <stop offset="0" stopColor="#000" stopOpacity="0.45" />
             <stop offset="0.14" stopColor="#000" stopOpacity="0.1" />
             <stop offset="0.3" stopColor="#fff" stopOpacity="0.26" />
             <stop offset="0.46" stopColor="#fff" stopOpacity="0.1" />
             <stop offset="0.7" stopColor="#000" stopOpacity="0.16" />
             <stop offset="1" stopColor="#000" stopOpacity="0.55" />
-          </linearGradient>
-          {/* Down the side, drawn where the side is drawn: the shade under the lip where the rim
-              overhangs and the light down the middle. Fade to clear where the rectangle
-              meets the base circle; the under gradient continues the shading from that join. */}
-          <linearGradient id={`${id}-outer-wall`} gradientUnits="userSpaceOnUse" x1="0" y1="-43" x2="0" y2="120">
-            <stop offset="0" stopColor="#000" stopOpacity="0.38" />
-            <stop offset="0.07" stopColor="#000" stopOpacity="0.1" />
-            <stop offset="0.16" stopColor="#fff" stopOpacity="0.07" />
-            <stop offset="0.62" stopColor="#000" stopOpacity="0" />
-            <stop offset="1" stopColor="#000" stopOpacity="0" />
-          </linearGradient>
-          {/* The bottom of the mug turning away from the light, and the desk close under it. */}
-          <linearGradient id={`${id}-under`} gradientUnits="userSpaceOnUse" x1="0" y1="120" x2="0" y2="184">
-            <stop offset="0" stopColor="#000" stopOpacity="0" />
-            <stop offset="0.55" stopColor="#000" stopOpacity="0.14" />
-            <stop offset="1" stopColor="#000" stopOpacity="0.46" />
           </linearGradient>
           <filter id={`${id}-shadow`} x="-30%" y="-30%" width="160%" height="160%">
             <feGaussianBlur stdDeviation="7" />
@@ -113,24 +92,18 @@ export function Mug({ shadow = 'none', glaze = '#e8dfcc', coffee = 0.7, drink = 
 
         {shadow === 'contact' && <circle className="mug__contact" cx="104" cy="122" r="71" fill="#140c06" opacity="0.28" filter={`url(#${id}-shadow)`} />}
 
-        {/* The side of the mug: a second layer, drawn straight on at the shape it really is — 140 across
-            at the rim, tapering to 124 at the base it stands on, and 163 tall. Seen from straight above it
-            has no height at all and is hidden under the rim; as the view comes down it slides out from
-            under it, stretched into the gap and leaning with it, which is one transform and so carries its
-            shading through whole. The base is the footprint and does not move: it is where the mug stands,
-            and being narrower than the rim is what keeps the mug from reading as a tumbler. */}
         <g className="mug__side">
-          <circle className="mug__base" cx="104" cy="120" r="62" />
+          <circle data-mug-base-point="" cx="104" cy="120" r="0" />
+          <circle data-mug-base="" className="mug__base" cx="104" cy="120" r="62" />
           <circle cx="104" cy="120" r="62" fill={`url(#${id}-side)`} />
-          <circle cx="104" cy="120" r="62" fill={`url(#${id}-under)`} />
-          <g className="mug__wall">
-            <path className="mug__wall-glaze" d="M34 -43 H174 L166 120 H42 Z" />
-            <path d="M34 -43 H174 L166 120 H42 Z" fill={`url(#${id}-side)`} />
-            <path d="M34 -43 H174 L166 120 H42 Z" fill={`url(#${id}-outer-wall)`} />
-          </g>
+          <path className="mug__wall-glaze" d={wall} />
+          <path d={wall} fill={`url(#${id}-side)`} />
         </g>
 
-        <g className="mug__top">
+        <g className="mug__top" visibility={layer.scale > 0 ? undefined : 'hidden'} transform={`translate(${104 + layer.x} ${120 + layer.y}) scale(${layer.scale}) translate(-104 -120)`}>
+        <circle data-mug-rim="" cx="104" cy="120" r="0" />
+        <circle data-mug-rim-left="" cx="34" cy="120" r="0" />
+        <circle data-mug-rim-right="" cx="174" cy="120" r="0" />
 
         {/* The rim of the glaze, then the inside wall, then the drink. */}
         {/* The outer glaze is lit as the same cylinder as the wall below it, in the same user space, so

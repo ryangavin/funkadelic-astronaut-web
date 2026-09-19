@@ -1,3 +1,4 @@
+import { Solid } from '../../../behaviors/Perspective/Perspective';
 import { PerspectiveDesk } from '../../../pages/Desk/PerspectiveDesk';
 import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
 import { DeskObjectStudy } from '../../../debug/ObjectStudy/DeskObjectStudy';
@@ -305,4 +306,64 @@ export const Footprints: Story = {
     expect(next.desk[1]).toEqual({ ...stamped.desk, strength: stamped.desk.strength * COFFEE_DRIES });
     expect(next.paper[1]).toEqual({ ...stamped.paper, strength: stamped.paper.strength * COFFEE_DRIES });
   },
+};
+
+/** Exact cylinder endpoints at shallow views, away from the optical axis. */
+export const ExactProjection: Story = {
+  parameters: { layout: 'fullscreen', composition: true },
+  render: function ProjectionScene(_, { parameters }) {
+    const [angle, setAngle] = useState(25);
+    const [place, setPlace] = useState({ x: 980, y: 300, rotation: 38, scale: 1.25 });
+    return <><button onClick={() => setAngle(angle === 25 ? 70 : 25)}>Change angle</button>
+      <Room angle={angle} depth={1800} room={false} lamp={false} deskShare={1} roomLip={0}>
+        <Movable {...place} width={168} resizable label="Mug" onMove={to => setPlace(at => ({ ...at, ...to }))}>
+          {parameters.exactSolid ? <Solid height={MUG_HEIGHT} foot={MUG_FOOT}><Mug /></Solid> : <Mug />}
+        </Movable>
+      </Room></>;
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const mug = canvas.getByRole('group', { name: 'Mug' });
+    const verify = async () => {
+      await waitFor(() => {
+        const plane = canvasElement.querySelector<HTMLElement>('.perspective__plane')!;
+        const eye = plane.parentElement!, bounds = eye.getBoundingClientRect();
+        const css = getComputedStyle(canvasElement.querySelector('.perspective')!);
+        const tilt = (90 - Number(css.getPropertyValue('--perspective-angle'))) * Math.PI / 180;
+        const depth = 1800, surfaceWidth = 1440, surfaceHeight = plane.offsetHeight / plane.offsetWidth * surfaceWidth;
+        const unit = bounds.width / surfaceWidth;
+        const project = (x: number, y: number, z: number) => {
+          const back = y - surfaceHeight;
+          const shrink = depth / (depth - back * Math.sin(tilt) - z * Math.cos(tilt));
+          return { x: bounds.left + bounds.width / 2 + (x - surfaceWidth / 2) * shrink * unit,
+            y: bounds.bottom + (back * Math.cos(tilt) - z * Math.sin(tilt)) * shrink * unit };
+        };
+        const x = Number(mug.style.getPropertyValue('--movable-x'));
+        const y = Number(mug.style.getPropertyValue('--movable-y'));
+        const width = Number.parseFloat(mug.style.getPropertyValue('--movable-width').replace('calc(', ''));
+        const rotation = mug.querySelector('.solid') ? 0 : Number.parseFloat(mug.style.getPropertyValue('--movable-rotation')) * Math.PI / 180;
+        const height = width * MUG_HEIGHT;
+        for (const [selector, offset, z] of [['[data-mug-base-point]', 0, 0], ['[data-mug-rim]', 0, height], ['[data-mug-rim-left]', -70, height], ['[data-mug-rim-right]', 70, height]] as const) {
+          const mark = canvasElement.querySelector<SVGCircleElement>(selector)!;
+          const rect = mark.getBoundingClientRect();
+          const expected = project(x + width / 2 + offset * width / 240 * Math.cos(rotation), y + width / 2 + offset * width / 240 * Math.sin(rotation), z);
+          expect(Math.abs(rect.x - expected.x), `${selector} x tilt=${tilt} y=${y} width=${width} x=${x} rotation=${rotation} actual=${rect.x} expected=${expected.x}`).toBeLessThan(0.2);
+          expect(Math.abs(rect.y - expected.y), `${selector} y actual=${rect.y} expected=${expected.y} height=${surfaceHeight}`).toBeLessThan(0.2);
+        }
+      });
+    };
+    await verify();
+    fireEvent.keyDown(mug, { key: 'ArrowLeft' });
+    fireEvent.keyDown(mug, { key: '+' });
+    fireEvent.keyDown(mug, { key: ']' });
+    await verify();
+    await userEvent.click(canvas.getByRole('button', { name: 'Change angle' }));
+    await verify();
+  },
+};
+
+/** Same endpoint contract through the adapter used by the physical Room desk. */
+export const ExactSolidProjection: Story = {
+  ...ExactProjection,
+  parameters: { ...ExactProjection.parameters, exactSolid: true },
 };
