@@ -20,3 +20,16 @@ test('floor references are layered Solid artwork, with wall-clear footprint and 
  const art=fs.readFileSync('src/components/3D/Wastebasket/Wastebasket.tsx','utf8');
  assert.match(art,/wastebasket__wall/);assert.match(art,/wastebasket__top/);assert.doesNotMatch(art,/coffee|dregs|<polygon/);
 });
+
+test('layered artwork splits at the tabletop in projected Solid coordinates',()=>{
+ const {tabletopSplit}=require('../src/debug/ScaleBench/referenceDimensions.ts');
+ const {projectElevation}=require('../src/behaviors/Perspective/elevation.ts');
+ for(const angle of [40,74.5,115])for(const tableHeight of [200,750])for(const height of [320,840,950]){
+  const {camera,stand}=roomSetup({cameraMode:'physical',eyeHeightMm:1650,viewerSetbackMm:660,headTiltDegrees:angle,deskHeightMm:tableHeight});
+  const floor=floorCamera(camera,stand,.8,180).camera;
+  const split=tabletopSplit(height,tableHeight,1650);
+  if(height<=tableHeight){assert.equal(split,1);continue;}
+  const base={x:200,y:300},top=projectElevation(base.x,base.y,height*1.2,floor),cut=projectElevation(base.x,base.y,tableHeight*1.2,floor);
+  near(base.x+(top.x-base.x)*split,cut.x);near(base.y+(top.y-base.y)*split,cut.y);
+ }
+});

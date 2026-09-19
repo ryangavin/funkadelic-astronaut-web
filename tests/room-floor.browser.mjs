@@ -26,7 +26,7 @@ try {
   }
   assert.ok(await page.locator('[data-floor-object="Desk leg 1"]').count());
   assert.equal(await page.getByRole('img',{name:'Wastebasket, 360 mm tall and 290 mm across'}).count(),1);
-  assert.equal(await page.locator('.scale-plant').count(),1);
+  assert.equal(await page.locator('.scale-plant--below').count(),1);
   const binFoot=await page.getByRole('img',{name:'Wastebasket, 360 mm tall and 290 mm across'}).evaluate(svg=>{
     const rect=svg.closest('.solid').querySelector('.solid__stands').getBoundingClientRect();return{x:rect.x,y:rect.y};
   });
@@ -35,6 +35,28 @@ try {
   assert.ok(Math.abs(binFoot.y-frame.y-expectedBin.y*frame.height/810)<.2,'Solid bin foot matches world floor y');
   assert.ok(!/NaN|Infinity/.test(await page.locator('.room__floor-geometry').first().innerHTML()));
  }
+ // The pot clears this desk, but raised leaves overlap its edge. Their painted
+ // layer must actually win browser hit testing over the tabletop.
+ await input('Desk width (mm)',2000);await input('Head tilt from horizontal (degrees)',90);
+ await input('Desk height (mm)',750);await input('Horizontal field of view (degrees)',110);
+ const overlap=await page.evaluate(()=>{
+   const desk=document.querySelector('.desk__top').getBoundingClientRect();
+   const leaves=[...document.querySelectorAll('.scale-plant--above [data-leaf-height] > path:first-child')];
+   for(const leaf of leaves){
+     leaf.style.pointerEvents='visiblePainted';
+     const box=leaf.getBBox(),matrix=leaf.getScreenCTM();
+     for(let x=box.x+1;x<box.x+box.width;x+=3)for(let y=box.y+1;y<box.y+box.height;y+=3){
+       const local=new DOMPoint(x,y);if(!leaf.isPointInFill(local))continue;
+       const p=local.matrixTransform(matrix);
+       if(p.x>desk.left+1&&p.x<desk.right-1&&p.y>desk.top+1&&p.y<desk.bottom-1){
+         const hit=document.elementFromPoint(p.x,p.y);
+         if(hit?.closest('.scale-plant--above'))return true;
+       }
+     }
+   }
+   return false;
+ });
+ assert.ok(overlap,'raised leaf is painted above overlapping tabletop');
  const before=await page.locator('.room__floor-geometry').first().innerHTML();
  await input('Eye height (mm)',700);assert.equal(await page.getByRole('alert').count(),1);
  assert.equal(await page.locator('.room__floor-geometry').first().innerHTML(),before);

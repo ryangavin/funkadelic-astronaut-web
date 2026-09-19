@@ -30,5 +30,5 @@ function Stick({ shadow = false }: { shadow?: boolean }) {
 export function ScaleBench(props: Omit<RoomProps, 'places' | 'shadows' | 'children'>) {
   const places = usePlaceStore({ [ID]: PLACE, [ROOM_LAMP]: ROOM_LAMP_PLACE });
   const [diagramRoot, setDiagramRoot] = useState<HTMLDivElement | null>(null);
-  return <div className="scale-bench"><Room floorContent={<FloorReferences />} {...props} places={places} shadows={<Stick shadow />}><Stick /><RoomDiagramPortal target={diagramRoot} /></Room><div ref={setDiagramRoot} /></div>;
+  return <div className="scale-bench"><Room floorContent={<FloorReferences />} floorForeground={<FloorReferences above />} {...props} places={places} shadows={<Stick shadow />}><Stick /><RoomDiagramPortal target={diagramRoot} /></Room><div ref={setDiagramRoot} /></div>;
 }

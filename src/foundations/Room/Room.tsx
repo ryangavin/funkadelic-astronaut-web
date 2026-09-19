@@ -52,6 +52,8 @@ export type RoomProps = PhysicalRoomInputs & {
   windowSillHeightMm?: number;
   /** Ordinary layered artwork placed on the physical floor plane. */
   floorContent?: ReactNode;
+  /** Portions of layered floor artwork above the accepted tabletop plane. */
+  floorForeground?: ReactNode;
   /** Physical horizontal lens angle, strictly between 0 and 180 degrees. Omit to preserve deskShare reference framing. */
   horizontalFieldOfViewDegrees?: number;
   /** Tiny screen-aligned animation-frame timing; disabled means no sampling. */
@@ -208,7 +210,7 @@ export function Room(props: RoomProps) {
   </>;
 }
 
-function RoomScene({ windowHeightMm, windowSillHeightMm, setup, extents, tuning, cameraMode, floorContent, horizontalFieldOfViewDegrees, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & RoomSceneGeometry & { tuning: LightTuning }) {
+function RoomScene({ windowHeightMm, windowSillHeightMm, setup, extents, tuning, cameraMode, floorContent, floorForeground, horizontalFieldOfViewDegrees, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & RoomSceneGeometry & { tuning: LightTuning }) {
   const { camera, stand, edge } = setup;
   const framing = roomFraming(camera, cameraMode === 'physical', deskShare, room || cameraMode === 'physical' ? roomLip : 0, horizontalFieldOfViewDegrees);
   const span = roomSpanMm === undefined ? undefined : mmToUnits(roomSpanMm);
@@ -302,6 +304,7 @@ function RoomScene({ windowHeightMm, windowSillHeightMm, setup, extents, tuning,
             </Desk>
           </Perspective>
         </div>
+        {room && floorForeground && <RoomFloorSurface camera={camera} stand={stand} share={framing.deskShare} lip={framing.lip} anchor={cameraMode === 'physical' ? .5 : 1}>{floorForeground}</RoomFloorSurface>}
       </DeskLighting>
       {showPerformance && <PerformanceOverlay />}
       </Inspector>
