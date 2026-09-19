@@ -7,7 +7,7 @@ const browser=await chromium.launch({headless:true});
 try {
  const page=await browser.newPage({viewport:{width:1280,height:900}});
  await page.goto(`${process.env.PREVIEW_URL}/storybook/iframe.html?id=debug-scale-bench--physical-setup&viewMode=story`);
- await page.locator('[data-floor-object="Wastebasket"]').first().waitFor();
+ await page.getByRole('img',{name:'Wastebasket, 360 mm tall and 290 mm across'}).waitFor();
  const input=async(name,value)=>{const field=page.getByRole('spinbutton',{name,exact:true});await field.fill(String(value));await field.blur();};
  for(const [angle,fov,wall,height] of [[74.5,110,660,770],[40,110,1600,770],[90,85,660,750],[115,85,660,750]]) {
   await input('Horizontal field of view (degrees)',fov);await input('Wall distance (mm)',wall);await input('Head tilt from horizontal (degrees)',angle);await input('Desk height (mm)',height);
@@ -24,7 +24,15 @@ try {
    assert.ok(Math.abs(actual.x-frame.x-expected.x*frame.width/1440)<.1,'foot x matches real floor');
    assert.ok(Math.abs(actual.y-frame.y-expected.y*frame.height/810)<.1,'foot y matches real floor');
   }
-  for(const name of ['Potted plant','Wastebasket','Desk leg 1'])assert.ok(await page.locator(`[data-floor-object="${name}"]`).count());
+  assert.ok(await page.locator('[data-floor-object="Desk leg 1"]').count());
+  assert.equal(await page.getByRole('img',{name:'Wastebasket, 360 mm tall and 290 mm across'}).count(),1);
+  assert.equal(await page.locator('.scale-plant').count(),1);
+  const binFoot=await page.getByRole('img',{name:'Wastebasket, 360 mm tall and 290 mm across'}).evaluate(svg=>{
+    const rect=svg.closest('.solid').querySelector('.solid__stands').getBoundingClientRect();return{x:rect.x,y:rect.y};
+  });
+  const expectedBin=projectFloorPoint({x:1440,y:186,z:0},camera,stand,framing.deskShare,framing.lip,.5);
+  assert.ok(Math.abs(binFoot.x-frame.x-expectedBin.x*frame.width/1440)<.2,'Solid bin foot matches world floor x');
+  assert.ok(Math.abs(binFoot.y-frame.y-expectedBin.y*frame.height/810)<.2,'Solid bin foot matches world floor y');
   assert.ok(!/NaN|Infinity/.test(await page.locator('.room__floor-geometry').first().innerHTML()));
  }
  const before=await page.locator('.room__floor-geometry').first().innerHTML();

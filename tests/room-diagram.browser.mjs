@@ -28,11 +28,11 @@ try {
   await input('Eye height (mm)','');assert.match(await page.getByRole('alert').textContent(),/last valid/);
   assert.deepEqual(await data('eye'),validEye);assert.deepEqual(await data('target'),validTarget);
   await input('Eye height (mm)','2200');assert.equal(await page.getByRole('alert').count(),0);
-  const camera=await page.locator('.perspective').getAttribute('style');
+  const camera=await page.locator('.room__stand > .perspective').getAttribute('style');
   await drawing.scrollIntoViewIfNeeded();await drawing.focus();await page.keyboard.press('ArrowRight');
   assert.equal(await drawing.getAttribute('data-orbit'),'-18,24');
   let box=await drawing.boundingBox();await page.mouse.move(box.x+box.width/2,box.y+180);await page.mouse.down();await page.mouse.move(box.x+box.width/2+40,box.y+160,{steps:5});await page.mouse.up();
-  assert.notEqual(await drawing.getAttribute('data-orbit'),'-18,24');assert.equal(await page.locator('.perspective').getAttribute('style'),camera);
+  assert.notEqual(await drawing.getAttribute('data-orbit'),'-18,24');assert.equal(await page.locator('.room__stand > .perspective').getAttribute('style'),camera);
   await page.getByRole('button',{name:'Side',exact:true}).click();assert.equal(await drawing.getAttribute('data-orbit'),'-90,0');
   await drawing.focus();await page.keyboard.press('Home');assert.equal(await drawing.getAttribute('data-orbit'),'-28,24');
   const lamp=page.getByRole('group',{name:'Desk lamp',exact:true});

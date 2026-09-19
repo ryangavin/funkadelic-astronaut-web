@@ -1,0 +1,4 @@
+.wastebasket { display:block; width:100%; aspect-ratio:1; overflow:visible; }
+.wastebasket__top { translate:calc(var(--solid-splay,0) * 360px) calc(var(--solid-rise,0) * -360px); }
+.wastebasket__wall { transform-origin:180px 180px; transform:matrix(1,0,calc(var(--solid-splay,0) * -1),var(--solid-rise,0),0,0); }
+.wastebasket__side { filter:brightness(.88); }
