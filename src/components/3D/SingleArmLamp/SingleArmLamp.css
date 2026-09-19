@@ -1,0 +1,12 @@
+.single-arm-lamp { position: relative; width: 100%; aspect-ratio: 720 / 600; }
+.single-arm-lamp > svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.single-arm-lamp__control, .single-arm-lamp__switch { position: absolute; translate: -50% -50%; width: 30px; height: 30px; padding: 0; border: 1px solid #bcc8be; border-radius: 50%; color: #f4e9c8; background: #24392e; font: 18px system-ui; touch-action: none; cursor: ns-resize; }
+.single-arm-lamp__control[aria-label='Shade swivel'] { cursor: ew-resize; }
+.single-arm-lamp__switch { width: 24px; height: 24px; font-size: 15px; cursor: pointer; }
+.single-arm-lamp__control:focus-visible, .single-arm-lamp__switch:focus-visible { outline: 3px solid #ffd877; outline-offset: 3px; }
+.single-arm-comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; background: #211b16; color: #ead3a7; padding: 12px; }
+.single-arm-comparison section { min-width: 0; }
+.single-arm-comparison h2 { margin: 0 0 8px; font: 16px system-ui; }
+@media(max-width: 750px) { .single-arm-comparison { grid-template-columns: minmax(0,1fr); } }
+
+.single-arm-lamp__control, .single-arm-lamp__switch { transform: scaleY(calc(1 / var(--perspective-squash, 1))); transform-origin: center; }
