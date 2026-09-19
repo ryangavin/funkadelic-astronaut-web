@@ -70,3 +70,16 @@ test('absolute pitched cameras cover frame rays on both sides of overhead', () =
     }
   }
 });
+
+
+test('explicit horizontal lenses retain bounded coverage at wide and narrow angles', () => {
+  const {roomSetup,roomFraming}=require('../src/geometry/roomSetup.ts');
+  const {camera,stand}=roomSetup({cameraMode:'physical',eyeHeightMm:1650,viewerSetbackMm:650});
+  let lastSpan=0;
+  for(const fov of [30,55,85,110]) {
+    const framing=roomFraming(camera,true,.8,180,fov);
+    const bounds=roomSurfaceExtents({angle:camera.angle,depth:camera.depth,deskWidth:camera.width,deskDepth:camera.surfaceHeight,stand,...framing,targetY:camera.targetY,frameAnchor:.5});
+    assert.ok(bounds.span>=lastSpan); lastSpan=bounds.span;
+    assert.ok(Object.values(bounds).every(Number.isFinite));
+  }
+});

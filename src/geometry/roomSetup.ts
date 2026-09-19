@@ -51,17 +51,28 @@ export function roomSetup({ cameraMode = 'legacy', deskWidthMm = DESK_MM.width, 
   return { camera: { angle, depth, width, surfaceHeight, ...(targetY === undefined ? {} : { targetY }) }, stand, edge };
 }
 
+/** Horizontal field of view of the original reference framing. */
+export function referenceFieldOfView(deskShare: number) {
+  return 2 * Math.atan(1200 / (2 * deskShare * Math.hypot(900, 650))) * 180 / Math.PI;
+}
+
 /** Reference lens: the existing 1200 mm desk, viewed 900 mm above and 650 mm back.
  * Perspective's CSS depth is also its focal length. Compensate the outer frame
  * so focal length in viewport pixels stays fixed as the eye moves.
  */
-export function roomFraming(camera: { width: number; depth: number }, physical: boolean, deskShare: number, lip: number) {
+export function roomFraming(camera: { width: number; depth: number }, physical: boolean, deskShare: number, lip: number, horizontalFieldOfViewDegrees?: number) {
   if (!physical) return { deskShare, lip };
   const referenceDistance = mmToUnits(Math.hypot(900, 650));
-  const effectiveLip = lip * (camera.depth / referenceDistance);
+  const fieldOfView = horizontalFieldOfViewDegrees ?? referenceFieldOfView(deskShare);
+  if (!Number.isFinite(fieldOfView) || fieldOfView <= 0 || fieldOfView >= 180)
+    throw new RangeError('horizontal field of view must be greater than 0 and less than 180 degrees');
+  const focal = 1 / (2 * Math.tan(fieldOfView * Math.PI / 360));
+  const zoom = horizontalFieldOfViewDegrees === undefined ? 1 : focal / (deskShare * referenceDistance / mmToUnits(1200));
+  // Lens changes preserve the principal point as well as physical eye and gaze.
+  const effectiveLip = lip * (camera.depth / referenceDistance) / zoom;
   if (!Number.isFinite(effectiveLip)) throw new RangeError('physical frame lip must be finite');
   return {
-    deskShare: positive('physical frame share', deskShare * (camera.width / mmToUnits(1200)) * (referenceDistance / camera.depth)),
+    deskShare: positive('physical frame share', deskShare * (camera.width / mmToUnits(1200)) * (referenceDistance / camera.depth) * zoom),
     lip: effectiveLip,
   };
 }

@@ -1,4 +1,5 @@
-import { DEFAULT_HEAD_TILT_DEGREES } from '../../geometry/roomSetup';
+import { ROOM_DESK_SHARE } from '../../foundations/Room/DeskRoom';
+import { DEFAULT_HEAD_TILT_DEGREES, referenceFieldOfView } from '../../geometry/roomSetup';
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { DEFAULT_LIGHT_TUNING, type LightTuning } from '../../geometry/lightingSetup';
 import './controls.css';
@@ -15,6 +16,7 @@ export const physicalControls = {
   eyeHeightMm: numeric('Physical camera', 'Eye height above the floor; must exceed tabletop height.'),
   viewerSetbackMm: numeric('Physical camera', 'Horizontal eye distance from the wall; independent of desk dimensions.'),
   headTiltDegrees: numeric('Physical camera', 'Absolute downward angle from horizontal: greater than 0 and less than 180 degrees; 90 looks straight down.', 1),
+  horizontalFieldOfViewDegrees: numeric('Physical camera', 'Horizontal lens angle, strictly between 0 and 180 degrees. Wider shows more without moving the eye or gaze; unset preserves reference framing.'),
   lampIntensity: numeric('Lighting', 'Relative emitted pool brightness: zero emits no light, one preserves the original.', 0.1),
   roomSpanMm: numeric('Room extent', 'Exact width of floor and wall in millimetres. Leave unset for automatic frame coverage.'),
   floorFrontMm: numeric('Room extent', 'Exact floor extension in millimetres. Leave unset for automatic frame coverage.'),
@@ -67,6 +69,7 @@ export function RoomControlPanel({ args, update, children }: { args: RoomProps &
     ['eyeHeightMm', 'Eye height (mm)', 600, 2400, 10, true],
     ['viewerSetbackMm', 'Wall distance (mm)', 0, 3000, 10, true],
     ['headTiltDegrees', 'Head tilt from horizontal (degrees)', 1, 179, 1, false],
+    ['horizontalFieldOfViewDegrees', 'Horizontal field of view (degrees)', 20, 110, 1, false],
     ['lampIntensity', 'Light intensity', 0, 6, 0.1, false],
     ['poolSpread', 'Pool spread', 0, 6, 0.1, false],
   ] as const;
@@ -74,7 +77,7 @@ export function RoomControlPanel({ args, update, children }: { args: RoomProps &
     <aside className="room-controls__sidebar" aria-label="Room controls" tabIndex={0}>
       <div className="room-controls__fields">
       {fields.map(([key, label, min, max, step, physical]) => {
-        const value = args[key] ?? physicalDefaults[key];
+        const value = key === 'horizontalFieldOfViewDegrees' ? args[key] ?? referenceFieldOfView(args.deskShare ?? ROOM_DESK_SHARE) : args[key] ?? physicalDefaults[key];
         const valid = Number.isFinite(value);
         return <fieldset key={key} className="room-controls__field">
           <legend>{label}</legend>
@@ -83,7 +86,7 @@ export function RoomControlPanel({ args, update, children }: { args: RoomProps &
             <input aria-label={label} type="number" step={physical ? 1 : step} value={valid ? value : ''} onChange={event => update({ [key]: event.target.value === '' ? NaN : Number(event.target.value) })} style={{ width: 72 }} />
             {physical && <output aria-label={`${label} inches`}>{valid ? `${(value / 25.4).toFixed(2)} in` : '— in'}</output>}
           </div>
-          <small style={{ color: '#c7bcae' }}>{key === 'headTiltDegrees' ? 'Downward angle: 0° < tilt < 180°; 90° is straight down.' : <>Slider {min}–{max}{physical ? ' mm' : ''}; type any value.</>}</small>
+          <small style={{ color: '#c7bcae' }}>{key === 'horizontalFieldOfViewDegrees' ? 'Physical lens: 0° < FOV < 180°. Larger angles show more.' : key === 'headTiltDegrees' ? 'Downward angle: 0° < tilt < 180°; 90° is straight down.' : <>Slider {min}–{max}{physical ? ' mm' : ''}; type any value.</>}</small>
         </fieldset>;
       })}
     </div>

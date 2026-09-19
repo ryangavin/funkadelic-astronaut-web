@@ -144,6 +144,23 @@ export async function checkPhysicalLens({ canvasElement }: { canvasElement: HTML
   expect(camera().getAttribute('style')).toBe(acceptedCamera);
   input('Head tilt from horizontal (degrees)',74.47588900324574);
   await waitFor(()=>expect(canvas.queryByRole('alert')).toBeNull());
+  const initialFov=Number((canvas.getByRole('spinbutton',{name:'Horizontal field of view (degrees)'}) as HTMLInputElement).value);
+  const initialWidth=stand().width, initialStick=stick().width, initialPrincipal=targetScreenY();
+  const initialPose=camera().getAttribute('style');
+  for(const fov of [55,85]) {
+    input('Horizontal field of view (degrees)',fov);
+    const ratio=Math.tan(initialFov*Math.PI/360)/Math.tan(fov*Math.PI/360);
+    await waitFor(()=>expect(stand().width/initialWidth).toBeCloseTo(ratio,3));
+    expect(camera().getAttribute('style')).toBe(initialPose);
+    expect(stick().width/initialStick).toBeCloseTo(ratio,3);
+    expect(targetScreenY()).toBeCloseTo(initialPrincipal,1);
+  }
+  const validWidth=stand().width;
+  input('Horizontal field of view (degrees)',180);
+  await waitFor(()=>expect(canvas.getByRole('alert')).toHaveTextContent('field of view'));
+  expect(stand().width).toBeCloseTo(validWidth,1);
+  input('Horizontal field of view (degrees)',initialFov);
+  await waitFor(()=>expect(canvas.queryByRole('alert')).toBeNull());
   const originalTarget = targetScreenY();
   const original = stand(), originalAngle = angle(), originalDistance = distance();
   input('Eye height (mm)', 2400);
@@ -205,6 +222,8 @@ export async function checkPhysicalLens({ canvasElement }: { canvasElement: HTML
   input('Wall distance (mm)', 400);
   await waitFor(() => expect(angle()).toBe(90));
   const mug = canvas.getByRole('group', { name: /^Mug$/ });
+  input('Horizontal field of view (degrees)',85);
+  await waitFor(()=>expect(Number((canvas.getByRole('spinbutton',{name:'Horizontal field of view (degrees)'}) as HTMLInputElement).value)).toBe(85));
   const initialX = Number(mug.style.getPropertyValue('--movable-x'));
   const unitsPerPixel = 2160 / stand().width;
   const box = mug.getBoundingClientRect();

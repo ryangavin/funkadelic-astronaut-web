@@ -14,6 +14,14 @@ try {
   near((await data('eye')).z,1650);near((await data('eye')).y,650);
   await input('Eye height (mm)','2200');near((await data('eye')).z,2200);
   await input('Wall distance (mm)','900');near((await data('eye')).y,900);
+  const lensEye=await data('eye'),lensTarget=await data('target');
+  await input('Horizontal field of view (degrees)','85');
+  assert.match(await diagram.textContent(),/Horizontal FOV 85.0°/);
+  assert.deepEqual(await data('eye'),lensEye);assert.deepEqual(await data('target'),lensTarget);
+  await input('Horizontal field of view (degrees)','180');
+  assert.match(await page.getByRole('alert').textContent(),/field of view/);
+  assert.match(await diagram.textContent(),/Horizontal FOV 85.0°/);
+  await input('Horizontal field of view (degrees)','68.08324751836064');
   const originalEye=await data('eye'),originalTarget=await data('target');
   await input('Head tilt from horizontal (degrees)','85');near((await data('eye')).y,originalEye.y);near((await data('eye')).z,originalEye.z);assert.notDeepEqual(await data('target'),originalTarget);
   const validEye=await data('eye'),validTarget=await data('target');

@@ -72,7 +72,7 @@ function RoomDiagram({ model: m }: { model: ReturnType<typeof diagramGeometry> }
       {label(p(m.width/2,m.depth,m.height/2),`${Math.round(m.height)} mm`)}
       {label(p(0,m.eye.y/2,0),`${Math.round(m.eye.y)} mm from wall`)}
     </svg>
-    <div className="room-diagram__readouts"><span>Eye {Math.round(m.eye.z)} mm</span><span>Head tilt {m.pitch.toFixed(1)}° from horizontal</span><span>Grid 500 mm</span></div>
+    <div className="room-diagram__readouts"><span>Eye {Math.round(m.eye.z)} mm</span><span>Head tilt {m.pitch.toFixed(1)}° from horizontal</span><span>Grid 500 mm</span>{m.lensFieldOfViewDegrees !== undefined && <span>Horizontal FOV {m.lensFieldOfViewDegrees.toFixed(1)}°</span>}</div>
     <div className="room-diagram__readouts"><span>Floor {Math.round(m.span)} × {Math.round(m.floorDepth)} mm</span><span>Wall {Math.round(m.wallHeight)} mm high</span></div>
     <p><span className="room-diagram__center">Blue: tabletop center reference</span> · <span className="room-diagram__gaze">Orange: gaze</span>. Head marker is schematic; lamp uses the scene’s simplified construction.</p>
   </section>;
