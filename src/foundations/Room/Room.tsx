@@ -77,8 +77,6 @@ export type RoomProps = PhysicalRoomInputs & {
   roomLip?: number;
   /** Whether the lamp is on. Clicking its shade switches it. */
   lamp?: boolean;
-  /** Omit the built-in lamp so a composition can supply its own light source. */
-  showLamp?: boolean;
   lampX?: number;
   lampY?: number;
   lampRotation?: number;
@@ -200,7 +198,7 @@ export function Room(props: RoomProps) {
   </>;
 }
 
-function RoomScene({ setup, extents, tuning, cameraMode, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, showLamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & RoomSceneGeometry & { tuning: LightTuning }) {
+function RoomScene({ setup, extents, tuning, cameraMode, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & RoomSceneGeometry & { tuning: LightTuning }) {
   const { camera, stand, edge } = setup;
   const framing = roomFraming(camera, cameraMode === 'physical', deskShare, room || cameraMode === 'physical' ? roomLip : 0);
   const span = roomSpanMm === undefined ? undefined : mmToUnits(roomSpanMm);
@@ -284,9 +282,9 @@ function RoomScene({ setup, extents, tuning, cameraMode, showPerformance = false
               {/* The lamp's own place is kept in the store so it follows the pointer, and whoever
                   owns it is told once, when it is put down: a composition that writes every
                   step back into its controls re-renders the desk under the drag. */}
-              {showLamp && <Movable id={ROOM_LAMP} {...lampAt} width={lampWidth} label="Desk lamp" className="perspective__lamp" onMove={() => {}} onSettle={next => onArrange?.(next)}>
+              <Movable id={ROOM_LAMP} {...lampAt} width={lampWidth} label="Desk lamp" className="perspective__lamp" onMove={() => {}} onSettle={next => onArrange?.(next)}>
                 <SteadyLamp tuning={tuning} intensity={lampIntensity} camera={camera} placeId={ROOM_LAMP} lightPosition={lightPosition} shadowStrength={shadowStrength} on={on} enamel={lampEnamel} pose={pose} onPoseChange={articulated} onToggle={switched} />
-              </Movable>}
+              </Movable>
             </Desk>
           </Perspective>
         </div>
