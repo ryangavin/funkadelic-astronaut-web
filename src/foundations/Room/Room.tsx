@@ -39,12 +39,14 @@ export const ROOM_LAMP_PLACE: Place = { x: 770, y: 100, rotation: 0 };
 const RoomCamera = createContext<StudyCamera>({ angle: GENTLE_VIEW, depth: GENTLE_DEPTH, width: DESK_WIDTH, surfaceHeight: DESK_DEPTH });
 export const useRoomCamera = () => useContext(RoomCamera);
 
-export type RoomSceneGeometry = { setup: ReturnType<typeof roomSetup>; extents: ReturnType<typeof roomSurfaceExtents> | null };
+export type RoomSceneGeometry = { setup: ReturnType<typeof roomSetup>; extents: ReturnType<typeof roomSurfaceExtents> | null; lensFieldOfViewDegrees?: number };
 const AcceptedRoom = createContext<RoomSceneGeometry | null>(null);
 /** The exact geometry retained by the visible scene, including failed-edit fallback. */
 export const useRoomSceneGeometry = () => useContext(AcceptedRoom);
 
 export type RoomProps = PhysicalRoomInputs & {
+  /** Physical horizontal lens angle, strictly between 0 and 180 degrees. Omit to preserve deskShare reference framing. */
+  horizontalFieldOfViewDegrees?: number;
   /** Tiny screen-aligned animation-frame timing; disabled means no sampling. */
   showPerformance?: boolean;
   /** Relative lamp pool brightness; 1 preserves the original light. No aesthetic maximum. */
@@ -170,7 +172,7 @@ export function Room(props: RoomProps) {
       for (const [name, value] of [['shadowStrength', props.shadowStrength ?? DEFAULT_SHADOW_STRENGTH], ['roomDim', props.roomDim ?? 0.32]] as const)
         if (!Number.isFinite(value) || value < 0 || value > 1) throw new RangeError(`${name} must be between 0 and 1 (normalized opacity)`);
       if (!Number.isFinite(props.roomLip ?? ROOM_LIP)) throw new RangeError('roomLip must be finite');
-      const framing = roomFraming(setup.camera, cameraMode === 'physical', props.deskShare ?? ROOM_DESK_SHARE, props.roomLip ?? ROOM_LIP);
+      const framing = roomFraming(setup.camera, cameraMode === 'physical', props.deskShare ?? ROOM_DESK_SHARE, props.roomLip ?? ROOM_LIP, props.horizontalFieldOfViewDegrees);
       // Check material allocation before accepting a new scene. Failed edits keep
       // the last valid scene alive, including its object arrangement and lamp.
       const extents = props.room !== false ? roomSurfaceExtents({
@@ -184,7 +186,7 @@ export function Room(props: RoomProps) {
       }) : null;
       return { setup, tuning, extents };
     } catch (error) { return { error: error instanceof Error ? error.message : 'Invalid room setup' }; }
-  }, [measured, props.room, props.lightTuning, props.lampIntensity, props.lampWidth, props.roomSpanMm, props.floorFrontMm, props.wallHeightMm, props.deskShare, props.roomBlur, props.shadowStrength, props.roomDim, props.roomLip]);
+  }, [measured, props.room, props.lightTuning, props.lampIntensity, props.lampWidth, props.roomSpanMm, props.floorFrontMm, props.wallHeightMm, props.deskShare, props.roomBlur, props.shadowStrength, props.roomDim, props.roomLip, props.horizontalFieldOfViewDegrees]);
   // Numeric fields pass through incomplete values while typing. Keep the last
   // valid scene mounted so editing never discards places, switch state or pose.
   const previous = useRef<RoomSceneGeometry & { props: RoomProps; tuning: LightTuning } | null>(null);
@@ -198,9 +200,9 @@ export function Room(props: RoomProps) {
   </>;
 }
 
-function RoomScene({ setup, extents, tuning, cameraMode, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & RoomSceneGeometry & { tuning: LightTuning }) {
+function RoomScene({ setup, extents, tuning, cameraMode, horizontalFieldOfViewDegrees, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & RoomSceneGeometry & { tuning: LightTuning }) {
   const { camera, stand, edge } = setup;
-  const framing = roomFraming(camera, cameraMode === 'physical', deskShare, room || cameraMode === 'physical' ? roomLip : 0);
+  const framing = roomFraming(camera, cameraMode === 'physical', deskShare, room || cameraMode === 'physical' ? roomLip : 0, horizontalFieldOfViewDegrees);
   const span = roomSpanMm === undefined ? undefined : mmToUnits(roomSpanMm);
   const front = floorFrontMm === undefined ? undefined : mmToUnits(floorFrontMm);
   const wallHeight = wallHeightMm === undefined ? undefined : mmToUnits(wallHeightMm);
@@ -262,7 +264,9 @@ function RoomScene({ setup, extents, tuning, cameraMode, showPerformance = false
   const told = useRef({ onArticulate, onLamp, lamp });
   told.current = { onArticulate, onLamp, lamp };
 
-  const accepted = useMemo(() => ({ setup, extents }), [setup, extents]);
+  const accepted = useMemo(() => ({ setup, extents,
+    lensFieldOfViewDegrees: cameraMode === 'physical' ? 2 * Math.atan(camera.width / (2 * camera.depth * framing.deskShare)) * 180 / Math.PI : undefined,
+  }), [setup, extents, cameraMode, camera.width, camera.depth, framing.deskShare]);
   return <AcceptedRoom.Provider value={accepted}><PlacesProvider store={places}>
     <RoomCamera.Provider value={camera}>
       {/* The frame: 16 x 9, cropping the room. Told there is a room in it, it

@@ -109,3 +109,22 @@ test('fixed physical eye and lens preserve world floor/wall landmarks as desk di
     }
   }
 });
+
+test('horizontal FOV sets physical focal length without changing eye, gaze or principal point', () => {
+  const {referenceFieldOfView}=require('../src/geometry/roomSetup.ts');
+  for (const share of [.75,.8,.911]) {
+    const camera=roomSetup({cameraMode:'physical',eyeHeightMm:1650,viewerSetbackMm:650}).camera;
+    const original=roomFraming(camera,true,share,180);
+    const explicit=roomFraming(camera,true,share,180,referenceFieldOfView(share));
+    near(original.deskShare,explicit.deskShare);near(original.lip,explicit.lip);
+    for (const fov of [25,55,85,110]) for (const deskHeightMm of [500,750,1100]) for(const deskWidthMm of [900,1800]) {
+      const pose=roomSetup({cameraMode:'physical',eyeHeightMm:1650,viewerSetbackMm:650,deskHeightMm,deskWidthMm}).camera;
+      const before={...pose}, framing=roomFraming(pose,true,share,180,fov);
+      assert.deepEqual(pose,before);
+      near(pose.depth*framing.deskShare/pose.width,1/(2*Math.tan(fov*Math.PI/360)));
+      near(framing.lip*framing.deskShare/pose.width,180*share/1440);
+    }
+    for(const fov of [0,-1,180,Infinity,NaN]) assert.throws(()=>roomFraming(camera,true,share,180,fov), /field of view/);
+    assert.deepEqual(roomFraming(camera,false,share,180,NaN),{deskShare:share,lip:180});
+  }
+});
