@@ -342,23 +342,38 @@ export const ExactProjection: Story = {
         const y = Number(mug.style.getPropertyValue('--movable-y'));
         const width = Number.parseFloat(mug.style.getPropertyValue('--movable-width').replace('calc(', ''));
         const rotation = mug.querySelector('.solid') ? 0 : Number.parseFloat(mug.style.getPropertyValue('--movable-rotation')) * Math.PI / 180;
-        const height = width * MUG_HEIGHT;
+        const drawnWidth = width * (mug.hasAttribute('data-dragging') ? 1.03 : 1);
+        const height = drawnWidth * MUG_HEIGHT;
         for (const [selector, offset, z] of [['[data-mug-base-point]', 0, 0], ['[data-mug-rim]', 0, height], ['[data-mug-rim-left]', -70, height], ['[data-mug-rim-right]', 70, height]] as const) {
           const mark = canvasElement.querySelector<SVGCircleElement>(selector)!;
           const rect = mark.getBoundingClientRect();
-          const expected = project(x + width / 2 + offset * width / 240 * Math.cos(rotation), y + width / 2 + offset * width / 240 * Math.sin(rotation), z);
+          const expected = project(x + width / 2 + offset * drawnWidth / 240 * Math.cos(rotation), y + width / 2 + offset * drawnWidth / 240 * Math.sin(rotation), z);
           expect(Math.abs(rect.x - expected.x), `${selector} x tilt=${tilt} y=${y} width=${width} x=${x} rotation=${rotation} actual=${rect.x} expected=${expected.x}`).toBeLessThan(0.2);
           expect(Math.abs(rect.y - expected.y), `${selector} y actual=${rect.y} expected=${expected.y} height=${surfaceHeight}`).toBeLessThan(0.2);
         }
       });
+    };
+    const dragAndRelease = async () => {
+      const pivot = mug.querySelector('.movable__pivot')!.getBoundingClientRect();
+      const pointer = { pointerId: 7, button: 0, buttons: 1, clientX: pivot.x, clientY: pivot.y };
+      fireEvent.pointerDown(mug, pointer);
+      fireEvent.pointerMove(mug, { ...pointer, clientX: pivot.x - 24, clientY: pivot.y + 12 });
+      await waitFor(() => expect(mug).toHaveAttribute('data-dragging'));
+      // Let the lifted 1.03-scale geometry actually render before releasing.
+      await verify();
+      fireEvent.pointerUp(mug, { ...pointer, buttons: 0, clientX: pivot.x - 24, clientY: pivot.y + 12 });
+      await waitFor(() => expect(mug).not.toHaveAttribute('data-dragging'));
+      await verify();
     };
     await verify();
     fireEvent.keyDown(mug, { key: 'ArrowLeft' });
     fireEvent.keyDown(mug, { key: '+' });
     fireEvent.keyDown(mug, { key: ']' });
     await verify();
+    await dragAndRelease();
     await userEvent.click(canvas.getByRole('button', { name: 'Change angle' }));
     await verify();
+    await dragAndRelease();
   },
 };
 

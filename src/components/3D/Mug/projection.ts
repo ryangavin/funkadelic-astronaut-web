@@ -35,9 +35,11 @@ export function useMugLayer(heightRatio: number) {
     const resize = new ResizeObserver(measure);
     resize.observe(plane); resize.observe(element);
     const mutations = new MutationObserver(measure);
+    // Drag release changes the lift scale through data-dragging, without a size
+    // or style write. Observe it too so the grounded rim cannot retain that lift.
     // Only ancestors: our own SVG writes must never trigger a measurement loop.
     for (let node = element.parentElement; node && node !== plane; node = node.parentElement)
-      mutations.observe(node, { attributes: true, attributeFilter: ['style', 'class'] });
+      mutations.observe(node, { attributes: true, attributeFilter: ['style', 'class', 'data-dragging'] });
     return () => { resize.disconnect(); mutations.disconnect(); };
   }, [view, heightRatio]);
   return { host, layer };
