@@ -326,3 +326,43 @@
 .wall[data-material-origin] .wall__brush {
   background-size: calc(1440 * 100cqw / var(--wall-width)) calc(2880 * 100cqw / var(--wall-width));
 }
+
+/* Old unpainted stock: soot-dark firing, pale lime scars and chipped arrises.
+   Every mark belongs to a deterministic brick, so changing the room crop never
+   slides the weathering around. No full-surface SVG noise/filter is needed. */
+.wall[data-finish='red']:not([data-flat]) {
+  --wall-body: #97513a;
+  --wall-mortar: #8f8270;
+  --wall-under: #442e27;
+  --wall-arris: rgb(238 192 142 / 0.24);
+  --wall-shade: rgb(31 21 17 / 0.48);
+}
+.wall[data-finish='red']:not([data-flat]) .wall__brick {
+  border-radius: 8% 3% 11% 5%;
+  background:
+    linear-gradient(calc(5deg + var(--wall-lean) * 11deg), transparent 14%, rgb(40 26 20 / .36) 18%, transparent 23%, transparent 71%, rgb(227 173 119 / .25) 74%, transparent 81%),
+    radial-gradient(ellipse at calc(var(--wall-lean) * 100%) 30%, #49362d, transparent 84%);
+  mix-blend-mode: multiply;
+}
+.wall[data-finish='red']:not([data-flat]) .wall__brick[data-tone='thick'] {
+  background:
+    radial-gradient(ellipse at 10% 85%, #d5b189, transparent 65%),
+    linear-gradient(12deg, #b26b42, #c68454 42%, #8b573c 46%, #b57449 53%, #703e30);
+  mix-blend-mode: normal;
+}
+.wall[data-finish='red']:not([data-flat]) .wall__brick::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #c1b29a;
+  opacity: calc(.2 + var(--wall-lean) * .5);
+  clip-path: polygon(0 0, 38% 0, 30% 5%, 19% 3%, 12% 10%, 0 6%, 0 95%, 19% 91%, 25% 98%, 52% 93%, 73% 99%, 89% 89%, 100% 95%, 100% 100%, 0 100%);
+}
+.wall[data-finish='red']:not([data-flat]) .wall__grit {
+  /* Fine aggregate, rather than the larger stippling used beneath limewash. */
+  opacity: .32;
+  background-image:
+    radial-gradient(ellipse at 31% 43%, rgb(41 28 20 / .38) 0 .2px, transparent .7px),
+    radial-gradient(ellipse at 68% 19%, rgb(232 194 147 / .3) 0 .25px, transparent .8px),
+    radial-gradient(ellipse at 17% 77%, rgb(50 29 20 / .22) 0 .3px, transparent .9px);
+}

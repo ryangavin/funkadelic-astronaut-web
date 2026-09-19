@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect } from 'storybook/test';
+import { WallWindow } from '../WallWindow/WallWindow';
 import { WALL_BRICK, WALL_COURSE, WALL_FINISHES, WALL_HEIGHT, Wall } from './Wall';
 
 const meta = {
@@ -61,4 +62,12 @@ export const Finishes: Story = {
 /** Close up, so the bond, the struck joints and the grit under the paint can be read. */
 export const Close: Story = {
   args: { width: 620, height: 460 },
+};
+
+/** Weathered red stock and open steel casements, with physical window dimensions. */
+export const IndustrialWindow: Story = {
+  args: { finish: 'red', width: 3000, height: 3000 },
+  render: (args) => <div style={{ maxWidth: 900, margin: 'auto', '--desk-room-unit': 'calc(100cqw / 3000)' } as React.CSSProperties}>
+    <Wall {...args}><WallWindow /></Wall>
+  </div>,
 };

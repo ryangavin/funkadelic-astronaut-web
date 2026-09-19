@@ -108,7 +108,9 @@ export function Wall({
   style,
   ...rest
 }: WallProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'children' | 'className' | 'style'>) {
-  const odd = worn > 0 ? (materialOrigin ? wallMaterialBricks(materialOrigin, width, height, brick, course, worn) : variegation(width, height, brick, course, worn)) : [];
+  // Bare stock varies through the firing, beyond the bricks with worn paint.
+  const variationRate = finish === 'red' && !flat && worn > 0 ? Math.min(100, worn * 3) : worn;
+  const odd = worn > 0 ? (materialOrigin ? wallMaterialBricks(materialOrigin, width, height, brick, course, variationRate) : variegation(width, height, brick, course, variationRate)) : [];
   return (
     <div
       {...rest}
