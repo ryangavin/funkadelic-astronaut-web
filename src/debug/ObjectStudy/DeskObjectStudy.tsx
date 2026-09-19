@@ -1,10 +1,10 @@
-import { DESK_SIZE, LAMP_WIDTH, LAMP_HEIGHT, mmToUnits } from '../../geometry/physicalScale';
+import { mmToUnits } from '../../geometry/physicalScale';
 import { useState, type ReactNode } from 'react';
 import { Movable, type Place } from '../../behaviors/Movable/Movable';
-import { DeskLighting, DEFAULT_SHADOW_STRENGTH } from '../../behaviors/DeskLighting/DeskLighting';
-import { Desk } from '../../components/3D/Desk/Desk';
-import { DeskLamp } from '../../components/3D/DeskLamp/DeskLamp';
-import { GENTLE_DEPTH, GENTLE_VIEW, Perspective, Solid, type Foot } from '../../behaviors/Perspective/Perspective';
+import { DEFAULT_SHADOW_STRENGTH } from '../../behaviors/DeskLighting/DeskLighting';
+import { usePlace, usePlaceStore } from '../../behaviors/Movable/places';
+import { Room, ROOM_LAMP, useRoomCamera } from '../../foundations/Room/Room';
+import { GENTLE_VIEW, Solid, type Foot } from '../../behaviors/Perspective/Perspective';
 import { ROUND_CASE, type StudyCamera, type StudyShape } from '../../behaviors/Perspective/elevation';
 import { StudyLighting } from '../../behaviors/Perspective/CastShadow';
 import { Relief } from '../../behaviors/Perspective/Relief';
@@ -24,40 +24,61 @@ export type DeskObjectStudyProps = {
   children?: ReactNode | ((place: Place, camera: StudyCamera) => ReactNode);
 };
 
-/** Shared physical-scale inspection bench. Source objects remain interactive; all cast shadows belong to the lamp. */
-export function DeskObjectStudy({ name, widthMm = 120, depthRatio = 1, heightMm = 30, note, shapes = [{ path: ROUND_CASE }], solid, bare, customRelief, sideColors, children }: DeskObjectStudyProps) {
+const OBJECT = 'study-object';
+const LAMP_PLACE: Place = { x: 470, y: 60, rotation: 0 };
+const DEFAULT_SHAPES: StudyShape[] = [{ path: ROUND_CASE }];
+
+/** Only drawings whose markup depends on position subscribe through React. */
+function PositionedContent({ initialPlace, children }: { initialPlace: Place; children: (place: Place, camera: StudyCamera) => ReactNode }) {
+  const place = usePlace(OBJECT) ?? initialPlace;
+  return children(place, useRoomCamera());
+}
+
+/** Solid measures its screen-space foot after a move; keep that render local. */
+function PositionedSolid({ solid, children }: { solid: NonNullable<DeskObjectStudyProps['solid']>; children: ReactNode }) {
+  usePlace(OBJECT);
+  return <Solid {...solid}>{children}</Solid>;
+}
+
+function StudyObject({ initialPlace, width, depth, pivot, solid, customRelief, sideColors, heightMm, shapes, name, children }: DeskObjectStudyProps & {
+  initialPlace: Place; width: number; depth: number; pivot: Foot; heightMm: number; shapes: StudyShape[];
+}) {
+  const camera = useRoomCamera();
+  const content = typeof children === 'function' ? <PositionedContent initialPlace={initialPlace}>{children}</PositionedContent> : children;
+  return <Movable id={OBJECT} {...initialPlace} width={width} pivot={pivot} label={name} grab="anywhere">
+    {solid ? <PositionedSolid solid={solid}>{content}</PositionedSolid> : customRelief ? content : <Relief sideColors={sideColors} place={initialPlace} placeId={OBJECT} camera={camera} width={width} depth={depth} heightMm={heightMm} path={shapes[0]?.path ?? ROUND_CASE}>{content}</Relief>}
+  </Movable>;
+}
+
+function StudyShadow({ initialPlace, width, depth, pivot, shapes, heightMm }: { initialPlace: Place; width: number; depth: number; pivot: Foot; shapes: StudyShape[]; heightMm: number }) {
+  const camera = useRoomCamera();
+  return <StudyLighting shadowOnly surfaceHeight={camera.surfaceHeight} place={initialPlace} placeId={OBJECT} pivot={pivot} width={width} depth={depth} shapes={shapes} heightMm={heightMm} />;
+}
+
+/** An inspection composition on the shared Room's fixed physical desktop. */
+export function DeskObjectStudy({ name, widthMm = 120, depthRatio = 1, heightMm = 30, note, shapes = DEFAULT_SHAPES, solid, bare, customRelief, sideColors, children }: DeskObjectStudyProps) {
   const initialPlace = { x: 150, y: widthMm > 400 ? 650 : 410, rotation: 0 };
-  const surfaceHeight = widthMm > 400 ? 1300 : 900;
-  const [place, setPlace] = useState<Place>(initialPlace);
-  const [lamp, setLamp] = useState({ x: 470, y: 60, rotation: 0 });
-  const [on, setOn] = useState(true);
+  const places = usePlaceStore({ [OBJECT]: initialPlace, [ROOM_LAMP]: LAMP_PLACE });
   const [angle, setAngle] = useState(GENTLE_VIEW);
   const [strength, setStrength] = useState(DEFAULT_SHADOW_STRENGTH);
   const [zoom, setZoom] = useState(1);
   const width = mmToUnits(widthMm), depth = width * depthRatio;
-  /* A thing with a foot turns about where it stands, the way it does on the desk. */
+  /* Keep the object's rotation and its shadow hinged at the same physical foot. */
   const pivotHere = solid ? { x: solid.foot.x, y: solid.foot.y / depthRatio } : { x: 0.5, y: 0.5 };
-  const camera = { angle, depth: GENTLE_DEPTH, width: DESK_SIZE.width, surfaceHeight };
-  const content = typeof children === 'function' ? children(place, camera) : children;
   return <section className="desk-study">
     <div className="desk-study__controls">
       <strong>{name} · On desk</strong>
       <label>View <input aria-label="View angle" type="range" min="78" max="90" value={angle} onChange={e => setAngle(Number(e.target.value))} /> {angle}°</label>
       <label>Shadow <input aria-label="Shadow strength" type="range" min="0" max="1" step="0.01" value={strength} onChange={e => setStrength(Number(e.target.value))} /></label>
       <label>Zoom <select aria-label="Preview zoom" value={zoom} onChange={e => setZoom(Number(e.target.value))}><option value={1}>1×</option><option value={1.5}>1.5×</option><option value={2}>2×</option></select></label>
-      <button onClick={() => { setPlace(initialPlace); setLamp({ x: 470, y: 60, rotation: 0 }); }}>Reset positions</button>
+      <button onClick={() => { places.reset({ [OBJECT]: initialPlace, [ROOM_LAMP]: LAMP_PLACE }); }}>Reset positions</button>
     </div>
     <p>{bare ? 'Move and articulate the lamp to inspect the desktop.' : `${widthMm} mm artwork width · ${heightMm} mm height. ${note ?? 'Height is estimated; shadow uses an approximate solid silhouette.'}`} Drag the object or lamp base; drag the shade to aim and click it to switch.</p>
     <div className="desk-study__viewport"><div style={{ width: `${zoom * 100}%`, minWidth: 720 }}>
-      <DeskLighting><Perspective {...camera} className="perspective--lamp-study"><Desk height={surfaceHeight} edge={12}>
-        <StudyLighting surfaceHeight={surfaceHeight} place={place} pivot={pivotHere} width={width} depth={depth} shapes={bare ? [] : shapes} heightMm={heightMm} />
-        {!bare && <Movable {...place} width={width} pivot={pivotHere} label={name} grab="anywhere" onMove={to => setPlace(at => ({ ...at, ...to }))}>
-          {solid ? <Solid {...solid}>{content}</Solid> : customRelief ? content : <Relief sideColors={sideColors} place={place} camera={camera} width={width} depth={depth} heightMm={heightMm} path={shapes[0]?.path ?? ROUND_CASE}>{content}</Relief>}
-        </Movable>}
-        <Movable {...lamp} width={LAMP_WIDTH} label="Desk lamp" className="perspective__lamp" onMove={to => setLamp(at => ({ ...at, ...to }))}>
-          <DeskLamp camera={camera} lightPosition={{ ...lamp, width: LAMP_WIDTH, height: LAMP_HEIGHT }} shadowStrength={strength} on={on} onToggle={setOn} enamel="green" />
-        </Movable>
-      </Desk></Perspective></DeskLighting>
+      <Room places={places} angle={angle} shadowStrength={strength} lampX={LAMP_PLACE.x} lampY={LAMP_PLACE.y}
+        shadows={!bare && <StudyShadow initialPlace={initialPlace} width={width} depth={depth} pivot={pivotHere} shapes={shapes} heightMm={heightMm} />}>
+        {!bare && <StudyObject name={name} initialPlace={initialPlace} width={width} depth={depth} pivot={pivotHere} solid={solid} customRelief={customRelief} sideColors={sideColors} heightMm={heightMm} shapes={shapes}>{children}</StudyObject>}
+      </Room>
     </div></div>
   </section>;
 }

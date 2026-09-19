@@ -1,10 +1,11 @@
+import { CoffeeRings } from '../../components/3D/Mug/Stained';
+import { DESK, useCoffeeTrail } from '../../components/3D/Mug/trail';
 import { PAPER_MM, mmToUnits } from '../../geometry/physicalScale';
 import { RunSheet, SitePlan } from './DeskPapers';
 import { Contract } from '../../components/2D/Contract/Contract';
 import { Handbill } from '../../experiments/BandIntro/Handbill';
 import { BAND_HANDBILL_FRONT, BAND_HANDBILL_BACK } from '../../experiments/BandIntro/Handbill.band';
-import { DossierCover } from './DossierCover';
-import { BandDossier } from '../../sections/BandDossier/BandDossier';
+import { DeskDossier } from './DeskDossier';
 import { memo, useCallback, useRef, useState, type ReactNode } from 'react';
 import { Movable, type Place } from '../../behaviors/Movable/Movable';
 import { usePlace, usePlaceEffect, usePlaces } from '../../behaviors/Movable/places';
@@ -48,15 +49,12 @@ const HANDLE: Inspect = { fill: 0.7, upright: false };
 /* The handbill is one big button to turn it over, so nothing is left of its face to pick it up by:
    it comes up on the first press, and is turned over while it is up. */
 const TURN_OVER: Inspect = { fill: 0.9, grab: 'anywhere' };
-/* The dossier is drawn as a spread with the folder closed on the right of it, so the thing to bring
-   up is the cover and not the empty half beside it. */
-const READ_FOLDER: Inspect = { fill: 0.86, subject: '.folder__cover' };
 const OBJECT_DRAWINGS: Omit<ObjectSpec, 'width'>[] = [
   { id: 'sitePlan', name: 'Festival site plan', widthMm: PAPER_MM.width, ratio: PAPER_MM.height / PAPER_MM.width, height: .2, flat: true, place: { x: 400, y: 455, rotation: -8 }, content: <SitePlan /> , inspect: READ },
   { id: 'poster', name: 'Band poster', widthMm: PAPER_MM.width, ratio: PAPER_MM.height / PAPER_MM.width, height: .2, flat: true, place: { x: 455, y: 385, rotation: -5 }, content: <Handbill front={BAND_HANDBILL_FRONT} back={BAND_HANDBILL_BACK} stock="goldenrod" spot="purple" /> , inspect: TURN_OVER },
   { id: 'setTimes', name: 'Set times', widthMm: PAPER_MM.width, ratio: PAPER_MM.height / PAPER_MM.width, height: .2, flat: true, place: { x: 655, y: 415, rotation: 4 }, content: <RunSheet /> , inspect: READ },
   { id: 'contract', name: 'Performance contract', widthMm: PAPER_MM.width, ratio: PAPER_MM.height / PAPER_MM.width, height: .2, flat: true, place: { x: 960, y: 415, rotation: -3 }, content: <Contract rotation={0} /> , inspect: READ },
-  { id: 'dossier', name: 'Band dossier', widthMm: 482, ratio: 960/1440, height: 1, flat: true, place: { x: 370, y: 330, rotation: -2 }, content: <BandDossier className="dossier--branded" sticker={<DossierCover />} open={false} rotation={0} tape={null} /> , inspect: READ_FOLDER },
+  { id: 'dossier', name: 'Band dossier', widthMm: 482, ratio: 915/1440, height: 1, flat: true, place: { x: 200, y: 330, rotation: -2 } },
   { id: 'clock', name: 'Desk clock', widthMm: 90, ratio: 560/720, height: 15, place: { x: 60, y: 65, rotation: -4 }, content: <DeskClock /> },
   // CradleRelief works its own rail and ball elevations out of the width it is given.
   { id: 'cradle', name: 'Newton’s cradle', widthMm: 120, ratio: 600/720, height: 90, place: { x: 330, y: 65 }, shapes: [{ path: 'M3 5H97V95H3Z', heightMm: 8 }, { path: 'M8 20H92V23H8Z M8 77H92V80H8Z', heightMm: 90 }] },
@@ -134,13 +132,13 @@ function PenRelief({ place, placeId, camera, width }: { place: Place; placeId?: 
   thing redraws one shadow rather than all of them. The light is still context,
   so every shadow does move together when the lamp does.
 */
-const ObjectShadow = memo(function ObjectShadow({ object, place, height }: { object: ObjectSpec; place: Place; height: number }) {
+const ObjectShadow = memo(function ObjectShadow({ object, place, height, surfaceWidth }: { surfaceWidth?: number; object: ObjectSpec; place: Place; height: number }) {
   /* Its size at a scale of one: whatever the thing has been grown to is read off
      its place, in the caster, where a drag can reach it without a render. */
   const size = { width: object.width, depth: object.width * object.ratio, heightMm: object.height };
   /* Counted apart from the thing itself: a shadow that rebuilds when its object
      moves is a different fact from the object rebuilding, and they want different fixes. */
-  return <Tallied id={`${object.name} — shadow`}><StudyLighting shadowOnly surfaceHeight={height} place={place} placeId={object.id} pivot={pivotOf(object)} width={size.width} depth={size.depth} heightMm={size.heightMm} shapes={object.shapes ?? [{ path: ROUND_CASE }] as StudyShape[]} /></Tallied>;
+  return <Tallied id={`${object.name} — shadow`}><StudyLighting shadowOnly surfaceWidth={surfaceWidth} surfaceHeight={height} place={place} placeId={object.id} pivot={pivotOf(object)} width={size.width} depth={size.depth} heightMm={size.heightMm} shapes={object.shapes ?? [{ path: ROUND_CASE }] as StudyShape[]} /></Tallied>;
 });
 
 /** Which things are on the desk at all: everything, or the few named. */
@@ -151,9 +149,9 @@ const chosen = (only?: readonly string[]) => (only ? DESK_OBJECTS.filter(object 
   and writes itself, so this renders once and then sits still however much is
   dragged about over it.
 */
-export function DeskObjectShadows({ height, only }: { height: number; only?: readonly string[] }) {
+export function DeskObjectShadows({ height, surfaceWidth, only }: { surfaceWidth?: number; height: number; only?: readonly string[] }) {
   return <>{chosen(only).filter(object => !object.flat).map(object =>
-    <ObjectShadow key={object.id} object={object} place={DEFAULT_OBJECT_PLACEMENTS[object.id] ?? object.place} height={height} />)}</>;
+    <ObjectShadow surfaceWidth={surfaceWidth} key={object.id} object={object} place={DEFAULT_OBJECT_PLACEMENTS[object.id] ?? object.place} height={height} />)}</>;
 }
 
 /*
@@ -165,9 +163,9 @@ export function DeskObjectShadows({ height, only }: { height: number; only?: rea
 /*
   Which things still have to be rebuilt when they move.
 
-  A Solid measures itself off the plane after the fact, a sheet of paper is the
-  same drawing wherever it lies, and a Relief and the pen now write their own
-  layers from a subscription — none of those needs to hear about a drag.
+  A Solid measures itself off the plane through its own small subscribed
+  wrapper. A sheet is the same drawing wherever it lies, and a Relief and the
+  pen write their own layers by subscription, so none rebuilds this owner.
 
   That leaves the cradle. Its drawing is worked out point by point from where it
   stands, and its rails, strings and five hanging balls are all different
@@ -177,7 +175,14 @@ export function DeskObjectShadows({ height, only }: { height: number; only?: rea
 */
 const worksItselfOutFromWhereItStands = (object: ObjectSpec) => object.id === 'cradle';
 
-export const DeskObject = memo(function DeskObject({ object, place, camera, layer, held, onFront }: { object: ObjectSpec; place: Place; camera: StudyCamera; layer: number; held: boolean; onFront: (id: string) => void }) {
+/** Only the solid's projection re-renders when its place changes. Its content
+ * element stays stable, so moving a phone doesn't rebuild its controls. */
+function PositionedSolid({ object }: { object: ObjectSpec }) {
+  usePlace(object.id);
+  return <Solid {...object.solid!}>{object.content}</Solid>;
+}
+
+export const DeskObject = memo(function DeskObject({ object, place, camera, layer, held, onFront, onSettle }: { onSettle?: (place: Place) => void; object: ObjectSpec; place: Place; camera: StudyCamera; layer: number; held: boolean; onFront: (id: string) => void }) {
   const follows = worksItselfOutFromWhereItStands(object);
   const places = usePlaces();
   /* Subscribed only by the thing that still needs it; the hook is always called,
@@ -187,8 +192,8 @@ export const DeskObject = memo(function DeskObject({ object, place, camera, laye
   const size = sizeOf(object, at);
   /* Sizes handed on at a scale of one: whatever the thing has been grown to is
      read off its place, inside the drawing, where a drag can reach it without a render. */
-  const drawing = object.flat ? object.content : object.id === 'pen' ? <PenRelief place={at} placeId={object.id} camera={camera} width={object.width} /> : object.id === 'cradle' ? <CradleRelief place={at} camera={camera} width={size.width} /> : object.solid ? <Solid {...object.solid}>{object.content}</Solid> : <Relief place={at} placeId={object.id} camera={camera} width={object.width} depth={object.width * object.ratio} heightMm={object.height} path={object.shapes?.[0].path ?? ROUND_CASE} sideColors={object.colors}>{object.content}</Relief>;
-  return <Movable id={object.id} {...at} width={object.width} pivot={pivotOf(object)} resizable label={object.name} z={held ? INSPECT_LAYER : layer} onGrab={() => { if (object.flat) onFront(object.id); }} grab={object.id === 'poster' ? 'anywhere' : object.flat ? 'body' : 'anywhere'}>
+  const drawing = object.flat ? object.content : object.id === 'pen' ? <PenRelief place={at} placeId={object.id} camera={camera} width={object.width} /> : object.id === 'cradle' ? <CradleRelief place={at} camera={camera} width={size.width} /> : object.solid ? <PositionedSolid object={object} /> : <Relief place={at} placeId={object.id} camera={camera} width={object.width} depth={object.width * object.ratio} heightMm={object.height} path={object.shapes?.[0].path ?? ROUND_CASE} sideColors={object.colors}>{object.content}</Relief>;
+  return <Movable onSettle={onSettle} id={object.id} {...at} width={object.width} pivot={pivotOf(object)} resizable label={object.name} z={held ? INSPECT_LAYER : layer} onGrab={() => { if (object.flat) onFront(object.id); }} grab={object.id === 'poster' ? 'anywhere' : object.flat ? 'body' : 'anywhere'}>
     {object.inspect ? <Inspectable id={object.id} {...object.inspect}>{drawing}</Inspectable> : drawing}
   </Movable>;
 });
@@ -199,6 +204,18 @@ export const DeskObject = memo(function DeskObject({ object, place, camera, laye
   its own element, its shadow follows by subscription, and only a Relief — which
   is genuinely a different drawing at a different place — renders again.
 */
+/** The desk owns stains; each set-down snapshots the mug's current drawn footprint.
+ * Existing stains never subscribe to mug scale or follow it through its Solid. */
+function MugWithTrail(props: React.ComponentProps<typeof DeskObject>) {
+  const places = usePlaces();
+  const footprint = () => ({ ...(places?.get(props.object.id) ?? props.place), width: props.object.width });
+  const trail = useCoffeeTrail(footprint);
+  return <>
+    <CoffeeRings rings={trail.on(DESK)} />
+    <DeskObject {...props} onSettle={place => { trail.lift(); trail.settleAt({ ...place, width: props.object.width }); }} />
+  </>;
+}
+
 export function DeskObjects({ camera, only }: { camera: StudyCamera; only?: readonly string[] }) {
   const [front, setFront] = useState<string>();
   const inspection = useInspection();
@@ -208,6 +225,8 @@ export function DeskObjects({ camera, only }: { camera: StudyCamera; only?: read
   return <>{chosen(only).map((object, index) => {
     /* Paper stays under everything that stands up, however recently it was handled. */
     const layer = object.flat ? (front === object.id ? PAPER_LAYER + DESK_OBJECTS.length : PAPER_LAYER + index) : OBJECT_LAYER + index;
-    return <DeskObject key={object.id} object={object} place={DEFAULT_OBJECT_PLACEMENTS[object.id] ?? object.place} camera={camera} layer={layer} held={inspection?.held === object.id} onFront={bringForward} />;
+    if (object.id === 'dossier') return <DeskDossier key={object.id} width={object.width} place={DEFAULT_OBJECT_PLACEMENTS[object.id]} layer={layer} onFront={bringForward} />;
+    const Component = object.id === 'mug' ? MugWithTrail : DeskObject;
+    return <Component key={object.id} object={object} place={DEFAULT_OBJECT_PLACEMENTS[object.id] ?? object.place} camera={camera} layer={layer} held={inspection?.held === object.id} onFront={bringForward} />;
   })}</>;
 }

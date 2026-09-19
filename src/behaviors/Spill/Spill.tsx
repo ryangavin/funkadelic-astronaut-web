@@ -1,4 +1,5 @@
-import { createContext, useContext, type CSSProperties, type ReactNode } from 'react';
+import { Children, createContext, useContext, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { useClosingPresence } from '../Presence/useClosingPresence';
 import { Movable, type MovableProps, type Place } from '../Movable/Movable';
 import './Spill.css';
 
@@ -12,6 +13,14 @@ export const SPILL_STAGGER_MS = 110;
 export type SpillProps = {
   /** Whether the container is open. Opening sends the items out; closing draws them back. */
   open: boolean;
+  /** Mount contents on demand and remove them after the closing flight. */
+  lazy?: boolean;
+  /** Keep packed drawings visible when a real container cover occludes them. */
+  hidePacked?: boolean;
+  /** Scale of the packed pile, independent of landed sizes. */
+  packedScale?: number;
+  /** Last flight index, when children are grouped in a fragment or component. */
+  lastOrder?: number;
   /** Where the items lie packed, as the point their centres gather on. Defaults to the container's own centre. */
   from?: { x: number; y: number };
   /** How far, in degrees, the packed items are turned from their landed tilt: they come out at odd angles and settle. */
@@ -42,19 +51,29 @@ const Context = createContext<SpillContext>({ open: true, stagger: SPILL_STAGGER
  * the same units as a Pin, so it can sit inside a folder's well or anywhere
  * else on a sheet. Reduced motion places everything without a flight.
  */
-export function Spill({ open, from, scatter = 12, duration = SPILL_FLIGHT_MS, stagger = SPILL_STAGGER_MS, delay = 0, unit, children, className = '', style }: SpillProps) {
+export function Spill({ open, lazy = false, hidePacked = true, packedScale = 1, lastOrder, from, scatter = 12, duration = SPILL_FLIGHT_MS, stagger = SPILL_STAGGER_MS, delay = 0, unit, children, className = '', style }: SpillProps) {
+  const present = useClosingPresence(open, duration * 0.8 + (lastOrder ?? Math.max(0, Children.count(children) - 1)) * stagger);
+  const [unpacked, setUnpacked] = useState(open);
+  useEffect(() => {
+    if (!open) { setUnpacked(false); return; }
+    // A newly mounted pile needs a painted packed frame before it can fly out.
+    let frame = requestAnimationFrame(() => { frame = requestAnimationFrame(() => setUnpacked(true)); });
+    return () => cancelAnimationFrame(frame);
+  }, [open]);
+  const shown = lazy ? open && unpacked : open;
   const vars = {
     '--spill-from-x': from ? `${from.x}` : undefined,
     '--spill-from-y': from ? `${from.y}` : undefined,
+    '--spill-packed-scale': packedScale,
     '--spill-flight': `${duration}ms`,
     '--spill-delay': `${delay}ms`,
     '--spill-unit': unit,
     ...style,
   } as CSSProperties;
   return (
-    <Context.Provider value={{ open, stagger, scatter }}>
-      <div className={`spill ${className}`} data-open={open ? 'true' : 'false'} data-from={from ? 'point' : 'centre'} style={vars}>
-        {children}
+    <Context.Provider value={{ open: shown, stagger, scatter }}>
+      <div className={`spill ${className}`} data-hide-packed={hidePacked} data-open={shown ? 'true' : 'false'} inert={!open} aria-hidden={!open} data-from={from ? 'point' : 'centre'} style={vars}>
+        {(!lazy || present) && children}
       </div>
     </Context.Provider>
   );

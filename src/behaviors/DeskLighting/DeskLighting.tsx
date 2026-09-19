@@ -1,10 +1,11 @@
+import { DEFAULT_LIGHT_TUNING, type LightTuning } from '../../geometry/lightingSetup';
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 export const DEFAULT_SHADOW_STRENGTH = 0.36;
 
 export type LightOccluderPoint = { x: number; y: number; height: number; radius: number };
-export type LampOccluder = { base: LightOccluderPoint; elbow: LightOccluderPoint; neck: LightOccluderPoint };
-export type DeskLight = { x: number; y: number; height: number; on: boolean; shadowStrength?: number; lamp?: LampOccluder };
+export type LampOccluder = { base: LightOccluderPoint; elbow: LightOccluderPoint; neck: LightOccluderPoint; shade?: LightOccluderPoint };
+export type DeskLight = { x: number; y: number; height: number; on: boolean; intensity?: number; tuning?: LightTuning; shadowStrength?: number; lamp?: LampOccluder };
 
 /*
   How far anything on this desk is thrown by the light. One rule, in one place.
@@ -41,12 +42,12 @@ export function castFrom(x: number, y: number, height: number, light: DeskLight)
   const dy = y - light.y;
   const distance = Math.hypot(dx, dy);
   const ratio = castRatio(height, light);
-  const length = Math.min(CAST_REACH, distance * ratio);
+  const length = Math.min(light.tuning?.shadowReach ?? CAST_REACH, distance * ratio);
   return {
     x: distance ? dx / distance * length : 0,
     y: distance ? dy / distance * length : 0,
     scale: 1 + Math.min(2, ratio),
-    opacity: light.on ? (light.shadowStrength ?? DEFAULT_SHADOW_STRENGTH) / (1 + (distance / 1000) ** 2) : 0,
+    opacity: light.on ? (light.shadowStrength ?? DEFAULT_SHADOW_STRENGTH) / (1 + (distance / (light.tuning?.shadowAttenuation ?? DEFAULT_LIGHT_TUNING.shadowAttenuation)) ** 2) : 0,
   };
 }
 
@@ -172,10 +173,10 @@ export function useDeskLightWriter() {
 /** The lamp registers its bulb; consumers never need to know the lamp's artwork geometry. */
 export function useRegisterDeskLight(light: DeskLight | null) {
   const store = useContext(Store);
-  const x = light?.x, y = light?.y, height = light?.height, on = light?.on, shadowStrength = light?.shadowStrength, lamp = light?.lamp;
+  const x = light?.x, y = light?.y, height = light?.height, on = light?.on, shadowStrength = light?.shadowStrength, lamp = light?.lamp, intensity = light?.intensity, tuning = light?.tuning;
   useEffect(() => {
     if (!store || x === undefined || y === undefined || height === undefined || on === undefined) return;
-    store.set({ x, y, height, on, shadowStrength, lamp });
+    store.set({ x, y, height, on, shadowStrength, lamp, intensity, tuning });
     return () => store.set(null);
-  }, [store, x, y, height, on, shadowStrength, lamp]);
+  }, [store, x, y, height, on, shadowStrength, lamp, intensity, tuning]);
 }

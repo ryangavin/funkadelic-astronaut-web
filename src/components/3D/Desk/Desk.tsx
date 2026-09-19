@@ -14,6 +14,8 @@ export type DeskProps = {
   wood?: DeskWood;
   /** Height of the top in desk units, where 1440 is its width. */
   height?: number;
+  /** Physical surface width in desk units; object units remain unchanged. */
+  width?: number;
   /** How many boards the top is glued up from. 1 is a single slab, the usual desk top. */
   boards?: number;
   /** How strongly the room's light falls across the top, 0 to 1: a satin sheen from the upper left and shade in the corners. */
@@ -34,7 +36,7 @@ export type DeskProps = {
  * placed on it with Pin, in desk units, so a composition on it scales as one
  * piece.
  */
-export function Desk({ wood = 'walnut', height = 810, boards = 1, light = 1, edge = 22, children, className = '', style, ...rest }: DeskProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'children' | 'className' | 'style'>) {
+export function Desk({ wood = 'walnut', width = DESK_WIDTH, height = 810, boards = 1, light = 1, edge = 22, children, className = '', style, ...rest }: DeskProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'children' | 'className' | 'style'>) {
   const id = `desk-${useId().replace(/:/g, '')}`;
   const count = Math.max(1, Math.round(boards));
   return (
@@ -42,18 +44,18 @@ export function Desk({ wood = 'walnut', height = 810, boards = 1, light = 1, edg
       {...rest}
       className={`desk ${className}`}
       data-wood={wood}
-      style={{ '--desk-height': height, '--desk-light': light, '--desk-boards': count, '--desk-edge': edge, ...style } as React.CSSProperties}
+      style={{ '--desk-width': width, '--desk-height': height, '--desk-light': light, '--desk-boards': count, '--desk-edge': edge, ...style } as React.CSSProperties}
     >
       <div className="desk__top">
         <svg className="desk__filters" aria-hidden="true" focusable="false">
           <defs>
             {/* The figure: low-frequency turbulence, stretched along the top, that bends the bands of tone. */}
-            <filter id={`${id}-grain`} x="-5%" y="-10%" width="110%" height="120%" colorInterpolationFilters="sRGB">
+            <filter id={`${id}-grain`} x="-5%" y="-10%" width="110%" height="120%" primitiveUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
               <feTurbulence type="fractalNoise" baseFrequency="0.0016 0.012" numOctaves="3" seed="11" result="wave" />
               <feDisplacementMap in="SourceGraphic" in2="wave" scale="90" xChannelSelector="R" yChannelSelector="G" />
             </filter>
             {/* Pores: fine noise, tilted to the grain, lit from the side. */}
-            <filter id={`${id}-pores`} x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+            <filter id={`${id}-pores`} x="0" y="0" width="100%" height="100%" primitiveUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
               <feTurbulence type="fractalNoise" baseFrequency="0.05 0.8" numOctaves="2" seed="3" result="noise" />
               <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.4 -0.1" />
             </filter>
@@ -62,11 +64,17 @@ export function Desk({ wood = 'walnut', height = 810, boards = 1, light = 1, edg
         <div className="desk__boards" aria-hidden="true">
           {Array.from({ length: count }, (_, board) => (
             <div key={board} className="desk__board" style={{ '--desk-board': board } as React.CSSProperties}>
-              <div className="desk__bands" style={{ filter: `url(#${id}-grain)` }} />
+              {/* Filter primitives now see desk units, rather than responsive CSS pixels.
+                  Keep the existing gradients and their 14% overscan inside that space. */}
+              <svg className="desk__grain" viewBox={`0 0 ${width * 1.28} ${height / count * 1.28}`} preserveAspectRatio="none" focusable="false">
+                <foreignObject width={width * 1.28} height={height / count * 1.28} filter={`url(#${id}-grain)`}>
+                  <div className="desk__bands" style={{ '--sheet-unit': '1px' } as React.CSSProperties} />
+                </foreignObject>
+              </svg>
             </div>
           ))}
         </div>
-        <svg className="desk__pores" aria-hidden="true" focusable="false" preserveAspectRatio="none">
+        <svg className="desk__pores" viewBox={`0 0 ${width} ${height}`} aria-hidden="true" focusable="false" preserveAspectRatio="none">
           <rect width="100%" height="100%" filter={`url(#${id}-pores)`} />
         </svg>
         <div className="desk__light" aria-hidden="true" />

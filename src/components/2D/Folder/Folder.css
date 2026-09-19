@@ -238,3 +238,11 @@
   line-height: 1.1;
   rotate: -1.5deg;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .folder__cover { transition: none; }
+}
+
+/* A scene can keep loose papers under the actual cover throughout its swing. */
+.folder__contents-layer { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.folder__contents-layer ~ .folder__cover { z-index: 3; }

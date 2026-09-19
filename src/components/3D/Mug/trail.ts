@@ -37,8 +37,8 @@ export const COFFEE_GONE = 0.04;
 /** The wood itself, which everything else lies on. */
 export const DESK = 'desk';
 
-/** Where a mug lies: its corner in the surface's units, its turn, and how wide its box is. */
-export type MugPlace = { x: number; y: number; rotation?: number; width: number };
+/** Mug placement in surface units. Width is the unscaled artwork box; scale is its current placement scale. */
+export type MugPlace = { x: number; y: number; rotation?: number; width: number; scale?: number };
 
 /** Something lying on the desk that a mug can be stood on, in the desk's units: a sheet of paper, a folder, a magazine. */
 export type Surface = { id: string; x: number; y: number; width: number; height: number; rotation?: number };
@@ -54,7 +54,8 @@ type Point = { x: number; y: number };
 const RADIANS = Math.PI / 180;
 
 /** The ring under a mug. The base is off the centre of the mug's box, so turning the mug swings the ring round with it. */
-export function ringUnder({ x, y, rotation = 0, width }: MugPlace): { x: number; y: number; width: number } {
+export function ringUnder({ x, y, rotation = 0, width: baseWidth, scale = 1 }: MugPlace): { x: number; y: number; width: number } {
+  const width = baseWidth * scale;
   const turn = rotation * RADIANS;
   const offsetX = (MUG_FOOT.x - 0.5) * width;
   const offsetY = (MUG_FOOT.y - 0.5) * width;
@@ -206,14 +207,14 @@ export function useCoffeeTrail(mug: () => MugPlace, over: () => readonly Surface
   const lift = () => {
     standing.current = false;
   };
-  const settle = () => {
+  const settleAt = (place?: MugPlace) => {
     if (standing.current) return;
     standing.current = true;
-    setTrail((down) => setDown(down, mug(), over()));
+    setTrail((down) => setDown(down, place ?? mug(), over()));
   };
 
   /** The rings left on one thing, newest first. */
   const on = (where: string) => trail[where] ?? NONE;
 
-  return { trail, on, lift, settle };
+  return { trail, on, lift, settle: () => settleAt(), settleAt };
 }

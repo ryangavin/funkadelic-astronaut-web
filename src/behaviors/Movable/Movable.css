@@ -173,3 +173,11 @@
     transition: none;
   }
 }
+
+/* The place store already supplies each arrangement frame. A second CSS
+   interpolation would put the drawing behind its shadow. This is not a drag:
+   keep the ordinary lift/scale/filter appearance. */
+.movable[data-arranging],
+.movable[data-arranging] > .movable__lift {
+  transition-property: none;
+}

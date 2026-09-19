@@ -1,3 +1,4 @@
+import { useClosingPresence } from '../../../behaviors/Presence/useClosingPresence';
 import type React from 'react';
 import { Weathered } from '../../../behaviors/Weathered/Weathered';
 import { Distressed } from '../../../foundations/Distressed/Distressed';
@@ -17,6 +18,8 @@ export type FolderProps = {
   stock?: FolderStock;
   /** Whether the front cover is swung open. Toggling it animates the swing. */
   open?: boolean;
+  /** Defer inside artwork until opening, then remove it after the cover closes. */
+  lazyContents?: boolean;
   /** Rubber stamps inside the front cover. Up to three read well. */
   stamps?: React.ReactNode[];
   /** Whether the stamps sit at the top or the bottom of the cover. */
@@ -27,11 +30,15 @@ export type FolderProps = {
   cover?: React.ReactNode;
   /** What sits in the well of the folder, on the right when open. */
   children?: React.ReactNode;
+  /** Scene-owned loose contents, beneath the moving cover in body coordinates. */
+  contentsLayer?: React.ReactNode;
   /** Tilt of the whole folder in degrees. */
   rotation?: number;
   className?: string;
   style?: React.CSSProperties;
 };
+
+export const FOLDER_CLOSE_MS = 950;
 
 const present = (node: React.ReactNode) => node != null && node !== '' && node !== false;
 
@@ -45,15 +52,18 @@ export function Folder({
   tab = 'top',
   stock = 'manila',
   open = true,
+  lazyContents = false,
   stamps = [],
   stampsAt = 'top',
   sticker,
   cover,
   children,
+  contentsLayer,
   rotation = 0,
   className = '',
   style,
 }: FolderProps) {
+  const contentsPresent = useClosingPresence(open, FOLDER_CLOSE_MS);
   return (
     <div
       className={`folder ${className}`}
@@ -71,7 +81,8 @@ export function Folder({
             </Weathered>
           ) : null}
         </Weathered>
-        <div className="folder__well">{children}</div>
+        <div className="folder__well" inert={!open} aria-hidden={!open}>{(!lazyContents || contentsPresent) && children}</div>
+        {contentsLayer && <div className="folder__contents-layer">{contentsLayer}</div>}
         <div className="folder__cover">
           <Weathered className="folder__face folder__face--inside" patina={0.5} flecks={0.5}>
             {stamps.slice(0, 3).map((stamp, index) => (
@@ -79,7 +90,7 @@ export function Folder({
                 <span className="folder__stamp-ink">{stamp}</span>
               </Distressed>
             ))}
-            <div className="folder__pocket">{cover}</div>
+            <div className="folder__pocket" inert={!open} aria-hidden={!open}>{(!lazyContents || contentsPresent) && cover}</div>
           </Weathered>
           <Weathered className="folder__face folder__face--outside" patina={0.5} flecks={0.5}>
             {present(sticker) ? <span className="folder__sticker">{sticker}</span> : null}

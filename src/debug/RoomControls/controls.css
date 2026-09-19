@@ -1,0 +1,54 @@
+.room-controls {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  width: 100%;
+  height: max(280px, calc(100dvh - var(--controls-top, 0px)));
+  overflow: hidden;
+  background: #211b16;
+}
+
+.room-controls__sidebar {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  color: #ead3a7;
+  font: 13px system-ui;
+  border-right: 1px solid #6d5b45;
+}
+
+.room-controls__fields { display: grid; gap: 12px; padding: 12px; }
+.room-controls__field { display: grid; gap: 6px; min-width: 0; margin: 0; padding: 8px; border: 1px solid #6d5b45; }
+.room-controls__field input[type='range'] { min-width: 0; width: 100%; }
+.room-controls__scene {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  container-type: size;
+  background: #171411;
+}
+
+.room-controls__scene .perspective-desk-room { min-height: 0; padding: 0; }
+
+/* Reserve space for the physical camera's status below the 16:9 scene. */
+.room-controls__scene .room { max-width: min(100%, calc(max(120px, 100cqh - 90px) * 16 / 9)); }
+.room-controls__sidebar:focus-visible, .room-controls__scene:focus-visible { outline: 2px solid #ead3a7; outline-offset: -2px; }
+
+@media (min-width: 521px) and (max-width: 700px) {
+  .room-controls { grid-template-columns: 196px minmax(0, 1fr); }
+  .room-controls__fields { padding: 8px; }
+  .room-controls__field { padding: 6px; }
+}
+
+@media (max-width: 520px) {
+  .room-controls {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(180px, 55%) minmax(0, 1fr);
+  }
+  .room-controls__scene { grid-row: 1; }
+  .room-controls__sidebar { grid-row: 2; border-right: 0; border-top: 1px solid #6d5b45; }
+  .room-controls__fields { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+  .room-controls__scene .room { max-width: 100%; }
+}
+
+.room-controls__performance { display: flex; align-items: center; gap: 8px; margin: 0; padding: 0 12px 16px; cursor: pointer; }

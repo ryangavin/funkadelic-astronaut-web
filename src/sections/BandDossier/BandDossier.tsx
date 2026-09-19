@@ -17,6 +17,8 @@ export type MemberPileProps = Pick<StackProps, 'spread' | 'spreadX' | 'duration'
   members?: MemberPacket[];
   /** Which member starts on top. */
   initial?: number;
+  selected?: number;
+  onSelect?: (index: number) => void;
   className?: string;
 };
 
@@ -25,8 +27,9 @@ export type MemberPileProps = Pick<StackProps, 'spread' | 'spreadX' | 'duration'
  * out to bring that card up, click the top card to send it under. Which card is
  * on top is announced for assistive technology.
  */
-export function MemberPile({ members = BAND_MEMBER_PACKETS, initial = 0, spread, spreadX, duration, side, className = '' }: MemberPileProps) {
-  const [index, setIndex] = useState(initial);
+export function MemberPile({ members = BAND_MEMBER_PACKETS, initial = 0, selected, onSelect, spread, spreadX, duration, side, className = '' }: MemberPileProps) {
+  const [ownIndex, setIndex] = useState(initial);
+  const index = selected ?? ownIndex;
   const count = members.length;
   return (
     <div className={`member-pile ${className}`} role="region" aria-roledescription="carousel" aria-label="Meet the band">
@@ -36,7 +39,7 @@ export function MemberPile({ members = BAND_MEMBER_PACKETS, initial = 0, spread,
         spreadX={spreadX}
         duration={duration}
         side={side}
-        onSelect={(item) => setIndex(item === index ? (index + 1) % count : item)}
+        onSelect={(item) => { const next = item === index ? (index + 1) % count : item; setIndex(next); onSelect?.(next); }}
         itemLabel={(item, depth) => (depth === 0 ? `${members[item].name}, on top. Show the next card` : `Bring ${members[item].name} to the front`)}
       >
         {members.map(({ name, ...packet }) => (
@@ -65,6 +68,15 @@ export type BandDossierProps = {
   stock?: FolderStock;
   /** Whether the folder lies open. */
   open?: boolean;
+  /** Requested state while a scene stages the cover separately. Defaults to open. */
+  requestedOpen?: boolean;
+  /** Loose scene contents hosted beneath the actual cover. */
+  contentsLayer?: ReactNode;
+  /** Requests only: the containing scene decides what opening and closing mean. */
+  onOpen?: () => void;
+  onClose?: () => void;
+  /** Hide the inside artwork when a containing scene lays its contents on the desk. */
+  showContents?: boolean;
   /** Tilt of the folder on the desk, in degrees. */
   rotation?: number;
   /** Which member starts on top of the pile. */
@@ -134,6 +146,11 @@ export function BandDossier({
   sticker = 'Funkadelic Astronaut',
   stock,
   open = true,
+  onOpen,
+  requestedOpen = open,
+  contentsLayer,
+  onClose,
+  showContents = true,
   rotation = -1,
   initial,
   spread = 1.1,
@@ -157,6 +174,7 @@ export function BandDossier({
   className = '',
   style,
 }: BandDossierProps) {
+  const [selected, setSelected] = useState(initial ?? 0);
   const placement = {
     '--dossier-proof-width': `${proofWidth}%`,
     '--dossier-proof-x': `${proofX}%`,
@@ -177,11 +195,13 @@ export function BandDossier({
         tab="side"
         stock={stock}
         open={open}
+        lazyContents
+        contentsLayer={contentsLayer}
         stamps={stamps}
         stampsAt="bottom"
         sticker={sticker}
         rotation={rotation}
-        cover={
+        cover={showContents &&
           <>
             <div className="dossier__proof">
               <Polaroid
@@ -202,12 +222,13 @@ export function BandDossier({
           </>
         }
       >
-        <div className="dossier__well">
-          <MemberPile members={members} initial={initial} spread={spread} spreadX={spreadX} duration={duration} />
+        {showContents && <div className="dossier__well">
+          <MemberPile members={members} selected={selected} onSelect={setSelected} spread={spread} spreadX={spreadX} duration={duration} />
           <OneSheet {...oneSheet} rotation={bandRotation} />
           {children}
-        </div>
+        </div>}
       </Folder>
+      {(onOpen || onClose) && <button type="button" className="dossier__toggle" aria-expanded={requestedOpen} aria-label={requestedOpen ? 'Close the press package' : 'Open the press package'} onClick={requestedOpen ? onClose : onOpen}><span aria-hidden="true">{requestedOpen ? 'Return' : 'Open'}<br />{requestedOpen ? '& close' : 'press kit'}</span></button>}
     </section>
   );
 }

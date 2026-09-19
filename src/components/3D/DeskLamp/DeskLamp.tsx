@@ -1,3 +1,5 @@
+import { lampPlacement } from '../../../geometry/lampPlacement';
+import type { LightTuning } from '../../../geometry/lightingSetup';
 import { LAMP_HEIGHT, mmToUnits } from '../../../geometry/physicalScale';
 import type React from 'react';
 import { useContext, useEffect, useId, useRef, useState } from 'react';
@@ -6,7 +8,7 @@ import { articulateLamp, type LampPose, type LampPoint } from './articulation';
 import './DeskLamp.css';
 import { projectElevation } from '../../../behaviors/Perspective/elevation';
 import { DEFAULT_SHADOW_STRENGTH, useDeskLightWriter, useRegisterDeskLight } from '../../../behaviors/DeskLighting/DeskLighting';
-import { usePlaceEffect, usePlaces } from '../../../behaviors/Movable/places';
+import { usePlace, usePlaceEffect, usePlaces } from '../../../behaviors/Movable/places';
 
 export const DESK_LAMP_ENAMELS = ['red', 'mustard', 'green', 'black'] as const;
 export type DeskLampEnamel = (typeof DESK_LAMP_ENAMELS)[number];
@@ -48,6 +50,9 @@ export type DeskLampProps = {
   camera?: Parameters<typeof projectElevation>[3];
   /** Darkness of shadows this light casts on the desk, from 0 (none) to 1 (strongest). */
   shadowStrength?: number;
+  /** Relative brightness of the emitted light pools. */
+  intensity?: number;
+  tuning?: LightTuning;
   /** Opt in to scene lighting: lamp box placement and bulb elevation in desk units. */
   lightPosition?: { x: number; y: number; width: number; height: number; rotation?: number };
   /** Whether it is switched on. Clicking the shade switches it. */
@@ -69,7 +74,7 @@ export type DeskLampProps = {
  * drawn separately, by `LampLight`, beneath whatever lies in it. The shade is
  * the switch. Measured in 720ths of the box, which is 480 by 400 mm.
  */
-export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledHead, onHeadChange, camera, shadowStrength = DEFAULT_SHADOW_STRENGTH, lightPosition, placeId, on = true, onToggle, enamel = 'red', rotation = 0, className = '', style }: DeskLampProps) {
+export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledHead, onHeadChange, camera, tuning, intensity = 1, shadowStrength = DEFAULT_SHADOW_STRENGTH, lightPosition, placeId, on = true, onToggle, enamel = 'red', rotation = 0, className = '', style }: DeskLampProps) {
   const id = `lamp-${useId().replace(/:/g, '')}`;
   const [ownArm, setOwnArm] = useState(() => controlledPose ?? articulateLamp(controlledHead ?? DESK_LAMP_SHADE));
   /*
@@ -91,15 +96,12 @@ export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledH
   const project = useContext(MovableProject);
   const drag = useRef<{ id: number; px: number; py: number; pointer: LampPoint; head: LampPoint; pose: LampPose; moved: boolean } | null>(null);
   const suppressClick = useRef(false);
-  const turn = (rotation + (lightPosition?.rotation ?? 0)) * Math.PI / 180;
   const changeHead = (next: LampPoint) => {
     const pose = articulateLamp(next, arm);
     setOwnArm(pose);
     onHeadChange?.(pose.head);
     onPoseChange?.(pose);
   };
-  const dx = (x - 360) / 720;
-  const dy = (y - 300) / 720;
   const elevated = !!(camera && lightPosition);
   /*
     Where the lamp is standing right now. With a place of its own that is the
@@ -109,18 +111,17 @@ export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledH
     rendered.
   */
   const places = usePlaces();
+  // Refresh only this lamp’s projected artwork when its live box moves.
+  usePlace(placeId);
   const standing = () => (placeId && places?.get(placeId)) || lightPosition;
 
   // Estimated construction heights: base 25 mm, elbow 230 mm, shade 50 mm above the bulb.
   const point = (px: number, py: number, height: number) => {
     if (!camera || !lightPosition) return { x: px, y: py, scale: 1 };
-    const unit = lightPosition.width / 720;
-    const ox = (px - 360) * unit, oy = (py - 300) * unit;
-    const at = standing()!;
-    const cx = at.x + 360 * unit, cy = at.y + 300 * unit;
-    const world = projectElevation(cx + ox * Math.cos(turn) - oy * Math.sin(turn), cy + ox * Math.sin(turn) + oy * Math.cos(turn), height, camera);
-    return { x: 360 + ((world.x - cx) * Math.cos(turn) + (world.y - cy) * Math.sin(turn)) / unit,
-      y: 300 + (-(world.x - cx) * Math.sin(turn) + (world.y - cy) * Math.cos(turn)) / unit, scale: world.scale };
+    const rig = lampPlacement(lightPosition.width, standing()!, rotation);
+    const physical = rig.world(px, py, height);
+    const projected = projectElevation(physical.x, physical.y, physical.height, camera);
+    return { ...rig.local(projected.x, projected.y), scale: projected.scale };
   };
   const bulbHeight = lightPosition?.height ?? LAMP_HEIGHT;
   const constructionScale = bulbHeight / LAMP_HEIGHT;
@@ -141,21 +142,17 @@ export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledH
     Where the bulb is, worked out from where the lamp stands. Everything but the
     standing comes from the pose, which only changes when the shade is aimed.
   */
-  const bulbAt = (at: { x: number; y: number } | undefined) => {
+  const bulbAt = (at: { x: number; y: number; rotation?: number; scale?: number } | undefined) => {
     if (!lightPosition || !at) return null;
-    const unit = lightPosition.width / 720;
-    const world = (px: number, py: number, height: number, radius: number) => ({
-      x: at.x + unit * (360 + (px - 360) * Math.cos(turn) - (py - 300) * Math.sin(turn)),
-      y: at.y + unit * (300 + (px - 360) * Math.sin(turn) + (py - 300) * Math.cos(turn)),
-      height, radius: radius * unit,
-    });
+    const rig = lampPlacement(lightPosition.width, at, rotation);
+    const world = rig.world;
     return {
-      x: at.x + lightPosition.width * (0.5 + dx * Math.cos(turn) - dy * Math.sin(turn)),
-      y: at.y + lightPosition.width * (300 / 720 + dx * Math.sin(turn) + dy * Math.cos(turn)),
-      height: lightPosition.height,
-      lamp: { base: world(600, 110, mmToUnits(25) * constructionScale, 110), elbow: world(arm.elbow.x, arm.elbow.y, mmToUnits(230) * constructionScale, 12), neck: world(x, y, bulbHeight + mmToUnits(50) * constructionScale, 11) },
+      ...world(x, y, lightPosition.height),
+      lamp: { base: world(600, 110, mmToUnits(25) * constructionScale, 110), elbow: world(arm.elbow.x, arm.elbow.y, mmToUnits(230) * constructionScale, 12), neck: world(x, y, bulbHeight + mmToUnits(50) * constructionScale, 11), shade: world(x, y, bulbHeight + mmToUnits(50) * constructionScale, radius) },
       shadowStrength: Number.isFinite(shadowStrength) ? Math.min(1, Math.max(0, shadowStrength)) : DEFAULT_SHADOW_STRENGTH,
-      on,
+      on: on && intensity > 0,
+      intensity,
+      tuning,
     };
   };
   /* Without a place of its own the light follows the props, as it always did. */
@@ -173,14 +170,15 @@ export function DeskLamp({ pose: controlledPose, onPoseChange, head: controlledH
   const pointer = (clientX: number, clientY: number): LampPoint => {
     if (project && camera && lightPosition) {
       const surface = project(clientX, clientY);
-      const unit = lightPosition.width / 720;
+      const rig = lampPlacement(lightPosition.width, standing()!, rotation);
+      const elevation = (bulbHeight + mmToUnits(50) * constructionScale) * rig.scale;
       const tilt = (90 - camera.angle) * Math.PI / 180;
-      const k = projectElevation(0, 0, bulbHeight + mmToUnits(50) * constructionScale, camera).scale;
+      const k = projectElevation(0, 0, elevation, camera).scale;
+      if (k === 0) return { x, y };
       const wx = camera.width / 2 + (surface.x - camera.width / 2) / k;
-      const wy = camera.surfaceHeight + (surface.y - camera.surfaceHeight) / k + (bulbHeight + mmToUnits(50) * constructionScale) * Math.tan(tilt);
-      const at = standing()!;
-      const ox = wx - at.x - 360 * unit, oy = wy - at.y - 300 * unit;
-      return { x: 360 + (ox * Math.cos(turn) + oy * Math.sin(turn)) / unit, y: 300 + (-ox * Math.sin(turn) + oy * Math.cos(turn)) / unit };
+      const target = camera.targetY ?? camera.surfaceHeight;
+      const wy = target + (surface.y - target) / k + elevation * Math.tan(tilt);
+      return rig.local(wx, wy);
     }
     const matrix = svg.current?.getScreenCTM();
     const local = matrix ? new DOMPoint(clientX, clientY).matrixTransform(matrix.inverse()) : { x: clientX, y: clientY };

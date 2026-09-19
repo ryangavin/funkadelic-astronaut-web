@@ -22,12 +22,12 @@ test('Desk is a wooden top in sheet units whose surface measures against the des
   assert.match(component, /className="desk__board"/);
   assert.match(component, /className="desk__pores"/);
   // Pins work on it, and the height in desk units is measured one level in from the container.
-  assert.match(css, /\.desk \{[\s\S]+?--sheet-unit: calc\(100cqw \/ 1440\)/);
+  assert.match(css, /\.desk \{[\s\S]+?--sheet-unit: calc\(100cqw \/ var\(--desk-width, 1440\)\)/);
   assert.match(css, /\.desk \{[\s\S]+?container-type: inline-size/);
   assert.match(css, /\.desk__top \{[\s\S]+?height: calc\(var\(--desk-height\) \* var\(--sheet-unit\)\)/);
   assert.match(css, /\.desk__top \{[\s\S]+?overflow: clip/);
   assert.match(css, /\.desk\[data-wood='oak'\] \{/);
-  assert.match(css, /\.desk__bands \{[\s\S]+?mix-blend-mode: soft-light/);
+  assert.match(css, /\.desk__grain \{[\s\S]+?mix-blend-mode: soft-light/);
   assert.match(css, /\.desk__light \{[\s\S]+?radial-gradient/);
   assert.match(css, /\.desk__edge \{[\s\S]+?height: calc\(var\(--desk-edge\) \* var\(--sheet-unit\)\)/);
 });
@@ -74,8 +74,8 @@ test('The mug lays its ring down as it is set down, on everything it is standing
   assert.match(trail, /stamp\(null, over\);/);
   // The coffee goes down with the mug, so the paper can be pulled out from under it and take its half away.
   assert.match(trail, /const lift = \(\) => \{\s+standing\.current = false;/);
-  assert.match(trail, /const settle = \(\) => \{\s+if \(standing\.current\) return;/);
-  assert.match(trail, /setTrail\(\(down\) => setDown\(down, mug\(\), over\(\)\)\);/);
+  assert.match(trail, /const settleAt = \(place\?: MugPlace\) => \{\s+if \(standing\.current\) return;/);
+  assert.match(trail, /setTrail\(\(down\) => setDown\(down, place \?\? mug\(\), over\(\)\)\);/);
   // Nothing is dropped for being old: a ring leaves only once it has faded out.
   assert.match(trail, /const drying = rings\.filter\(\(ring\) => ring\.strength > 0\)\.map\(dry\);/);
   assert.match(trail, /return \{ \.\.\.ring, strength: left < COFFEE_GONE \? 0 : left \};/);
@@ -255,7 +255,7 @@ test('Spill packs loose things on a point and sends them out in order when opene
   assert.match(behavior, /SPILL_STAGGER_MS = 110/);
   assert.match(behavior, /export function Spill\(/);
   assert.match(behavior, /export function Spilled\(/);
-  assert.match(behavior, /data-open=\{open \? 'true' : 'false'\}/);
+  // Packed/open lifecycle is exercised by the Spill and Desk Dossier browser stories.
   assert.match(behavior, /data-from=\{from \? 'point' : 'centre'\}/);
   // A spilled thing is a Movable, so it can be dragged once it is out.
   assert.match(behavior, /return <Movable \{\.\.\.movable\} x=\{x\} y=\{y\} rotation=\{rotation\} unit="var\(--spill-unit\)" className=\{`spilled \$\{className\}`\}/);

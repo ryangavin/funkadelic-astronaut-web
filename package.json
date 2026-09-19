@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "vite --host 127.0.0.1 --port 4173 --strictPort",
+    "dev": "node scripts/dev.mjs",
     "build": "tsc --noEmit && vite build && node scripts/copy-static-build.cjs",
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
     "storybook": "storybook dev -p 6006",
@@ -27,7 +27,8 @@
     "storybook": "^10.6.0",
     "typescript": "^7.0.2",
     "vite": "8.2.2",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "@types/node": "^26.6.1"
   },
   "dependencies": {
     "react": "^19.3.0",

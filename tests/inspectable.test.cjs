@@ -78,13 +78,11 @@ test('The desk says which of its things are worth looking at, and draws a held o
   assert.match(objects, /const READ: Inspect = \{ fill: 0\.9 \};/);
   assert.match(objects, /const HANDLE: Inspect = \{ fill: 0\.7, upright: false \};/);
   assert.match(objects, /const TURN_OVER: Inspect = \{ fill: 0\.9, grab: 'anywhere' \};/);
-  assert.match(objects, /const READ_FOLDER: Inspect = \{ fill: 0\.86, subject: '\.folder__cover' \};/);
   // The papers and the machines; the mug, the pen, the clock and the cradle are only ever scenery.
   for (const id of ['sitePlan', 'setTimes', 'contract']) assert.match(objects, new RegExp(`id: '${id}'[^\\n]+inspect: READ`));
-  assert.match(objects, /id: 'dossier'[^\n]+inspect: READ_FOLDER/);
   for (const id of ['rolodex', 'handheld', 'labelBro', 'walkman', 'phone']) assert.match(objects, new RegExp(`id: '${id}'[^\\n]+inspect: HANDLE`));
   assert.match(objects, /id: 'poster'[^\n]+inspect: TURN_OVER/);
-  for (const id of ['mug', 'pen', 'clock', 'cradle']) assert.doesNotMatch(objects, new RegExp(`id: '${id}'[^\\n]+inspect:`));
+  for (const id of ['mug', 'pen', 'clock', 'cradle', 'dossier']) assert.doesNotMatch(objects, new RegExp(`id: '${id}'[^\\n]+inspect:`));
 
   // Held, it is drawn over the veil, and so over the desk and everything still lying on it.
   assert.match(objects, /const INSPECT_LAYER = 5000;/);

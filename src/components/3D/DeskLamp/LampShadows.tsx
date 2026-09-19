@@ -1,3 +1,4 @@
+import { DEFAULT_LIGHT_TUNING } from '../../../geometry/lightingSetup';
 import { useId, useRef } from 'react';
 import { DEFAULT_SHADOW_STRENGTH, useDeskLightEffect, type DeskLight, type LightOccluderPoint } from '../../../behaviors/DeskLighting/DeskLighting';
 import { LampLight } from './DeskLamp';
@@ -7,8 +8,8 @@ export function lampShadowPoint(point: LightOccluderPoint, light: DeskLight) {
   const ratio = point.height / Math.max(1, light.height - point.height);
   const dx = point.x - light.x, dy = point.y - light.y;
   const distance = Math.hypot(dx, dy);
-  const reach = Math.min(1440, Math.max(0, distance * ratio));
-  return { x: point.x + (distance ? dx / distance * reach : 0), y: point.y + (distance ? dy / distance * reach : 0), radius: point.radius * (1 + Math.min(3, Math.max(0, ratio))) };
+  const reach = Math.min(light.tuning?.shadowReach ?? DEFAULT_LIGHT_TUNING.shadowReach, Math.max(0, distance * ratio));
+  return { x: point.x + (distance ? dx / distance * reach : 0), y: point.y + (distance ? dy / distance * reach : 0), radius: point.radius * (1 + Math.min((light.tuning?.shadowScaleLimit ?? DEFAULT_LIGHT_TUNING.shadowScaleLimit) - 1, Math.max(0, ratio))) };
 }
 
 /**
@@ -20,7 +21,7 @@ export function lampShadowPoint(point: LightOccluderPoint, light: DeskLight) {
  * a fixed set of elements, so they are drawn once here and their geometry is
  * written by `redraw` afterwards. Aiming the shade now costs no React at all.
  */
-export function LampShadows({ surfaceHeight = 800 }: { surfaceHeight?: number }) {
+export function LampShadows({ surfaceWidth = 1440, surfaceHeight = 800 }: { surfaceWidth?: number; surfaceHeight?: number }) {
   const id = `lamp-cast-${useId().replace(/:/g, '')}`;
   const root = useRef<SVGSVGElement>(null);
   const contact = useRef<SVGCircleElement>(null);
@@ -55,7 +56,8 @@ export function LampShadows({ surfaceHeight = 800 }: { surfaceHeight?: number })
     contact.current?.setAttribute('r', String(base.radius * 1.01));
     pool.current?.setAttribute('cx', String(light.x));
     pool.current?.setAttribute('cy', String(light.y));
-    if (light.height !== reach.current) { reach.current = light.height; pool.current?.setAttribute('r', String(light.height * 1.6)); }
+    const falloff = light.height * (light.tuning?.poolFalloff ?? DEFAULT_LIGHT_TUNING.poolFalloff);
+    if (falloff !== reach.current) { reach.current = falloff; pool.current?.setAttribute('r', String(falloff)); }
     lit.current?.setAttribute('opacity', String(light.on ? light.shadowStrength ?? DEFAULT_SHADOW_STRENGTH : 0));
     const projectedBase = lampShadowPoint(base, light);
     foot.current?.setAttribute('cx', String(projectedBase.x));
@@ -65,13 +67,13 @@ export function LampShadows({ surfaceHeight = 800 }: { surfaceHeight?: number })
     upper.current?.setAttribute('d', armPath(elbow, neck, light));
   });
 
-  return <svg ref={root} className="lamp-cast-shadow" viewBox={`0 0 1440 ${surfaceHeight}`} aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', display: 'none' }}>
+  return <svg ref={root} className="lamp-cast-shadow" viewBox={`0 0 ${surfaceWidth} ${surfaceHeight}`} aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', display: 'none' }}>
     <defs>
       <filter id={`${id}-soft`} x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5" /></filter>
       <radialGradient ref={pool} id={`${id}-falloff`} gradientUnits="userSpaceOnUse" cx="0" cy="0" r="0">
         <stop offset="0" stopColor="white" /><stop offset="0.6" stopColor="white" stopOpacity="0.7" /><stop offset="1" stopColor="white" stopOpacity="0" />
       </radialGradient>
-      <mask id={`${id}-pool`}><rect width="1440" height={surfaceHeight} fill={`url(#${id}-falloff)`} /></mask>
+      <mask id={`${id}-pool`}><rect width={surfaceWidth} height={surfaceHeight} fill={`url(#${id}-falloff)`} /></mask>
     </defs>
     {/* Only a close contact cue remains when the light is off. */}
     <circle ref={contact} className="lamp-contact-shadow" cx="0" cy="0" r="0" fill="#140c06" opacity="0.2" filter={`url(#${id}-soft)`} />
@@ -96,8 +98,10 @@ export function LampPool({ surfaceWidth, surfaceHeight }: { surfaceWidth: number
     const element = glow.current;
     if (!element) return;
     if (!light) { element.style.display = 'none'; return; }
-    const size = light.height * 1.4;
+    const size = light.height * (light.tuning?.poolSpread ?? DEFAULT_LIGHT_TUNING.poolSpread);
     element.style.display = '';
+    element.style.filter = (light.intensity ?? 1) === 1 ? '' : `brightness(${light.intensity})`;
+    element.style.visibility = light.intensity === 0 ? 'hidden' : '';
     element.style.width = `${size / surfaceWidth * 100}%`;
     element.style.left = `${(light.x - size / 2) / surfaceWidth * 100}%`;
     element.style.top = `${(light.y - size / 2) / surfaceHeight * 100}%`;
