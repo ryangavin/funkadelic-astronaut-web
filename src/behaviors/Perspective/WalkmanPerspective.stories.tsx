@@ -3,7 +3,7 @@ import { useState, type CSSProperties } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 import demoTape from '../../../assets/audio/demo-tape.mp3';
 import { Desk } from '../../components/3D/Desk/Desk';
-import { Walkman } from '../../components/3D/Walkman/Walkman';
+import { Walkman, WALKMAN_THICKNESS_MM } from '../../components/3D/Walkman/Walkman';
 import { Movable, type Place } from '../Movable/Movable';
 import { GENTLE_DEPTH, GENTLE_VIEW, Perspective, type PerspectiveProps } from './Perspective';
 import './WalkmanPerspective.css';
@@ -27,7 +27,7 @@ type Story = StoryObj<typeof meta>;
 // Match the existing desk's 112 mm width at the shared physical scale. Thickness is
 // explicitly estimated: this illustration is not a measured hardware model.
 const WIDTH = mm(112);
-const CASE_HEIGHT = mm(30);
+const CASE_HEIGHT = mm(WALKMAN_THICKNESS_MM);
 const DESK_HEIGHT = 850;
 
 function WalkmanStudy(args: PerspectiveProps) {
@@ -46,7 +46,7 @@ function WalkmanStudy(args: PerspectiveProps) {
   return (
     <div className="walkman-study">
       <div className="walkman-study__frame">
-        <p>Gentle Walkman · Drag the case; scrub its corner handle to turn. Play the tape or roll the volume wheel. 112 mm drawing width; estimated 30 mm case thickness. 1.2 desk units = 1 mm.</p>
+        <p>Gentle Walkman · Drag the case; scrub its corner handle to turn. Play the tape or roll the volume wheel. 112 mm drawing width; artistic {WALKMAN_THICKNESS_MM} mm case thickness. 1.2 desk units = 1 mm.</p>
         <Perspective {...args}>
           <Desk height={DESK_HEIGHT} edge={0}>
             <Movable {...place} width={WIDTH} label="Walkman study" onMove={(next) => setPlace((current) => ({ ...current, ...next }))}>
