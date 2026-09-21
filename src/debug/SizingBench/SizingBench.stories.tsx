@@ -170,3 +170,12 @@ export const MvpDossierContents: Story = {
     await expect(canvas.queryByRole('group', { name: 'Live set print' })).toBeNull();
   },
 };
+
+
+/** Captured lamp-width overrides must agree with the physical readout too. */
+export const LampWidthOverride: Story = {
+  args: { ...calibration, stage: 'one', focus: 'lamp', lampWidth: 720 },
+  play: async ({ canvasElement }) => {
+    await waitFor(() => expect(canvasElement.querySelector('[data-object="lamp"]')).toHaveTextContent('480 mm1.25×'));
+  },
+};

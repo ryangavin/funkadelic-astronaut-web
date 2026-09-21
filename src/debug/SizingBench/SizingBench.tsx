@@ -5,7 +5,7 @@ import { BENCH_EXTRAS, BENCH_OBJECTS, MVP_INITIAL_IDS, MVP_PASS_IDS, MVP_CONTENT
 import { Relief } from '../../behaviors/Perspective/Relief';
 import { MeterStick, STICK_VARIANTS, METER_STICK_OUTLINE, type StickVariant } from '../../components/3D/MeterStick/MeterStick';
 import { useRoomCamera } from '../../foundations/Room/Room';
-import { DESK_MM, PAPER_MM, mmToUnits } from '../../geometry/physicalScale';
+import { DESK_MM, PAPER_MM, LAMP_WIDTH, mmToUnits } from '../../geometry/physicalScale';
 import { DESK_OBJECTS, DEFAULT_OBJECT_PLACEMENTS, type ObjectPlacements } from '../../pages/Desk/DeskObjects';
 import { PerspectiveDesk, type PerspectiveDeskProps } from '../../pages/Desk/PerspectiveDesk';
 import './SizingBench.css';
@@ -63,14 +63,14 @@ type Reading = { viewport: string; deskPx: number; pxPerMm: number; rows: Row[];
   read the same way at its front edge, so pixels-per-millimetre is what a ruler
   laid there would say. Things are dragged without a render, so this polls.
 */
-function measure(root: HTMLElement, shown: readonly string[], placements: ObjectPlacements, deskWidthMm: number, store: PlaceStore | null): Reading | null {
+function measure(root: HTMLElement, shown: readonly string[], placements: ObjectPlacements, deskWidthMm: number, store: PlaceStore | null, lampWidth: number): Reading | null {
   const desk = root.querySelector<HTMLElement>('.desk');
   if (!desk) return null;
   const deskPx = desk.getBoundingClientRect().width;
   const rows = BENCH_OBJECTS.filter(object => shown.includes(object.id)).map(object => {
     const element = root.querySelector<HTMLElement>(`[role="group"][aria-label="${object.name}"]`);
     const box = element?.getBoundingClientRect();
-    return { id: object.id, name: object.name, widthMm: object.widthMm, scale: store?.get(object.id)?.scale ?? placements[object.id]?.scale ?? 1, screenPx: box && box.width > 0 ? box.width : null };
+    return { id: object.id, name: object.name, widthMm: object.widthMm, scale: (store?.get(object.id)?.scale ?? placements[object.id]?.scale ?? 1) * (object.id === 'lamp' ? lampWidth / LAMP_WIDTH : 1), screenPx: box && box.width > 0 ? box.width : null };
   });
   const papers = rows.filter(row => (PAPER_IDS.includes(row.id) || row.id === 'calibration-paper') && row.screenPx !== null);
   return {
@@ -85,16 +85,16 @@ function measure(root: HTMLElement, shown: readonly string[], placements: Object
 /** Seven to a table, so the whole desk's readout fits in the band under the scene. */
 const columns = (rows: Row[]) => Array.from({ length: Math.max(1, Math.ceil(rows.length / 7)) }, (_, i) => rows.slice(i * 7, i * 7 + 7));
 
-function Readout({ root, shown, placements, targetPx, deskWidthMm, store }: { store: PlaceStore | null; root: HTMLElement | null; shown: readonly string[]; placements: ObjectPlacements; targetPx: number; deskWidthMm: number }) {
+function Readout({ root, shown, placements, targetPx, deskWidthMm, store, lampWidth }: { lampWidth: number; store: PlaceStore | null; root: HTMLElement | null; shown: readonly string[]; placements: ObjectPlacements; targetPx: number; deskWidthMm: number }) {
   const [reading, setReading] = useState<Reading | null>(null);
   useEffect(() => {
     if (!root) return;
-    const read = () => setReading(measure(root, shown, placements, deskWidthMm, store));
+    const read = () => setReading(measure(root, shown, placements, deskWidthMm, store, lampWidth));
     read();
     const timer = window.setInterval(read, 250);
     window.addEventListener('resize', read);
     return () => { window.clearInterval(timer); window.removeEventListener('resize', read); };
-  }, [root, shown, placements, deskWidthMm, store]);
+  }, [root, shown, placements, deskWidthMm, store, lampWidth]);
   if (!reading) return null;
   const verdict = reading.paperPx === null ? null : reading.paperPx >= targetPx ? 'meets' : 'short of';
   return <aside className="sizing-bench__readout" aria-label="Sizing readout">
@@ -149,7 +149,7 @@ export function SizingBench({ stage = 'papers', capture = false, focus = 'mug', 
       {ruler !== 'none' && <Ruler variant={ruler} place={stage === 'mvp' || stage === 'contents' ? { x: mmToUnits(40), y: mmToUnits((desk.deskDepthMm ?? DESK_MM.depth) - 90) } : undefined} />}
       {children as ReactNode}
     </PerspectiveDesk>
-    {readout && <Readout store={store} root={root} shown={shown} placements={placements} targetPx={paperTargetPx} deskWidthMm={desk.deskWidthMm ?? DESK_MM.width} />}
+    {readout && <Readout lampWidth={desk.lampWidth ?? LAMP_WIDTH} store={store} root={root} shown={shown} placements={placements} targetPx={paperTargetPx} deskWidthMm={desk.deskWidthMm ?? DESK_MM.width} />}
   </div>;
 }
 
