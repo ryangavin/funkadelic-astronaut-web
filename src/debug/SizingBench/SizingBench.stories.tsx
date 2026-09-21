@@ -117,10 +117,10 @@ export const OneThing: Story = {
 
 
 const calibration = {
-  deskWidthMm: 1800, deskDepthMm: 1000, eyeHeightMm: 2100,
-  viewerSetbackMm: 650, headTiltDegrees: 85, horizontalFieldOfViewDegrees: 75,
+  deskWidthMm: 1400, deskDepthMm: 900, eyeHeightMm: 1800,
+  viewerSetbackMm: 570, headTiltDegrees: 85, horizontalFieldOfViewDegrees: 75,
   deskShare: .8, roomLip: 0, showCamera: false, capture: true,
-  lampX: 20, lampY: 160,
+  lampX: -40, lampY: 130,
   lampLowerAngle: -142.6818247177271, lampUpperAngle: 110.41274403236815,
 };
 
@@ -129,7 +129,7 @@ export const MvpInitialCast: Story = {
   args: { ...calibration, stage: 'mvp', objectPlacements: MVP_INITIAL_PLACEMENTS },
   render: function Calibration(args) {
     const [, updateArgs] = useArgs();
-    return <><div className="sizing-bench__brief"><strong>MVP · initial cast</strong> Compare relative sizes, not layout. All objects start at 1×. Date passes are samples; media wiring comes later. Resize any object, then Sync story controls to keep the result. The ruler and blank sheet are references.</div><SizingBench {...withLightTuning(args)} onCaptureSettings={settings => updateArgs(settings)} /></>;
+    return <><div className="sizing-bench__brief"><strong>MVP · initial cast</strong> Compare relative sizes, not layout. Handheld is 1.3×; other objects remain 1×. Date passes are samples; media wiring comes later. Resize any object, then Sync story controls to keep the result. The ruler and blank sheet are references.</div><SizingBench {...withLightTuning(args)} onCaptureSettings={settings => updateArgs(settings)} /></>;
   },
   play: async ({ canvasElement }) => {
     if (import.meta.env.MODE !== 'test') return;
@@ -139,10 +139,10 @@ export const MvpInitialCast: Story = {
     }
     await expect(canvas.queryByRole('group', { name: 'Rolodex' })).toBeNull();
     const row = canvasElement.querySelector('[data-object="handheld"]')!;
-    await waitFor(() => expect(row).toHaveTextContent('1.00×'));
+    await waitFor(() => expect(row).toHaveTextContent('1.30×'));
     canvas.getByRole('button', { name: 'Resize Handheld' }).focus();
     await userEvent.keyboard('{ArrowRight}');
-    await waitFor(() => expect(row).not.toHaveTextContent('1.00×'));
+    await waitFor(() => expect(row).not.toHaveTextContent('1.30×'));
     const changed = row.textContent;
     await userEvent.click(canvas.getByRole('button', { name: 'Sync story controls' }));
     await waitFor(() => expect(row.textContent).toBe(changed));

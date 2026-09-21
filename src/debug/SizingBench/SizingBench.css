@@ -29,4 +29,4 @@
 .sizing-bench__brief { padding: 12px 24px; background: #211b16; color: #ead3a7; font: 14px/1.5 system-ui; }
 .sizing-bench__brief strong { margin-right: 16px; color: #fff3ce; }
 
-.sizing-bench .perspective-desk__settings { position: absolute; top: 62px; }
+.sizing-bench .perspective-desk__settings { position: absolute; top: 0; }

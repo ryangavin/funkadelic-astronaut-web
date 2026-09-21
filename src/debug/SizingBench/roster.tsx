@@ -23,24 +23,24 @@ export const MVP_CONTENT_IDS = BENCH_EXTRAS.filter(item => selectedContents.some
 export const MVP_PASS_IDS = BENCH_EXTRAS.filter(item => item.id.startsWith('calibration-tour')).map(item => item.id);
 export const BENCH_OBJECTS = [...DESK_OBJECTS, ...BENCH_EXTRAS, { id: 'lamp', name: 'Desk lamp', width: mmToUnits(480), widthMm: 480, ratio: 400 / 480 }];
 
-// Spaced study positions, not the proposed final composition. All sizes remain 1×.
+// Spaced study positions, not the proposed final composition. Handheld is deliberately enlarged to 1.3× after the first taste gate; other sizes remain 1×.
 export const MVP_INITIAL_PLACEMENTS: ObjectPlacements = {
   dossier: { x: -210, y: 440, rotation: 0, scale: 1 },
-  sitePlan: { x: 610, y: 125, rotation: 0, scale: 1 },
-  contract: { x: 930, y: 125, rotation: 0, scale: 1 },
-  handheld: { x: 710, y: 550, rotation: 0, scale: 1 },
-  walkman: { x: 455, y: 540, rotation: 0, scale: 1 },
-  labelBro: { x: 1000, y: 500, rotation: 0, scale: 1 },
-  pen: { x: 710, y: 700, rotation: 0, scale: 1 },
-  mug: { x: 1350, y: 500, rotation: 0, scale: 1 },
-  cradle: { x: 1560, y: 530, rotation: 0, scale: 1 },
-  'calibration-tour-1': { x: 1280, y: 130, rotation: 0, scale: 1 },
-  'calibration-tour-2': { x: 1470, y: 130, rotation: 0, scale: 1 },
-  'calibration-tour-3': { x: 1660, y: 130, rotation: 0, scale: 1 },
-  'calibration-note': { x: 460, y: 740, rotation: 0, scale: 1 },
-  'calibration-paper': { x: 1850, y: 510, rotation: 0, scale: 1 },
+  sitePlan: { x: 540, y: 80, rotation: 0, scale: 1 },
+  contract: { x: 835, y: 80, rotation: 0, scale: 1 },
+  handheld: { x: 710, y: 540, rotation: 0, scale: 1.3 },
+  walkman: { x: 460, y: 540, rotation: 0, scale: 1 },
+  labelBro: { x: 1080, y: 470, rotation: 0, scale: 1 },
+  pen: { x: 710, y: 720, rotation: 0, scale: 1 },
+  mug: { x: 1080, y: 800, rotation: 0, scale: 1 },
+  cradle: { x: 1340, y: 860, rotation: 0, scale: 1 },
+  'calibration-tour-1': { x: 1140, y: 100, rotation: 0, scale: 1 },
+  'calibration-tour-2': { x: 1310, y: 100, rotation: 0, scale: 1 },
+  'calibration-tour-3': { x: 1480, y: 100, rotation: 0, scale: 1 },
+  'calibration-note': { x: 460, y: 770, rotation: 0, scale: 1 },
+  'calibration-paper': { x: 1370, y: 450, rotation: 0, scale: 1 },
 };
 export const MVP_CONTENT_PLACEMENTS: ObjectPlacements = Object.fromEntries([
-  ...MVP_CONTENT_IDS.map((id, index) => [id, { x: index < 4 ? 610 + index * 330 : 130 + (index - 4) * 340, y: index < 4 ? 140 : 530, rotation: 0, scale: 1 }]),
-  ['calibration-paper', { x: 1510, y: 530, rotation: 0, scale: 1 }],
+  ...MVP_CONTENT_IDS.map((id, index) => [id, { x: index < 4 ? 490 + index * 275 : 130 + (index - 4) * 340, y: index < 4 ? 100 : 530, rotation: 0, scale: 1 }]),
+  ['calibration-paper', { x: 1310, y: 520, rotation: 0, scale: 1 }],
 ]);

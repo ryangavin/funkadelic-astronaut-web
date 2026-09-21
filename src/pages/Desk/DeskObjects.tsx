@@ -24,7 +24,7 @@ import { LabelBro, LABEL_BRO_HEIGHT, LABEL_BRO_FOOT } from '../../components/3D/
 import { MUG_FOOT, MUG_HEIGHT, MUG_SILHOUETTE, MUG_TALL, Mug } from '../../components/3D/Mug/Mug';
 import { Pen } from '../../components/3D/Pen/Pen';
 import { Rolodex } from '../../components/3D/Rolodex/Rolodex';
-import { Walkman } from '../../components/3D/Walkman/Walkman';
+import { Walkman, WALKMAN_THICKNESS_MM } from '../../components/3D/Walkman/Walkman';
 
 /*
   Each thing is drawn at its own real size, and then at whatever the composition
@@ -63,7 +63,7 @@ const OBJECT_DRAWINGS: Omit<ObjectSpec, 'width'>[] = [
   { id: 'handheld', name: 'Handheld', widthMm: 170, ratio: 327/720, height: 23, place: { x: 30, y: 250, rotation: -5 }, content: <Handheld rotation={0} />, shapes: [{ path: HANDHELD_SILHOUETTE }], colors: ['#17181b', '#141519', '#090a0d'] , inspect: HANDLE },
   { id: 'labelBro', name: 'Label Bro', widthMm: 183, ratio: 772/732, height: 78, place: { x: 755, y: 515, rotation: -5 }, solid: { localCoordinates: true, height: LABEL_BRO_HEIGHT, foot: LABEL_BRO_FOOT }, content: <LabelBro rotation={0} defaultOn defaultText="BACKLINE" /> , inspect: HANDLE },
   { id: 'pen', name: 'Pen', widthMm: 149, ratio: 60/720, height: 7, place: { x: 450, y: 330, rotation: 8 }, shapes: [{ path: 'M.3 28H3.3V18H17.2V28H19.7V33H96.4L99.9 50L96.4 67H19.7V72H.3Z' }] },
-  { id: 'walkman', name: 'Walkman', widthMm: 112, ratio: 590/720, height: 30, place: { x: 770, y: 260, rotation: -6 }, content: <Walkman rotation={0} /> , inspect: HANDLE },
+  { id: 'walkman', name: 'Walkman', widthMm: 112, ratio: 590/720, height: WALKMAN_THICKNESS_MM, place: { x: 770, y: 260, rotation: -6 }, content: <Walkman rotation={0} /> , inspect: HANDLE },
   // Its own drawing, in millimetres: the phone alone
   // since the answering machine became its own component. The silhouette is the
   // 221 by 229 housing within that plan, and it stands at the moulding's height.

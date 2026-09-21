@@ -5,7 +5,7 @@ import { expect, fn, within } from 'storybook/test';
 import demoTape from '../../../../assets/audio/demo-tape.mp3';
 import festivalSketch from '../../../../assets/festival-scribble-fully-shaded.png';
 import { PaperSheet } from '../../2D/PaperSheet/PaperSheet';
-import { WALKMAN_FINISHES, WALKMAN_SIDES, Walkman } from './Walkman';
+import { WALKMAN_FINISHES, WALKMAN_SIDES, WALKMAN_THICKNESS_MM, Walkman } from './Walkman';
 
 const meta = {
   title: 'Components/3D/Walkman',
@@ -109,5 +109,5 @@ export const OnDesk: Story = {
   play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
-  render: (args) => <DeskObjectStudy name="Walkman" widthMm={112} depthRatio={590/720} heightMm={30} ><Walkman {...args} rotation={0} /></DeskObjectStudy>,
+  render: (args) => <DeskObjectStudy name="Walkman" widthMm={112} depthRatio={590/720} heightMm={WALKMAN_THICKNESS_MM} ><Walkman {...args} rotation={0} /></DeskObjectStudy>,
 };
