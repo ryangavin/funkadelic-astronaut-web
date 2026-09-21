@@ -1,0 +1,26 @@
+.cafe-counter { min-height: 100vh; background: #262e2c; color: #f0e9d8; }
+.cafe-counter__brief { min-height: 54px; padding: 12px 24px; box-sizing: border-box; display: flex; gap: 24px; align-items: center; justify-content: space-between; font: 12px/1.5 system-ui, sans-serif; background: #202724; }
+.cafe-counter__brief strong { text-transform: uppercase; letter-spacing: .12em; font-size: 11px; }
+.cafe-counter__brief span { color: #c4c8bb; }
+.cafe-counter__scene { position: relative; overflow: hidden; background: #5d706b; }
+.cafe-counter__window { position: absolute; inset: 0 0 38%; overflow: hidden; background: linear-gradient(#b3c1b8, #7c9291 50%, #a1a598); }
+.cafe-counter__street { position: absolute; inset: -20% -5% 0; filter: blur(3px); transform: rotate(-4deg); display: flex; gap: 6%; align-items: end; opacity: .65; }
+.cafe-counter__street i { width: 23%; height: 86%; background: repeating-linear-gradient(90deg, transparent 0 33px, #34474777 34px 60px, transparent 61px 88px), linear-gradient(#777d70 65%, #354946 65% 72%, #bfa994 72%); box-shadow: 0 -9px 0 #d8cbb7; }
+.cafe-counter__street i:nth-child(2) { height: 63%; background-color: #a18268; }
+.cafe-counter__street i:nth-child(3) { height: 78%; }
+.cafe-counter__glass { position: absolute; inset: 0; background: linear-gradient(115deg, #e6efd126, transparent 40%, #e9f3d321 42%, transparent 70%), repeating-linear-gradient(90deg, transparent 0 calc(33.333% - 14px), #202f2d calc(33.333% - 13px) 33.333%); box-shadow: inset 0 0 0 14px #283a36; }
+.cafe-counter__decal { position: absolute; top: 35px; left: 5%; color: #f4ebcbaa; font: 700 19px/1 Georgia, serif; letter-spacing: .14em; transform: scaleX(-1); }
+.cafe-counter__sill { position: absolute; bottom: 0; width: 100%; height: 25px; background: #293c35; box-shadow: 0 -5px 0 #61786a, 0 8px 12px #17201e88; }
+.cafe-counter .perspective-desk-room { position: relative; background: transparent; padding: 0; min-height: 0; }
+.cafe-counter .perspective-desk-room .room { --room-window-margin: 95px; max-width: calc((100svh - 95px) * 16 / 9); }
+.cafe-counter__booking { color: #24372f; background: #e8e0bf; padding: 14px 24px; box-shadow: 0 3px 6px #291c1644; border-left: 9px solid #cb6241; font-family: Arial, sans-serif; }
+.cafe-counter__booking small { font-size: 11px; letter-spacing: .15em; }
+.cafe-counter__booking strong { display: block; font-size: 50px; line-height: .91; letter-spacing: -.05em; margin: 10px 0; }
+.cafe-counter__booking span { font: italic 15px Georgia, serif; }
+.cafe-counter__tape { padding: 7px 10px; color: #26312d; background: #e8dab0e8; font: 700 13px/1.2 monospace; letter-spacing: .04em; box-shadow: 1px 2px 2px #31271922; }
+.cafe-counter__tin { aspect-ratio: 1; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at 42% 30%, #fff 20%, #e4e7df 70%); color: #15848c; border: 4px solid #d1d9ce; box-shadow: 1px 6px 0 #b6beb4, 6px 12px 8px #30241666, inset 0 0 0 2px white; }
+.cafe-counter__tin span { font: 900 28px/1 Arial, sans-serif; letter-spacing: -.06em; }
+.cafe-counter__tin small { font: 6px/2 Arial, sans-serif; letter-spacing: .16em; }
+.cafe-counter__receipt { width: 65%; padding: 12px; color: #5d5b50; background: #ece8d5; font: 10px/1.8 monospace; box-shadow: 1px 2px 3px #281c1644; }
+.cafe-counter__foot { padding: 11px 24px; font: 11px/1.5 system-ui, sans-serif; color: #c4c8bb; }
+@media (max-width: 800px) { .cafe-counter__brief { flex-direction: column; gap: 3px; align-items: start; } .cafe-counter__scene { min-width: 800px; } .cafe-counter { overflow-x: auto; } }
