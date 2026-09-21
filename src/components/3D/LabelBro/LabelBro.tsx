@@ -12,8 +12,9 @@ export { KEYS, BODY, type Key } from './keyboard';
 /** How many characters the machine will hold before it says the label is full. */
 export const LABEL_BRO_LIMIT = 32;
 
-/** How thick the machine is, as a multiple of the width of its drawing: 78 mm against 183. */
-export const LABEL_BRO_HEIGHT = 312 / BODY.w;
+/** Art-directed desk thickness; the face retains its 183 × 193 mm footprint. */
+export const LABEL_BRO_THICKNESS_MM = 42;
+export const LABEL_BRO_HEIGHT = LABEL_BRO_THICKNESS_MM / (BODY.w / 4);
 
 /** Where it meets the desk within its own drawing: the middle of its footprint, since it sits flat on all of it. */
 export const LABEL_BRO_FOOT = { x: 0.5, y: 0.5 };
@@ -104,13 +105,13 @@ const ICON: Record<KeyIcon, React.ReactNode> = {
  * Shift does not, which is the way round these have always been.
  *
  * It is drawn looking straight down at it, the way everything here is, and it
- * draws none of its own thickness. It is 78 mm of moulded plastic all the
+ * draws none of its own thickness. It is drawn as 42 mm of moulded plastic all the
  * same: stand it in a `Solid` of {@link LABEL_BRO_HEIGHT} and on a tilted
  * plane the whole top face lifts and leans away from the eye while its side
  * slides out from under it, back down to the footprint it is standing on.
  *
  * One honest liberty: the real machine is a wedge, taller at the cassette than
- * at the front lip, and this declares the one height it is at its tallest. A
+ * at the front lip, and this uses a lower visual height instead of the 78 mm peak. A
  * Solid takes a single number and a wedge is not one.
  */
 export function LabelBro({

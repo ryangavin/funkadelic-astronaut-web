@@ -2,7 +2,7 @@ import { useArgs } from 'storybook/preview-api';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { physicalControls, physicalDefaults, withLightTuning, RoomExperiment, roomSeam, type RoomStoryControls } from '../RoomControls/controls';
-import { MVP_INITIAL_PLACEMENTS, MVP_CONTENT_PLACEMENTS } from './roster';
+import { MVP_INITIAL_PLACEMENTS, MVP_BASELINE_PLACEMENTS, MVP_CONTENT_PLACEMENTS } from './roster';
 import { Desk } from '../../pages/Desk/PerspectiveDesk.stories';
 import { DESK_WOODS } from '../../components/3D/Desk/Desk';
 import { OBJECT_IDS, PAPER_IDS, SizingBench, type SizingBenchProps } from './SizingBench';
@@ -126,10 +126,10 @@ const calibration = {
 
 /** A fixed-camera lineup, not the final composition. Dates are explicitly layout samples. */
 export const MvpInitialCast: Story = {
-  args: { ...calibration, stage: 'mvp', objectPlacements: MVP_INITIAL_PLACEMENTS },
+  args: { ...calibration, deskWidthMm: 1200, deskDepthMm: 780, eyeHeightMm: 1650, viewerSetbackMm: 470, lampX: -170, stage: 'mvp', objectPlacements: MVP_INITIAL_PLACEMENTS },
   render: function Calibration(args) {
     const [, updateArgs] = useArgs();
-    return <><div className="sizing-bench__brief"><strong>MVP · initial cast</strong> Compare relative sizes, not layout. Handheld is 1.3×; other objects remain 1×. Date passes are samples; media wiring comes later. Resize any object, then Sync story controls to keep the result. The ruler and blank sheet are references.</div><SizingBench {...withLightTuning(args)} onCaptureSettings={settings => updateArgs(settings)} /></>;
+    return <><div className="sizing-bench__brief"><strong>MVP · initial cast</strong> Compare relative sizes, not layout. Desk {args.deskWidthMm} × {args.deskDepthMm} mm · Handheld 1.3× · dossier {args.objectPlacements?.dossier?.scale ?? 1}× · thinner devices. Date passes are samples; media wiring comes later. Resize any object, then Sync story controls to keep the result. The ruler and blank sheet are references.</div><SizingBench {...withLightTuning(args)} onCaptureSettings={settings => updateArgs(settings)} /></>;
   },
   play: async ({ canvasElement }) => {
     if (import.meta.env.MODE !== 'test') return;
@@ -138,6 +138,17 @@ export const MvpInitialCast: Story = {
       await expect(canvas.getByRole('group', { name })).toBeInTheDocument();
     }
     await expect(canvas.queryByRole('group', { name: 'Rolodex' })).toBeNull();
+    // The printed cover must stay inside its leaf, with links clear of the action.
+    await waitFor(() => {
+      const cover = canvasElement.querySelector('.dossier-cover')!.getBoundingClientRect();
+      const brand = canvasElement.querySelector('.dossier-cover__brand')!.getBoundingClientRect();
+      const streams = canvasElement.querySelector('.dossier-cover__streams')!.getBoundingClientRect();
+      const action = canvas.getByRole('button', { name: 'Open the press package' }).getBoundingClientRect();
+      expect(brand.left).toBeGreaterThan(cover.left);
+      expect(brand.right).toBeLessThan(cover.right);
+      expect(streams.right).toBeLessThan(action.left);
+      expect(streams.bottom).toBeLessThan(cover.bottom);
+    });
     const row = canvasElement.querySelector('[data-object="handheld"]')!;
     await waitFor(() => expect(row).toHaveTextContent('1.30×'));
     canvas.getByRole('button', { name: 'Resize Handheld' }).focus();
@@ -178,4 +189,10 @@ export const LampWidthOverride: Story = {
   play: async ({ canvasElement }) => {
     await waitFor(() => expect(canvasElement.querySelector('[data-object="lamp"]')).toHaveTextContent('480 mm1.25×'));
   },
+};
+
+/** Previous framing/placements retained; component corrections apply to both views. */
+export const MvpPreviousFraming: Story = {
+  ...MvpInitialCast,
+  args: { ...calibration, stage: 'mvp', objectPlacements: MVP_BASELINE_PLACEMENTS },
 };

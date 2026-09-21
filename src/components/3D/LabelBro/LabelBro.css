@@ -15,7 +15,7 @@
   function caps at the top, an ordinary QWERTY under them, and the arrows in
   the well to the right where the number row runs out.
 
-  Nothing below draws the machine's volume. It is 78 mm thick, and that is
+  Nothing below draws the machine's volume. It is 42 mm thick, and that is
   declared rather than drawn: LABEL_BRO_HEIGHT says so, and a Solid on a
   tilted plane hands the body --solid-rise and --solid-splay, which lift the
   whole top face and extrude its silhouette back down to the footprint it is

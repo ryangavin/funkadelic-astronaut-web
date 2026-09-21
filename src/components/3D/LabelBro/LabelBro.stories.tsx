@@ -231,7 +231,7 @@ export const KeepPrinting: Story = {
 
 /**
  * The same drawing, on a plane tilted to the angle someone standing at the desk
- * sees it from. Nothing here is redrawn: the machine's 78 mm are declared, not
+ * sees it from. Nothing here is redrawn: the machine's 42 mm are declared, not
  * drawn, and a `Solid` of that height lifts the whole top face and slides the
  * side out from under it. The tape has no height to speak of and stays flat.
  */

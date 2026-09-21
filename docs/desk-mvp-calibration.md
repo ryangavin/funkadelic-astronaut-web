@@ -34,3 +34,26 @@ Next taste gate: compare relative sizes/appearance first, particularly Handheld,
 readability are separate follow-ups; do not enlarge every object automatically.
 
 First scale gate: Ryan found Handheld too small, Walkman too tall, and the desk too large. The next comparison uses a 30% larger Handheld, smaller calibration surface, and closer eye. Ryan clarified that Walkman thickness above the desk was too tall. Its shared case thickness is now 18 mm, down from 30 mm; face dimensions are unchanged.
+
+
+## Second scale gate — closer framing and quieter cover
+
+`Mvp Initial Cast` now uses a 1200 × 780 mm surface, eye 1650 mm and
+setback 470 mm, retaining the near-overhead 85° starting view. Objects are
+repacked to use that surface; Handheld remains 1.3× and the dossier is 1.15×
+to anchor band identity. Other face sizes and proportions remain unchanged.
+`Mvp Previous Framing` retains the prior 1400 × 900 / 1800 / 570 camera and
+placements with the corrected components. The immutable full prior baseline
+is `a6b4765817df5a921d75b55e8fc80b7607c1c595`.
+
+Walkman thickness is now an artistic 12 mm (previously 18); LabelBro uses
+42 mm instead of the original 78 mm peak. Their shared height constants drive
+studies, extrusion and cast shadows. No device face has been stretched.
+The dossier measures its own cover width to scale wordmark ink, paper padding,
+outline, print shadow and sticker geometry together. The open action has a
+separate right-hand area; the stale date-specific note is removed. Links and
+the existing opening/closing sequence are retained. This is still a calibration
+comparison, not completed media wiring or the final open composition.
+
+Taste gate: Is this close enough, and do the thinner devices and larger band
+name feel right? Final landscape fitting and production media remain separate.

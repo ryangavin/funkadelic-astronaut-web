@@ -7,7 +7,7 @@ import { counter, scrollLength, titleFrom, window as displayWindow } from './seg
 import './Walkman.css';
 
 /** Artistic case thickness shared by desk extrusion, shadows, and studies. */
-export const WALKMAN_THICKNESS_MM = 18;
+export const WALKMAN_THICKNESS_MM = 12;
 
 export const WALKMAN_FINISHES = ['silver', 'blue', 'black'] as const;
 export type WalkmanFinish = (typeof WALKMAN_FINISHES)[number];

@@ -20,7 +20,7 @@ import { DeskClock } from '../../components/3D/DeskClock/DeskClock';
 import { DeskPhone, DESK_PHONE_WIDTH, DESK_PHONE_DEPTH, DESK_PHONE_HEIGHT, DESK_PHONE_FOOT, SET_BODY_HEIGHT } from '../../components/3D/DeskPhone/DeskPhone';
 import { Handheld } from '../../components/3D/Handheld/Handheld';
 import { HANDHELD_SILHOUETTE } from '../../components/3D/Handheld/silhouette';
-import { LabelBro, LABEL_BRO_HEIGHT, LABEL_BRO_FOOT } from '../../components/3D/LabelBro/LabelBro';
+import { LabelBro, LABEL_BRO_THICKNESS_MM, LABEL_BRO_HEIGHT, LABEL_BRO_FOOT } from '../../components/3D/LabelBro/LabelBro';
 import { MUG_FOOT, MUG_HEIGHT, MUG_SILHOUETTE, MUG_TALL, Mug } from '../../components/3D/Mug/Mug';
 import { Pen } from '../../components/3D/Pen/Pen';
 import { Rolodex } from '../../components/3D/Rolodex/Rolodex';
@@ -61,7 +61,7 @@ const OBJECT_DRAWINGS: Omit<ObjectSpec, 'width'>[] = [
   { id: 'mug', name: 'Mug', widthMm: 140, ratio: 1, height: MUG_TALL, place: { x: 1010, y: 570, rotation: -15 }, shapes: MUG_SILHOUETTE, solid: { height: MUG_HEIGHT, foot: MUG_FOOT }, content: <Mug shadow="contact" /> },
   { id: 'rolodex', name: 'Rolodex', widthMm: 137.05, ratio: 624/518, height: 107.95, place: { x: 1170, y: 330, rotation: 4 }, solid: { localCoordinates: true, height: 408/518, foot: { x: .5, y: 312/518 } }, content: <Rolodex rotation={0} loose={false} /> , inspect: HANDLE },
   { id: 'handheld', name: 'Handheld', widthMm: 170, ratio: 327/720, height: 23, place: { x: 30, y: 250, rotation: -5 }, content: <Handheld rotation={0} />, shapes: [{ path: HANDHELD_SILHOUETTE }], colors: ['#17181b', '#141519', '#090a0d'] , inspect: HANDLE },
-  { id: 'labelBro', name: 'Label Bro', widthMm: 183, ratio: 772/732, height: 78, place: { x: 755, y: 515, rotation: -5 }, solid: { localCoordinates: true, height: LABEL_BRO_HEIGHT, foot: LABEL_BRO_FOOT }, content: <LabelBro rotation={0} defaultOn defaultText="BACKLINE" /> , inspect: HANDLE },
+  { id: 'labelBro', name: 'Label Bro', widthMm: 183, ratio: 772/732, height: LABEL_BRO_THICKNESS_MM, place: { x: 755, y: 515, rotation: -5 }, solid: { localCoordinates: true, height: LABEL_BRO_HEIGHT, foot: LABEL_BRO_FOOT }, content: <LabelBro rotation={0} defaultOn defaultText="BACKLINE" /> , inspect: HANDLE },
   { id: 'pen', name: 'Pen', widthMm: 149, ratio: 60/720, height: 7, place: { x: 450, y: 330, rotation: 8 }, shapes: [{ path: 'M.3 28H3.3V18H17.2V28H19.7V33H96.4L99.9 50L96.4 67H19.7V72H.3Z' }] },
   { id: 'walkman', name: 'Walkman', widthMm: 112, ratio: 590/720, height: WALKMAN_THICKNESS_MM, place: { x: 770, y: 260, rotation: -6 }, content: <Walkman rotation={0} /> , inspect: HANDLE },
   // Its own drawing, in millimetres: the phone alone
