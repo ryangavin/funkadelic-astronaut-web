@@ -50,21 +50,23 @@ export function dossierOrigin(place: Place, width: number) {
   return { x: place.x + wide / 2 + wide / 4 * Math.cos(angle), y: place.y + wide * (915 / 1440) / 2 + wide / 4 * Math.sin(angle) };
 }
 
+/** Shared drawings and original sizes for the dossier and its calibration bench. */
+export const DOSSIER_ITEMS = [
+  { id: 'live', label: 'Live set print', width: SIZES.print * physical, content: <Polaroid video={LIVE_SET.video} plain format="wide" alt={LIVE_SET.alt} caption={LIVE_SET.caption ?? 'Live set'} note={LIVE_SET.note} /> },
+  { id: 'print', label: 'Band photo', width: SIZES.print * physical, content: <Polaroid {...BAND_PACKET.photo} /> },
+  ...BAND_MEMBER_PACKETS.map(({ name, ...packet }, index) => ({ id: ['ryan', 'kevin', 'sam'][index], label: `${name} packet`, width: SIZES.packet * physical, content: <Packet {...packet} rotation={0} /> })),
+  { id: 'oneSheet', label: 'Band one-sheet', width: SIZES.sheet * physical, content: <OneSheet {...BAND_ONE_SHEET} /> },
+  { id: 'handbill', label: 'Press handbill', width: SIZES.handbill * physical, content: <Handbill front={BAND_HANDBILL_FRONT} back={BAND_HANDBILL_BACK} stock="goldenrod" spot="purple" /> },
+  { id: 'zine', label: 'Band zine', width: SIZES.zine * physical, content: <MiniZine pages={BAND_ZINE_PAGES} stock="canary" /> },
+  { id: 'ticket', label: 'Tour ticket', width: SIZES.ticket * physical, content: <AdmissionTicket {...TOUR_ADMISSION_TICKET_PROPS} /> },
+  { id: 'pass', label: 'Festival pass', width: SIZES.pass * physical, content: <TourPass {...NYACK_FESTIVAL_TOUR_PASS_PROPS} rotation={0} /> },
+];
+
 const Contents = memo(function Contents() {
-  const item = (id: string, label: string, width: number, order: number) => ({
-    id: `dossier-${id}`, ...DOSSIER_SPILL_TARGETS[`dossier-${id}`],
-    label, width: width * physical, order, z: 30 + order, grab: 'anywhere' as const,
-  });
-  return <>
-    <Spilled {...item('live', 'Live set print', SIZES.print, 0)}><Polaroid video={LIVE_SET.video} plain format="wide" alt={LIVE_SET.alt} caption={LIVE_SET.caption ?? 'Live set'} note={LIVE_SET.note} /></Spilled>
-    <Spilled {...item('print', 'Band photo', SIZES.print, 1)}><Polaroid {...BAND_PACKET.photo} /></Spilled>
-    {BAND_MEMBER_PACKETS.map(({ name, ...packet }, index) => <Spilled key={name} {...item(['ryan', 'kevin', 'sam'][index], `${name} packet`, SIZES.packet, index + 2)}><Packet {...packet} rotation={0} /></Spilled>)}
-    <Spilled {...item('oneSheet', 'Band one-sheet', SIZES.sheet, 5)}><OneSheet {...BAND_ONE_SHEET} /></Spilled>
-    <Spilled {...item('handbill', 'Press handbill', SIZES.handbill, 6)}><Handbill front={BAND_HANDBILL_FRONT} back={BAND_HANDBILL_BACK} stock="goldenrod" spot="purple" /></Spilled>
-    <Spilled {...item('zine', 'Band zine', SIZES.zine, 7)}><MiniZine pages={BAND_ZINE_PAGES} stock="canary" /></Spilled>
-    <Spilled {...item('ticket', 'Tour ticket', SIZES.ticket, 8)}><AdmissionTicket {...TOUR_ADMISSION_TICKET_PROPS} /></Spilled>
-    <Spilled {...item('pass', 'Festival pass', SIZES.pass, 9)}><TourPass {...NYACK_FESTIVAL_TOUR_PASS_PROPS} rotation={0} /></Spilled>
-  </>;
+  return <>{DOSSIER_ITEMS.map(({ id, label, width, content }, order) => <Spilled
+    key={id} id={`dossier-${id}`} {...DOSSIER_SPILL_TARGETS[`dossier-${id}`]}
+    label={label} width={width} order={order} z={30 + order} grab="anywhere"
+  >{content}</Spilled>)}</>;
 });
 
 export const DOSSIER_RETURN_MS = SPILL_FLIGHT_MS * .8 + 9 * SPILL_STAGGER_MS;

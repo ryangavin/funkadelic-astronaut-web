@@ -1,7 +1,8 @@
 import { useArgs } from 'storybook/preview-api';
-import { expect, waitFor, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { physicalControls, physicalDefaults, withLightTuning, RoomExperiment, roomSeam, type RoomStoryControls } from '../RoomControls/controls';
+import { MVP_INITIAL_PLACEMENTS, MVP_CONTENT_PLACEMENTS } from './roster';
 import { Desk } from '../../pages/Desk/PerspectiveDesk.stories';
 import { DESK_WOODS } from '../../components/3D/Desk/Desk';
 import { OBJECT_IDS, PAPER_IDS, SizingBench, type SizingBenchProps } from './SizingBench';
@@ -16,7 +17,8 @@ const meta = {
   parameters: { layout: 'fullscreen' },
   /* Only what sizing is decided with. The lighting, window and room-extent knobs stay on the room benches. */
   argTypes: {
-    stage: { control: 'inline-radio', options: ['papers', 'everything', 'one'], table: { category: 'Sizing' }, description: 'The sheets alone, everything at life size, or one thing.' },
+    stage: { control: 'inline-radio', options: ['papers', 'everything', 'one', 'mvp', 'contents'], table: { category: 'Sizing' }, description: 'The sheets alone, everything at life size, or one thing.' },
+    capture: { control: 'boolean', table: { category: 'Sizing' } },
     focus: { control: 'select', options: OBJECT_IDS, table: { category: 'Sizing' }, description: 'The one thing on the desk when the stage is one.' },
     ruler: { control: 'inline-radio', options: ['twelveInch', 'meter', 'tenCentimeter', 'none'], table: { category: 'Sizing' } },
     paperTargetPx: { control: { type: 'number', step: 10 }, table: { category: 'Sizing' }, description: 'How wide the front sheet should come out on this screen.' },
@@ -39,7 +41,7 @@ const meta = {
   args: { ...physicalDefaults, ...shipped, stage: 'papers', focus: 'mug', ruler: 'twelveInch', paperTargetPx: 260, readout: true },
   render: function Experiment(args) {
     const [currentArgs, updateArgs] = useArgs<typeof args>();
-    return <RoomExperiment args={currentArgs} update={updateArgs}>{values => <SizingBench {...withLightTuning(values)} />}</RoomExperiment>;
+    return <RoomExperiment args={currentArgs} update={updateArgs}>{values => <SizingBench {...withLightTuning(values)} onCaptureSettings={settings => updateArgs(settings)} />}</RoomExperiment>;
   },
 } satisfies Meta<SizingBenchProps & RoomStoryControls>;
 export default meta;
@@ -78,7 +80,7 @@ export const EverythingAtLifeSize: Story = {
   args: { stage: 'everything' },
   play: async ({ canvasElement }) => {
     if (import.meta.env.MODE !== 'test') return;
-    await waitFor(() => expect(rows(canvasElement)).toHaveLength(OBJECT_IDS.length));
+    await waitFor(() => expect(rows(canvasElement)).toHaveLength(14));
     for (const row of rows(canvasElement)) await expect(row).toHaveTextContent('1.00×');
     await expect(canvasElement.querySelectorAll('.sizing-bench__row--scaled')).toHaveLength(0);
   },
@@ -89,7 +91,7 @@ export const AsComposed: Story = {
   args: { stage: 'everything', objectPlacements: composed },
   play: async ({ canvasElement }) => {
     if (import.meta.env.MODE !== 'test') return;
-    await waitFor(() => expect(rows(canvasElement)).toHaveLength(OBJECT_IDS.length));
+    await waitFor(() => expect(rows(canvasElement)).toHaveLength(14));
     for (const [id, place] of Object.entries(composed!)) {
       const row = canvasElement.querySelector(`[data-object="${id}"]`)!;
       await expect(row).toHaveTextContent(`${((place as { scale?: number }).scale ?? 1).toFixed(2)}×`);
@@ -110,5 +112,61 @@ export const OneThing: Story = {
     const stick = canvas.getByRole('group', { name: 'Ten-centimeter stick' });
     const mug = canvas.getByRole('group', { name: 'Mug' });
     await expect(mug.style.getPropertyValue('--movable-x')).toBe(stick.style.getPropertyValue('--movable-x'));
+  },
+};
+
+
+const calibration = {
+  deskWidthMm: 1800, deskDepthMm: 1000, eyeHeightMm: 2100,
+  viewerSetbackMm: 650, headTiltDegrees: 85, horizontalFieldOfViewDegrees: 75,
+  deskShare: .8, roomLip: 0, showCamera: false, capture: true,
+  lampX: 20, lampY: 160,
+  lampLowerAngle: -142.6818247177271, lampUpperAngle: 110.41274403236815,
+};
+
+/** A fixed-camera lineup, not the final composition. Dates are explicitly layout samples. */
+export const MvpInitialCast: Story = {
+  args: { ...calibration, stage: 'mvp', objectPlacements: MVP_INITIAL_PLACEMENTS },
+  render: function Calibration(args) {
+    const [, updateArgs] = useArgs();
+    return <><div className="sizing-bench__brief"><strong>MVP · initial cast</strong> Compare relative sizes, not layout. All objects start at 1×. Date passes are samples; media wiring comes later. Resize any object, then Sync story controls to keep the result. The ruler and blank sheet are references.</div><SizingBench {...withLightTuning(args)} onCaptureSettings={settings => updateArgs(settings)} /></>;
+  },
+  play: async ({ canvasElement }) => {
+    if (import.meta.env.MODE !== 'test') return;
+    const canvas = within(canvasElement);
+    for (const name of ['Festival site plan', 'Performance contract', 'Pen', 'Label Bro', 'Handheld', 'Walkman', 'Next show sample pass']) {
+      await expect(canvas.getByRole('group', { name })).toBeInTheDocument();
+    }
+    await expect(canvas.queryByRole('group', { name: 'Rolodex' })).toBeNull();
+    const row = canvasElement.querySelector('[data-object="handheld"]')!;
+    await waitFor(() => expect(row).toHaveTextContent('1.00×'));
+    canvas.getByRole('button', { name: 'Resize Handheld' }).focus();
+    await userEvent.keyboard('{ArrowRight}');
+    await waitFor(() => expect(row).not.toHaveTextContent('1.00×'));
+    const changed = row.textContent;
+    await userEvent.click(canvas.getByRole('button', { name: 'Sync story controls' }));
+    await waitFor(() => expect(row.textContent).toBe(changed));
+  },
+};
+
+/** The same room and ruler, with the selected dossier drawings unpacked for comparison. */
+export const MvpDossierContents: Story = {
+  args: { ...calibration, stage: 'contents', objectPlacements: MVP_CONTENT_PLACEMENTS },
+  render: function Calibration(args) {
+    const [, updateArgs] = useArgs();
+    return <><div className="sizing-bench__brief"><strong>MVP · dossier papers</strong> These are the actual dossier drawings at their existing sizes, separated for scale review. Open folds or turn pages to judge their full bounds. This is not the reveal arrangement.</div><SizingBench {...withLightTuning(args)} onCaptureSettings={settings => updateArgs(settings)} /></>;
+  },
+  play: async ({ canvasElement }) => {
+    if (import.meta.env.MODE !== 'test') return;
+    const canvas = within(canvasElement);
+    const row = canvasElement.querySelector('[data-object="calibration-handbill"]');
+    await waitFor(() => expect(row).toHaveTextContent('108 mm'));
+    canvas.getByRole('button', { name: 'Resize Press handbill' }).focus();
+    await userEvent.keyboard('{ArrowRight}');
+    await waitFor(() => expect(row).not.toHaveTextContent('1.00×'));
+    const resized = row!.textContent;
+    await userEvent.click(canvas.getByRole('button', { name: 'Sync story controls' }));
+    await waitFor(() => expect(row!.textContent).toBe(resized));
+    await expect(canvas.queryByRole('group', { name: 'Live set print' })).toBeNull();
   },
 };
