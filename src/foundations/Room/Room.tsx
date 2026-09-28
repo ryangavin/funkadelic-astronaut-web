@@ -15,10 +15,10 @@ import { Movable, type Place } from '../../behaviors/Movable/Movable';
 import { PlacesProvider, usePlaceStore, type PlaceStore } from '../../behaviors/Movable/places';
 import { Inspector, InspectorVeil } from '../../behaviors/Inspectable/Inspectable';
 import type { StudyCamera } from '../../behaviors/Perspective/elevation';
-import { DESK_WIDTH, Desk, type DeskWood } from '../../components/3D/Desk/Desk';
+import { DESK_WIDTH, Desk, type DeskSurface, type DeskWood } from '../../components/3D/Desk/Desk';
 import { DeskLamp, type DeskLampEnamel } from '../../components/3D/DeskLamp/DeskLamp';
 import { LampPool, LampShadows } from '../../components/3D/DeskLamp/LampShadows';
-import { DeskRoom, ROOM_DESK_DEPTH, ROOM_DESK_SHARE, ROOM_LIP } from './DeskRoom';
+import { DeskRoom, ROOM_DESK_DEPTH, ROOM_DESK_SHARE, ROOM_LIP, type Outlook } from './DeskRoom';
 import type { FloorWood } from '../../components/3D/Floor/Floor';
 import type { WallFinish } from '../../components/3D/Wall/Wall';
 import './Room.css';
@@ -70,12 +70,18 @@ export type RoomProps = PhysicalRoomInputs & {
   showCamera?: boolean;
   /** The timber the desk top is made of. */
   wood?: DeskWood;
+  /** Whether that top is a board or a printed film: a desk, or a folding table. */
+  deskSurface?: DeskSurface;
   /** Whether the desk stands in a room at all, or on its own against the page. */
   room?: boolean;
   /** The timber the floor is laid in. */
   floor?: FloorWood;
   /** What the brick behind the desk has been finished in. */
   wall?: WallFinish;
+  /** An opening in the wall and what is seen through it, in place of the casement. */
+  outlook?: Outlook;
+  /** Daylight from a window behind the desk, 0 to 1: a cool wash across the top from its back edge. */
+  daylight?: number;
   /** How far out of focus the room is, 0 to 3. 0 is everything sharp; the boards, being further off, go first. */
   roomBlur?: number;
   /** How far the room falls away from the light on the desk, 0 to 1. */
@@ -208,7 +214,7 @@ export function Room(props: RoomProps) {
   </>;
 }
 
-function RoomScene({ windowHeightMm, windowSillHeightMm, setup, extents, tuning, floorContent, floorForeground, horizontalFieldOfViewDegrees, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & RoomSceneGeometry & { tuning: LightTuning }) {
+function RoomScene({ windowHeightMm, windowSillHeightMm, setup, extents, tuning, floorContent, floorForeground, horizontalFieldOfViewDegrees, showPerformance = false, lampIntensity = 1, roomSpanMm, floorFrontMm, wallHeightMm, wood = 'walnut', deskSurface = 'timber', room = true, floor = 'pine', wall = 'red', outlook, daylight = 0, roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArticulate, onArrange, places: given, shadows, children, className = '', style }: RoomProps & RoomSceneGeometry & { tuning: LightTuning }) {
   const { camera, stand, edge } = setup;
   const framing = roomFraming(camera, deskShare, roomLip, horizontalFieldOfViewDegrees);
   const span = roomSpanMm === undefined ? undefined : mmToUnits(roomSpanMm);
@@ -280,7 +286,7 @@ function RoomScene({ windowHeightMm, windowSillHeightMm, setup, extents, tuning,
       {/* The frame: 16 x 9, cropping the room. Told there is a room in it, it
           becomes the container the desk takes its share of the width from. */}
       <Inspector className={`room ${className}`.trim()} data-room={room ? '' : undefined} style={{ '--room-desk-width': camera.width, '--room-share': framing.deskShare, '--room-lip': framing.lip, '--room-target': camera.targetY ?? camera.surfaceHeight, ...style } as React.CSSProperties}><DeskLighting>
-        {room && <DeskRoom windowHeightMm={windowHeightMm} windowSillHeightMm={windowSillHeightMm} targetY={camera.targetY} angle={camera.angle} depth={camera.depth} deskWidth={camera.width} deskDepth={camera.surfaceHeight} stand={stand} span={span} front={front} wallHeight={wallHeight} lip={framing.lip} floor={floor} wall={wall} blur={roomBlur} dim={roomDim} deskShare={framing.deskShare} shadowStrength={shadowStrength} />}
+        {room && <DeskRoom windowHeightMm={windowHeightMm} windowSillHeightMm={windowSillHeightMm} targetY={camera.targetY} angle={camera.angle} depth={camera.depth} deskWidth={camera.width} deskDepth={camera.surfaceHeight} stand={stand} span={span} front={front} wallHeight={wallHeight} lip={framing.lip} floor={floor} wall={wall} outlook={outlook} blur={roomBlur} dim={roomDim} deskShare={framing.deskShare} shadowStrength={shadowStrength} />}
         {room && <RoomFloorGeometry camera={camera} stand={stand} edge={edge} share={framing.deskShare} lip={framing.lip} />}
         {room && floorContent && <RoomFloorSurface camera={camera} stand={stand} share={framing.deskShare} lip={framing.lip}>{floorContent}</RoomFloorSurface>}
         <div className="room__stand">
@@ -288,8 +294,8 @@ function RoomScene({ windowHeightMm, windowSillHeightMm, setup, extents, tuning,
             {/* The materials class is what tells the things on it they are being
                 seen in the round rather than flat in a plan: no print filter on a
                 pen, a lip of light along a moulded case. */}
-            <Desk className="desk-study-materials" wood={wood} width={camera.width} height={camera.surfaceHeight} edge={edge}>
-              <div className="room__lighting" aria-hidden="true"><DeskLightLayers width={camera.width} depth={camera.surfaceHeight} />{shadows}</div>
+            <Desk className="desk-study-materials" wood={wood} surface={deskSurface} width={camera.width} height={camera.surfaceHeight} edge={edge}>
+              <div className="room__lighting" aria-hidden="true">{daylight > 0 && <div className="room__daylight" style={{ '--room-daylight': daylight } as React.CSSProperties} />}<DeskLightLayers width={camera.width} depth={camera.surfaceHeight} />{shadows}</div>
               {/* Drawn on the desk itself, so it takes the desk's perspective and pushes everything under it away. */}
               <InspectorVeil />
               {children}

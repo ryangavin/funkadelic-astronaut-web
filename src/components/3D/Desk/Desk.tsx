@@ -6,12 +6,26 @@ import './Desk.css';
 export const DESK_WOODS = ['walnut', 'oak', 'ebony', 'cherry'] as const;
 export type DeskWood = (typeof DESK_WOODS)[number];
 
+export const DESK_SURFACES = ['timber', 'laminate'] as const;
+/**
+ * What the top actually is. `timber` is a board: the bands of tone are pushed
+ * about by turbulence into figure, and the pores lie over it. `laminate` is a
+ * picture of a board — a printed film on chipboard — so it is the same bands
+ * with the figure taken out and nothing under them: the grain repeats, every
+ * board of it is the same board, and there are no pores at all, because the
+ * surface is a sheet of melamine. That evenness is the whole tell, and it is
+ * why a folding table never looks like a desk.
+ */
+export type DeskSurface = (typeof DESK_SURFACES)[number];
+
 /** The desk is measured like a sheet: 1440 units across. */
 export const DESK_WIDTH = DESK_SIZE.width;
 
 export type DeskProps = {
-  /** The timber the top is made of. */
+  /** The timber the top is made of, or the timber its print is of. */
   wood?: DeskWood;
+  /** Whether the top is a board or a printed film over chipboard. */
+  surface?: DeskSurface;
   /** Height of the top in desk units, where 1440 is its width. */
   height?: number;
   /** Physical surface width in desk units; object units remain unchanged. */
@@ -36,7 +50,7 @@ export type DeskProps = {
  * placed on it with Pin, in desk units, so a composition on it scales as one
  * piece.
  */
-export function Desk({ wood = 'walnut', width = DESK_WIDTH, height = 810, boards = 1, light = 1, edge = 22, children, className = '', style, ...rest }: DeskProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'children' | 'className' | 'style'>) {
+export function Desk({ wood = 'walnut', surface = 'timber', width = DESK_WIDTH, height = 810, boards = 1, light = 1, edge = 22, children, className = '', style, ...rest }: DeskProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'children' | 'className' | 'style'>) {
   const id = `desk-${useId().replace(/:/g, '')}`;
   const count = Math.max(1, Math.round(boards));
   return (
@@ -44,6 +58,7 @@ export function Desk({ wood = 'walnut', width = DESK_WIDTH, height = 810, boards
       {...rest}
       className={`desk ${className}`}
       data-wood={wood}
+      data-surface={surface}
       style={{ '--desk-width': width, '--desk-height': height, '--desk-light': light, '--desk-boards': count, '--desk-edge': edge, ...style } as React.CSSProperties}
     >
       <div className="desk__top">
@@ -66,11 +81,16 @@ export function Desk({ wood = 'walnut', width = DESK_WIDTH, height = 810, boards
             <div key={board} className="desk__board" style={{ '--desk-board': board } as React.CSSProperties}>
               {/* Filter primitives now see desk units, rather than responsive CSS pixels.
                   Keep the existing gradients and their 14% overscan inside that space. */}
-              <svg className="desk__grain" viewBox={`0 0 ${width * 1.28} ${height / count * 1.28}`} preserveAspectRatio="none" focusable="false">
-                <foreignObject width={width * 1.28} height={height / count * 1.28} filter={`url(#${id}-grain)`}>
-                  <div className="desk__bands" style={{ '--sheet-unit': '1px' } as React.CSSProperties} />
-                </foreignObject>
-              </svg>
+              {/* A printed top has no figure to bend, so it skips the filter
+                  — and the drawing of it is the honest one: the same bands,
+                  repeating exactly, which is what a print is. */}
+              {surface === 'laminate'
+                ? <div className="desk__grain"><div className="desk__bands" /></div>
+                : <svg className="desk__grain" viewBox={`0 0 ${width * 1.28} ${height / count * 1.28}`} preserveAspectRatio="none" focusable="false">
+                    <foreignObject width={width * 1.28} height={height / count * 1.28} filter={`url(#${id}-grain)`}>
+                      <div className="desk__bands" style={{ '--sheet-unit': '1px' } as React.CSSProperties} />
+                    </foreignObject>
+                  </svg>}
             </div>
           ))}
         </div>

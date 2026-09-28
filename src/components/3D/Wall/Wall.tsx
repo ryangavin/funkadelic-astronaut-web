@@ -2,8 +2,12 @@ import type React from 'react';
 import './Wall.css';
 import { wallMaterialBricks, type MaterialOrigin } from '../../../geometry/materialCoordinates';
 
-export const WALL_FINISHES = ['whitewash', 'red', 'buff', 'black'] as const;
+export const WALL_FINISHES = ['whitewash', 'red', 'buff', 'black', 'panel', 'glaze'] as const;
 export type WallFinish = (typeof WALL_FINISHES)[number];
+
+export const WALL_BONDS = ['running', 'stack'] as const;
+/** How one course sits over the one below: half a unit along, or squarely on it. */
+export type WallBond = (typeof WALL_BONDS)[number];
 
 /**
  * Measured like every other surface here: 1440 units across is the desk's
@@ -19,6 +23,33 @@ export const WALL_JOINT = 12;
 /** A wall of an ordinary room: 2.4 metres. */
 export const WALL_HEIGHT = 2880;
 
+/**
+ * What a wall is made of, and therefore how it is set out.
+ *
+ * A finish is not a colour here: it names the material, and a material comes
+ * with the size of the unit it is made in and the way those units are laid.
+ * Brick is 215 by 65 on a 10 millimetre joint in running bond, whatever it has
+ * been painted. A glazed tile is 200 by 100 on a 3 millimetre grout, still in
+ * running bond, because that is how a tiler lays it. A melamine-faced panel is
+ * a sheet — 1220 wide and the whole height of the wall, with a shadow gap
+ * between one sheet and the next — so it is laid squarely, and it has no
+ * horizontal joint at all within the height of an ordinary room.
+ *
+ * So the room asks the material how it is built rather than being told, and a
+ * composition that wants a tiled wall says `wall="glaze"` and gets tiles the
+ * size tiles are.
+ */
+export const WALL_COURSING: Record<WallFinish, { brick: number; course: number; joint: number; bond: WallBond; worn: number }> = {
+  whitewash: { brick: WALL_BRICK, course: WALL_COURSE, joint: WALL_JOINT, bond: 'running', worn: 22 },
+  red: { brick: WALL_BRICK, course: WALL_COURSE, joint: WALL_JOINT, bond: 'running', worn: 22 },
+  buff: { brick: WALL_BRICK, course: WALL_COURSE, joint: WALL_JOINT, bond: 'running', worn: 22 },
+  black: { brick: WALL_BRICK, course: WALL_COURSE, joint: WALL_JOINT, bond: 'running', worn: 22 },
+  /* A 1220 sheet and its 6 millimetre shadow gap, full height. */
+  panel: { brick: 1471, course: 2952, joint: 8, bond: 'stack', worn: 9 },
+  /* A 200 by 100 metro tile on a 3 millimetre grout. */
+  glaze: { brick: 244, course: 124, joint: 4, bond: 'running', worn: 7 },
+};
+
 /** Deterministic wobble in 0..1, so a wall is built the same way every render. */
 function wobble(n: number) {
   const x = Math.sin(n * 78.233) * 43758.5453;
@@ -32,7 +63,7 @@ function wobble(n: number) {
  * brick, from where it sits in the bond, so a wall of any size is variegated
  * at the same rate and always the same way.
  */
-function variegation(width: number, height: number, brick: number, course: number, rate: number) {
+function variegation(width: number, height: number, brick: number, course: number, rate: number, stagger = 0.5) {
   const across = Math.max(1, Math.ceil(width / brick) + 1);
   const rows = Math.max(1, Math.ceil(height / course));
   const out: { x: number; y: number; worn: number; lean: number; tone: 'thin' | 'thick' }[] = [];
@@ -41,7 +72,7 @@ function variegation(width: number, height: number, brick: number, course: numbe
       if (wobble(row * 131 + col * 17 + 1) > rate / 100) continue;
       const kind = wobble(row * 29 + col * 53 + 2);
       out.push({
-        x: col * brick - (row % 2 ? brick / 2 : 0),
+        x: col * brick - (row % 2 ? brick * stagger : 0),
         y: row * course,
         // Mostly brick showing through; a third of them are just a heavier coat.
         worn: 0.2 + kind * 0.7,
@@ -68,6 +99,10 @@ export type WallProps = {
   course?: number;
   /** How many bricks in a hundred do not match their neighbours. 0 is a wall painted last week. */
   worn?: number;
+  /** The joint between one unit and the next, in units. */
+  joint?: number;
+  /** Running bond steps every other course half a unit along; stack bond lays them squarely. */
+  bond?: WallBond;
   /** How strongly the room's light falls across the wall, 0 to 1. */
   light?: number;
   /** Drawn flat: no grit under the paint and no brushwork over it, and the odd bricks are plain blocks of another tone. */
@@ -100,9 +135,11 @@ export function Wall({
   finish = 'whitewash',
   width = 1440,
   height = WALL_HEIGHT,
-  brick = WALL_BRICK,
-  course = WALL_COURSE,
-  worn = 22,
+  brick = WALL_COURSING[finish].brick,
+  course = WALL_COURSING[finish].course,
+  joint = WALL_COURSING[finish].joint,
+  bond = WALL_COURSING[finish].bond,
+  worn = WALL_COURSING[finish].worn,
   light = 1,
   flat = false,
   weathered = false,
@@ -113,16 +150,18 @@ export function Wall({
 }: WallProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'children' | 'className' | 'style'>) {
   // Bare stock varies through the firing, beyond the bricks with worn paint.
   const variationRate = finish === 'red' && (!flat || weathered) && worn > 0 ? Math.min(100, worn * 3) : worn;
-  const odd = worn > 0 ? (materialOrigin ? wallMaterialBricks(materialOrigin, width, height, brick, course, variationRate) : variegation(width, height, brick, course, variationRate)) : [];
+  const stagger = bond === 'stack' ? 0 : 0.5;
+  const odd = worn > 0 ? (materialOrigin ? wallMaterialBricks(materialOrigin, width, height, brick, course, variationRate, stagger) : variegation(width, height, brick, course, variationRate, stagger)) : [];
   return (
     <div
       {...rest}
       className={`wall ${className}`}
       data-finish={finish}
       data-material-origin={materialOrigin ? `${materialOrigin.x},${materialOrigin.y}` : undefined}
+      data-bond={bond}
       data-flat={flat ? '' : undefined}
       data-weathered={weathered ? '' : undefined}
-      style={{ '--wall-width': width, '--wall-height': height, '--wall-brick': brick, '--wall-course': course, '--wall-joint': WALL_JOINT, '--wall-light': light, '--wall-origin-x': materialOrigin?.x ?? 0, '--wall-origin-y': materialOrigin?.y ?? 0, ...style } as React.CSSProperties}
+      style={{ '--wall-width': width, '--wall-height': height, '--wall-brick': brick, '--wall-course': course, '--wall-joint': joint, '--wall-stagger': stagger, '--wall-light': light, '--wall-origin-x': materialOrigin?.x ?? 0, '--wall-origin-y': materialOrigin?.y ?? 0, ...style } as React.CSSProperties}
     >
       <div className="wall__face">
         {/* The bond: bed joints across the whole wall, and perpends that step

@@ -13,10 +13,11 @@ export function floorMaterialJoints(row: number, origin: number, length: number,
   return Array.from({ length: Math.max(0, end - first) }, (_, index) => phase + (first + index) * run);
 }
 const wallWobble = (n: number) => positiveModulo(Math.sin(n * 78.233) * 43758.5453, 1);
-export function wallMaterialBricks(origin: MaterialOrigin, width: number, height: number, brick: number, course: number, rate: number) {
+/** `stagger` is how far each alternate course steps along, as a fraction of a unit: a half for running bond, nothing for stack. */
+export function wallMaterialBricks(origin: MaterialOrigin, width: number, height: number, brick: number, course: number, rate: number, stagger = 0.5) {
   const out: { x: number; y: number; worn: number; lean: number; tone: 'thin' | 'thick' }[] = [];
   for (const row of materialRows(origin.y, height, course)) {
-    const shift = positiveModulo(row, 2) * brick / 2;
+    const shift = positiveModulo(row, 2) * brick * stagger;
     const first = Math.floor((origin.x + shift) / brick), end = Math.ceil((origin.x + width + shift) / brick);
     for (let col = first; col < end; col++) {
       if (wallWobble(row * 131 + col * 17 + 1) > rate / 100) continue;

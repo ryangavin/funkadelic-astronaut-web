@@ -3,7 +3,7 @@ import { roomSurfaceExtents } from '../../geometry/roomCoverage';
 import { DEFAULT_LIGHT_TUNING } from '../../geometry/lightingSetup';
 import { DESK_SIZE, mmToUnits } from '../../geometry/physicalScale';
 import type React from 'react';
-import { memo, useId, useRef, type Ref } from 'react';
+import { memo, useId, useRef, type ReactNode, type Ref } from 'react';
 import { useDeskLightEffect } from '../../behaviors/DeskLighting/DeskLighting';
 import { DESK_WIDTH } from '../../components/3D/Desk/Desk';
 import { Floor, type FloorWood } from '../../components/3D/Floor/Floor';
@@ -65,6 +65,41 @@ export function floorLies(angle: number, stand: number) {
   return { tilt, back: stand * Math.cos(tilt), down: stand * Math.sin(tilt) };
 }
 
+/**
+ * A hole in the wall, and what is on the other side of it.
+ *
+ * The wall is an elevation; what is outside is the same two kinds of surface
+ * the room is — ground in plan and a far wall in elevation — only further off,
+ * and lit by day rather than by the lamp. The ground carries on from the foot
+ * of this wall at floor level, and the far wall stands up on it `groundDepthMm`
+ * away. Both are placed by the same transforms the room's own floor and wall
+ * are, so from up here the view through the glass is mostly ground, seen from
+ * above, and the far wall only where the eye is looking out rather than down.
+ *
+ * Each drawing fills the box it is given, in millimetres: the glazing the
+ * opening, the ground `groundWidthMm` by `groundDepthMm` with the wall along
+ * its bottom edge, and the far wall `groundWidthMm` by `facadeHeightMm`.
+ */
+export type Outlook = {
+  /** The opening, from the floor and across the wall's middle. */
+  opening: { widthMm: number; sillMm: number; headMm: number; offsetMm?: number };
+  glazing: ReactNode;
+  ground: ReactNode;
+  groundWidthMm: number;
+  groundDepthMm: number;
+  facade?: ReactNode;
+  facadeHeightMm?: number;
+};
+
+/** The wall with the opening cut out of it, as a clip-path over the wall's own box. */
+function openingClip(opening: Outlook['opening'], span: number, wallHeight: number) {
+  const x = (mm: number) => `${((span / 2 + mmToUnits(mm)) / span * 100).toFixed(3)}%`;
+  const y = (mm: number) => `${((wallHeight - mmToUnits(mm)) / wallHeight * 100).toFixed(3)}%`;
+  const left = (opening.offsetMm ?? 0) - opening.widthMm / 2, right = left + opening.widthMm;
+  /* Round the outside, in along a slit, round the hole the other way, and back out: one outline with a hole in it. */
+  return `polygon(0 0, 100% 0, 100% 100%, ${x(left)} 100%, ${x(left)} ${y(opening.sillMm)}, ${x(right)} ${y(opening.sillMm)}, ${x(right)} ${y(opening.headMm)}, ${x(left)} ${y(opening.headMm)}, ${x(left)} 100%, 0 100%)`;
+}
+
 export type DeskRoomProps = {
   windowHeightMm?: number;
   windowSillHeightMm?: number;
@@ -95,6 +130,8 @@ export type DeskRoomProps = {
   dim?: number;
   /** How dark the desk's shadow on the boards is when the lamp is on, 0 to 1. */
   shadowStrength?: number;
+  /** An opening in the wall and what is seen through it. Given one, the casement is not drawn. */
+  outlook?: Outlook;
 };
 
 /**
@@ -303,7 +340,7 @@ function DeskFloorShadow({ deskWidth, span, deskDepth, stand, floorDepth, streng
   Held, the room renders when the room changes. The lamp still moves the shadow,
   through the light store, which is what the store is for.
 */
-export const DeskRoom = memo(function DeskRoom({ windowHeightMm, windowSillHeightMm, angle, depth, deskShare = ROOM_DESK_SHARE, deskWidth = DESK_WIDTH, span: givenSpan, front: givenFront, wallHeight: givenWallHeight, deskDepth = ROOM_DESK_DEPTH, targetY = deskDepth, stand = DESK_STAND, lip = ROOM_LIP, floor = 'pine', wall = 'red', blur = 1, dim = 0.32, shadowStrength = 0.36 }: DeskRoomProps) {
+export const DeskRoom = memo(function DeskRoom({ windowHeightMm, windowSillHeightMm, angle, depth, deskShare = ROOM_DESK_SHARE, deskWidth = DESK_WIDTH, span: givenSpan, front: givenFront, wallHeight: givenWallHeight, deskDepth = ROOM_DESK_DEPTH, targetY = deskDepth, stand = DESK_STAND, lip = ROOM_LIP, floor = 'pine', wall = 'red', blur = 1, dim = 0.32, shadowStrength = 0.36, outlook }: DeskRoomProps) {
   const { back, down } = floorLies(angle, stand);
   let extents;
   try {
@@ -341,6 +378,15 @@ export const DeskRoom = memo(function DeskRoom({ windowHeightMm, windowSillHeigh
         } as React.CSSProperties
       }
     >
+      {outlook && <div className="desk-room__layer desk-room__layer--outside">
+        {/* The ground outside, in the floor's plane, beyond the foot of the wall. */}
+        <div className="desk-room__floor desk-room__floor--outside">
+          <div className="desk-room__ground" style={{ '--desk-room-ground-width': mmToUnits(outlook.groundWidthMm), '--desk-room-ground-depth': mmToUnits(outlook.groundDepthMm) } as React.CSSProperties}>{outlook.ground}</div>
+        </div>
+        {/* And whatever stands at the far side of it, stood up the way this wall is. */}
+        {outlook.facade && <div className="desk-room__facade" style={{ '--desk-room-beyond': mmToUnits(outlook.groundDepthMm), '--desk-room-ground-width': mmToUnits(outlook.groundWidthMm), '--desk-room-facade-height': mmToUnits(outlook.facadeHeightMm ?? 12000) } as React.CSSProperties}>{outlook.facade}</div>}
+      </div>}
+
       {/* The boards: the desk top's plane a desk's height down, running from in front of the desk back to the wall. */}
       <div className="desk-room__layer desk-room__layer--floor">
         <div className="desk-room__floor">
@@ -352,8 +398,9 @@ export const DeskRoom = memo(function DeskRoom({ windowHeightMm, windowSillHeigh
       {/* The brick, stood up on the boards where they stop, its bottom courses behind the desk. */}
       <div className="desk-room__layer desk-room__layer--wall">
         <div className="desk-room__wall">
-          <Wall materialOrigin={{ x: -span / 2, y: -wallHeight }} finish={wall} width={span} height={wallHeight} flat weathered light={0} />
-          <WallWindow height={windowHeightMm} sill={windowSillHeightMm} />
+          <Wall materialOrigin={{ x: -span / 2, y: -wallHeight }} finish={wall} width={span} height={wallHeight} flat weathered light={0} style={outlook ? { clipPath: openingClip(outlook.opening, span, wallHeight) } : undefined} />
+          {outlook ? <div className="desk-room__glazing" style={{ '--desk-room-opening-x': mmToUnits(outlook.opening.offsetMm ?? 0), '--desk-room-opening-width': mmToUnits(outlook.opening.widthMm), '--desk-room-opening-sill': mmToUnits(outlook.opening.sillMm), '--desk-room-opening-height': mmToUnits(outlook.opening.headMm - outlook.opening.sillMm) } as React.CSSProperties}>{outlook.glazing}</div>
+            : <WallWindow height={windowHeightMm} sill={windowSillHeightMm} />}
         </div>
       </div>
 

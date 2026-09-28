@@ -139,3 +139,55 @@
     linear-gradient(180deg, rgb(12 8 5 / 0.34), transparent 30%),
     radial-gradient(120% 90% at 50% 100%, transparent 50%, rgb(12 8 5 / 0.28));
 }
+
+/*
+  Outside. It is further off than anything in the room and lit by the day, not
+  the lamp, so it is softer and it is not dimmed with the room.
+*/
+.desk-room__layer--outside {
+  filter: blur(calc(var(--desk-room-blur) * 0.09cqw)) saturate(0.85);
+}
+
+/* Same box and transform as the boards, so the ground is in their plane; the drawing sits beyond their far edge. */
+.desk-room__floor--outside {
+  height: 0;
+}
+
+.desk-room__ground {
+  position: absolute;
+  left: 50%;
+  bottom: calc((var(--desk-room-depth) + var(--desk-room-front)) * var(--desk-room-unit));
+  width: calc(var(--desk-room-ground-width) * var(--desk-room-unit));
+  height: calc(var(--desk-room-ground-depth) * var(--desk-room-unit));
+  translate: -50% 0;
+}
+
+/* Stood up like the wall, only carried back past the ground as well as the desk. */
+.desk-room__facade {
+  position: absolute;
+  left: 50%;
+  bottom: var(--desk-room-hinge);
+  width: calc(var(--desk-room-ground-width) * var(--desk-room-unit));
+  height: calc(var(--desk-room-facade-height) * var(--desk-room-unit));
+  translate: -50% 0;
+  transform-origin: 50% 100%;
+  transform: var(--desk-room-lie) translateY(calc(-1 * (var(--desk-room-target, var(--desk-room-depth)) + var(--desk-room-beyond)) * var(--desk-room-unit))) rotateX(-90deg);
+}
+
+.desk-room__ground > *,
+.desk-room__facade > *,
+.desk-room__glazing > * {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The glass and its frame, filling the opening in the wall's own plane. */
+.desk-room__glazing {
+  position: absolute;
+  left: calc(50% + var(--desk-room-opening-x) * var(--desk-room-unit));
+  bottom: calc(var(--desk-room-opening-sill) * var(--desk-room-unit));
+  width: calc(var(--desk-room-opening-width) * var(--desk-room-unit));
+  height: calc(var(--desk-room-opening-height) * var(--desk-room-unit));
+  translate: -50% 0;
+}

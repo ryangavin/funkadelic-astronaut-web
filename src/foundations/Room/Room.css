@@ -62,3 +62,18 @@
 
 .room__diagnostic { box-sizing: border-box; width: 100%; margin: 0; padding: 10px 16px; color: #ead3a7; background: #211b16; font: 13px/1.5 system-ui; }
 .room__diagnostic[role='alert'] { border: 1px solid #df965f; }
+
+/*
+  Daylight through a window behind the desk. It comes in over the back edge
+  and falls across the top, strongest where the top meets the glass and gone
+  by the front, cooler than the lamp and much broader: a window is a light the
+  size of a wall.
+*/
+.room__daylight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+  opacity: var(--room-daylight);
+  background: linear-gradient(180deg, rgb(235 244 255 / 0.95), rgb(225 236 250 / 0.55) 38%, transparent 85%);
+}

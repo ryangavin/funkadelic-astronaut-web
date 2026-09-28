@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { DEFAULT_SHADOW_STRENGTH } from '../../behaviors/DeskLighting/DeskLighting';
 import type { Place } from '../../behaviors/Movable/Movable';
 import { usePlaceStore } from '../../behaviors/Movable/places';
-import type { DeskWood } from '../../components/3D/Desk/Desk';
+import type { DeskSurface, DeskWood } from '../../components/3D/Desk/Desk';
 import type { DeskLampEnamel } from '../../components/3D/DeskLamp/DeskLamp';
 import { DESK_DEPTH, ROOM_LAMP, Room, useRoomCamera, type RoomProps } from '../../foundations/Room/Room';
 import { ROOM_DESK_SHARE, ROOM_LIP } from '../../foundations/Room/DeskRoom';
@@ -15,7 +15,7 @@ import './PerspectiveDesk.css';
 
 export { DESK_DEPTH } from '../../foundations/Room/Room';
 
-export type RoomControls = Pick<RoomProps, 'windowHeightMm' | 'windowSillHeightMm' | 'showPerformance' | 'showCamera' | 'deskWidthMm' | 'deskDepthMm' | 'deskHeightMm' | 'deskEdgeMm' | 'eyeHeightMm' | 'viewerSetbackMm' | 'headTiltDegrees' | 'horizontalFieldOfViewDegrees' | 'roomSpanMm' | 'floorFrontMm' | 'wallHeightMm' | 'lampIntensity' | 'lightTuning'>;
+export type RoomControls = Pick<RoomProps, 'outlook' | 'daylight' | 'floorContent' | 'windowHeightMm' | 'windowSillHeightMm' | 'showPerformance' | 'showCamera' | 'deskWidthMm' | 'deskDepthMm' | 'deskHeightMm' | 'deskEdgeMm' | 'eyeHeightMm' | 'viewerSetbackMm' | 'headTiltDegrees' | 'horizontalFieldOfViewDegrees' | 'roomSpanMm' | 'floorFrontMm' | 'wallHeightMm' | 'lampIntensity' | 'lightTuning'>;
 export type PerspectiveDeskProps = RoomControls & {
   objectPlacements?: ObjectPlacements;
   showObjects?: boolean;
@@ -34,6 +34,8 @@ export type PerspectiveDeskProps = RoomControls & {
   lampEnamel?: DeskLampEnamel;
   onArticulate?: (angles: { lower: number; upper: number }) => void;
   wood?: DeskWood;
+  /** Whether that top is a board or a printed film: a desk, or a folding table. */
+  deskSurface?: DeskSurface;
   /** Whether the desk stands in a room at all, or on its own against the page. */
   room?: boolean;
   /** The timber the floor is laid in. */
@@ -78,7 +80,7 @@ function ObjectShadows({ only }: { only?: readonly string[] }) {
 }
 
 /** The main desk composition: the room, and the promoter's things on the desk in it. */
-export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, showObjects = true, only, showSettings = true, onCaptureSettings, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', onArticulate, wood = 'walnut', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArrange, children, ...roomControls }: PerspectiveDeskProps) {
+export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, showObjects = true, only, showSettings = true, onCaptureSettings, lampX, lampY, lampRotation, lampWidth = LAMP_WIDTH, lampLowerAngle, lampUpperAngle, lampEnamel = 'green', onArticulate, wood = 'walnut', deskSurface = 'timber', room = true, floor = 'pine', wall = 'red', roomBlur = 1, roomDim = 0.32, deskShare = ROOM_DESK_SHARE, roomLip = ROOM_LIP, lamp = true, shadowStrength = DEFAULT_SHADOW_STRENGTH, onLamp, onArrange, children, ...roomControls }: PerspectiveDeskProps) {
   /*
     Where everything lies is a store rather than state, and it is this page's
     rather than the room's, because this page is what has things to place and
@@ -104,7 +106,9 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
   const [on, setOn] = useState(lamp);
   useEffect(() => { setOn(lamp); }, [lamp]);
 
-  const capture = () => ({ ...roomControls, wood, room, floor, wall, roomBlur, roomDim, deskShare, roomLip, lamp: on, shadowStrength, lampX: places.get(ROOM_LAMP)?.x, lampY: places.get(ROOM_LAMP)?.y, lampRotation: places.get(ROOM_LAMP)?.rotation, lampWidth, lampEnamel, lampLowerAngle: posed.current.lower, lampUpperAngle: posed.current.upper, objectPlacements: places.all(), showObjects });
+  /* The outlook and the floor's contents are drawings, not settings: they do not go into the JSON. */
+  const { outlook: _outlook, floorContent: _floorContent, ...settings } = roomControls;
+  const capture = () => ({ ...settings, wood, deskSurface, room, floor, wall, roomBlur, roomDim, deskShare, roomLip, lamp: on, shadowStrength, lampX: places.get(ROOM_LAMP)?.x, lampY: places.get(ROOM_LAMP)?.y, lampRotation: places.get(ROOM_LAMP)?.rotation, lampWidth, lampEnamel, lampLowerAngle: posed.current.lower, lampUpperAngle: posed.current.upper, objectPlacements: places.all(), showObjects });
 
   return <main className="perspective-desk-room" aria-label="Perspective desk">
     {showSettings && <aside className="perspective-desk__settings">
@@ -122,6 +126,7 @@ export function PerspectiveDesk({ objectPlacements = DEFAULT_OBJECT_PLACEMENTS, 
       {...roomControls}
       places={places}
       wood={wood}
+      deskSurface={deskSurface}
       room={room}
       floor={floor}
       wall={wall}
