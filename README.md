@@ -17,7 +17,7 @@ Pushes to `main` run `.github/workflows/pages.yml`: `npm test` (which also runs 
 
 ## Where the copy lives
 
-All press-kit text is in `src/content/locales/en.json`. Components read it through i18next (`useTranslation`, `<Trans>`); the site is English only, and keys are type-checked by `tsc`. New user-visible site text goes in that catalogue, never inline in a component. Band data (links, members, releases, the live set, stages) is TypeScript in `src/content/`.
+All press-kit text is in `src/content/locales/en.json`. Components read it through a small typed lookup in `src/i18n/copy.tsx` (`t()` for plain text, `<Copy>` for text with inline emphasis); the site is English only, and keys are type-checked by `tsc`. New user-visible site text goes in that catalogue, never inline in a component. Band data (links, members, releases, the live set, stages) is TypeScript in `src/content/`.
 
 ## Map of the repo
 

@@ -17,7 +17,7 @@ How to work in this repo: where things go, which tests to run, what CI runs and 
 Rules:
 
 1. **Import direction.** `src/site` never imports from `src/experience`. Anything both need goes in `src/content` or the library. Library components should not import from `src/site` or `src/experience` (some library stories borrow experience scenes, such as the desk, for their "On desk" previews).
-2. **Copy catalogue.** New user-visible site text goes in `src/content/locales/en.json` and is read with `useTranslation` or `<Trans>` from react-i18next, never written inline in a component. English only; keys are type-checked by `tsc`.
+2. **Copy catalogue.** New user-visible site text goes in `src/content/locales/en.json` and is read with `t('section.key')` or, for inline `<span>`/`<strong>`/`<em>`, `<Copy k="section.key" />` from `src/i18n/copy.tsx`, never written inline in a component. English only, no i18n library; keys are type-checked by `tsc`, so a missing or misspelt key fails the build.
 3. **Storybook titles** start with `Site/`, `Experience/` or `Library/` to match the folder the story's component lives in.
 4. Nothing new goes in `legacy/`; it is kept for reference only.
 
