@@ -150,8 +150,9 @@ test("design-critical typography is locally bundled and member signatures stay d
     ["Sacramento", "sacramento/Sacramento-Regular.ttf"],
   ]) {
     assert.match(base, new RegExp(`@font-face \\{[\\s\\S]+?font-family: (?:"${family}"|${family});[\\s\\S]+?${asset.replace(/[.]/g, "\\.")}`));
-    assert(fs.existsSync(`assets/fonts/${asset}`));
-    assert(fs.existsSync(`assets/fonts/${asset.split("/")[0]}/OFL.txt`));
+    // The legacy suite runs from legacy/; fonts stay in the shared root assets/.
+    assert(fs.existsSync(`../assets/fonts/${asset}`));
+    assert(fs.existsSync(`../assets/fonts/${asset.split("/")[0]}/OFL.txt`));
   }
   assert.match(css, /\.learn\[data-member="ryan"\] \.member-polaroid[^}]+--member-signature-face:\s*"Pacifico"/s);
   assert.match(css, /\.learn\[data-member="kevin"\] \.member-polaroid[^}]+--member-signature-face:\s*"Caveat"/s);
