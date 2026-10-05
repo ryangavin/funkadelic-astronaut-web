@@ -371,11 +371,7 @@
   gap: 8px;
 }
 
-.epk-record__player > .epk__small-label {
-  color: var(--epk-violet);
-}
-
-/* The heading, the story, then the earlier records: packed to the top, never spread apart. */
+/* The heading, then the story: packed to the top, never spread apart. */
 .epk-record__story {
   display: grid;
   align-content: start;
@@ -391,10 +387,6 @@
   justify-content: space-between;
   align-items: center;
   gap: 4px var(--epk-gutter);
-}
-
-.epk-record__story .epk__small-label {
-  margin-bottom: 6px;
 }
 
 .epk-record__title,
@@ -446,10 +438,11 @@
 
 /*
   The records in one row, ruled apart: the title over its year. Each one is a
-  button that puts that record in the player; the one playing carries a violet
-  rule above it, like the member columns' ink rules.
+  button that puts that record in the player; the one playing is set in violet
+  and says so after its year.
 */
 .epk-record__catalog {
+  grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   margin: 0;
@@ -475,9 +468,8 @@
   display: grid;
   align-content: start;
   min-height: 44px;
-  padding: 6px 0 2px;
+  padding: 8px 0 2px;
   border: 0;
-  border-top: 4px solid transparent;
   background: none;
   color: inherit;
   font: inherit;
@@ -497,7 +489,6 @@
 }
 
 .epk-record__catalog button[aria-pressed='true'] {
-  border-top-color: var(--epk-violet);
   color: var(--epk-violet);
 }
 
@@ -636,16 +627,6 @@
     margin: 0 0 0 -7px;
   }
 
-  .epk-record__catalog {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 8px;
-  }
-
-  .epk-record__catalog li:nth-child(odd) {
-    padding-left: 0;
-    border-left: 0;
-  }
-
   .epk__bio {
     columns: 1;
   }
@@ -739,6 +720,16 @@
   }
 
   .epk-record__story {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .epk-record__catalog {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 8px;
+  }
+
+  .epk-record__catalog li:nth-child(odd) {
     padding-left: 0;
     border-left: 0;
   }

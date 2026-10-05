@@ -130,9 +130,6 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
 
           <section className="epk-record" id="music" aria-label="Records">
             <div className="epk-record__player" ref={player}>
-              <p className="epk__small-label" aria-live="polite">
-                {playing === release ? 'Out now on Bandcamp' : `${playing.title} · ${playing.year}`}
-              </p>
               <BandcampPlayer release={playing} fit />
             </div>
             <div className="epk-record__story">
@@ -161,19 +158,16 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
                   {list(EARLIER_RELEASES.map(record => `${record.title} (${record.year})`))}.
                 </p>
               </div>
-              <div>
-                <p className="epk__small-label">The records · press one to play it</p>
-                <ul className="epk-record__catalog">
-                  {records.map(record => (
-                    <li key={record.albumId}>
-                      <button type="button" aria-pressed={record === playing} onClick={() => play(record)}>
-                        <span>{record.title}</span> <span>{record.year}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
             </div>
+            <ul className="epk-record__catalog" aria-label="Records: press one to play it">
+              {records.map(record => (
+                <li key={record.albumId}>
+                  <button type="button" aria-pressed={record === playing} onClick={() => play(record)}>
+                    <span>{record.title}</span> <span>{record === playing ? `${record.year} · Playing` : record.year}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           </section>
 
           <EpkBar ink="pink" id="band">
