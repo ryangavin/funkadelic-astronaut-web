@@ -9,7 +9,7 @@ import { Weathered } from '../../behaviors/Weathered/Weathered';
 import { SOCIAL_PLATFORMS, SocialIcon } from '../../components/2D/SocialIcon/SocialIcon';
 import { Distressed } from '../../foundations/Distressed/Distressed';
 import { Inkjet } from '../../foundations/Inkjet/Inkjet';
-import { BAND_MEMBER_PACKETS, LIVE_SET } from '../../sections/BandDossier/bandMembers';
+import { BAND_MEMBER_PACKETS, type LiveSet } from '../../sections/BandDossier/bandMembers';
 import { SHARED_STAGES } from '../../sections/BandDossier/bandOneSheet';
 import { BANDCAMP_LINK, BOOKING_HREF, LISTEN_LINKS, SOCIAL_LINKS, type HomeLink } from '../Home/Home';
 import { BandcampPlayer, EARLIER_RELEASES, FEATURED_RELEASE, type BandcampRelease } from './BandcampPlayer';
@@ -57,6 +57,19 @@ export function EpkBar({ ink, id, children }: { ink: EpkInk; id?: string; childr
     </Distressed>
   );
 }
+
+/**
+ * The EPK's live set: "Millenial Timemachine" in Nyack, NY, 31 July 2026, as
+ * the band's YouTube titles it. The hero loop (assets/epk/live-loop.mp4) is a
+ * silent cut of the band's own footage of that set, from 0:22 to the end. The
+ * desk keeps its own live set (LIVE_SET in bandMembers.tsx).
+ */
+const EPK_LIVE_SET: LiveSet = {
+  video: 'https://www.youtube.com/watch?v=QlC7tOQjGkM',
+  alt: 'Funkadelic Astronaut playing “Millenial Timemachine” in Nyack, NY, muted preview',
+  caption: 'Millenial Timemachine',
+};
+const EPK_LIVE_WHERE = 'Nyack, NY';
 
 /** The ribbon over each record in the list, newest first, as the members' columns are ruled. */
 const RECORD_INKS: EpkInk[] = ['violet', 'lime', 'pink', 'periwinkle', 'orange'];
@@ -120,19 +133,19 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
         <main className="epk__sheet">
           <figure className="epk__live" id="live">
             <LiveVideo
-              set={LIVE_SET}
+              set={EPK_LIVE_SET}
               loop={liveLoop}
               poster={livePoster}
-              title={`Funkadelic Astronaut, “${LIVE_SET.caption}” live at Barrier Brewing Co.`}
+              title={`Funkadelic Astronaut, “${EPK_LIVE_SET.caption}” live in ${EPK_LIVE_WHERE}`}
               label={
                 <>
-                  <span>Live</span> “{LIVE_SET.caption}”
+                  <span>Live</span> “{EPK_LIVE_SET.caption}”
                 </>
               }
             />
             <figcaption>
-              <strong>On stage.</strong> Funkadelic Astronaut playing “{LIVE_SET.caption}” at Barrier Brewing Co. The whole set is on the band’s
-              YouTube.
+              <strong>On stage.</strong> Funkadelic Astronaut playing “{EPK_LIVE_SET.caption}” in {EPK_LIVE_WHERE}. The whole set is on the
+              band’s YouTube.
             </figcaption>
           </figure>
 
