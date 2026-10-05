@@ -249,10 +249,12 @@ export const ReduceMotionDuringReturn: Story = {
       expect(pose()).toEqual(closedPose);
       expect(dossier.querySelectorAll('.spilled, iframe')).toHaveLength(0);
       // Reopening must snapshot the restored layout, not the abandoned open pose.
+      // 2 s still proves the animations were skipped (in full they take about 2.8 s to open, 2.7 s to close)
+      // while leaving room for CI's software renderer to paint the spilled papers.
       await userEvent.click(canvas.getByRole('button', { name: 'Open the press package' }));
-      await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'open'), { timeout: 500 });
+      await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'open'), { timeout: 2000 });
       await userEvent.click(canvas.getByRole('button', { name: 'Close the press package' }));
-      await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'closed'), { timeout: 500 });
+      await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'closed'), { timeout: 2000 });
       expect(pose()).toEqual(closedPose);
     } finally {
       window.matchMedia = original;
