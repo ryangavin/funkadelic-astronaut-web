@@ -6,12 +6,12 @@ import sam from '../../../../assets/band-21.webp';
 import type { ReactNode } from 'react';
 import type { PacketProps } from '../../../components/2D/Packet/Packet';
 import type { MemberId } from '../../../content/members';
-import i18n from '../../../i18n/i18n';
+import { t } from '../../../i18n/copy';
 import { KEVIN_SIGNATURE, RYAN_SIGNATURE, SAM_SIGNATURE } from './signatures';
 
 /** What the copy catalogue says about a member, shared with the press kit: their photo's alt text and their bio, a paragraph each. */
-const photoAlt = (id: MemberId) => i18n.t(`band:members.${id}.photoAlt`);
-const bio = (id: MemberId) => i18n.t(`band:members.${id}.bio`, { returnObjects: true }).map(paragraph => <p key={paragraph}>{paragraph}</p>);
+const photoAlt = (id: MemberId) => t(`band.members.${id}.photoAlt`);
+const bio = (id: MemberId) => t(`band.members.${id}.bio`).map(paragraph => <p key={paragraph}>{paragraph}</p>);
 
 export type LiveSet = {
   /** A video file, or a YouTube link. */

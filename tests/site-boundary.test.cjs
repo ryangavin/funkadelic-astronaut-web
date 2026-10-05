@@ -39,5 +39,16 @@ test('The press kit reads its words from the copy catalogue', () => {
   const page = read('src/site/PressKit/PressKit.tsx') + read('src/site/PressKit/LiveVideo.tsx') + read('src/site/PressKit/BandcampPlayer.tsx');
   for (const words of ['Book The Band', 'Three friends', 'Future rock', 'Watch with sound', 'On this page', 'by Funkadelic Astronaut']) assert.ok(!page.includes(words), `"${words}" is written in a component`);
   // The desk reads the members' shared bios from the same place.
-  assert.match(read('src/experience/sections/BandDossier/bandMembers.tsx'), /i18n\.t\(`band:members\.\$\{id\}\.bio`, \{ returnObjects: true \}\)/);
+  assert.match(read('src/experience/sections/BandDossier/bandMembers.tsx'), /\bt\(`band\.members\.\$\{id\}\.bio`\)/);
+});
+
+test('The catalogue is read in-repo: no i18n library, and inline markup becomes elements, never HTML', () => {
+  const manifest = JSON.parse(read('package.json'));
+  for (const name of ['i18next', 'react-i18next']) assert.ok(!(name in { ...manifest.dependencies, ...manifest.devDependencies }), `${name} is a dependency`);
+  const copy = read('src/i18n/copy.tsx');
+  assert.doesNotMatch(copy, /dangerouslySetInnerHTML/);
+  assert.match(copy, /export function t<K extends CopyKey>\(key: K, values\?: CopyValues\): At<Catalogue, K>/);
+  for (const file of walk('src').concat(walk('.storybook')).filter((name) => /\.tsx?$/.test(name))) {
+    for (const { spec } of imports(file)) assert.doesNotMatch(spec, /i18next/, `${file} imports ${spec}`);
+  }
 });

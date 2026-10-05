@@ -1,6 +1,5 @@
 import type React from 'react';
 import { useRef, useState } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
 import kevinPortrait from '../../../assets/epk/kevin-portrait-900.webp';
 import ryanPortrait from '../../../assets/epk/ryan-portrait-900.webp';
 import samPortrait from '../../../assets/epk/sam-portrait-900.webp';
@@ -13,6 +12,7 @@ import { EARLIER_RELEASES, FEATURED_RELEASE, type BandcampRelease } from '../../
 import { list, SHARED_STAGES } from '../../content/stages';
 import { Distressed } from '../../foundations/Distressed/Distressed';
 import { Inkjet } from '../../foundations/Inkjet/Inkjet';
+import { Copy, t } from '../../i18n/copy';
 import { BandcampPlayer } from './BandcampPlayer';
 import { LiveVideo } from './LiveVideo';
 import '../../styles/fonts.css';
@@ -24,14 +24,13 @@ export type PressKitInk = 'violet' | 'lavender' | 'periwinkle' | 'pink' | 'lime'
 
 /** A platform's mark printed in the night ink, taking the platform's own colour while it is pointed at or focused. */
 function IconLink({ link }: { link: { platform: BandPlatform; href: string } }) {
-  const { t } = useTranslation('band');
   return (
     <a
       className="epk-icon"
       href={link.href}
       target="_blank"
       rel="noreferrer"
-      aria-label={t(`links.${link.platform}`)}
+      aria-label={t(`band.links.${link.platform}`)}
       style={{ '--epk-brand': SOCIAL_PLATFORMS[link.platform].brand } as React.CSSProperties}
     >
       <SocialIcon platform={link.platform} ink="var(--epk-icon-ink)" print="flat" paper="transparent" size={30} label="" />
@@ -71,18 +70,17 @@ const NAV_LINKS = [
 
 /** One member's column: their portrait, name and part, and their bio from the catalogue. */
 function MemberColumn({ id, name }: { id: MemberId; name: string }) {
-  const { t } = useTranslation('band');
   const { ink, portrait, focus } = MEMBER_PRINTS[id];
   return (
     <article className="epk-member" data-ink={ink}>
       <Inkjet className="epk-member__print">
-        <img className="epk-member__photo" src={portrait} alt={t(`members.${id}.photoAlt`)} loading="lazy" style={{ objectPosition: focus }} />
+        <img className="epk-member__photo" src={portrait} alt={t(`band.members.${id}.photoAlt`)} loading="lazy" style={{ objectPosition: focus }} />
       </Inkjet>
       <h3>
         {name}
-        <small>{t(`members.${id}.part`)}</small>
+        <small>{t(`band.members.${id}.part`)}</small>
       </h3>
-      {t(`members.${id}.bio`, { returnObjects: true }).map(paragraph => (
+      {t(`band.members.${id}.bio`).map(paragraph => (
         <p key={paragraph}>{paragraph}</p>
       ))}
     </article>
@@ -107,7 +105,6 @@ export type PressKitProps = {
  * `pressKit` and `band` namespaces.
  */
 export function PressKit({ release = FEATURED_RELEASE, className = '', style }: PressKitProps) {
-  const { t } = useTranslation('pressKit');
   // The record in the player: the new one until a reader picks another from the list under the story.
   const [playing, setPlaying] = useState(release);
   const records = [release, ...EARLIER_RELEASES];
@@ -124,17 +121,17 @@ export function PressKit({ release = FEATURED_RELEASE, className = '', style }: 
       <Weathered as="article" className="epk__paper torn-edge" patina flecks grain wear>
         <header className="epk__masthead">
           <p className="epk__dateline">
-            <span>{t('dateline.issue')}</span>
-            <span>{t('dateline.place')}</span>
-            <span>{t('dateline.since')}</span>
+            <span>{t('pressKit.dateline.issue')}</span>
+            <span>{t('pressKit.dateline.place')}</span>
+            <span>{t('pressKit.dateline.since')}</span>
           </p>
           <Distressed className="epk__wordmark-print">
-            <h1 className="epk__wordmark">{t('wordmark')}</h1>
+            <h1 className="epk__wordmark">{t('pressKit.wordmark')}</h1>
           </Distressed>
-          <nav className="epk__nav" aria-label={t('nav.label')}>
+          <nav className="epk__nav" aria-label={t('pressKit.nav.label')}>
             {NAV_LINKS.map(link => (
               <a key={link.id} href={`#${link.id}`} data-ink={link.ink}>
-                {t(`nav.${link.id}`)}
+                {t(`pressKit.nav.${link.id}`)}
               </a>
             ))}
           </nav>
@@ -146,27 +143,27 @@ export function PressKit({ release = FEATURED_RELEASE, className = '', style }: 
               video={NYACK_SET.video}
               loop={NYACK_SET.loop}
               poster={NYACK_SET.poster}
-              title={t('live.title', live)}
-              label={<Trans t={t} i18nKey="live.label" values={live} components={{ span: <span /> }} />}
+              title={t('pressKit.live.title', live)}
+              label={<Copy k="pressKit.live.label" values={live} />}
             />
             <figcaption>
-              <Trans t={t} i18nKey="live.caption" values={live} components={{ strong: <strong /> }} />
+              <Copy k="pressKit.live.caption" values={live} />
             </figcaption>
           </figure>
 
           <PressKitBar ink="violet">{release.title}</PressKitBar>
 
           <p className="epk__lede">
-            <Trans t={t} i18nKey="lede" components={{ strong: <strong /> }} />
+            <Copy k="pressKit.lede" />
           </p>
 
-          <section className="epk-record" id="music" aria-label={t('record.label')}>
+          <section className="epk-record" id="music" aria-label={t('pressKit.record.label')}>
             <div className="epk-record__player" ref={player}>
               <BandcampPlayer release={playing} fit />
             </div>
             <div className="epk-record__story">
               <div className="epk-record__head">
-                <h2 className="epk-record__title">{t('record.heading')}</h2>
+                <h2 className="epk-record__title">{t('pressKit.record.heading')}</h2>
                 <div className="epk-record__links">
                   {[...LISTEN_HREFS, BANDCAMP_HREF].map(link => (
                     <IconLink key={link.platform} link={link} />
@@ -174,23 +171,21 @@ export function PressKit({ release = FEATURED_RELEASE, className = '', style }: 
                 </div>
               </div>
               <div className="epk__bio">
-                <p>{t('record.bio.start', { stages: list(SHARED_STAGES) })}</p>
-                <p>{t('record.bio.sound')}</p>
+                <p>{t('pressKit.record.bio.start', { stages: list(SHARED_STAGES) })}</p>
+                <p>{t('pressKit.record.bio.sound')}</p>
                 <p>
-                  <Trans
-                    t={t}
-                    i18nKey="record.bio.records"
+                  <Copy
+                    k="pressKit.record.bio.records"
                     values={{
                       title: release.title,
                       year: release.year,
-                      earlier: list(EARLIER_RELEASES.map(record => t('record.earlier', { title: record.title, year: record.year }))),
+                      earlier: list(EARLIER_RELEASES.map(record => t('pressKit.record.earlier', { title: record.title, year: record.year }))),
                     }}
-                    components={{ em: <em /> }}
                   />
                 </p>
               </div>
             </div>
-            <ul className="epk-record__catalog" aria-label={t('record.catalog')}>
+            <ul className="epk-record__catalog" aria-label={t('pressKit.record.catalog')}>
               {records.map((record, index) => (
                 <li key={record.albumId} data-ink={RECORD_INKS[index % RECORD_INKS.length]}>
                   <button type="button" aria-pressed={record === playing} onClick={() => play(record)}>
@@ -204,7 +199,7 @@ export function PressKit({ release = FEATURED_RELEASE, className = '', style }: 
           </section>
 
           <PressKitBar ink="pink" id="band">
-            {t('band.heading')}
+            {t('pressKit.band.heading')}
           </PressKitBar>
 
           <section className="epk__members" aria-labelledby="band">
@@ -213,9 +208,9 @@ export function PressKit({ release = FEATURED_RELEASE, className = '', style }: 
             ))}
           </section>
 
-          <footer className="epk-foot" id="book" aria-label={t('foot.label')}>
+          <footer className="epk-foot" id="book" aria-label={t('pressKit.foot.label')}>
             <a className="epk-foot__book" href={BOOKING_HREF}>
-              {t('foot.book')}
+              {t('pressKit.foot.book')}
             </a>
             <div className="epk-foot__links">
               {[...SOCIAL_HREFS, ...LISTEN_HREFS, BANDCAMP_HREF].map(link => (

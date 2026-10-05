@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { youTubeId } from '../../components/2D/Polaroid/embed';
+import { t } from '../../i18n/copy';
 
 export type LiveVideoProps = {
   /** The whole set: a video file, or a YouTube link. */
@@ -29,7 +29,6 @@ const prefersStill = () => typeof matchMedia === 'function' && matchMedia('(pref
  * play button instead of the loop.
  */
 export function LiveVideo({ video, loop, poster, title, label, className = '' }: LiveVideoProps) {
-  const { t } = useTranslation('pressKit');
   const [mode, setMode] = useState<'loop' | 'still' | 'playing'>(() => (prefersStill() ? 'still' : 'loop'));
   const clip = useRef<HTMLVideoElement>(null);
   const player = useRef<HTMLIFrameElement & HTMLVideoElement>(null);
@@ -79,7 +78,7 @@ export function LiveVideo({ video, loop, poster, title, label, className = '' }:
       {label ? <p className="live-video__label">{label}</p> : null}
       <button type="button" className="live-video__start" onClick={() => setMode('playing')}>
         <span className="live-video__play" aria-hidden="true" />
-        <span className="live-video__cta">{mode === 'loop' ? t('live.watch') : t('live.play')}</span>
+        <span className="live-video__cta">{mode === 'loop' ? t('pressKit.live.watch') : t('pressKit.live.play')}</span>
         <span className="visually-hidden"> {title}</span>
       </button>
     </div>

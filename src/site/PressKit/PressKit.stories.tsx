@@ -32,6 +32,14 @@ export const Poster: Story = {
     await expect(page.getByRole('link', { name: 'Book The Band' })).toHaveAttribute('href', expect.stringMatching(/^mailto:samluba1@gmail\.com/));
     await expect(page.getByRole('link', { name: 'Book us' })).toHaveAttribute('href', '#book');
     await expect(page.getByRole('link', { name: /on Instagram/ })).toBeVisible();
+    // The catalogue's inline markup prints as elements, with its placeholders filled.
+    const lede = canvasElement.querySelector('.epk__lede');
+    await expect(lede?.querySelector('strong')?.textContent).toBe('blast off');
+    await expect(lede?.textContent).toBe('NJ trio ft. Ryan Gavin, Kevin O’Neill, and Sam Luba blast off');
+    await expect(canvasElement.querySelector('.epk__live figcaption strong')?.textContent).toBe('On stage.');
+    await expect(canvasElement.querySelector('.live-video__label span')?.textContent).toBe('Live');
+    await expect(canvasElement.querySelector('.epk__bio em')?.textContent).toBe(FEATURED_RELEASE.title);
+    await expect(canvasElement.querySelector('.epk__bio')?.textContent).not.toMatch(/\{\{|<\w/);
   },
 };
 

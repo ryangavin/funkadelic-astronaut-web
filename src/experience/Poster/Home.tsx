@@ -11,7 +11,7 @@ import { STAGE_WIDTH, Stage, type StageProps } from '../../components/2D/Stage/S
 import { TourPasses, TOUR_PASSES_LAYOUT } from '../sections/TourPasses/TourPasses';
 import { Wordmark } from '../../components/2D/Wordmark/Wordmark';
 import { BANDCAMP_HREF, BOOKING_HREF, LISTEN_HREFS, SOCIAL_HREFS, type BandPlatform } from '../../content/links';
-import i18n from '../../i18n/i18n';
+import { t } from '../../i18n/copy';
 import { BandDossier } from '../sections/BandDossier/BandDossier';
 import '../../styles/fonts.css';
 import './Home.css';
@@ -27,7 +27,7 @@ export const HOME_FOOTER_HEIGHT = 150;
 export type HomeLink = { platform: SocialPlatform; href: string; label: string };
 
 /** The band's links from src/content, each with the label the copy catalogue reads it out with. */
-const labelled = ({ platform, href }: { platform: BandPlatform; href: string }): HomeLink => ({ platform, href, label: i18n.t(`band:links.${platform}`) });
+const labelled = ({ platform, href }: { platform: BandPlatform; href: string }): HomeLink => ({ platform, href, label: t(`band.links.${platform}`) });
 
 export const LISTEN_LINKS: HomeLink[] = LISTEN_HREFS.map(labelled);
 

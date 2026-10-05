@@ -1,6 +1,4 @@
 import type { Preview } from '@storybook/react-vite';
-// The copy catalogue, so stories render the same words as the site.
-import '../src/i18n/i18n';
 import '../src/styles/fonts.css';
 
 const preview: Preview = {

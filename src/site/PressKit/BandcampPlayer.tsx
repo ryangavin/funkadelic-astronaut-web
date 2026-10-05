@@ -1,6 +1,6 @@
 import { type CSSProperties, useLayoutEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { FEATURED_RELEASE, type BandcampRelease } from '../../content/releases';
+import { t } from '../../i18n/copy';
 
 /** The two embeds Bandcamp offers that suit the page: the whole player with its track list, or the cover alone with a play button. */
 export type BandcampEmbed = 'tracklist' | 'artwork';
@@ -31,7 +31,6 @@ export type BandcampPlayerProps = {
 
 /** The featured release in Bandcamp's own player: cover, play button and track list. */
 export function BandcampPlayer({ release = FEATURED_RELEASE, fit = false, className = '' }: BandcampPlayerProps) {
-  const { t } = useTranslation('pressKit');
   const box = useRef<HTMLDivElement>(null);
   const [room, setRoom] = useState<{ width: number; height: number }>();
 
@@ -61,13 +60,13 @@ export function BandcampPlayer({ release = FEATURED_RELEASE, fit = false, classN
     >
       <iframe
         key={embed}
-        title={t('bandcamp.title', { title: release.title })}
+        title={t('pressKit.bandcamp.title',{ title: release.title })}
         src={bandcampPlayerSrc(release, embed)}
         loading="lazy"
         seamless
         style={embed === 'artwork' && side ? { width: side, height: side } : undefined}
       >
-        <a href={release.href}>{t('bandcamp.fallback', { title: release.title })}</a>
+        <a href={release.href}>{t('pressKit.bandcamp.fallback',{ title: release.title })}</a>
       </iframe>
     </div>
   );
