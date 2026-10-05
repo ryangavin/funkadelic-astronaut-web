@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { PerspectiveDesk } from './PerspectiveDesk';
-import { DOSSIER_OPEN_TARGETS, DOSSIER_SPILL_TARGETS } from './DeskDossier';
+import { DOSSIER_OPEN_TARGETS, DOSSIER_RETURN_MS, DOSSIER_SPILL_TARGETS } from './DeskDossier';
 import { mmToUnits } from '../../geometry/physicalScale';
+import { FOLDER_CLOSE_MS } from '../../components/2D/Folder/Folder';
+import { SPILL_FLIGHT_MS, SPILL_STAGGER_MS } from '../../behaviors/Spill/Spill';
 
 const meta = {
   title: 'Experience/Desk Dossier',
@@ -14,6 +16,11 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 const x = (element: HTMLElement) => Number(element.style.getPropertyValue('--movable-x'));
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const nextFrame = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+/** Ceiling for waits on the dossier's timed phases and flights: CI's software renderer can hold frames and timers back by seconds. */
+const SLOW = { timeout: 15000 };
+/** The timers the dossier's motion runs on. A reduced-motion path must schedule none of them. */
+const MOTION_DELAYS = [FOLDER_CLOSE_MS, SPILL_FLIGHT_MS + 9 * SPILL_STAGGER_MS, DOSSIER_RETURN_MS];
 
 /** Closed contents cost no mounted media or hidden controls; the cover remains movable. */
 export const OpenAndReturn: Story = {
@@ -41,12 +48,16 @@ export const OpenAndReturn: Story = {
     await expect(spill.closest('.folder__contents-layer')).not.toBeNull();
     await expect(spill).toHaveAttribute('data-hide-packed', 'false');
     await expect(spill.querySelectorAll('.spilled')).toHaveLength(10);
-    // The surrounding pen takes intermediate positions rather than teleporting.
-    await waitFor(() => expect(Number(pen.style.getPropertyValue('--movable-y'))).toBeLessThan(330));
-    await expect(Number(pen.style.getPropertyValue('--movable-y'))).toBeGreaterThan(DOSSIER_OPEN_TARGETS.pen.y);
-    await waitFor(() => expect(x(dossier)).toBe(DOSSIER_OPEN_TARGETS.dossier.x), { timeout: 1500 });
+    // The surrounding pen takes intermediate positions rather than teleporting. waitFor
+    // re-checks on every write to the pen, so one sample is taken per frame of the flight.
+    await waitFor(() => {
+      const y = Number(pen.style.getPropertyValue('--movable-y'));
+      expect(y).toBeLessThan(330);
+      expect(y).toBeGreaterThan(DOSSIER_OPEN_TARGETS.pen.y);
+    }, SLOW);
+    await waitFor(() => expect(x(dossier)).toBe(DOSSIER_OPEN_TARGETS.dossier.x), SLOW);
     await expect(x(pen)).toBe(DOSSIER_OPEN_TARGETS.pen.x);
-    const packet = await canvas.findByRole('group', { name: 'Ryan Gavin packet' }, { timeout: 3000 });
+    const packet = await canvas.findByRole('group', { name: 'Ryan Gavin packet' }, SLOW);
     await expect(x(packet)).toBe(DOSSIER_SPILL_TARGETS['dossier-ryan'].x);
     const content = packet.querySelector('.packet');
     packet.focus();
@@ -58,7 +69,7 @@ export const OpenAndReturn: Story = {
     await expect(dossier).toHaveAttribute('data-dossier-phase', 'returning');
     await expect(dossier.querySelector('.folder')).toHaveAttribute('data-open', 'true');
     const returnedPacket = spill.querySelector('.packet');
-    await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'closing'), { timeout: 2300 });
+    await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'closing'), SLOW);
     await expect(spill.querySelector('.packet')).toBe(returnedPacket);
     for (const paper of spill.querySelectorAll('.spilled')) {
       await expect(getComputedStyle(paper).visibility).toBe('visible');
@@ -66,15 +77,16 @@ export const OpenAndReturn: Story = {
     }
     await expect(dossier.querySelector('.folder')).toHaveAttribute('data-open', 'false');
     await expect(spill.querySelectorAll('.spilled')).toHaveLength(10);
-    await waitFor(() => expect(x(dossier)).toBe(closedPlace.x), { timeout: 1500 });
+    await waitFor(() => expect(x(dossier)).toBe(closedPlace.x), SLOW);
     await expect(x(pen)).toBe(penStart);
-    await waitFor(() => expect(canvasElement.querySelectorAll('.spilled')).toHaveLength(0), { timeout: 3500 });
+    await waitFor(() => expect(canvasElement.querySelectorAll('.spilled')).toHaveLength(0), SLOW);
     await expect(canvasElement.querySelectorAll('iframe, .packet, .one-sheet')).toHaveLength(0);
-    // Reopen, rapidly reverse twice, then let the old closing deadline pass.
+    // Reopen, rapidly reverse twice, then let the old closing deadline pass: it was set
+    // before the reopening's own timers, so reaching "open" means it has come and gone.
     await userEvent.click(canvas.getByRole('button', { name: 'Open the press package' }));
     await userEvent.click(canvas.getByRole('button', { name: 'Close the press package' }));
     await userEvent.click(canvas.getByRole('button', { name: 'Open the press package' }));
-    await wait(3100);
+    await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'open'), SLOW);
     const reopenedSpill = canvasElement.querySelector('.desk-dossier__spill')!;
     await expect(reopenedSpill.querySelectorAll('.spilled')).toHaveLength(10);
     await expect(reopenedSpill).not.toHaveAttribute('inert');
@@ -99,10 +111,11 @@ export const ReachableTab: Story = {
     await waitFor(() => reachable(open));
     await userEvent.click(open);
     const close = canvas.getByRole('button', { name: 'Close the press package' });
-    await wait(2300);
+    const dossier = canvas.getByRole('group', { name: 'Band dossier' });
+    await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'open'), SLOW);
     reachable(close);
     await userEvent.click(close);
-    await waitFor(() => expect(canvasElement.querySelectorAll('.spilled')).toHaveLength(0), { timeout: 3500 });
+    await waitFor(() => expect(canvasElement.querySelectorAll('.spilled')).toHaveLength(0), SLOW);
   },
 };
 
@@ -120,8 +133,11 @@ export const MotionStaysAligned: Story = {
       return { body, solid, projection, before: projection(), content: solid.querySelector('.solid__upright')!.firstElementChild };
     });
     await userEvent.click(canvas.getByRole('button', { name: 'Open the press package' }));
-    await waitFor(() => expect(Number(pen.style.getPropertyValue('--movable-y'))).toBeLessThan(320));
-    await expect(pen).toHaveAttribute('data-arranging');
+    // Sampled on the write that moves it, so the flight is caught in progress however slow frames are.
+    await waitFor(() => {
+      expect(Number(pen.style.getPropertyValue('--movable-y'))).toBeLessThan(320);
+      expect(pen).toHaveAttribute('data-arranging');
+    }, SLOW);
     await expect(pen).not.toHaveAttribute('data-dragging');
     // Computed translate is the browser's rendered value, not the requested
     // custom property: double easing used to leave these tens of pixels apart.
@@ -133,11 +149,11 @@ export const MotionStaysAligned: Story = {
     const lifted = getComputedStyle(pen.querySelector('.movable__lift')!);
     await expect(parseFloat(lifted.rotate)).toBeCloseTo(parseFloat(pen.style.getPropertyValue('--movable-rotation')), 2);
     for (const item of solids) {
-      await waitFor(() => expect(item.projection()).not.toBe(item.before));
+      await waitFor(() => expect(item.projection()).not.toBe(item.before), SLOW);
       await expect(item.body.querySelector('.solid')).toBe(item.solid);
       await expect(item.solid.querySelector('.solid__upright')!.firstElementChild).toBe(item.content);
     }
-    await waitFor(() => expect(pen).not.toHaveAttribute('data-arranging'), { timeout: 1500 });
+    await waitFor(() => expect(pen).not.toHaveAttribute('data-arranging'), SLOW);
     await expect(getComputedStyle(pen).transitionProperty).toBe(ordinaryTransition);
   },
 };
@@ -150,7 +166,7 @@ export const CoverOcclusion: Story = {
     const dossier = canvas.getByRole('group', { name: 'Band dossier' });
     dossier.focus();
     await userEvent.keyboard('{ArrowRight}{ArrowDown}]]++');
-    const phase = (name: string) => waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', name), { timeout: 3500 });
+    const phase = (name: string) => waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', name), SLOW);
     const cover = dossier.querySelector<HTMLElement>('.folder__cover')!;
     const back = dossier.querySelector<HTMLElement>('.folder__back')!;
     const checkPacked = () => {
@@ -170,7 +186,11 @@ export const CoverOcclusion: Story = {
     };
     await userEvent.click(canvas.getByRole('button', { name: 'Open the press package' }));
     await phase('opening');
-    await waitFor(checkPacked, { timeout: 800 });
+    // Packed while the cover is still swinging open; once it has moved on they never will be.
+    await waitFor(() => {
+      expect(dossier).toHaveAttribute('data-dossier-phase', 'opening');
+      checkPacked();
+    }, SLOW);
     const contents = [...dossier.querySelectorAll('.spilled')];
     await phase('open');
     // A child's pointer gesture must never start dragging its containing dossier.
@@ -184,17 +204,18 @@ export const CoverOcclusion: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Close the press package' }));
     await phase('returning');
     expect(cover.closest('.folder')).toHaveAttribute('data-open', 'true');
-    await wait(350);
+    // Interrupt the return while it is under way.
     await userEvent.click(canvas.getByRole('button', { name: 'Open the press package' }));
     expect([...dossier.querySelectorAll('.spilled')]).toEqual(contents);
     await phase('open');
     await userEvent.click(canvas.getByRole('button', { name: 'Close the press package' }));
     await phase('closing');
-    checkPacked();
-    expect([...dossier.querySelectorAll('.spilled')]).toEqual(contents);
-    await wait(400);
-    checkPacked();
-    expect([...dossier.querySelectorAll('.spilled')]).toEqual(contents);
+    // Every frame of the swing shut, however many the renderer manages.
+    while (dossier.getAttribute('data-dossier-phase') === 'closing') {
+      checkPacked();
+      expect([...dossier.querySelectorAll('.spilled')]).toEqual(contents);
+      await nextFrame();
+    }
     await phase('closed');
     expect(dossier.querySelectorAll('.spilled, iframe, .packet')).toHaveLength(0);
   },
@@ -232,31 +253,51 @@ export const ReduceMotionDuringReturn: Story = {
     window.matchMedia = query => query === motion.media ? motion : original.call(window, query);
     const pose = () => ['--movable-x', '--movable-y', '--movable-rotation', '--movable-width']
       .map(name => dossier.style.getPropertyValue(name));
+    const phase = (name: string) => waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', name), SLOW);
+    // "Almost instantly" is proved by what the dossier waits on, not by a stopwatch a slow
+    // renderer can overrun: every phase it passes through, and every timer it starts.
+    const phases: string[] = [];
+    const watch = new MutationObserver(() => phases.push(dossier.getAttribute('data-dossier-phase')!));
+    watch.observe(dossier, { attributes: true, attributeFilter: ['data-dossier-phase'] });
+    const delays: number[] = [];
+    const timeout = window.setTimeout;
+    window.setTimeout = ((handler: TimerHandler, delay?: number, ...rest: unknown[]) => {
+      delays.push(Number(delay) || 0);
+      return timeout(handler, delay, ...rest);
+    }) as typeof window.setTimeout;
+    const motionTimers = () => delays.filter(delay => MOTION_DELAYS.includes(delay));
     try {
       dossier.focus();
       await userEvent.keyboard('{ArrowRight}{ArrowDown}]]+');
       const closedPose = pose();
       await userEvent.click(canvas.getByRole('button', { name: 'Open the press package' }));
-      // Only the setup: reaching "open" is slow on CI's software renderer; the reduced-motion return below is the assertion.
-      await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'open'), { timeout: 10000 });
+      await phase('open');
       expect(pose()).not.toEqual(closedPose);
       await userEvent.click(canvas.getByRole('button', { name: 'Close the press package' }));
-      await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'returning'));
+      await phase('returning');
+      // The spy sees the full-motion timers, so their absence below means something.
+      expect(motionTimers()).toEqual(expect.arrayContaining(MOTION_DELAYS));
       await wait(150);
+      phases.length = 0;
+      delays.length = 0;
       reduced = true;
       motion.dispatchEvent(new Event('change'));
-      await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'closed'), { timeout: 500 });
+      await phase('closed');
+      // Straight from the return to closed: no swing shut, and nothing timed to wait for.
+      expect(phases).toEqual(['closed']);
+      expect(motionTimers()).toEqual([]);
       expect(pose()).toEqual(closedPose);
       expect(dossier.querySelectorAll('.spilled, iframe')).toHaveLength(0);
       // Reopening must snapshot the restored layout, not the abandoned open pose.
-      // 2 s still proves the animations were skipped (in full they take about 2.8 s to open, 2.7 s to close)
-      // while leaving room for CI's software renderer to paint the spilled papers.
       await userEvent.click(canvas.getByRole('button', { name: 'Open the press package' }));
-      await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'open'), { timeout: 2000 });
+      await phase('open');
       await userEvent.click(canvas.getByRole('button', { name: 'Close the press package' }));
-      await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'closed'), { timeout: 2000 });
+      await phase('closed');
+      expect(motionTimers()).toEqual([]);
       expect(pose()).toEqual(closedPose);
     } finally {
+      window.setTimeout = timeout;
+      watch.disconnect();
       window.matchMedia = original;
     }
   },

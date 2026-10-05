@@ -3,6 +3,8 @@ import { ROOM_DESK_SHARE } from '../../../foundations/Room/DeskRoom';
 import { referenceFieldOfView } from '../../../geometry/roomSetup';
 import { roomSeam } from './controls';
 
+const nextFrame = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+
 /** Exercise real controls and placements, including recovery from invalid geometry. */
 export async function checkPhysicalRoom({ canvasElement }: { canvasElement: HTMLElement }) {
   // Ordinary browsing must never rearrange the scene or leave stress-test settings behind.
@@ -224,8 +226,13 @@ export async function checkPhysicalLens({ canvasElement }: { canvasElement: HTML
   set({ horizontalFieldOfViewDegrees: 85 });
   await waitFor(()=>expect(Math.abs(stand().width - framedWidth)).toBeGreaterThan(1));
   // Measure the lens only once reframing has stopped; a mid-transition width skews the scale.
-  let previous = Number.NaN;
-  await waitFor(() => { const width = stand().width; const settled = Math.abs(width - previous) < .5; previous = width; expect(settled).toBe(true); });
+  // Settled means unchanged across two rendered frames: polling alone can read twice between frames.
+  await waitFor(async () => {
+    const width = stand().width;
+    await nextFrame();
+    await nextFrame();
+    expect(Math.abs(stand().width - width)).toBeLessThan(.5);
+  }, { timeout: 10000 });
   const initialX = Number(mug.style.getPropertyValue('--movable-x'));
   const unitsPerPixel = 2160 / stand().width;
   const box = mug.getBoundingClientRect();
