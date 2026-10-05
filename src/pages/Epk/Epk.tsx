@@ -147,14 +147,6 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
             </p>
             <div className="epk__aside">
               <BookingLine />
-              <div className="epk__stages">
-                <p className="epk__small-label">Shared stages with</p>
-                <ul>
-                  {SHARED_STAGES.map(name => (
-                    <li key={name}>{name}</li>
-                  ))}
-                </ul>
-              </div>
             </div>
           </section>
 
@@ -193,7 +185,8 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
               <div className="epk__bio">
                 <p>
                   Ryan and Kevin started the band as high school friends in 2012, and the lineup locked in when Sam joined in 2017. Since
-                  then they have taken their sound to stages across the Northeast, sharing bills with some of their own favorites.
+                  then they have taken their sound to stages across the Northeast, sharing bills with some of their own favorites:{' '}
+                  {list(SHARED_STAGES)}.
                 </p>
                 <p>
                   That sound is funk wired to electronics: a deep pocket from the rhythm section, synths and keys that take chances, and
