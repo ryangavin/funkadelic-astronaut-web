@@ -103,7 +103,7 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
       <Weathered as="article" className="epk__paper torn-edge" patina flecks grain wear>
         <header className="epk__masthead">
           <p className="epk__dateline">
-            <span>Vol. 14 · No. 1</span>
+            <span>Vol. 7 No. 42</span>
             <span>New Jersey · Funktronica</span>
             <span>Est. 2012 · Free</span>
           </p>
