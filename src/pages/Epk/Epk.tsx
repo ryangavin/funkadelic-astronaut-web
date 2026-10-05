@@ -83,7 +83,7 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
         <header className="epk__masthead">
           <p className="epk__dateline">
             <span>Vol. 7 No. 42</span>
-            <span>New Jersey · Funktronica</span>
+            <span>New Jersey · Future rock</span>
             <span>Est. 2012 · Always free</span>
           </p>
           <Distressed className="epk__wordmark-print">
@@ -122,38 +122,24 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
           <EpkBar ink="violet">{release.title}</EpkBar>
 
           <p className="epk__lede">
-            A New Jersey funktronica trio: Ryan Gavin on keys, Kevin O’Neill on drums and Sam Luba on bass and vocals.
+            NJ trio ft. Ryan Gavin, Kevin O’Neill, and Sam Luba <strong>blast off</strong>
           </p>
 
           <section className="epk-record" id="music" aria-label={`${release.title}, out now`}>
             <div className="epk-record__player">
               <p className="epk__small-label">Out now on Bandcamp</p>
-              <BandcampPlayer release={release} />
+              <BandcampPlayer release={release} fit />
             </div>
             <div className="epk-record__story">
               <div className="epk-record__head">
                 <h2 className="epk-record__title">Future rock</h2>
-                <div className="epk-record__stream">
-                  <p className="epk__small-label">Stream everywhere</p>
-                  <div className="epk-record__links">
-                    {[...LISTEN_LINKS, BANDCAMP_LINK].map(link => (
-                      <a key={link.platform} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label}>
-                        <SocialIcon platform={link.platform} ink={EPK_NIGHT} print="flat" paper="transparent" size={30} label="" />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div>
-                <p className="epk__small-label">Earlier records</p>
-                <ul className="epk-record__catalog">
-                  {BACK_CATALOG.map(record => (
-                    <li key={record.title}>
-                      <span>{record.title}</span>
-                      <span>{record.year}</span>
-                    </li>
+                <div className="epk-record__links">
+                  {[...LISTEN_LINKS, BANDCAMP_LINK].map(link => (
+                    <a key={link.platform} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label}>
+                      <SocialIcon platform={link.platform} ink={EPK_NIGHT} print="flat" paper="transparent" size={30} label="" />
+                    </a>
                   ))}
-                </ul>
+                </div>
               </div>
               <div className="epk__bio">
                 <p>
@@ -169,6 +155,17 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
                   Their new record, <em>{release.title}</em>, came out in {release.year}, following{' '}
                   {list(BACK_CATALOG.map(record => `${record.title} (${record.year})`))}.
                 </p>
+              </div>
+              <div>
+                <p className="epk__small-label">Earlier records</p>
+                <ul className="epk-record__catalog">
+                  {BACK_CATALOG.map(record => (
+                    <li key={record.title}>
+                      <span>{record.title}</span>
+                      <span>{record.year}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </section>

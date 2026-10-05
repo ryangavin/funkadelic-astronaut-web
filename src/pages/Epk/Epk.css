@@ -193,6 +193,7 @@
 }
 
 .epk__sheet {
+  container-type: inline-size;
   display: grid;
   gap: var(--epk-gutter);
   margin-top: var(--epk-gutter);
@@ -322,14 +323,22 @@
 }
 
 /* The pitch, as a deck under the first headline. */
+/*
+  The deck runs one line across the sheet: set at 22.3em wide in this face, so
+  4.4cqw of the sheet fills it with a hair to spare. On phones that would be
+  too small to read, so there it wraps at a readable size instead.
+*/
 .epk__lede {
   margin: 0;
-  max-width: 24em;
   font-weight: 700;
   font-stretch: 75%;
-  font-size: clamp(28px, 2.4vw + 14px, 50px);
-  line-height: 1.02;
-  text-wrap: balance;
+  font-size: 4.4cqw;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+
+.epk__lede strong {
+  color: var(--epk-violet);
 }
 
 .epk__bio {
@@ -366,8 +375,10 @@
   color: var(--epk-violet);
 }
 
+/* The heading, the story, then the earlier records: packed to the top, never spread apart. */
 .epk-record__story {
   display: grid;
+  align-content: start;
   gap: 16px;
   padding-left: var(--epk-gutter);
   border-left: var(--epk-rule);
@@ -378,13 +389,8 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  align-items: flex-end;
-  gap: 8px var(--epk-gutter);
-}
-
-.epk-record__stream {
-  display: grid;
-  justify-items: end;
+  align-items: center;
+  gap: 4px var(--epk-gutter);
 }
 
 .epk-record__story .epk__small-label {
@@ -407,21 +413,35 @@
 
 .bandcamp-player {
   container-type: inline-size;
-  flex: 1 1 0;
-  display: flex;
-  flex-direction: column;
   mix-blend-mode: multiply;
 }
 
-/* Never shorter than the cover, the transport and the first few tracks. */
+/* On its own, the player is as tall as its whole track list. */
 .bandcamp-player iframe {
   display: block;
-  flex: 1 1 0;
   width: 100%;
-  min-height: calc(100cqw + 220px);
+  height: calc(100cqw + var(--bandcamp-list));
+  border: var(--epk-rule);
+}
+
+/*
+  Fitted beside the story, the player takes whatever height the story gives the
+  row and never adds to it: the frame is laid over the box, not in it. The
+  component picks the full player or the cover alone to suit the room.
+*/
+.bandcamp-player[data-fit] {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.bandcamp-player[data-fit] iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
   /* No taller than the whole track list, or Bandcamp pads the space above the cover. */
   max-height: calc(100cqw + var(--bandcamp-list));
-  border: var(--epk-rule);
 }
 
 /* The earlier records in one row, ruled apart: the title over its year. */
@@ -584,10 +604,6 @@
   }
 
   /* The column is narrow: the streaming links drop under the heading, flush left. */
-  .epk-record__stream {
-    justify-items: start;
-  }
-
   .epk-record__links {
     margin: 0 0 0 -7px;
   }
@@ -642,6 +658,12 @@
 
 /* Narrow: one column, the essentials of each member. */
 @media (max-width: 679px) {
+  .epk__lede {
+    font-size: 26px;
+    white-space: normal;
+    text-wrap: balance;
+  }
+
   /* Tight gutters keep Bandcamp's player at the 350px it needs to fit its controls. */
   .epk {
     padding-inline: 4px;
@@ -678,8 +700,13 @@
   }
 
   /* Stacked, there is nothing beside the player to match: it shows every track. */
-  .bandcamp-player iframe {
+  .bandcamp-player[data-fit] {
+    position: static;
     flex: none;
+  }
+
+  .bandcamp-player[data-fit] iframe {
+    position: static;
     height: calc(100cqw + var(--bandcamp-list));
   }
 
