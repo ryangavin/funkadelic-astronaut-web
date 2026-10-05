@@ -36,7 +36,7 @@ test('The press kit reads its words from the copy catalogue', () => {
   assert.equal(catalogue.pressKit.foot.book, 'Book The Band');
   assert.equal(catalogue.pressKit.band.heading, 'Three friends. One orbit.');
   assert.equal(catalogue.band.members.ryan.bio.length, 2);
-  const page = read('src/site/PressKit/PressKit.tsx') + read('src/site/PressKit/LiveVideo.tsx') + read('src/site/PressKit/BandcampPlayer.tsx');
+  const page = walk('src/site').filter((name) => /\.tsx$/.test(name) && !/\.stories\.tsx$/.test(name)).map(read).join('\n');
   for (const words of ['Book The Band', 'Three friends', 'Future rock', 'Watch with sound', 'On this page', 'by Funkadelic Astronaut']) assert.ok(!page.includes(words), `"${words}" is written in a component`);
   // The desk reads the members' shared bios from the same place.
   assert.match(read('src/experience/sections/BandDossier/bandMembers.tsx'), /\bt\(`band\.members\.\$\{id\}\.bio`\)/);

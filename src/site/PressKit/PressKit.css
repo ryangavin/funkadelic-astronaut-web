@@ -1,133 +1,23 @@
 /*
-  The press kit as one sheet of newsprint on the Mission Control festival
-  poster. The sheet is the site's weathered stock (patina, flecks, grain and
-  wear) with torn edges; everything on it is printed: night ink for the
-  type and rules, and the Time to Save the Universe cover's colours only as
-  spot inks, multiplied onto the paper and worn through the print filter. No
-  module is a flat fill of colour.
+  The page: the festival poster, the sheet of newsprint on it, the nameplate,
+  and the sections that are only layout (the live picture, the deck, the band's
+  row, the foot). The sections with parts of their own style themselves beside
+  their components; the shared treatments are in ../styles/newsprint.css and
+  every value is a token from ../styles/tokens.css.
 
-  Spot inks have one job each:
-  - violet: the first headline bar and anything you act on;
-  - pink: the second headline bar and the LIVE tag;
-  - periwinkle, lime and pink: the rule above each member's column.
-
-  Type: Bowlby One for the nameplate only; Newsreader for the copy (the deck, the
-  story, the members and the caption); Archivo, heavy and condensed, for the
-  headlines, labels and links.
-
-  Breakpoints:
-  - wide (1080px and up): one twelve-column grid, newspaper columns ruled apart.
-  - medium (680 to 1079px): the rows stack; the story keeps two columns.
-  - narrow (under 680px): one column, members trimmed to their first paragraph.
+  Wide it runs on one twelve-column grid, newspaper columns ruled apart; the
+  medium and narrow breakpoints are listed in tokens.css.
 */
-@font-face {
-  font-family: 'Archivo';
-  src: url('../../../assets/fonts/archivo/Archivo-latin.woff2') format('woff2');
-  font-style: normal;
-  font-weight: 100 900;
-  font-stretch: 62% 125%;
-  font-display: swap;
-}
 
-/* Bowlby One: the nameplate. */
-@font-face {
-  font-family: 'Bowlby One';
-  src: url('../../../assets/fonts/bowlby-one/BowlbyOne-latin.woff2') format('woff2');
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-}
-
-/* Newsreader, made for reading news on screens: the copy. */
-@font-face {
-  font-family: 'Newsreader';
-  src: url('../../../assets/fonts/newsreader/Newsreader-latin.woff2') format('woff2');
-  font-style: normal;
-  font-weight: 200 800;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Newsreader';
-  src: url('../../../assets/fonts/newsreader/Newsreader-Italic-latin.woff2') format('woff2');
-  font-style: italic;
-  font-weight: 200 800;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Archivo';
-  src: url('../../../assets/fonts/archivo/Archivo-Italic-latin.woff2') format('woff2');
-  font-style: italic;
-  font-weight: 100 900;
-  font-stretch: 62% 125%;
-  font-display: swap;
-}
-
+/* The festival poster under the night ink. */
 .epk {
-  --epk-night: #1c1640;
-  /* Newsprint: the site's wheat stock, a shade greyer. */
-  --epk-stock: #ece1c6;
-  --epk-violet: #5b48b0;
-  --epk-lavender: #a98ec7;
-  --epk-periwinkle: #4c57cc;
-  --epk-pink: #ec9ba5;
-  --epk-lime: #9ccf3c;
-  --epk-yellow: #e3d84e;
-  /* The cover's sunset. */
-  --epk-orange: #ef8a3c;
-  --epk-rule: 1px solid var(--epk-night);
-  --epk-rule-heavy: 3px solid var(--epk-night);
-  --epk-gutter: clamp(16px, 2.2vw, 32px);
-  --epk-sans: 'Archivo', system-ui, sans-serif;
-  --epk-serif: 'Newsreader', Georgia, serif;
-  --epk-caps: 0.08em;
-
   min-height: 100vh;
   padding: clamp(12px, 3vw, 48px) clamp(8px, 4vw, 64px) 48px;
   background:
-    linear-gradient(rgb(28 22 64 / 0.6), rgb(28 22 64 / 0.6)),
+    linear-gradient(var(--epk-night-veil), var(--epk-night-veil)),
     url('../../../assets/festival-map.webp') center top / cover no-repeat,
     var(--epk-night);
-  color: var(--epk-night);
-  font-family: var(--epk-sans);
-  font-size: clamp(16px, 0.25vw + 15px, 17px);
-  line-height: 1.5;
 }
-
-.epk *,
-.epk *::before,
-.epk *::after {
-  box-sizing: border-box;
-}
-
-.epk a {
-  color: inherit;
-}
-
-/* A night ring on a thin stock halo: it shows on the paper and on the spot inks alike. */
-.epk a:focus-visible,
-.epk button:focus-visible {
-  outline: 3px solid var(--epk-night);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 2px var(--epk-stock);
-}
-
-.epk .visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-.epk [data-ink='violet'] { --ink: var(--epk-violet); --on-ink: var(--epk-stock); }
-.epk [data-ink='lavender'] { --ink: var(--epk-lavender); --on-ink: var(--epk-night); }
-.epk [data-ink='periwinkle'] { --ink: var(--epk-periwinkle); --on-ink: var(--epk-stock); }
-.epk [data-ink='pink'] { --ink: var(--epk-pink); --on-ink: var(--epk-night); }
-.epk [data-ink='lime'] { --ink: var(--epk-lime); --on-ink: var(--epk-night); }
-.epk [data-ink='orange'] { --ink: var(--epk-orange); --on-ink: var(--epk-night); }
 
 /* The sheet: weathered newsprint, torn at the edges, lifted off the poster by its shadow. */
 .epk__paper {
@@ -135,20 +25,7 @@
   margin: 0 auto;
   padding: clamp(16px, 3vw, 44px) clamp(14px, 3vw, 48px) clamp(24px, 3vw, 44px);
   background: var(--epk-stock);
-  box-shadow: 0 18px 40px rgb(0 0 0 / 0.45);
-}
-
-/* Every small caps label on the page: one size, one weight, one tracking. */
-.epk__small-label,
-.epk__dateline,
-.live-video__label,
-.epk-member h3 small {
-  margin: 0;
-  font-weight: 700;
-  font-size: 12px;
-  line-height: 1.3;
-  letter-spacing: var(--epk-caps);
-  text-transform: uppercase;
+  box-shadow: var(--epk-paper-shadow);
 }
 
 /* Nameplate: dateline between rules, the name across the full measure, the index under a double rule. */
@@ -160,17 +37,11 @@
 .epk__dateline {
   display: flex;
   justify-content: space-between;
-  gap: 8px 16px;
+  gap: var(--epk-space-s) var(--epk-space-2xl);
   flex-wrap: wrap;
-  padding: 6px 0;
+  padding: var(--epk-space-xs) 0;
   border-top: var(--epk-rule-heavy);
   border-bottom: var(--epk-rule);
-}
-
-/* Multiplied onto the newsprint like the bars and tabs, so it prints into the paper as they do. */
-.epk__wordmark-print {
-  display: block;
-  mix-blend-mode: multiply;
 }
 
 /*
@@ -181,10 +52,10 @@
 .epk__wordmark {
   margin: 0;
   padding: 0.14em 0 0.08em;
-  font-family: 'Bowlby One', var(--epk-sans);
+  font-family: var(--epk-display);
   font-weight: 400;
   font-size: 6.9cqw;
-  line-height: 1;
+  line-height: var(--epk-leading-solid);
   letter-spacing: 0;
   text-transform: uppercase;
   white-space: nowrap;
@@ -197,25 +68,22 @@
   justify-content: center;
   align-items: flex-end;
   flex-wrap: wrap;
-  gap: 0 8px;
-  padding-top: 10px;
-  border-bottom: 4px double var(--epk-night);
+  gap: 0 var(--epk-space-s);
+  padding-top: var(--epk-space-m);
+  border-bottom: var(--epk-rule-double);
 }
 
 .epk__nav a {
   display: grid;
   place-items: center;
-  min-height: 44px;
+  min-height: var(--epk-tap);
   padding: 0 clamp(14px, 2vw, 26px);
   background: var(--ink);
   color: var(--epk-stock);
   mix-blend-mode: multiply;
-  font-weight: 900;
-  font-stretch: 62%;
-  font-size: 20px;
+  font-size: var(--epk-text-tab);
   letter-spacing: 0.02em;
   text-decoration: none;
-  text-transform: uppercase;
 }
 
 /*
@@ -230,7 +98,7 @@
 
 .epk__nav a:hover {
   text-decoration: underline;
-  text-decoration-thickness: 2px;
+  text-decoration-thickness: var(--epk-underline);
 }
 
 .epk__sheet {
@@ -240,38 +108,17 @@
   margin-top: var(--epk-gutter);
 }
 
-/* Headline bars: a band of spot ink, multiplied onto the stock, the words reversed out. */
-.epk-bar-print {
-  display: block;
-  mix-blend-mode: multiply;
-}
-
-.epk-bar {
-  margin: 0;
-  padding: 0.12em 0.25em 0.06em;
-  background: var(--ink);
-  color: var(--on-ink);
-  font-weight: 900;
-  font-stretch: 62%;
-  font-size: clamp(34px, 5vw, 72px);
-  line-height: 0.92;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  scroll-margin-top: 12px;
-}
-
 /* The front-page picture: the live set, with a caption under a hairline. */
 .epk__live {
   margin: 0;
-  scroll-margin-top: 12px;
 }
 
 .epk__live figcaption {
-  margin-top: 8px;
-  padding-top: 6px;
+  margin-top: var(--epk-space-s);
+  padding-top: var(--epk-space-xs);
   border-top: var(--epk-rule);
   font-family: var(--epk-serif);
-  font-size: 15px;
+  font-size: var(--epk-text-caption);
   font-style: italic;
 }
 
@@ -279,106 +126,19 @@
   font-style: normal;
   text-transform: uppercase;
   letter-spacing: var(--epk-caps);
-  font-size: 12px;
+  font-size: var(--epk-text-label);
 }
 
-.live-video {
-  position: relative;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  background: var(--epk-night);
-  border: var(--epk-rule-heavy);
-}
-
-.live-video iframe,
-.live-video video,
-.live-video__loop {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  object-fit: cover;
-}
-
-/* Playing with sound, the whole frame shows: nothing cropped under the controls. */
-.live-video[data-mode='playing'] video {
-  object-fit: contain;
-}
-
-.live-video__label {
-  position: absolute;
-  top: clamp(8px, 1.4vw, 18px);
-  left: clamp(8px, 1.4vw, 18px);
-  padding: 4px 8px;
-  background: var(--epk-stock);
-  font-size: 13px;
-}
-
-.live-video__label span {
-  margin-right: 6px;
-  padding: 1px 6px;
-  background: var(--epk-pink);
-}
-
-.live-video__start {
-  position: absolute;
-  left: clamp(8px, 1.4vw, 18px);
-  bottom: clamp(8px, 1.4vw, 18px);
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 48px;
-  padding: 6px 18px 6px 6px;
-  border: 2px solid var(--epk-night);
-  border-radius: 999px;
-  background: var(--epk-stock);
-  color: var(--epk-night);
-  font: inherit;
-  font-weight: 800;
-  font-size: 15px;
-  letter-spacing: var(--epk-caps);
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-.live-video__start:hover {
-  background: var(--epk-yellow);
-}
-
-/* With the loop stilled, the play button sits in the middle. */
-.live-video[data-mode='still'] .live-video__start {
-  left: 50%;
-  bottom: 50%;
-  translate: -50% 50%;
-}
-
-.live-video__play {
-  position: relative;
-  width: 36px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--epk-violet);
-}
-
-.live-video__play::after {
-  content: '';
-  position: absolute;
-  inset: 28% 24% 28% 36%;
-  background: var(--epk-stock);
-  clip-path: polygon(0 0, 100% 50%, 0 100%);
-}
-
-/* The pitch, as a deck under the first headline. */
 /*
-  The deck runs one line across the sheet: set at 29.2em wide in Newsreader
-  bold, so 3.38cqw of the sheet fills it with a hair to spare. On phones that would be
-  too small to read, so there it wraps at a readable size instead.
+  The pitch, as a deck under the first headline. It runs one line across the
+  sheet: set at 29.2em wide in Newsreader bold, so 3.38cqw of the sheet fills it
+  with a hair to spare. On phones that would be too small to read, so there it
+  wraps at a readable size instead.
 */
 .epk__lede {
   margin: 0;
   font-family: var(--epk-serif);
-  font-weight: 700;
+  font-weight: var(--epk-weight-bold);
   font-size: 3.38cqw;
   line-height: 1.05;
   white-space: nowrap;
@@ -388,273 +148,11 @@
   color: var(--epk-violet);
 }
 
-.epk__bio {
-  font-family: var(--epk-serif);
-  font-size: 1.06em;
-  columns: 2;
-  column-gap: var(--epk-gutter);
-  column-rule: var(--epk-rule);
-  padding-top: 14px;
-  border-top: var(--epk-rule-heavy);
-  hyphens: auto;
-  text-align: justify;
-}
-
-.epk__bio p {
-  margin: 0 0 0.8em;
-}
-
-
-/* The record: Bandcamp's player in its own column, the title, the catalogue and the story beside it. */
-.epk-record {
-  display: grid;
-  grid-template-columns: minmax(350px, 4fr) minmax(0, 8fr);
-  gap: var(--epk-gutter);
-  scroll-margin-top: 12px;
-}
-
-/* The player runs as tall as the story beside it; Bandcamp scrolls its own track list inside. */
-.epk-record__player {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* The heading, then the story: packed to the top, never spread apart. */
-.epk-record__story {
-  display: grid;
-  align-content: start;
-  gap: 16px;
-  padding-left: var(--epk-gutter);
-  border-left: var(--epk-rule);
-}
-
-/* The heading with the streaming links on its line, set right. */
-.epk-record__head {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 4px var(--epk-gutter);
-}
-
-.epk-record__title,
-.epk-member h3 {
-  margin: 0;
-  font-weight: 900;
-  font-stretch: 62%;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
-.epk-record__title {
-  font-size: clamp(40px, 3.4vw + 16px, 72px);
-  line-height: 0.88;
-}
-
-.bandcamp-player {
-  container-type: inline-size;
-  mix-blend-mode: multiply;
-}
-
-/* On its own, the player is as tall as its whole track list. */
-.bandcamp-player iframe {
-  display: block;
-  width: 100%;
-  height: calc(100cqw + var(--bandcamp-list));
-  border: var(--epk-rule);
-}
-
-/*
-  Fitted beside the story, the player takes whatever height the story gives the
-  row and never adds to it: the frame is laid over the box, not in it. The
-  component picks the full player or the cover alone to suit the room.
-*/
-.bandcamp-player[data-fit] {
-  position: relative;
-  flex: 1 1 0;
-  min-height: 0;
-}
-
-.bandcamp-player[data-fit] iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  /* No taller than the whole track list, or Bandcamp pads the space above the cover. */
-  max-height: calc(100cqw + var(--bandcamp-list));
-}
-
-/*
-  The records in one row, styled as the member cards are: each under a ribbon
-  of its own spot ink, ruled apart in the gutters, the title over its year.
-  Each one is a button that puts that record in the player; the one playing
-  has its title highlighted in its own ink and says so in its chip.
-*/
-/*
-  Each record's column is as wide as its name and year, and every column then
-  grows by the same amount, so the room around each name is equal rather than
-  the columns.
-*/
-.epk-record__catalog {
-  container-type: inline-size;
-  grid-column: 1 / -1;
-  display: flex;
-  /*
-    Names never wrap, and the row stays one row wide. The five names and their
-    years run 42.3em of this type; the gaps, gutters and a little room around
-    each take about 250px; so the type is what is left over 42.3, capped at
-    24px. Narrower, the row wraps instead (see the medium breakpoint).
-  */
-  --epk-record-type: min(24px, (100cqw - 250px) / 42.3);
-  gap: 8px var(--epk-gutter);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* Each column shares the row's spare room alike; the ribbon sits over the name alone, exactly as wide as it, centred. */
-.epk-record__catalog li {
-  flex: 1 1 auto;
-  display: flex;
-}
-
-.epk-record__catalog button {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  min-height: 44px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-
-/* The ribbon, then the name in the members' heavy condensed caps with its year beside it. */
-.epk-record__name {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding-top: 10px;
-  border-top: 8px solid var(--ink);
-  font-stretch: 62%;
-  font-size: var(--epk-record-type);
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.epk-record__name > span:first-child {
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-/* The year in brackets, a weight lighter. */
-.epk-record__name > span:last-child {
-  font-weight: 500;
-}
-
-.epk-record__catalog button:hover .epk-record__name > span:first-child {
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-}
-
-/*
-  The record playing has its title set in its own ribbon's ink, deepened with
-  the night ink: lime, pink and orange straight on newsprint are too faint to read.
-*/
-.epk-record__catalog button[aria-pressed='true'] .epk-record__name > span:first-child {
-  color: color-mix(in oklab, var(--ink), var(--epk-night) 65%);
-}
-
-/* The icons' own 44px tap targets pad them; pull the row flush with the column's edge. */
-.epk-record__links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 2px;
-  margin-right: -7px;
-}
-
-/* A platform's mark: printed in night ink, in its own brand colour while pointed at or focused. 44px to tap. */
-.epk-icon {
-  --epk-icon-ink: var(--epk-night);
-  display: inline-grid;
-  place-items: center;
-  min-width: 44px;
-  min-height: 44px;
-}
-
-.epk-icon:hover,
-.epk-icon:focus-visible {
-  --epk-icon-ink: var(--epk-brand);
-}
-
-/* The band: three columns ruled apart, each headed by a rule in its member's spot ink. */
+/* The band: three columns ruled apart (see MemberColumn.css). */
 .epk__members {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--epk-gutter);
-}
-
-.epk-member {
-  padding-top: 10px;
-  border-top: 8px solid var(--ink);
-}
-
-.epk-member + .epk-member {
-  position: relative;
-}
-
-.epk-member + .epk-member::before {
-  content: '';
-  position: absolute;
-  top: 18px;
-  bottom: 0;
-  left: calc(var(--epk-gutter) / -2);
-  border-left: var(--epk-rule);
-}
-
-.epk-member__print {
-  margin-bottom: 10px;
-}
-
-.epk-member__photo {
-  display: block;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-}
-
-/* The name, and its part in a chip of the member's ink standing exactly as tall as the name. */
-.epk-member h3 {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 4px 8px;
-  margin-bottom: 6px;
-  font-size: clamp(26px, 1vw + 18px, 32px);
-  line-height: 0.95;
-}
-
-.epk-member h3 small {
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-  background: var(--ink);
-  color: var(--on-ink);
-  font-stretch: 100%;
-  font-size: 12px;
-}
-
-/* Set as newspaper columns: justified, hyphenated so the spacing stays even. */
-.epk-member p {
-  margin: 0 0 0.6em;
-  font-family: var(--epk-serif);
-  font-size: 1.06em;
-  text-align: justify;
-  hyphens: auto;
 }
 
 /* The foot of the page: a way to book the band, and every place to find them. */
@@ -663,19 +161,16 @@
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 12px var(--epk-gutter);
-  padding: 18px 0 6px;
-  border-top: 4px double var(--epk-night);
-  scroll-margin-top: 12px;
+  gap: var(--epk-space-l) var(--epk-gutter);
+  padding: var(--epk-space-3xl) 0 var(--epk-space-xs);
+  border-top: var(--epk-rule-double);
 }
 
 .epk-foot__book {
-  font-weight: 900;
-  font-stretch: 75%;
-  font-size: clamp(26px, 2vw + 16px, 44px);
+  font-stretch: var(--epk-semi-condensed);
+  font-size: var(--epk-text-book);
   line-height: 1.1;
-  text-transform: uppercase;
-  text-decoration-thickness: 2px;
+  text-decoration-thickness: var(--epk-underline);
   text-underline-offset: 0.12em;
 }
 
@@ -683,95 +178,27 @@
   color: var(--epk-violet);
 }
 
-/* The icons' own 44px tap targets pad them; pull the row flush with the page's edge. */
 .epk-foot__links {
-  display: flex;
-  flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 0 2px;
-  margin-right: -7px;
 }
 
-/* Narrow: the booking link over the icons, both flush left. */
-@media (max-width: 679px) {
-  .epk-foot__links {
-    justify-content: flex-start;
-    margin: 0 0 0 -7px;
-  }
-}
-
-/* Medium: the rows stack in reading order; the story keeps its two columns. */
+/* Medium: the band one member to a row. */
 @media (max-width: 1079px) {
-  .epk-record {
-    grid-template-columns: minmax(350px, 1fr) minmax(0, 1fr);
-  }
-
-  /* Too narrow for one row at a readable size: the records wrap, each row sharing its room alike. */
-  .epk-record__catalog {
-    flex-wrap: wrap;
-    row-gap: 14px;
-    --epk-record-type: 20px;
-  }
-
-  /* The column is narrow: the streaming links drop under the heading, flush left. */
-  .epk-record__links {
-    margin: 0 0 0 -7px;
-  }
-
-  .epk__bio {
-    columns: 1;
-  }
-
   .epk__members {
     grid-template-columns: 1fr;
   }
-
-  .epk-member {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-    grid-template-rows: auto auto 1fr;
-    column-gap: var(--epk-gutter);
-    align-content: start;
-  }
-
-  .epk-member__print {
-    grid-row: 1 / span 4;
-  }
-
-  /* Kevin's photo sits on the right, so the three don't stack like a form. */
-  .epk-member:nth-child(even) {
-    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  }
-
-  .epk-member:nth-child(even) .epk-member__print {
-    grid-column: 2;
-  }
-
-  .epk-member:nth-child(even) > :not(.epk-member__print) {
-    grid-column: 1;
-  }
-
-  .epk-member + .epk-member::before {
-    content: none;
-  }
 }
 
-/* Narrow: one column, the essentials of each member. */
+/* Narrow: tight margins, the deck wrapped, the tabs sharing one row. */
 @media (max-width: 679px) {
-  .epk__lede {
-    font-size: 26px;
-    white-space: normal;
-    text-wrap: balance;
-  }
-
   /* Tight gutters keep Bandcamp's player at the 350px it needs to fit its controls. */
   .epk {
-    padding-inline: 4px;
-    line-height: 1.55;
+    padding-inline: var(--epk-space-2xs);
+    line-height: var(--epk-leading-body-narrow);
   }
 
   .epk__paper {
-    padding-inline: 12px;
+    padding-inline: var(--epk-space-l);
   }
 
   .epk__dateline span:nth-child(2) {
@@ -781,62 +208,24 @@
   /* The four tabs share the row. */
   .epk__nav {
     flex-wrap: nowrap;
-    gap: 0 4px;
+    gap: 0 var(--epk-space-2xs);
   }
 
   .epk__nav a {
     flex: 1 1 auto;
-    padding: 0 6px;
-    font-size: 17px;
+    padding: 0 var(--epk-space-xs);
+    font-size: var(--epk-text-tab-narrow);
   }
 
-  .epk__bio {
-    columns: 1;
-    text-align: left;
+  .epk__lede {
+    font-size: var(--epk-text-lede-narrow);
+    white-space: normal;
+    text-wrap: balance;
   }
 
-  .epk-record {
-    grid-template-columns: 1fr;
-  }
-
-  /* Stacked, there is nothing beside the player to match: it shows every track. */
-  .bandcamp-player[data-fit] {
-    position: static;
-    flex: none;
-  }
-
-  .bandcamp-player[data-fit] iframe {
-    position: static;
-    height: calc(100cqw + var(--bandcamp-list));
-  }
-
-  .epk-record__story {
-    padding-left: 0;
-    border-left: 0;
-  }
-
-  .epk-member,
-  .epk-member:nth-child(even) {
-    grid-template-columns: 1fr;
-  }
-
-  .epk-member__print,
-  .epk-member:nth-child(even) .epk-member__print,
-  .epk-member:nth-child(even) > :not(.epk-member__print) {
-    grid-row: auto;
-    grid-column: 1;
-  }
-
-  .epk-member p + p {
-    display: none;
-  }
-
-  .live-video__start {
-    min-height: 44px;
-    font-size: 13px;
-  }
-
-  .live-video__play {
-    width: 30px;
+  /* The booking link over the icons, both flush left. */
+  .epk-foot__links {
+    justify-content: flex-start;
+    margin: 0 0 0 var(--epk-icon-bleed);
   }
 }
