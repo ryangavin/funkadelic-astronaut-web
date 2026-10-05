@@ -372,16 +372,6 @@
   margin: 0 0 0.8em;
 }
 
-/* A drop cap starts the story. */
-.epk__bio p:first-child::first-letter {
-  float: left;
-  margin: 0.04em 0.08em 0 0;
-  font-weight: 900;
-  font-stretch: 62%;
-  font-size: 3.6em;
-  line-height: 0.8;
-  color: var(--epk-violet);
-}
 
 /* Booking: boxed like an ad, the address in full, a copy button beside it. */
 .booking-line {
