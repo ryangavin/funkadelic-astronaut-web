@@ -6,12 +6,12 @@ import samPortrait from '../../../assets/epk/sam-portrait-900.webp';
 import liveLoop from '../../../assets/epk/live-loop.mp4';
 import livePoster from '../../../assets/epk/live-poster.webp';
 import { Weathered } from '../../behaviors/Weathered/Weathered';
-import { SocialIcon } from '../../components/2D/SocialIcon/SocialIcon';
+import { SOCIAL_PLATFORMS, SocialIcon } from '../../components/2D/SocialIcon/SocialIcon';
 import { Distressed } from '../../foundations/Distressed/Distressed';
 import { Inkjet } from '../../foundations/Inkjet/Inkjet';
 import { BAND_MEMBER_PACKETS, LIVE_SET } from '../../sections/BandDossier/bandMembers';
 import { SHARED_STAGES } from '../../sections/BandDossier/bandOneSheet';
-import { BANDCAMP_LINK, BOOKING_HREF, LISTEN_LINKS, SOCIAL_LINKS } from '../Home/Home';
+import { BANDCAMP_LINK, BOOKING_HREF, LISTEN_LINKS, SOCIAL_LINKS, type HomeLink } from '../Home/Home';
 import { BandcampPlayer, EARLIER_RELEASES, FEATURED_RELEASE, type BandcampRelease } from './BandcampPlayer';
 import { LiveVideo } from './LiveVideo';
 import '../../styles/fonts.css';
@@ -21,8 +21,21 @@ import './Epk.css';
 /** The spot inks, sampled from the cover of Time to Save the Universe. */
 export type EpkInk = 'violet' | 'lavender' | 'periwinkle' | 'pink' | 'lime' | 'orange';
 
-/** The cover's night sky, deepened: the ink the paper is printed in. Matches `--epk-night` in Epk.css. */
-const EPK_NIGHT = '#1c1640';
+/** A platform's mark printed in the night ink, taking the platform's own colour while it is pointed at or focused. */
+function IconLink({ link }: { link: HomeLink }) {
+  return (
+    <a
+      className="epk-icon"
+      href={link.href}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={link.label}
+      style={{ '--epk-brand': SOCIAL_PLATFORMS[link.platform].brand } as React.CSSProperties}
+    >
+      <SocialIcon platform={link.platform} ink="var(--epk-icon-ink)" print="flat" paper="transparent" size={30} label="" />
+    </a>
+  );
+}
 
 const list = (names: string[]) => `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 
@@ -140,9 +153,7 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
                 <h2 className="epk-record__title">Future rock</h2>
                 <div className="epk-record__links">
                   {[...LISTEN_LINKS, BANDCAMP_LINK].map(link => (
-                    <a key={link.platform} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label}>
-                      <SocialIcon platform={link.platform} ink={EPK_NIGHT} print="flat" paper="transparent" size={30} label="" />
-                    </a>
+                    <IconLink key={link.platform} link={link} />
                   ))}
                 </div>
               </div>
@@ -209,9 +220,7 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
             </a>
             <div className="epk-foot__links">
               {[...SOCIAL_LINKS, ...LISTEN_LINKS, BANDCAMP_LINK].map(link => (
-                <a key={link.platform} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label}>
-                  <SocialIcon platform={link.platform} ink={EPK_NIGHT} print="flat" paper="transparent" size={30} label="" />
-                </a>
+                <IconLink key={link.platform} link={link} />
               ))}
             </div>
           </footer>

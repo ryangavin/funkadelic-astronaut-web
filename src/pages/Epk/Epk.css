@@ -11,8 +11,9 @@
   - pink: the second headline bar and the LIVE tag;
   - periwinkle, lime and pink: the rule above each member's column.
 
-  Type: Modak for the nameplate only; Archivo for everything else, heavy and
-  condensed for headlines, normal width for reading.
+  Type: Modak for the nameplate only; Newsreader for the copy (the deck, the
+  story, the members and the caption); Archivo, heavy and condensed, for the
+  headlines, labels and links.
 
   Breakpoints:
   - wide (1080px and up): one twelve-column grid, newspaper columns ruled apart.
@@ -25,6 +26,23 @@
   font-style: normal;
   font-weight: 100 900;
   font-stretch: 62% 125%;
+  font-display: swap;
+}
+
+/* Newsreader, made for reading news on screens: the copy. */
+@font-face {
+  font-family: 'Newsreader';
+  src: url('../../../assets/fonts/newsreader/Newsreader-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Newsreader';
+  src: url('../../../assets/fonts/newsreader/Newsreader-Italic-latin.woff2') format('woff2');
+  font-style: italic;
+  font-weight: 200 800;
   font-display: swap;
 }
 
@@ -53,6 +71,7 @@
   --epk-rule-heavy: 3px solid var(--epk-night);
   --epk-gutter: clamp(16px, 2.2vw, 32px);
   --epk-sans: 'Archivo', system-ui, sans-serif;
+  --epk-serif: 'Newsreader', Georgia, serif;
   --epk-caps: 0.08em;
 
   min-height: 100vh;
@@ -232,7 +251,8 @@
   margin-top: 8px;
   padding-top: 6px;
   border-top: var(--epk-rule);
-  font-size: 14px;
+  font-family: var(--epk-serif);
+  font-size: 15px;
   font-style: italic;
 }
 
@@ -327,15 +347,15 @@
 
 /* The pitch, as a deck under the first headline. */
 /*
-  The deck runs one line across the sheet: set at 22.3em wide in this face, so
-  4.4cqw of the sheet fills it with a hair to spare. On phones that would be
+  The deck runs one line across the sheet: set at 29.2em wide in Newsreader
+  bold, so 3.38cqw of the sheet fills it with a hair to spare. On phones that would be
   too small to read, so there it wraps at a readable size instead.
 */
 .epk__lede {
   margin: 0;
+  font-family: var(--epk-serif);
   font-weight: 700;
-  font-stretch: 75%;
-  font-size: 4.4cqw;
+  font-size: 3.38cqw;
   line-height: 1.05;
   white-space: nowrap;
 }
@@ -345,6 +365,8 @@
 }
 
 .epk__bio {
+  font-family: var(--epk-serif);
+  font-size: 1.06em;
   columns: 2;
   column-gap: var(--epk-gutter);
   column-rule: var(--epk-rule);
@@ -530,11 +552,18 @@
   margin-right: -7px;
 }
 
-.epk-record__links a {
+/* A platform's mark: printed in night ink, in its own brand colour while pointed at or focused. 44px to tap. */
+.epk-icon {
+  --epk-icon-ink: var(--epk-night);
   display: inline-grid;
   place-items: center;
   min-width: 44px;
   min-height: 44px;
+}
+
+.epk-icon:hover,
+.epk-icon:focus-visible {
+  --epk-icon-ink: var(--epk-brand);
 }
 
 /* The band: three columns ruled apart, each headed by a rule in its member's spot ink. */
@@ -597,6 +626,8 @@
 
 .epk-member p {
   margin: 0 0 0.6em;
+  font-family: var(--epk-serif);
+  font-size: 1.06em;
 }
 
 /* The foot of the page: a way to book the band, and every place to find them. */
@@ -640,13 +671,6 @@
     justify-content: flex-start;
     margin: 0 0 0 -7px;
   }
-}
-
-.epk-foot__links a {
-  display: inline-grid;
-  place-items: center;
-  min-width: 44px;
-  min-height: 44px;
 }
 
 /* Medium: the rows stack in reading order; the story keeps its two columns. */
