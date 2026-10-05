@@ -11,7 +11,7 @@
   - pink: the second headline bar and the LIVE tag;
   - periwinkle, lime and pink: the rule above each member's column.
 
-  Type: Modak for the nameplate only; Newsreader for the copy (the deck, the
+  Type: Bowlby One for the nameplate only; Newsreader for the copy (the deck, the
   story, the members and the caption); Archivo, heavy and condensed, for the
   headlines, labels and links.
 
@@ -26,6 +26,15 @@
   font-style: normal;
   font-weight: 100 900;
   font-stretch: 62% 125%;
+  font-display: swap;
+}
+
+/* Bowlby One: the nameplate. */
+@font-face {
+  font-family: 'Bowlby One';
+  src: url('../../../assets/fonts/bowlby-one/BowlbyOne-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
   font-display: swap;
 }
 
@@ -162,48 +171,22 @@
   display: block;
 }
 
+/*
+  The nameplate: Bowlby One in capitals, flat violet ink, one line across the
+  full measure. The name runs 14.19em in this face, so 6.9cqw of the masthead
+  fills it with a hair to spare.
+*/
 .epk__wordmark {
   margin: 0;
-  padding: 14px 0 10px;
-}
-
-/*
-  The drawn nameplate (see Nameplate.tsx), styled like type: the letters in
-  violet, outlined and shadowed in night ink, all from the same centre lines.
-*/
-.nameplate {
-  display: block;
-  width: 100%;
-  height: auto;
-  overflow: visible;
+  padding: 0.14em 0 0.08em;
+  font-family: 'Bowlby One', var(--epk-sans);
+  font-weight: 400;
+  font-size: 6.9cqw;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
   color: var(--epk-violet);
-}
-
-.nameplate path {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.nameplate__ink path {
-  stroke: currentColor;
-  stroke-width: 30;
-}
-
-/* The outline: the same lines a little fatter, in night ink, under the letters. */
-.nameplate__edge path {
-  stroke: var(--epk-night);
-  stroke-width: 39;
-}
-
-/* The shadow: the outline again, set off down and right. */
-.nameplate__shadow {
-  transform: translate(7px, 7px);
-}
-
-.nameplate__shadow path {
-  stroke: var(--epk-night);
-  stroke-width: 39;
 }
 
 /* The section index: each section a tab in its own spot ink, standing on the double rule. */
