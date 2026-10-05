@@ -28,11 +28,11 @@ export const Poster: Story = {
     await expect(page.getByRole('heading', { name: /Three friends/i })).toBeVisible();
     for (const name of ['Ryan Gavin', 'Kevin O’Neill', 'Sam Luba']) await expect(page.getByRole('heading', { level: 3, name: new RegExp(name) })).toBeVisible();
     await expect(page.getByTitle(/on Bandcamp/i)).toHaveAttribute('src', expect.stringContaining(`album=${FEATURED_RELEASE.albumId}`));
-    // Booking is written out twice: in the pitch at the top and in the spec strip where a reader finishes.
+    // Booking is written out twice: beside the pitch at the top, and at the foot where a reader finishes.
     const booking = page.getAllByRole('link', { name: 'samluba1@gmail.com' });
     await expect(booking).toHaveLength(2);
     for (const link of booking) await expect(link).toHaveAttribute('href', expect.stringMatching(/^mailto:samluba1@gmail\.com/));
-    await expect(page.getAllByRole('button', { name: 'Copy' })).toHaveLength(2);
+    await expect(page.getByRole('link', { name: /on Instagram/ })).toBeVisible();
   },
 };
 
