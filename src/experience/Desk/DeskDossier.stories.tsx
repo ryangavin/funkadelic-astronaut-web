@@ -237,7 +237,8 @@ export const ReduceMotionDuringReturn: Story = {
       await userEvent.keyboard('{ArrowRight}{ArrowDown}]]+');
       const closedPose = pose();
       await userEvent.click(canvas.getByRole('button', { name: 'Open the press package' }));
-      await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'open'), { timeout: 3500 });
+      // Only the setup: reaching "open" is slow on CI's software renderer; the reduced-motion return below is the assertion.
+      await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'open'), { timeout: 10000 });
       expect(pose()).not.toEqual(closedPose);
       await userEvent.click(canvas.getByRole('button', { name: 'Close the press package' }));
       await waitFor(() => expect(dossier).toHaveAttribute('data-dossier-phase', 'returning'));
