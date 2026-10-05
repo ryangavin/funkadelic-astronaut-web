@@ -157,7 +157,7 @@
       };
       if (window.Hls) return attach();
       const script = document.createElement('script');
-      script.src = 'assets/hls.min.js';
+      script.src = '../assets/hls.min.js';
       script.onload = attach;
       script.onerror = () => {
         if (video.canPlayType('application/vnd.apple.mpegurl')) attach();

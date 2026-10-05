@@ -85,7 +85,7 @@
     speckles.setAttribute('patternUnits', 'userSpaceOnUse');
     for (const asset of ['paper-dark-flecks.svg', 'print-wear.svg']) {
       const image = document.createElementNS(ns, 'image');
-      image.setAttribute('href', `assets/${asset}`);
+      image.setAttribute('href', `../assets/${asset}`);
       image.setAttribute('preserveAspectRatio', 'none');
       if (asset === 'print-wear.svg') image.setAttribute('opacity', '.5');
       speckles.append(image);
