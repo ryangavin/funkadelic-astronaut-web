@@ -55,7 +55,7 @@ function CutoutInkDemo({ shadowX, shadowY, stroke }: CutoutInkDemoProps) {
 }
 
 const meta = {
-  title: 'Foundations/Styles/Cutout Ink',
+  title: 'Library/Foundations/Styles/Cutout Ink',
   component: CutoutInkDemo,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

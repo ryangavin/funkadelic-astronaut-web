@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { BAND_PACKET, LIVE_SET } from '../../../sections/BandDossier/bandMembers';
+import { BAND_PACKET, LIVE_SET } from '../../../experience/sections/BandDossier/bandMembers';
 import { Polaroid } from '../Polaroid/Polaroid';
 import { Packet } from '../Packet/Packet';
 import { FOLDER_STOCKS, FOLDER_TABS, Folder } from './Folder';
 
 const meta = {
-  title: 'Components/2D/Folder',
+  title: 'Library/Components/2D/Folder',
   component: Folder,
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, within } from 'storybook/test';
 import { MeterStick } from './MeterStick';
-import { ScaleBench } from '../../../debug/ScaleBench/ScaleBench';
+import { ScaleBench } from '../../../experience/debug/ScaleBench/ScaleBench';
 
 const meta = {
-  title: 'Components/3D/Meter Stick',
+  title: 'Library/Components/3D/Meter Stick',
   component: MeterStick,
   parameters: { layout: 'fullscreen' },
   args: { inches: true, variant: 'meter' },

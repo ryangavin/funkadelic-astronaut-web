@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 const { roomSetup } = require('../src/geometry/roomSetup.ts');
-const { diagramGeometry, projectDiagram } = require('../src/debug/RoomDiagram/geometry.ts');
+const { diagramGeometry, projectDiagram } = require('../src/experience/debug/RoomDiagram/geometry.ts');
 const near = (a,b) => assert.ok(Math.abs(a-b)<1e-8,`${a} vs ${b}`);
 test('diagram derives exact eye, center, gaze and lamp coordinates in floor-relative millimetres',()=>{
   for(const tilt of [45,74.47588900324574,110]) {

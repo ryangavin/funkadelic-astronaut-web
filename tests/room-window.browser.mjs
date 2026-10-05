@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
 import {roomSetup,roomFraming} from '../src/geometry/roomSetup.ts';
 import {projectFloorPoint} from '../src/foundations/Room/floorGeometry.ts';
-const id='debug-scale-bench--physical-setup';
+const id='experience-debug-scale-bench--physical-setup';
 assert.ok(process.env.PREVIEW_URL,'Set owned PREVIEW_URL');
 const browser=await chromium.launch({headless:true});
 try {

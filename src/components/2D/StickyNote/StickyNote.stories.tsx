@@ -3,7 +3,7 @@ import { expect, within } from 'storybook/test';
 import { STICKY_NOTE_COLORS, StickyNote } from './StickyNote';
 
 const meta = {
-  title: 'Components/2D/Sticky Note',
+  title: 'Library/Components/2D/Sticky Note',
   component: StickyNote,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

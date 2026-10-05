@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RYAN_SIGNATURE } from '../../../sections/BandDossier/signatures';
+import { RYAN_SIGNATURE } from '../../../experience/sections/BandDossier/signatures';
 import { INDEX_CARD_RULINGS, INDEX_CARD_SIZES, IndexCard } from './IndexCard';
 
 const meta = {
-  title: 'Components/2D/Index Card',
+  title: 'Library/Components/2D/Index Card',
   component: IndexCard,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

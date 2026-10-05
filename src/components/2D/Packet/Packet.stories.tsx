@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { BAND_MEMBER_PACKETS } from '../../../sections/BandDossier/bandMembers';
+import { BAND_MEMBER_PACKETS } from '../../../experience/sections/BandDossier/bandMembers';
 import { Packet } from './Packet';
 
 const [ryan, kevin, sam] = BAND_MEMBER_PACKETS;
 
 const meta = {
-  title: 'Components/2D/Packet',
+  title: 'Library/Components/2D/Packet',
   component: Packet,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

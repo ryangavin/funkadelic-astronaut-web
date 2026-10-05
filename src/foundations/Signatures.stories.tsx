@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { KEVIN_SIGNATURE, RYAN_SIGNATURE, SAM_SIGNATURE } from '../sections/BandDossier/signatures';
+import { KEVIN_SIGNATURE, RYAN_SIGNATURE, SAM_SIGNATURE } from '../experience/sections/BandDossier/signatures';
 import '../styles/fonts.css';
 
 /** The three bundled hands, one per member, as the cards use them. */
@@ -41,7 +41,7 @@ function Sheet({ children }: { children: React.ReactNode }) {
 }
 
 const meta = {
-  title: 'Foundations/Styles/Signatures',
+  title: 'Library/Foundations/Styles/Signatures',
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],
 } satisfies Meta;

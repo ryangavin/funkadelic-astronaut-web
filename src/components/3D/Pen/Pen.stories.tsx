@@ -1,13 +1,13 @@
 import { mmToUnits } from '../../../geometry/physicalScale';
 import { elevatedLayer } from '../../../behaviors/Perspective/elevation';
-import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
-import { DeskObjectStudy } from '../../../debug/ObjectStudy/DeskObjectStudy';
+import { checkDeskStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect } from 'storybook/test';
 import { PEN_KINDS, Pen } from './Pen';
 
 const meta = {
-  title: 'Components/3D/Pen',
+  title: 'Library/Components/3D/Pen',
   component: Pen,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

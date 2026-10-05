@@ -5,7 +5,7 @@ import { Pin } from '../Pin/Pin';
 import { Astronaut } from './Astronaut';
 
 const meta = {
-  title: 'Components/2D/Astronaut Cutout',
+  title: 'Library/Components/2D/Astronaut Cutout',
   component: Astronaut,
   tags: ['autodocs'],
   parameters: { layout: 'fullscreen' },

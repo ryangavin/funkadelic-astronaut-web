@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import festivalSketch from '../../../../assets/festival-scribble-fully-shaded.png';
-import { LIVE_SET } from '../../../sections/BandDossier/bandMembers';
+import { LIVE_SET } from '../../../experience/sections/BandDossier/bandMembers';
 import kevin from '../../../../assets/band-22.webp';
 import ryan from '../../../../assets/band-13.webp';
 import sam from '../../../../assets/band-21.webp';
@@ -9,7 +9,7 @@ import { Pin } from '../Pin/Pin';
 import { DEFAULT_POLAROID_FADE, POLAROID_FORMATS, Polaroid } from './Polaroid';
 
 const meta = {
-  title: 'Components/2D/Polaroid',
+  title: 'Library/Components/2D/Polaroid',
   component: Polaroid,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

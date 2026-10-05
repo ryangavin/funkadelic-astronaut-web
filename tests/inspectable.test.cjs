@@ -71,7 +71,7 @@ test('A held thing is the only thing you can reach, and every control on it is s
 });
 
 test('The desk says which of its things are worth looking at, and draws a held one over everything else', () => {
-  const objects = read('src/pages/Desk/DeskObjects.tsx');
+  const objects = read('src/experience/Desk/DeskObjects.tsx');
   const room = read('src/foundations/Room/Room.tsx');
 
   // A sheet is there to be read and comes up square on; a machine comes up the way it was lying.

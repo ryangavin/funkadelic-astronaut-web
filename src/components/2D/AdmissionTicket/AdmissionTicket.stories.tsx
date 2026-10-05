@@ -8,7 +8,7 @@ import {
 } from './AdmissionTicket';
 
 const meta = {
-  title: 'Components/2D/Admission Ticket',
+  title: 'Library/Components/2D/Admission Ticket',
   component: AdmissionTicket,
   parameters: {
     layout: 'centered',

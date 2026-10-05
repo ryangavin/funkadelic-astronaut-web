@@ -1,9 +1,9 @@
 import { useArgs } from 'storybook/preview-api';
 import { MeterStick } from '../../components/3D/MeterStick/MeterStick';
 import { Pin } from '../../components/2D/Pin/Pin';
-import { checkPhysicalLens, checkPhysicalRoom } from '../../debug/RoomControls/check';
-import { PerspectiveDesk } from '../../pages/Desk/PerspectiveDesk';
-import { physicalControls, physicalDefaults, withLightTuning, RoomExperiment, type RoomStoryControls } from '../../debug/RoomControls/controls';
+import { checkPhysicalLens, checkPhysicalRoom } from '../../experience/debug/RoomControls/check';
+import { PerspectiveDesk } from '../../experience/Desk/PerspectiveDesk';
+import { physicalControls, physicalDefaults, withLightTuning, RoomExperiment, type RoomStoryControls } from '../../experience/debug/RoomControls/controls';
 import { articulateLamp, lampPoseAngles } from '../../components/3D/DeskLamp/articulation';
 import { DESK_LAMP_ENAMELS } from '../../components/3D/DeskLamp/DeskLamp';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -23,7 +23,7 @@ const initialAngles = lampPoseAngles(articulateLamp({ x: 200, y: 420 }));
  * and the light can be looked at on their own.
  */
 const meta = {
-  title: 'Foundations/Room',
+  title: 'Library/Foundations/Room',
   component: Room,
   render: args => <Room {...withLightTuning(args)} />,
   parameters: { layout: 'fullscreen' },

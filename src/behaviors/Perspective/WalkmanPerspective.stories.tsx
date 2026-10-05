@@ -11,7 +11,7 @@ import { elevatedLayer } from './elevation';
 import { mmToUnits as mm } from '../../geometry/physicalScale';
 
 const meta = {
-  title: 'Foundations/Behaviors/Perspective',
+  title: 'Library/Foundations/Behaviors/Perspective',
   component: Perspective,
   parameters: { layout: 'fullscreen' },
   args: { angle: GENTLE_VIEW, depth: GENTLE_DEPTH, width: 1440 },

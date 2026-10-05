@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Desk, DESK_WIDTH } from '../../components/3D/Desk/Desk';
-import { Handbill } from '../../experiments/BandIntro/Handbill';
-import { BAND_HANDBILL_FRONT, BAND_HANDBILL_BACK } from '../../experiments/BandIntro/Handbill.band';
+import { Handbill } from '../../experience/experiments/BandIntro/Handbill';
+import { BAND_HANDBILL_FRONT, BAND_HANDBILL_BACK } from '../../experience/experiments/BandIntro/Handbill.band';
 import { LabelBro, LABEL_BRO_FOOT, LABEL_BRO_HEIGHT } from '../../components/3D/LabelBro/LabelBro';
 import { Mug } from '../../components/3D/Mug/Mug';
 import { Movable, type Place } from '../Movable/Movable';
@@ -11,7 +11,7 @@ import { GENTLE_DEPTH, GENTLE_VIEW, Perspective, Solid } from '../Perspective/Pe
 import { Inspectable, Inspector, InspectorVeil } from './Inspectable';
 
 const meta = {
-  title: 'Foundations/Behaviors/Inspectable',
+  title: 'Library/Foundations/Behaviors/Inspectable',
   component: Inspectable,
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],

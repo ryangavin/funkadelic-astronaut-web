@@ -10,7 +10,7 @@ import { StickyNote } from '../../components/2D/StickyNote/StickyNote';
 import { SPILL_FLIGHT_MS, SPILL_STAGGER_MS, Spill, Spilled } from './Spill';
 
 const meta = {
-  title: 'Foundations/Behaviors/Spill',
+  title: 'Library/Foundations/Behaviors/Spill',
   component: Spill,
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],

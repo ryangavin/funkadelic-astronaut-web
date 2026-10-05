@@ -28,7 +28,7 @@ try {
     assert.ok(result.mean < .9 && result.changed < .02, `${label}: ${JSON.stringify(result)}`);
     console.log(`PASS ${label}: mean ${result.mean.toFixed(3)}/255, ${(result.changed * 100).toFixed(2)}% samples differ >3`);
   };
-  await page.goto(`${process.env.PREVIEW_URL}/storybook/iframe.html?id=foundations-layout-desk--bare&viewMode=story`);
+  await page.goto(`${process.env.PREVIEW_URL}/storybook/iframe.html?id=library-foundations-layout-desk--bare&viewMode=story`);
   await page.locator('.desk__grain').waitFor();
   const large = await page.locator('.desk__top').screenshot();
   await page.setViewportSize({ width: 576, height: 850 });
@@ -37,7 +37,7 @@ try {
   assert.equal(await page.locator('.desk__pores').getAttribute('viewBox'), '0 0 1440 810');
 
   await page.setViewportSize({ width: 1000, height: 800 });
-  await page.goto(`${process.env.PREVIEW_URL}/storybook/iframe.html?id=debug-scale-bench--physical-setup&viewMode=story`);
+  await page.goto(`${process.env.PREVIEW_URL}/storybook/iframe.html?id=experience-debug-scale-bench--physical-setup&viewMode=story`);
   await page.locator('.desk__grain').waitFor();
   const textureState = () => page.locator('.desk').evaluate(root => ({
     grain: root.querySelector('.desk__grain').getAttribute('viewBox'), pores: root.querySelector('.desk__pores').getAttribute('viewBox'),

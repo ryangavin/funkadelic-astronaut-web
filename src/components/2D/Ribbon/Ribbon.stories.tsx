@@ -5,7 +5,7 @@ import { SocialIcon, type SocialPlatform } from '../SocialIcon/SocialIcon';
 import { FOOTER_RIBBON_HEIGHT, FOOTER_RIBBON_WAVE, RIBBON_COLOR_NAMES, Ribbon } from './Ribbon';
 
 const meta = {
-  title: 'Foundations/Layout/Ribbon',
+  title: 'Library/Foundations/Layout/Ribbon',
   component: Ribbon,
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],

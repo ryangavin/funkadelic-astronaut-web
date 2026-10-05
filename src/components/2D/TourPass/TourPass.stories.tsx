@@ -9,7 +9,7 @@ import {
 import { NYACK_FESTIVAL_TOUR_PASS_PROPS, SATURN_LANES_TOUR_PASS_PROPS } from './TourPass.data';
 
 const meta = {
-  title: 'Components/2D/Tour Pass',
+  title: 'Library/Components/2D/Tour Pass',
   component: TourPass,
   parameters: {
     layout: 'centered',
