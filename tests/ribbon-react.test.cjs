@@ -9,7 +9,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 test('Ribbon draws the footer seam and clips its block along the same wave', () => {
   const ribbon = read('src/components/2D/Ribbon/Ribbon.tsx');
   const css = read('src/components/2D/Ribbon/Ribbon.css');
-  const legacy = read('app.js');
+  const legacy = read('legacy/app.js');
 
   // The footer wave and colours match the home page.
   assert.match(legacy, /footer: \{ frequency: 1\.3, amplitude: 15, rotation: 0, x: 0, y: -8 \}/);
