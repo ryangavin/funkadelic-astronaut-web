@@ -14,6 +14,7 @@ import { SHARED_STAGES } from '../../sections/BandDossier/bandOneSheet';
 import { BANDCAMP_LINK, BOOKING_HREF, LISTEN_LINKS, SOCIAL_LINKS, type HomeLink } from '../Home/Home';
 import { BandcampPlayer, EARLIER_RELEASES, FEATURED_RELEASE, type BandcampRelease } from './BandcampPlayer';
 import { LiveVideo } from './LiveVideo';
+import { Nameplate } from './Nameplate';
 import '../../styles/fonts.css';
 import '../../styles/torn-edge.css';
 import './Epk.css';
@@ -107,7 +108,7 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
           </p>
           <Distressed className="epk__wordmark-print">
             <h1 className="epk__wordmark">
-              <span>Funkadelic</span> <span>Astronaut</span>
+              <Nameplate />
             </h1>
           </Distressed>
           <nav className="epk__nav" aria-label="On this page">

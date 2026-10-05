@@ -164,22 +164,46 @@
 
 .epk__wordmark {
   margin: 0;
-  padding: 0.06em 0 0.02em;
-  font-family: var(--font-display);
-  font-weight: 400;
-  /* "FUNKADELIC" runs the full measure: Modak's caps are about 0.88em each. */
-  font-size: 15.6cqw;
-  line-height: 0.8;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  color: var(--epk-violet);
-  -webkit-text-stroke: 0.012em var(--epk-night);
-  paint-order: stroke fill;
-  text-shadow: 0.03em 0.03em 0 var(--epk-night);
+  padding: 14px 0 10px;
 }
 
-.epk__wordmark span {
+/*
+  The drawn nameplate (see Nameplate.tsx), styled like type: the letters in
+  violet, outlined and shadowed in night ink, all from the same centre lines.
+*/
+.nameplate {
   display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  color: var(--epk-violet);
+}
+
+.nameplate path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nameplate__ink path {
+  stroke: currentColor;
+  stroke-width: 30;
+}
+
+/* The outline: the same lines a little fatter, in night ink, under the letters. */
+.nameplate__edge path {
+  stroke: var(--epk-night);
+  stroke-width: 39;
+}
+
+/* The shadow: the outline again, set off down and right. */
+.nameplate__shadow {
+  transform: translate(7px, 7px);
+}
+
+.nameplate__shadow path {
+  stroke: var(--epk-night);
+  stroke-width: 39;
 }
 
 /* The section index: each section a tab in its own spot ink, standing on the double rule. */
