@@ -2,7 +2,7 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 
-const html = fs.readFileSync("index.html", "utf8");
+const html = fs.readFileSync("classic.html", "utf8");
 const css = fs.readFileSync("styles/sections.css", "utf8");
 const cutoutCss = fs.readFileSync("styles/cutout.css", "utf8");
 const tour = html.match(/<section\s+class="scene live"[\s\S]+?<\/section>/)?.[0] || "";

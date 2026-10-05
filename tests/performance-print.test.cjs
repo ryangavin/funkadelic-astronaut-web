@@ -142,7 +142,7 @@ function setup({ contextAvailable = true, reduced = false } = {}) {
   };
 }
 test("baked ambient filter is strictly monochrome without palette or contour stages", () => {
-  const html = fs.readFileSync("index.html", "utf8");
+  const html = fs.readFileSync("classic.html", "utf8");
   const filter = html.match(/<filter id="ambient-print-finish"[\s\S]+?<\/filter>/)?.[0] || "";
   assert.match(filter, /id="ambient-monochrome" type="saturate" values="0"/);
   assert.match(filter, /id="ambient-levels"/);

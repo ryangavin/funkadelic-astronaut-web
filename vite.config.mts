@@ -31,10 +31,13 @@ export default defineConfig({
       '/storybook-server-channel': { target: `http://127.0.0.1:${process.env.STORYBOOK_PORT}`, ws: true },
     },
   } : undefined,
+  // GitHub Pages serves the site from /funkadelic-astronaut-web/, so built pages link their files relatively.
+  base: './',
   build: {
     rollupOptions: {
       input: {
         home: 'index.html',
+        classic: 'classic.html',
         pressKit: 'press-kit.html'
       }
     }

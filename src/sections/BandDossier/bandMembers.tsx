@@ -108,8 +108,8 @@ export const BAND_MEMBER_PACKETS: MemberPacket[] = [
       signature: { text: 'Kevin O’Neill', path: KEVIN_SIGNATURE, width: 236, rotation: 1.5 },
       children: (
         <>
-          <p>A naturally gifted drummer, Kevin has been making music with Ryan since before Funkadelic Astronaut had a name.</p>
-          <p>Behind the kit since day one, he brings a steady presence to a bond that runs deeper than bandmates, more like brothers.</p>
+          <p>A naturally gifted drummer, Kevin has played with Ryan for nearly two decades, since high school, long before Funkadelic Astronaut had a name.</p>
+          <p>Behind the kit since day one, he’s a steady presence and more brother than bandmate.</p>
         </>
       ),
     },
@@ -128,8 +128,8 @@ export const BAND_MEMBER_PACKETS: MemberPacket[] = [
       signature: { text: 'Sam Luba', path: SAM_SIGNATURE, width: 244, rotation: -2.5 },
       children: (
         <>
-          <p>Sam joined Funkadelic Astronaut in 2017, solidifying the band’s current lineup.</p>
-          <p>He plays bass and sings alongside Ryan Gavin and Kevin O’Neill.</p>
+          <p>Sam joined Funkadelic Astronaut in 2017, completing the band’s current lineup.</p>
+          <p>On bass and vocals, his songwriting and musical sensibilities solidified the band’s sound, giving the grooves their hooks and the jams somewhere to land.</p>
         </>
       ),
     },
