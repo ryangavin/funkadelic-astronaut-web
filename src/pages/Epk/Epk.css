@@ -167,14 +167,14 @@
   border-bottom: var(--epk-rule);
 }
 
-/* Multiplied onto the newsprint like the bars and tabs, so its violet prints as deep as theirs. */
+/* Multiplied onto the newsprint like the bars and tabs, so it prints into the paper as they do. */
 .epk__wordmark-print {
   display: block;
   mix-blend-mode: multiply;
 }
 
 /*
-  The nameplate: Bowlby One in capitals, flat violet ink, one line across the
+  The nameplate: Bowlby One in capitals, flat night ink, one line across the
   full measure. The name runs 14.19em in this face, so 6.9cqw of the masthead
   fills it with a hair to spare.
 */
@@ -188,7 +188,7 @@
   letter-spacing: 0;
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--epk-violet);
+  color: var(--epk-night);
 }
 
 /* The section index: each section a tab in its own spot ink, standing on the double rule. */
