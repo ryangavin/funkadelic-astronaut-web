@@ -167,8 +167,10 @@
   border-bottom: var(--epk-rule);
 }
 
+/* Multiplied onto the newsprint like the bars and tabs, so its violet prints as deep as theirs. */
 .epk__wordmark-print {
   display: block;
+  mix-blend-mode: multiply;
 }
 
 /*
