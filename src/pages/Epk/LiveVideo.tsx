@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { youTubeId } from '../../components/2D/Polaroid/embed';
 import type { LiveSet } from '../../sections/BandDossier/bandMembers';
 
@@ -21,13 +21,19 @@ const youTubePlayer = (id: string) =>
  */
 export function LiveVideo({ set, poster, title, className = '' }: LiveVideoProps) {
   const [playing, setPlaying] = useState(false);
+  const player = useRef<HTMLIFrameElement>(null);
   const id = youTubeId(set.video);
+  // The Play button vanishes on click; keep keyboard focus in place on the player.
+  useEffect(() => {
+    if (playing) player.current?.focus();
+  }, [playing]);
   return (
     <div className={`live-video ${className}`} data-playing={playing ? '' : undefined}>
       {!id ? (
         <video src={set.video} poster={poster} controls playsInline preload="none" aria-label={title} />
       ) : playing ? (
         <iframe
+          ref={player}
           src={youTubePlayer(id)}
           title={title}
           allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
