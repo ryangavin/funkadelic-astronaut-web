@@ -3,19 +3,23 @@ import { useState } from 'react';
 import kevinPortrait from '../../../assets/epk/kevin-portrait-900.webp';
 import ryanPortrait from '../../../assets/epk/ryan-portrait-900.webp';
 import samPortrait from '../../../assets/epk/sam-portrait-900.webp';
-import performance from '../../../assets/performance.webp';
+import liveLoop from '../../../assets/epk/live-loop.mp4';
+import livePoster from '../../../assets/epk/live-poster.webp';
 import { SocialIcon } from '../../components/2D/SocialIcon/SocialIcon';
 import { Distressed } from '../../foundations/Distressed/Distressed';
 import { BAND_MEMBER_PACKETS, LIVE_SET } from '../../sections/BandDossier/bandMembers';
 import { SHARED_STAGES } from '../../sections/BandDossier/bandOneSheet';
-import { BANDCAMP_LINK, BOOKING_HREF, LISTEN_INKS, LISTEN_LINKS, SOCIAL_LINKS } from '../Home/Home';
+import { BANDCAMP_LINK, BOOKING_HREF, LISTEN_LINKS, SOCIAL_LINKS } from '../Home/Home';
 import { BandcampPlayer, FEATURED_RELEASE, type BandcampRelease } from './BandcampPlayer';
 import { LiveVideo } from './LiveVideo';
 import '../../styles/fonts.css';
 import './Epk.css';
 
-/** The site's inks, which the poster's bars and frames are printed in. */
-export type EpkInk = 'red' | 'green' | 'purple' | 'blue' | 'amber';
+/** The inks, sampled from the cover of Time to Save the Universe. */
+export type EpkInk = 'violet' | 'lavender' | 'periwinkle' | 'pink' | 'lime';
+
+/** The cover's night sky, deepened: the page's text and dark ground. Matches `--epk-night` in Epk.css. */
+const EPK_NIGHT = '#1c1640';
 
 export const BOOKING_EMAIL = 'samluba1@gmail.com';
 
@@ -31,9 +35,9 @@ const list = (names: string[]) => `${names.slice(0, -1).join(', ')} and ${names[
 
 /** Each member's part, the ink their card is framed in, and their stage portrait in colour. */
 const MEMBERS = [
-  { part: 'Keys', ink: 'red', portrait: ryanPortrait, focus: '35% 30%' },
-  { part: 'Drums', ink: 'green', portrait: kevinPortrait, focus: '62% 30%' },
-  { part: 'Bass & vocals', ink: 'purple', portrait: samPortrait, focus: '25% 40%' },
+  { part: 'Keys', ink: 'periwinkle', portrait: ryanPortrait, focus: '35% 30%' },
+  { part: 'Drums', ink: 'lime', portrait: kevinPortrait, focus: '62% 30%' },
+  { part: 'Bass & vocals', ink: 'pink', portrait: samPortrait, focus: '25% 40%' },
 ] as const satisfies { part: string; ink: EpkInk; portrait: string; focus: string }[];
 
 /** A headline bar: bold caps on a band of one ink, as the poster's two big sections are introduced. */
@@ -107,7 +111,8 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
         <section className="epk__live" id="live" aria-label="Live video">
           <LiveVideo
             set={LIVE_SET}
-            poster={performance}
+            loop={liveLoop}
+            poster={livePoster}
             title={`Funkadelic Astronaut, “${LIVE_SET.caption}” live at Barrier Brewing Co.`}
             label={
               <>
@@ -117,7 +122,7 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
           />
         </section>
 
-        <EpkBar ink="red">Funk from the future</EpkBar>
+        <EpkBar ink="violet">Funk from the future</EpkBar>
 
         <section className="epk__intro" aria-label="About the band">
           <div className="epk__pitch">
@@ -153,7 +158,7 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
               <div className="epk-record__links">
                 {[...LISTEN_LINKS, BANDCAMP_LINK].map(link => (
                   <a key={link.platform} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label}>
-                    <SocialIcon platform={link.platform} ink={LISTEN_INKS[link.platform] ?? 'blue'} size={34} label="" />
+                    <SocialIcon platform={link.platform} ink={EPK_NIGHT} print="flat" paper="transparent" size={30} label="" worn={false} />
                   </a>
                 ))}
               </div>
@@ -175,7 +180,7 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
           </div>
         </section>
 
-        <EpkBar ink="amber" id="band">
+        <EpkBar ink="pink" id="band">
           Three friends. One orbit.
         </EpkBar>
 
@@ -221,7 +226,7 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
           <div className="epk-spec__social">
             {SOCIAL_LINKS.map(link => (
               <a key={link.platform} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label}>
-                <SocialIcon platform={link.platform} ink="black" print="flat" paper="transparent" size={26} label="" worn={false} />
+                <SocialIcon platform={link.platform} ink={EPK_NIGHT} print="flat" paper="transparent" size={26} label="" worn={false} />
               </a>
             ))}
           </div>

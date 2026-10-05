@@ -23,7 +23,7 @@ export const FEATURED_RELEASE: BandcampRelease = {
 
 /** Bandcamp's large player: the cover above the transport, then the track list, drawn on the poster's paper in its ink. */
 export const bandcampPlayerSrc = (release: BandcampRelease) =>
-  `https://bandcamp.com/EmbeddedPlayer/album=${release.albumId}/size=large/bgcol=fbf8f1/linkcol=a52837/tracklist=true/transparent=true/`;
+  `https://bandcamp.com/EmbeddedPlayer/album=${release.albumId}/size=large/bgcol=fbf7f0/linkcol=5b48b0/tracklist=true/transparent=true/`;
 
 /** The large player with its cover is its own width tall, plus the transport, plus a row per track. */
 const playerHeight = (tracks: number) => 120 + 33 * tracks + 20;

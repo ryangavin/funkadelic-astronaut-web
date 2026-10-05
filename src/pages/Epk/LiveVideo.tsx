@@ -1,10 +1,12 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { youTubeId, youTubePreview } from '../../components/2D/Polaroid/embed';
+import { youTubeId } from '../../components/2D/Polaroid/embed';
 import type { LiveSet } from '../../sections/BandDossier/bandMembers';
 
 export type LiveVideoProps = {
   set: LiveSet;
-  /** The still shown when the preview can't run (reduced motion), until someone presses play. */
+  /** A short silent cut from the set, played muted and looping as the hero. */
+  loop: string;
+  /** A frame from that cut: shown while it loads, and instead of it for anyone who asks for reduced motion. */
   poster: string;
   title: string;
   /** What the set is, printed on the video's corner. */
@@ -19,65 +21,65 @@ const youTubePlayer = (id: string) =>
 const prefersStill = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /**
- * The live video as the page's hero: it plays muted and looping as soon as
- * the page opens, and one press swaps in YouTube's own player with sound and
- * controls from the start. Anyone who asks for reduced motion gets a still
- * with a play button instead of the moving preview.
+ * The live set as the page's hero: a silent cut of it loops, muted, as soon
+ * as the page opens, served from the site so it starts at once with no
+ * player chrome over it. One press swaps in the whole set on YouTube, with
+ * sound and controls. Anyone who asks for reduced motion gets the still and a
+ * play button instead of the loop.
  */
-export function LiveVideo({ set, poster, title, label, className = '' }: LiveVideoProps) {
-  const [mode, setMode] = useState<'preview' | 'still' | 'playing'>(() => (prefersStill() ? 'still' : 'preview'));
+export function LiveVideo({ set, loop, poster, title, label, className = '' }: LiveVideoProps) {
+  const [mode, setMode] = useState<'loop' | 'still' | 'playing'>(() => (prefersStill() ? 'still' : 'loop'));
+  const clip = useRef<HTMLVideoElement>(null);
   const player = useRef<HTMLIFrameElement>(null);
   const id = youTubeId(set.video);
+
+  // React does not reflect `muted` as an attribute, and browsers only autoplay a muted video.
+  useEffect(() => {
+    const element = clip.current;
+    if (mode !== 'loop' || !element) return;
+    element.muted = true;
+    // Only a refusal to autoplay means the still; a hidden tab pausing it to save power plays again when shown.
+    element.play().catch((error: DOMException) => {
+      if (error.name === 'NotAllowedError') setMode('still');
+    });
+  }, [mode]);
+
   // The button vanishes on press; keep keyboard focus in place on the player.
   useEffect(() => {
     if (mode === 'playing') player.current?.focus();
   }, [mode]);
 
-  if (!id) {
+  if (mode === 'playing') {
     return (
-      <div className={`live-video ${className}`}>
-        <video src={set.video} poster={poster} controls playsInline preload="metadata" aria-label={title} />
+      <div className={`live-video ${className}`} data-mode={mode}>
+        {id ? (
+          <iframe
+            ref={player}
+            src={youTubePlayer(id)}
+            title={title}
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            allowFullScreen
+          />
+        ) : (
+          <video src={set.video} poster={poster} controls autoPlay playsInline aria-label={title} />
+        )}
       </div>
     );
   }
 
   return (
     <div className={`live-video ${className}`} data-mode={mode}>
-      {mode === 'playing' ? (
-        <iframe
-          ref={player}
-          src={youTubePlayer(id)}
-          title={title}
-          allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-          allowFullScreen
-        />
-      ) : mode === 'preview' ? (
-        // Muted preview only: no controls, and the sound button below is the way in.
-        <iframe
-          src={`${youTubePreview(id)}&enablejsapi=1`}
-          title={`${title}, muted preview`}
-          allow="autoplay; encrypted-media"
-          tabIndex={-1}
-          aria-hidden="true"
-          onLoad={event => {
-            // Some browsers ignore the autoplay parameter on a fresh embed; ask the player directly, muted.
-            const player = event.currentTarget.contentWindow;
-            for (const func of ['mute', 'playVideo']) player?.postMessage(JSON.stringify({ event: 'command', func, args: [] }), '*');
-          }}
-        />
+      {mode === 'loop' ? (
+        <video ref={clip} className="live-video__loop" src={loop} poster={poster} muted loop playsInline autoPlay preload="auto" aria-hidden="true" />
       ) : (
-        <img className="live-video__still" src={poster} alt="" />
+        <img className="live-video__loop" src={poster} alt="" />
       )}
-      {mode !== 'playing' ? (
-        <>
-          {label ? <p className="live-video__label">{label}</p> : null}
-          <button type="button" className="live-video__start" onClick={() => setMode('playing')}>
-            <span className="live-video__play" aria-hidden="true" />
-            <span className="live-video__cta">{mode === 'preview' ? 'Watch with sound' : 'Play'}</span>
-            <span className="visually-hidden"> {title}</span>
-          </button>
-        </>
-      ) : null}
+      {label ? <p className="live-video__label">{label}</p> : null}
+      <button type="button" className="live-video__start" onClick={() => setMode('playing')}>
+        <span className="live-video__play" aria-hidden="true" />
+        <span className="live-video__cta">{mode === 'loop' ? 'Watch with sound' : 'Play'}</span>
+        <span className="visually-hidden"> {title}</span>
+      </button>
     </div>
   );
 }
