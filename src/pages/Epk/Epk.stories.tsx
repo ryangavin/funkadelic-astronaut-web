@@ -40,7 +40,7 @@ export const PlayingTheVideo: Story = {
   play: async ({ canvasElement }) => {
     const page = within(canvasElement);
     await userEvent.click(page.getByRole('button', { name: /^(Watch with sound|Play) / }));
-    const player = page.getByTitle(/live in Nyack, NY$/i);
+    const player = page.getByTitle(/live at Nyack Neighborhood Porchfest 2026$/i);
     await expect(player).toHaveAttribute('src', expect.stringContaining('youtube-nocookie.com/embed/QlC7tOQjGkM'));
     await expect(player).toHaveAttribute('src', expect.not.stringContaining('mute=1'));
   },
