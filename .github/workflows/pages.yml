@@ -33,17 +33,14 @@ jobs:
       - name: Test site behavior
         run: npm test
       - uses: actions/configure-pages@v5
-      - name: Stage static website
+      # The home page is the React press kit, so the site is Vite's build; the old poster stays at classic.html.
+      - name: Build website
         run: |
-          mkdir _site
-          cp index.html press-kit.html style.css app.js typography-debug.js ribbon-editor.js living-video.js poster-motion.js portrait-strip.js cutout-type.js paper-cutout.js print-cadence.js performance-print.js ambient-treatment.js layout-studio-core.js layout-studio.js _site/
-          node scripts/generate-ambient-sources.cjs _site/ambient-sources.js
-          cp -R assets _site/assets
-          cp -R styles _site/styles
-          touch _site/.nojekyll
+          npm run build
+          touch dist/.nojekyll
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: _site
+          path: dist
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4

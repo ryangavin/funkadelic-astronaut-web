@@ -1,0 +1,565 @@
+/*
+  The press kit as one printed poster on a black ground. Breakpoints:
+  wide (from 1080px) is the poster: bio beside the live shot, the three blocks
+  beside the record; medium (680 to 1079px) stacks the columns; narrow (under
+  680px) also stacks each member's photo over their words.
+*/
+.epk {
+  --epk-ink: #121420;
+  --epk-paper: #fbf8f1;
+  --epk-red: #a52837;
+  --epk-green: #228542;
+  --epk-purple: #9275b2;
+  --epk-blue: #639ec8;
+  --epk-amber: #c58930;
+  --epk-rule: 3px;
+  --epk-gap: clamp(12px, 2vw, 22px);
+
+  min-height: 100vh;
+  padding: clamp(8px, 2vw, 28px) clamp(8px, 2vw, 28px) 40px;
+  background: var(--epk-ink);
+  color: var(--epk-ink);
+  font-family: var(--font-body);
+  font-size: clamp(15px, 1.1vw + 9px, 17px);
+  line-height: 1.5;
+}
+
+.epk *,
+.epk *::before,
+.epk *::after {
+  box-sizing: border-box;
+}
+
+.epk a {
+  color: inherit;
+}
+
+.epk [data-ink='red'] { --ink: var(--epk-red); --on-ink: var(--epk-paper); }
+.epk [data-ink='green'] { --ink: var(--epk-green); --on-ink: var(--epk-paper); }
+.epk [data-ink='purple'] { --ink: var(--epk-purple); --on-ink: var(--epk-ink); }
+.epk [data-ink='blue'] { --ink: var(--epk-blue); --on-ink: var(--epk-ink); }
+.epk [data-ink='amber'] { --ink: var(--epk-amber); --on-ink: var(--epk-ink); }
+
+/* Masthead: the name, huge, on a band of blue. */
+.epk__masthead {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: clamp(10px, 1.6vw, 20px) clamp(12px, 2.4vw, 32px) clamp(12px, 1.6vw, 18px);
+  background: var(--epk-blue);
+  border: var(--epk-rule) solid var(--epk-ink);
+  text-align: center;
+}
+
+.epk__kicker {
+  margin: 0;
+  font-weight: 700;
+  font-size: clamp(11px, 0.6vw + 8px, 15px);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.epk__wordmark-print {
+  display: block;
+}
+
+.epk__wordmark {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(54px, 10.4vw, 150px);
+  line-height: 0.82;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--epk-ink);
+  text-shadow: 0.035em 0.035em 0 var(--epk-red);
+}
+
+.epk__wordmark span {
+  display: inline-block;
+}
+
+.epk__nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 10px;
+  margin-top: 6px;
+}
+
+.epk__nav a {
+  padding: 2px 12px;
+  border: 2px solid var(--epk-ink);
+  background: var(--epk-paper);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.epk__nav a:hover,
+.epk__nav a:focus-visible {
+  background: var(--epk-amber);
+}
+
+.epk__sheet {
+  display: grid;
+  gap: var(--epk-gap);
+  max-width: 1240px;
+  margin: var(--epk-gap) auto 0;
+}
+
+/* Headline bars. */
+.epk-bar {
+  margin: 0;
+  padding: 0.12em 0.4em 0.02em;
+  background: var(--ink);
+  border: var(--epk-rule) solid var(--epk-ink);
+  color: var(--on-ink);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(26px, 3.6vw, 52px);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-align: center;
+  scroll-margin-top: 12px;
+}
+
+/* Photographs: one ink, coarse halftone. */
+.epk-photo {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  background: var(--epk-paper);
+  border: var(--epk-rule) solid var(--epk-ink);
+}
+
+.epk-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.35) brightness(1.04);
+}
+
+.epk-photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgb(18 20 32 / 0.55) 0.9px, transparent 1.4px) 0 0 / 4px 4px;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* Hero: the bio beside the live shot. */
+.epk__hero {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  border: var(--epk-rule) solid var(--epk-paper);
+  background: var(--epk-paper);
+}
+
+.epk__bio {
+  padding: clamp(14px, 2vw, 26px);
+  background: var(--epk-ink);
+  color: var(--epk-paper);
+}
+
+.epk__bio p {
+  margin: 0 0 0.85em;
+}
+
+.epk__bio p:last-child {
+  margin-bottom: 0;
+}
+
+.epk__lede {
+  font-weight: 700;
+  font-size: 1.12em;
+}
+
+.epk__hero-photo {
+  min-height: 320px;
+  border: 0;
+  border-left: var(--epk-rule) solid var(--epk-ink);
+}
+
+/* The three, beside the record. */
+.epk__body {
+  display: grid;
+  grid-template-columns: minmax(0, 8fr) minmax(300px, 4fr);
+  gap: var(--epk-gap);
+}
+
+.epk__members {
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: var(--epk-gap);
+}
+
+.epk-member {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  background: var(--epk-paper);
+  border: 6px solid var(--ink);
+  outline: var(--epk-rule) solid var(--epk-ink);
+}
+
+.epk-member:nth-child(even) {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+}
+
+.epk-member:nth-child(even) .epk-member__photo {
+  order: 2;
+}
+
+.epk-member__photo {
+  min-height: 240px;
+  border: 0;
+}
+
+.epk-member__text {
+  padding: clamp(12px, 1.6vw, 20px);
+}
+
+.epk-member__text h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 10px;
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(28px, 2.6vw, 38px);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.epk-member__text h3 small {
+  padding: 1px 8px;
+  background: var(--ink);
+  color: var(--on-ink);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+}
+
+.epk-member__text p {
+  margin: 0 0 0.6em;
+}
+
+.epk-member__text ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.epk-member__text li {
+  padding: 0 8px;
+  border: 2px solid var(--epk-ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* The record. */
+.epk-record {
+  display: grid;
+  gap: 12px;
+  padding: clamp(12px, 1.6vw, 18px);
+  background: var(--epk-paper);
+  border: 6px solid var(--epk-red);
+  outline: var(--epk-rule) solid var(--epk-ink);
+  scroll-margin-top: 12px;
+}
+
+.epk-record__label {
+  margin: 0;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--epk-red);
+}
+
+.epk-record__title {
+  margin: -6px 0 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(32px, 3vw, 44px);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.bandcamp-player {
+  container-type: inline-size;
+  border: var(--epk-rule) solid var(--epk-ink);
+  background: #fff;
+}
+
+.bandcamp-player iframe {
+  display: block;
+  width: 100%;
+  height: calc(100cqw + var(--bandcamp-list));
+  border: 0;
+}
+
+.epk-record__catalog {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 2px solid var(--epk-ink);
+}
+
+.epk-record__catalog li {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--epk-ink);
+  font-size: 14px;
+}
+
+.epk-record__catalog li span:first-child {
+  font-weight: 700;
+}
+
+.epk-record__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.epk-record__links a,
+.epk-spec__cell--social a {
+  display: inline-flex;
+}
+
+/* The live video. */
+.epk__live {
+  border: var(--epk-rule) solid var(--epk-ink);
+  outline: 6px solid var(--epk-blue);
+  outline-offset: -9px;
+  background: var(--epk-ink);
+  scroll-margin-top: 12px;
+}
+
+.live-video {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--epk-ink);
+}
+
+.live-video iframe,
+.live-video video,
+.live-video__start {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.live-video__start {
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.live-video__start img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.2) brightness(0.8);
+}
+
+.live-video__play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(64px, 9vw, 112px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border: var(--epk-rule) solid var(--epk-ink);
+  border-radius: 50%;
+  background: var(--epk-amber);
+  box-shadow: 5px 5px 0 var(--epk-ink);
+  transition: scale 120ms ease;
+}
+
+.live-video__play::after {
+  content: '';
+  position: absolute;
+  inset: 28% 24% 28% 36%;
+  background: var(--epk-ink);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+.live-video__start:hover .live-video__play,
+.live-video__start:focus-visible .live-video__play {
+  scale: 1.08;
+}
+
+/* The spec strip: what a booker needs, ruled like a label. */
+.epk-spec {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.4fr 1.4fr 1.8fr auto;
+  background: var(--epk-paper);
+  border: var(--epk-rule) solid var(--epk-paper);
+}
+
+/* The festival map along the bottom edge, as the poster's patterned border. */
+.epk__border {
+  height: clamp(64px, 8vw, 110px);
+  border: var(--epk-rule) solid var(--epk-paper);
+  background: var(--epk-amber) center 38% / cover no-repeat;
+}
+
+.epk-spec__cell {
+  margin: 0;
+  padding: 10px 14px;
+  border-right: 2px solid var(--epk-ink);
+}
+
+.epk-spec__cell:last-child {
+  border-right: 0;
+}
+
+.epk-spec__cell dt {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.epk-spec__cell dd {
+  margin: 0;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.epk-spec__cell--name {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--epk-ink);
+  color: var(--epk-paper);
+  font-family: var(--font-display);
+  font-size: clamp(24px, 2.4vw, 34px);
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.epk-spec__cell--book {
+  background: var(--epk-amber);
+}
+
+.epk-spec__cell--social {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Medium: the columns stack. */
+@media (max-width: 1079px) {
+  .epk__hero {
+    grid-template-columns: 1fr;
+  }
+
+  .epk__hero-photo {
+    order: -1;
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+    border-left: 0;
+    border-bottom: var(--epk-rule) solid var(--epk-ink);
+  }
+
+  .epk__body {
+    grid-template-columns: 1fr;
+  }
+
+  .epk-record {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .epk-record__label,
+  .epk-record__title {
+    grid-column: 1 / -1;
+  }
+
+  .epk-record .bandcamp-player {
+    grid-row: span 2;
+  }
+
+  .epk-spec {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .epk-spec__cell {
+    border-bottom: 2px solid var(--epk-ink);
+  }
+
+  .epk-spec__cell:nth-child(3n) {
+    border-right: 0;
+  }
+}
+
+/* Narrow: one column all the way down. */
+@media (max-width: 679px) {
+  .epk-member,
+  .epk-member:nth-child(even) {
+    grid-template-columns: 1fr;
+  }
+
+  .epk-member:nth-child(even) .epk-member__photo {
+    order: 0;
+  }
+
+  .epk-member__photo {
+    aspect-ratio: 4 / 3;
+    min-height: 0;
+  }
+
+  .epk-record {
+    grid-template-columns: 1fr;
+  }
+
+  .epk-record .bandcamp-player {
+    grid-row: auto;
+  }
+
+  .epk-spec {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .epk-spec__cell:nth-child(3n) {
+    border-right: 2px solid var(--epk-ink);
+  }
+
+  .epk-spec__cell:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .epk-spec__cell--name,
+  .epk-spec__cell--book,
+  .epk-spec__cell--social {
+    grid-column: 1 / -1;
+    border-right: 0;
+  }
+
+  .epk-spec__cell--social {
+    justify-content: center;
+    border-bottom: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-video__play {
+    transition: none;
+  }
+}

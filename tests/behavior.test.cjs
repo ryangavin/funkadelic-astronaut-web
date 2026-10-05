@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 const source = fs.readFileSync("app.js", "utf8");
 test("Band and Tour reuse one festival asset through distinct decorative layers", () => {
-  const html = fs.readFileSync("index.html", "utf8");
+  const html = fs.readFileSync("classic.html", "utf8");
   const css = fs.readFileSync("styles/sections.css", "utf8");
   const paper = fs.readFileSync("paper-cutout.js", "utf8");
   const band = html.match(/<section\s+class="scene learn"[\s\S]+?<\/section>/)?.[0] || "";
@@ -83,7 +83,7 @@ test("Band and Tour reuse one festival asset through distinct decorative layers"
   assert.match(css, /\.band-dossier::after\s*\{[^}]+clip-path:\s*polygon\(0 100%, 100% 0, 100% 100%\)/s);
 });
 test("biographies and Polaroids use distinct edges on one shared PaperCutout material", () => {
-  const html = fs.readFileSync("index.html", "utf8");
+  const html = fs.readFileSync("classic.html", "utf8");
   const css = fs.readFileSync("styles/sections.css", "utf8");
   const paper = fs.readFileSync("paper-cutout.js", "utf8");
   const paperCss = fs.readFileSync("styles/paper.css", "utf8");
@@ -126,7 +126,7 @@ test("biographies and Polaroids use distinct edges on one shared PaperCutout mat
   assert.match(css, /@media \(max-width:\s*760px\)[\s\S]+?\.learn\[data-member="kevin"\]:not\(\[data-member="band"\]\) #member-story\s*\{\s*rotate:\s*-\.8deg/s);
 });
 test("individual biography copy uses the bundled Caveat signature face without print effects", () => {
-  const html = fs.readFileSync("index.html", "utf8");
+  const html = fs.readFileSync("classic.html", "utf8");
   const css = fs.readFileSync("styles/sections.css", "utf8");
   assert.doesNotMatch(html, /id="member-story"[^>]+print-copy|class="[^"]*print-copy[^"]*" id="member-story"/);
   assert.match(css, /\.learn\[data-member\]:not\(\[data-member="band"\]\) #member-story p\s*\{[^}]+font-family:\s*Caveat, cursive;[^}]+font-size:\s*calc\(30 \* var\(--composition-unit\)\);[^}]+font-weight:\s*560;[^}]+line-height:\s*1\.28;[^}]+-webkit-text-stroke:\s*0;[^}]+text-shadow:\s*none;[^}]+filter:\s*none/s);
@@ -137,7 +137,7 @@ test("individual biography copy uses the bundled Caveat signature face without p
   assert.doesNotMatch(memberStoryOverrides, /(?:margin|padding|width|font|line-height|text-wrap):/);
 });
 test("design-critical typography is locally bundled and member signatures stay distinct", () => {
-  const html = fs.readFileSync("index.html", "utf8");
+  const html = fs.readFileSync("classic.html", "utf8");
   const base = fs.readFileSync("styles/base.css", "utf8");
   const css = fs.readFileSync("styles/sections.css", "utf8");
   assert.doesNotMatch(html, /fonts\.(?:googleapis|gstatic)\.com/);

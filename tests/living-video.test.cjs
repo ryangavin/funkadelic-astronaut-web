@@ -51,7 +51,7 @@ function harness({ reduced = false, blocked = false, startupPause = false, defer
 }
 const settle = async () => { for (let i = 0; i < 8; i++) await Promise.resolve(); };
 test('landing markup has one shared performance video element', () => {
-  const html = fs.readFileSync('index.html', 'utf8');
+  const html = fs.readFileSync('classic.html', 'utf8');
   assert.equal((html.match(/<video\b/g) || []).length, 1);
   assert.match(html, /<video id="performance"/);
   assert.doesNotMatch(html, /id="ambient-performance"/);
