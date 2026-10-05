@@ -301,6 +301,11 @@
   object-fit: cover;
 }
 
+/* Playing with sound, the whole frame shows: nothing cropped under the controls. */
+.live-video[data-mode='playing'] video {
+  object-fit: contain;
+}
+
 .live-video__label {
   position: absolute;
   top: clamp(8px, 1.4vw, 18px);
