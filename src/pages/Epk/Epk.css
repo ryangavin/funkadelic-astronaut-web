@@ -576,43 +576,33 @@
   margin: 0 0 0.6em;
 }
 
-/* The foot of the page: the booking address again, and every place to find the band. */
+/* The foot of the page: a way to book the band, and every place to find them. */
 .epk-foot {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px var(--epk-gutter);
+  align-items: center;
+  gap: 12px var(--epk-gutter);
   padding: 18px 0 6px;
   border-top: 4px double var(--epk-night);
   scroll-margin-top: 12px;
 }
 
-.epk-foot__booking,
-.epk-foot__social {
-  display: grid;
-  gap: 4px;
-}
-
-.epk-foot__social {
-  justify-items: end;
-}
-
-.epk-foot .epk__small-label {
-  color: var(--epk-violet);
-}
-
-.epk-foot__email {
+.epk-foot__book {
   font-weight: 900;
   font-stretch: 75%;
   font-size: clamp(26px, 2vw + 16px, 44px);
   line-height: 1.1;
-  overflow-wrap: anywhere;
+  text-transform: uppercase;
   text-decoration-thickness: 2px;
   text-underline-offset: 0.12em;
 }
 
-/* The icons' own 44px tap targets pad them; pull the row flush with the label's edge. */
+.epk-foot__book:hover {
+  color: var(--epk-violet);
+}
+
+/* The icons' own 44px tap targets pad them; pull the row flush with the page's edge. */
 .epk-foot__links {
   display: flex;
   flex-wrap: wrap;
@@ -621,12 +611,8 @@
   margin-right: -7px;
 }
 
-/* Narrow: booking over socials, both flush left. */
+/* Narrow: the booking link over the icons, both flush left. */
 @media (max-width: 679px) {
-  .epk-foot__social {
-    justify-items: start;
-  }
-
   .epk-foot__links {
     justify-content: flex-start;
     margin: 0 0 0 -7px;

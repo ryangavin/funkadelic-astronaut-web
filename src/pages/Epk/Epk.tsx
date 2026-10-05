@@ -236,21 +236,15 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
           </section>
 
           <footer className="epk-foot" id="book" aria-label="Booking">
-            <div className="epk-foot__booking">
-              <p className="epk__small-label">Booking</p>
-              <a className="epk-foot__email" href={BOOKING_HREF}>
-                {BOOKING_EMAIL}
-              </a>
-            </div>
-            <div className="epk-foot__social">
-              <p className="epk__small-label">Socials</p>
-              <div className="epk-foot__links">
-                {[...SOCIAL_LINKS, ...LISTEN_LINKS, BANDCAMP_LINK].map(link => (
-                  <a key={link.platform} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label}>
-                    <SocialIcon platform={link.platform} ink={EPK_NIGHT} print="flat" paper="transparent" size={30} label="" />
-                  </a>
-                ))}
-              </div>
+            <a className="epk-foot__book" href={BOOKING_HREF}>
+              Book The Band
+            </a>
+            <div className="epk-foot__links">
+              {[...SOCIAL_LINKS, ...LISTEN_LINKS, BANDCAMP_LINK].map(link => (
+                <a key={link.platform} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label}>
+                  <SocialIcon platform={link.platform} ink={EPK_NIGHT} print="flat" paper="transparent" size={30} label="" />
+                </a>
+              ))}
             </div>
           </footer>
         </main>
