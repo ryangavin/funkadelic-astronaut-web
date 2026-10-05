@@ -105,7 +105,7 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
           <p className="epk__dateline">
             <span>Vol. 7 No. 42</span>
             <span>New Jersey · Funktronica</span>
-            <span>Est. 2012 · Free</span>
+            <span>Est. 2012 · Always free</span>
           </p>
           <Distressed className="epk__wordmark-print">
             <h1 className="epk__wordmark">
