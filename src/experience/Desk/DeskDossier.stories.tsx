@@ -211,11 +211,11 @@ export const CoverOcclusion: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Close the press package' }));
     await phase('closing');
     // Every frame of the swing shut, however many the renderer manages.
-    while (dossier.getAttribute('data-dossier-phase') === 'closing') {
+    do {
       checkPacked();
       expect([...dossier.querySelectorAll('.spilled')]).toEqual(contents);
       await nextFrame();
-    }
+    } while (dossier.getAttribute('data-dossier-phase') === 'closing');
     await phase('closed');
     expect(dossier.querySelectorAll('.spilled, iframe, .packet')).toHaveLength(0);
   },
