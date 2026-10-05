@@ -445,10 +445,15 @@
   Each one is a button that puts that record in the player; the one playing
   has its title highlighted in its own ink and says so in its chip.
 */
+/*
+  Each record's column is as wide as its name and year, and every column then
+  grows by the same amount, so the room around each name is equal rather than
+  the columns.
+*/
 .epk-record__catalog {
+  container-type: inline-size;
   grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  display: flex;
   gap: 8px var(--epk-gutter);
   margin: 0;
   padding: 0;
@@ -457,9 +462,9 @@
 
 /* Ruled as the member cards are: the ribbon, then the column rule in the gutter starting below it. */
 .epk-record__catalog li {
-  container-type: inline-size;
+  flex: 1 1 auto;
   position: relative;
-  display: grid;
+  display: flex;
   border-top: 8px solid var(--ink);
 }
 
@@ -472,11 +477,12 @@
   border-left: var(--epk-rule);
 }
 
-/* The title in the members' heavy condensed caps, the year in a chip of the record's ink like their parts. */
+/* Centred in its column: the title in the members' heavy condensed caps, the year beside it in a chip of the record's ink. */
 .epk-record__catalog button {
-  display: grid;
-  justify-items: start;
-  align-content: start;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
   gap: 6px;
   min-height: 44px;
   padding: 10px 0 4px;
@@ -484,32 +490,35 @@
   background: none;
   color: inherit;
   font: inherit;
-  text-align: left;
   cursor: pointer;
 }
 
 /*
-  Titles never wrap. The longest, TIME TO SAVE THE UNIVERSE, runs 10.4em in
-  this face, so 9.4% of a column fits it with a hair to spare; every title
-  shares that size, capped at 24px.
+  Names never wrap, and the row stays one row wide. The five names run 31.4em
+  of title type; the chips, gutters and a little room around each take about
+  450px; so the type is what is left over 31.4, capped at 24px. Narrower, the
+  row wraps instead (see the medium breakpoint).
 */
 .epk-record__catalog button span:first-child {
+  display: flex;
+  align-items: center;
   font-weight: 900;
   font-stretch: 62%;
-  font-size: min(24px, 9.4cqw);
-  line-height: 0.95;
+  font-size: min(24px, (100cqw - 450px) / 31.4);
+  line-height: 1;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
 .epk-record__catalog button span:last-child {
-  padding: 2px 8px;
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
   background: var(--ink);
   color: var(--on-ink);
   font-weight: 700;
   font-size: 11px;
   letter-spacing: var(--epk-caps);
-  text-transform: uppercase;
 }
 
 .epk-record__catalog button:hover span:first-child {
@@ -517,12 +526,12 @@
   text-decoration-thickness: 2px;
 }
 
-/* The record playing has its title marked in its own ribbon's ink, like a highlighter. */
+/*
+  The record playing has its title set in its own ribbon's ink, deepened with
+  the night ink: lime, pink and orange straight on newsprint are too faint to read.
+*/
 .epk-record__catalog button[aria-pressed='true'] span:first-child {
-  margin-left: -4px;
-  padding: 1px 4px 0;
-  background: var(--ink);
-  color: var(--on-ink);
+  color: color-mix(in oklab, var(--ink), var(--epk-night) 55%);
 }
 
 /* The icons' own 44px tap targets pad them; pull the row flush with the column's edge. */
@@ -658,6 +667,20 @@
     grid-template-columns: minmax(350px, 1fr) minmax(0, 1fr);
   }
 
+  /* Too narrow for one row at a readable size: the records wrap, each row sharing its room alike. Ribbons part them; a rule could land at a row's edge. */
+  .epk-record__catalog {
+    flex-wrap: wrap;
+    row-gap: 14px;
+  }
+
+  .epk-record__catalog button span:first-child {
+    font-size: 20px;
+  }
+
+  .epk-record__catalog li + li::before {
+    content: none;
+  }
+
   /* The column is narrow: the streaming links drop under the heading, flush left. */
   .epk-record__links {
     margin: 0 0 0 -7px;
@@ -758,15 +781,6 @@
   .epk-record__story {
     padding-left: 0;
     border-left: 0;
-  }
-
-  .epk-record__catalog {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 14px;
-  }
-
-  .epk-record__catalog li:nth-child(odd)::before {
-    content: none;
   }
 
   .epk-member,
