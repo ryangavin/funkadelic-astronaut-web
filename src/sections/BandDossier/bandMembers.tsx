@@ -129,7 +129,7 @@ export const BAND_MEMBER_PACKETS: MemberPacket[] = [
       children: (
         <>
           <p>Sam joined Funkadelic Astronaut in 2017, solidifying the band’s current lineup.</p>
-          <p>He plays bass and sings alongside Ryan Gavin and Kevin O’Neill.</p>
+          <p>On bass and vocals, his songwriting and musical sensibilities brought the band’s sound into focus and made it their own.</p>
         </>
       ),
     },
