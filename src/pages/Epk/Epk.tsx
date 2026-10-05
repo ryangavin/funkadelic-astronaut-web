@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useRef, useState } from 'react';
 import kevinPortrait from '../../../assets/epk/kevin-portrait-900.webp';
 import ryanPortrait from '../../../assets/epk/ryan-portrait-900.webp';
 import samPortrait from '../../../assets/epk/sam-portrait-900.webp';
@@ -11,7 +12,7 @@ import { Inkjet } from '../../foundations/Inkjet/Inkjet';
 import { BAND_MEMBER_PACKETS, LIVE_SET } from '../../sections/BandDossier/bandMembers';
 import { SHARED_STAGES } from '../../sections/BandDossier/bandOneSheet';
 import { BANDCAMP_LINK, BOOKING_HREF, LISTEN_LINKS, SOCIAL_LINKS } from '../Home/Home';
-import { BandcampPlayer, FEATURED_RELEASE, type BandcampRelease } from './BandcampPlayer';
+import { BandcampPlayer, EARLIER_RELEASES, FEATURED_RELEASE, type BandcampRelease } from './BandcampPlayer';
 import { LiveVideo } from './LiveVideo';
 import '../../styles/fonts.css';
 import '../../styles/torn-edge.css';
@@ -22,14 +23,6 @@ export type EpkInk = 'violet' | 'lavender' | 'periwinkle' | 'pink' | 'lime';
 
 /** The cover's night sky, deepened: the ink the paper is printed in. Matches `--epk-night` in Epk.css. */
 const EPK_NIGHT = '#1c1640';
-
-/** Earlier records, newest first, as they are on Bandcamp. */
-export const BACK_CATALOG = [
-  { title: 'Mission Control', year: '2021' },
-  { title: 'Magrathea', year: '2018' },
-  { title: 'Emergency Exit', year: '2017' },
-  { title: 'Impact', year: '2013' },
-];
 
 const list = (names: string[]) => `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 
@@ -77,6 +70,16 @@ export type EpkProps = {
  * order.
  */
 export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkProps) {
+  // The record in the player: the new one until a reader picks another from the list under the story.
+  const [playing, setPlaying] = useState(release);
+  const records = [release, ...EARLIER_RELEASES];
+  const player = useRef<HTMLDivElement>(null);
+  const play = (record: BandcampRelease) => {
+    setPlaying(record);
+    // Stacked on a phone, the list is below the player: bring the player back into view.
+    const top = player.current?.getBoundingClientRect().top ?? 0;
+    if (top < 0) player.current?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  };
   return (
     <div className={`epk ${className}`} style={style}>
       <Weathered as="article" className="epk__paper torn-edge" patina flecks grain wear>
@@ -125,10 +128,12 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
             NJ trio ft. Ryan Gavin, Kevin O’Neill, and Sam Luba <strong>blast off</strong>
           </p>
 
-          <section className="epk-record" id="music" aria-label={`${release.title}, out now`}>
-            <div className="epk-record__player">
-              <p className="epk__small-label">Out now on Bandcamp</p>
-              <BandcampPlayer release={release} fit />
+          <section className="epk-record" id="music" aria-label="Records">
+            <div className="epk-record__player" ref={player}>
+              <p className="epk__small-label" aria-live="polite">
+                {playing === release ? 'Out now on Bandcamp' : `${playing.title} · ${playing.year}`}
+              </p>
+              <BandcampPlayer release={playing} fit />
             </div>
             <div className="epk-record__story">
               <div className="epk-record__head">
@@ -153,16 +158,17 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
                 </p>
                 <p>
                   Their new record, <em>{release.title}</em>, came out in {release.year}, following{' '}
-                  {list(BACK_CATALOG.map(record => `${record.title} (${record.year})`))}.
+                  {list(EARLIER_RELEASES.map(record => `${record.title} (${record.year})`))}.
                 </p>
               </div>
               <div>
-                <p className="epk__small-label">Earlier records</p>
+                <p className="epk__small-label">The records · press one to play it</p>
                 <ul className="epk-record__catalog">
-                  {BACK_CATALOG.map(record => (
-                    <li key={record.title}>
-                      <span>{record.title}</span>
-                      <span>{record.year}</span>
+                  {records.map(record => (
+                    <li key={record.albumId}>
+                      <button type="button" aria-pressed={record === playing} onClick={() => play(record)}>
+                        <span>{record.title}</span> <span>{record.year}</span>
+                      </button>
                     </li>
                   ))}
                 </ul>

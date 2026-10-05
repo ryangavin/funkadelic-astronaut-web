@@ -444,21 +444,23 @@
   max-height: calc(100cqw + var(--bandcamp-list));
 }
 
-/* The earlier records in one row, ruled apart: the title over its year. */
+/*
+  The records in one row, ruled apart: the title over its year. Each one is a
+  button that puts that record in the player; the one playing carries a violet
+  rule above it, like the member columns' ink rules.
+*/
 .epk-record__catalog {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   margin: 0;
-  padding: 6px 0 0;
+  padding: 0;
   list-style: none;
   border-top: var(--epk-rule-heavy);
 }
 
 .epk-record__catalog li {
   display: grid;
-  padding: 0 12px;
-  font-size: 15px;
-  line-height: 1.3;
+  padding: 0 10px;
 }
 
 .epk-record__catalog li:first-child {
@@ -469,8 +471,34 @@
   border-left: var(--epk-rule);
 }
 
-.epk-record__catalog li span:first-child {
+.epk-record__catalog button {
+  display: grid;
+  align-content: start;
+  min-height: 44px;
+  padding: 6px 0 2px;
+  border: 0;
+  border-top: 4px solid transparent;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.25;
+  text-align: left;
+  cursor: pointer;
+}
+
+.epk-record__catalog button span:first-child {
   font-weight: 700;
+}
+
+.epk-record__catalog button:hover span:first-child {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+.epk-record__catalog button[aria-pressed='true'] {
+  border-top-color: var(--epk-violet);
+  color: var(--epk-violet);
 }
 
 /* The icons' own 44px tap targets pad them; pull the row flush with the column's edge. */

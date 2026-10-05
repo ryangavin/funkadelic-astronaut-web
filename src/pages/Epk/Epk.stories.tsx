@@ -46,5 +46,18 @@ export const PlayingTheVideo: Story = {
   },
 };
 
+/** Pressing an earlier record puts it in the Bandcamp player; pressing the new one puts it back. */
+export const PickingARecord: Story = {
+  play: async ({ canvasElement }) => {
+    const page = within(canvasElement);
+    const magrathea = page.getByRole('button', { name: 'Magrathea 2018' });
+    await userEvent.click(magrathea);
+    await expect(magrathea).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByTitle(/^Magrathea by Funkadelic Astronaut/)).toHaveAttribute('src', expect.stringContaining('album=3829388634'));
+    await userEvent.click(page.getByRole('button', { name: `${FEATURED_RELEASE.title} ${FEATURED_RELEASE.year}` }));
+    await expect(page.getByTitle(/on Bandcamp$/)).toHaveAttribute('src', expect.stringContaining(`album=${FEATURED_RELEASE.albumId}`));
+  },
+};
+
 export const Tablet: Story = { globals: { viewport: { value: 'tablet' } } };
 export const Phone: Story = { globals: { viewport: { value: 'phone' } } };

@@ -12,14 +12,24 @@ export type BandcampRelease = {
   year: string;
 };
 
+const album = (slug: string) => `https://funkadelicastronaut.bandcamp.com/album/${slug}`;
+
 /** The release the EPK features. */
 export const FEATURED_RELEASE: BandcampRelease = {
   title: 'Time to Save the Universe',
   albumId: '2034305585',
-  href: 'https://funkadelicastronaut.bandcamp.com/album/time-to-save-the-universe',
+  href: album('time-to-save-the-universe'),
   tracks: 7,
   year: '2026',
 };
+
+/** The studio records before it, newest first, as they are on Bandcamp. */
+export const EARLIER_RELEASES: BandcampRelease[] = [
+  { title: 'Mission Control', albumId: '1493278664', href: album('mission-control'), tracks: 6, year: '2021' },
+  { title: 'Magrathea', albumId: '3829388634', href: album('magrathea'), tracks: 5, year: '2018' },
+  { title: 'Emergency Exit', albumId: '419773097', href: album('emergency-exit'), tracks: 3, year: '2017' },
+  { title: 'Impact', albumId: '191897252', href: album('impact'), tracks: 6, year: '2013' },
+];
 
 /** The two embeds Bandcamp offers that suit the page: the whole player with its track list, or the cover alone with a play button. */
 export type BandcampEmbed = 'tracklist' | 'artwork';
