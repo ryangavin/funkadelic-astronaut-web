@@ -1,6 +1,6 @@
 # Reusable paper cutouts
 
-Load `paper-cutout.js` and `styles/paper.css` (already included by the site).
+Load `legacy/paper-cutout.js` and `legacy/styles/paper.css` (already included by the legacy poster pages). The React equivalent is `PaperSheet` / `ShapedPaper` in `src/components/2D`.
 Wrap any card, photo, or other content with an element marked `data-paper-cutout`.
 Give that wrapper its desired dimensions or let its content size it. Its backing follows
 resizes automatically; all content remains normal accessible HTML.

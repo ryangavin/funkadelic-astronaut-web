@@ -16,10 +16,10 @@ The desk owns a staged sequence: mount packed contents beneath the still-closed 
 
 Closing makes the spill inert immediately. A rapid reversal cancels the old stage deadline and keeps its mounted papers and their local state. Fully closed dossiers contain no paper/media DOM; reopening after complete closure starts a fresh press package.
 
-Browser coverage: `Cover Occlusion` checks packed drawing bounds and cover stacking through a physical-camera, moved/rotated/resized-folder sequence, opaque mid-close content, same DOM across reversal, and independent paper dragging. `Reduced Motion` is also run with a Chromium reduced-motion context. `Pages/Desk Dossier/Open And Return` checks mounted-content absence, moved-folder origin, intermediate surrounding-object positions, no packet remount during movement, closing teardown and rapid toggles. `Pages/Sections/Band Dossier/Lazy Contents` verifies the standalone dossier's lazy lifecycle and retained member selection. Existing Folder, Spill and PromoterDesk stories remain covered.
+Browser coverage: `Cover Occlusion` checks packed drawing bounds and cover stacking through a physical-camera, moved/rotated/resized-folder sequence, opaque mid-close content, same DOM across reversal, and independent paper dragging. `Reduced Motion` is also run with a Chromium reduced-motion context. `Experience/Desk Dossier/Open And Return` checks mounted-content absence, moved-folder origin, intermediate surrounding-object positions, no packet remount during movement, closing teardown and rapid toggles. `Experience/Sections/Band Dossier/Lazy Contents` verifies the standalone dossier's lazy lifecycle and retained member selection. Existing Folder, Spill and PromoterDesk stories remain covered.
 
 Run the real reduced-motion browser check with:
 
 ```sh
-npx vitest --config vite.reduced.config.mjs --project=storybook --run src/pages/Desk/DeskDossier.stories.tsx -t 'Reduced Motion'
+npx vitest --config vite.reduced.config.mjs --project=storybook --run src/experience/Desk/DeskDossier.stories.tsx -t 'Reduced Motion'
 ```

@@ -16,7 +16,7 @@ Physical mode retains a fixed lens calibrated to the previous 1200 mm desk and 9
 
 Eye height must exceed tabletop height. Desk dimensions and projection depth must be positive and finite; edge thickness and wall distance may be zero. Invalid edits retain the last valid scene, object placements and lamp pose. Physical dimensions update desk units, floor drop, wall location, lighting surfaces and shadow viewBoxes. Automatic background coverage uses the same target and framing; views exceeding material capacity retain the previous scene. Explicit room extents may deliberately expose boundaries.
 
-Both **Foundations / Room / Physical Setup** and **Pages / Perspective Desk / Physical Setup** contain objects, labeled sliders and unrestricted numeric inputs. Physical readouts show millimetres plus inches (`mm / 25.4`); inches are display-only. Slider windows are convenient suggestions, not scene limits: typing a value outside the window preserves that value and parks the slider at the nearest endpoint. Inline fields update Storybook args directly, so Save Story retains their values. External controls and Reset Controls update the same values. Every advanced light-shaping value has its own labeled numeric Storybook control. Existing scenes retain their old defaults. PerspectiveDesk's saved settings include physical inputs, camera mode, and the light-tuning object.
+Both **Library / Foundations / Room / Physical Setup** and **Experience / Perspective Desk / Physical Setup** contain objects, labeled sliders and unrestricted numeric inputs. Physical readouts show millimetres plus inches (`mm / 25.4`); inches are display-only. Slider windows are convenient suggestions, not scene limits: typing a value outside the window preserves that value and parks the slider at the nearest endpoint. Inline fields update Storybook args directly, so Save Story retains their values. External controls and Reset Controls update the same values. Every advanced light-shaping value has its own labeled numeric Storybook control. Existing scenes retain their old defaults. PerspectiveDesk's saved settings include physical inputs, camera mode, and the light-tuning object.
 
 ## Light
 
@@ -53,8 +53,8 @@ A local headless Chromium comparison used the existing DeskPerf `dragCost`, `dra
 
 | Story | Lamp drag median frame (samples) | Lamp aim median frame (samples) | Synthetic input-to-style commit, drag / aim |
 | --- | --- | --- | --- |
-| Foundations / Room / Physical Setup | 27.9 / 28.1 / 28.0 ms | 27.5 / 27.0 / 27.1 ms | 0.5 / 1.7 ms |
-| Pages / Perspective Desk / Desk | 26.2 / 26.2 / 26.1 ms | 25.5 / 25.6 / 25.6 ms | 0.4 / 1.7 ms |
+| Library / Foundations / Room / Physical Setup | 27.9 / 28.1 / 28.0 ms | 27.5 / 27.0 / 27.1 ms | 0.5 / 1.7 ms |
+| Experience / Perspective Desk / Desk | 26.2 / 26.2 / 26.1 ms | 25.5 / 25.6 / 25.6 ms | 0.4 / 1.7 ms |
 
 The chronological frame probe agreed with these medians. On the matched Desk scene, removing the room reduced the frame median by 9.4 ms (36%); removing the desk's floor shadow reduced it by 7.1 ms (27%). These are overlapping attribution experiments, not additive savings. The measured cost is predominantly shared rendering; the small residual does not establish a distinct React/input regression. No renderer change or experimental range clamp was justified by this comparison.
 

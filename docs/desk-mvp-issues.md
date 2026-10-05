@@ -36,7 +36,7 @@ At each taste gate show one recommended version and at most two alternatives, us
 
 **Problem.** The existing scene renders 14 top-level objects regardless of their importance. Several essentials are hidden in the dossier; the current presence of an object is not approval to ship it.
 
-**Evidence / reuse.** `src/pages/Desk/DeskObjects.tsx` defines the top-level objects. `DeskDossier.tsx` separately defines ten spilled items. Tour passes, StickyNote, Walkman, Handheld, and dossier cues already exist. `Room` owns the lamp separately.
+**Evidence / reuse.** `src/experience/Desk/DeskObjects.tsx` defines the top-level objects. `DeskDossier.tsx` separately defines ten spilled items. Tour passes, StickyNote, Walkman, Handheld, and dossier cues already exist. `Room` owns the lamp separately.
 
 **Scope.** Produce a roster with stable object IDs, existing component, purpose, initial/open visibility, real versus fictional content, interaction, and known appearance work. Propose Handheld for live video, Walkman for music, existing TourPass components for dates, and the dossier. Distinguish lamp/room scenery from optional toys. List every candidate dossier item and flag duplicate handbill, pass, and live-video presentations for a keep/remove decision. Proposed initial toys should be few; do not treat all existing gadgets as required.
 
@@ -56,7 +56,7 @@ At each taste gate show one recommended version and at most two alternatives, us
 
 **Problem.** Current SizingBench enumerates only `DESK_OBJECTS`; dossier contents and prospective tour-pass objects are absent. Its reported scale reads input placements while measured pixels follow live resizing, so the numbers can diverge. The paper metric is the widest rotated bounding box, not a readability guarantee.
 
-**Evidence / reuse.** `src/debug/ScaleBench/`, `src/debug/SizingBench/SizingBench.tsx`, `src/geometry/physicalScale.ts`, and `DeskDossier.tsx`. Dossier sizes currently come from legacy `PromoterDesk.SIZES` multiplied by `0.6`.
+**Evidence / reuse.** `src/experience/debug/ScaleBench/`, `src/experience/debug/SizingBench/SizingBench.tsx`, `src/geometry/physicalScale.ts`, and `DeskDossier.tsx`. Dossier sizes currently come from legacy `PromoterDesk.SIZES` multiplied by `0.6`.
 
 **Scope.** Extend the current benches, not a third calibration tool. Supply a clearly spaced roster view and individual-object views with the existing ruler and reference papers. Make selected spilled items measurable without requiring a cluttered final arrangement. Use consistent dimension metadata or a narrow adapter where necessary; avoid a general scene-editor rewrite.
 
@@ -162,7 +162,7 @@ At each taste gate show one recommended version and at most two alternatives, us
 
 **Problem.** `DeskObjects` instantiates Walkman without `src` and Handheld without `video`. `DEMO_TAPE` is a synthetic placeholder. Tour data mixes dated static entries with an explicitly fictional show; it is not a reliable upcoming list.
 
-**Evidence / reuse.** `src/sections/BandDossier/bandMembers.tsx`, `src/components/2D/TourPass/TourPass.data.ts`, `TourPass.tsx`, `src/components/3D/Walkman/`, and `src/components/3D/Handheld/`. Existing live footage is a candidate, not verified as externally playable in this review.
+**Evidence / reuse.** `src/experience/sections/BandDossier/` and the band data in `src/content/`, `src/components/2D/TourPass/TourPass.data.ts`, `TourPass.tsx`, `src/components/3D/Walkman/`, and `src/components/3D/Handheld/`. Existing live footage is a candidate, not verified as externally playable in this review.
 
 **Scope.** Establish one modest shared source for real media metadata, shows, and contact links used by desk and text page. Keep fictional world props separate from factual event listings. Manual checked-in data is sufficient for MVP; an external CMS or live API is not required.
 
@@ -202,7 +202,7 @@ At each taste gate show one recommended version and at most two alternatives, us
 
 ## D09 — Provide a direct text-only promoter page and portrait fallback
 
-**Problem.** `press-kit.html` is a useful starting point, but it includes photographs, global styling/debug scripts, and a video link back to the old homepage. It does not yet provide all essentials independently of the immersive site.
+**Problem.** `press-kit.html` (now `legacy/press-kit.html`; the shipped press kit is `src/site/`) is a useful starting point, but it includes photographs, global styling/debug scripts, and a video link back to the old homepage. It does not yet provide all essentials independently of the immersive site.
 
 **Scope.** Adapt the existing page into a straightforward text-first information route, with band summary, upcoming dates, direct music/video links, booking contact, and text links to any retained press downloads. No poster port, mandatory imagery, or interactive room is required.
 
@@ -220,9 +220,9 @@ At each taste gate show one recommended version and at most two alternatives, us
 
 ## D10 — Integrate the React desk into the production build and verify the MVP
 
-**Problem.** The current production inputs are static `index.html` and `press-kit.html`; React page compositions are explored through Storybook. Completing a story does not make the desk the actual website.
+**Problem.** At the time of review the production inputs were static `index.html` and `press-kit.html` (the poster now lives in `legacy/`, and the site is the React press kit in `src/site/`); React page compositions are explored through Storybook. Completing a story does not make the desk the actual website.
 
-**Evidence / reuse.** `vite.config.mts`, `index.html`, `press-kit.html`, `scripts/copy-static-build.cjs`, and `package.json`. Preserve the project's unified development launcher and existing unrelated previews.
+**Evidence / reuse.** `vite.config.mts`, `index.html`, `legacy/press-kit.html`, `scripts/copy-static-build.cjs`, and `package.json`. Preserve the project's unified development launcher and existing unrelated previews.
 
 **Scope.** Add the production React entry and make the accepted desk the intended landing experience, without implementing the deferred wall poster. Preserve the legacy poster source for later work. Include the text route, metadata, and the approved viewport fallback; do not bundle development controls into the visitor surface.
 

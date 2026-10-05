@@ -18,6 +18,8 @@ The adjustments are temporary communication aids. When tuning finishes, use the 
 
 ## Implementation boundary
 
+This studio belongs to the legacy poster; the files below are in `legacy/`.
+
 - `layout-studio-core.js`: bounded target catalog, scope inheritance, legacy migration, handoff parsing and undo history.
 - `layout-studio.js`: one stylesheet, ribbon preview calls, panel and persistence. SVG word groups let original and jitter-painted letters share the same temporary transform. The astronaut's existing print jitter remains independent.
 - `typography-debug.js`: validation/rule provider only; no stylesheet or persistence writes of its own.
