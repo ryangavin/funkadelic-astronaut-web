@@ -351,13 +351,14 @@
 .epk-record {
   display: grid;
   grid-template-columns: minmax(350px, 4fr) minmax(0, 8fr);
-  align-items: start;
   gap: 16px var(--epk-gutter);
   scroll-margin-top: 12px;
 }
 
+/* The player runs as tall as the story beside it; Bandcamp scrolls its own track list inside. */
 .epk-record__player {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
@@ -398,14 +399,19 @@
 
 .bandcamp-player {
   container-type: inline-size;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
   border: var(--epk-rule);
   mix-blend-mode: multiply;
 }
 
+/* Never shorter than the cover, the transport and the first few tracks. */
 .bandcamp-player iframe {
   display: block;
+  flex: 1 1 0;
   width: 100%;
-  height: calc(100cqw + var(--bandcamp-list));
+  min-height: calc(100cqw + 220px);
   border: 0;
 }
 
@@ -633,6 +639,12 @@
 
   .epk-record {
     grid-template-columns: 1fr;
+  }
+
+  /* Stacked, there is nothing beside the player to match: it shows every track. */
+  .bandcamp-player iframe {
+    flex: none;
+    height: calc(100cqw + var(--bandcamp-list));
   }
 
   .epk-record__story {
