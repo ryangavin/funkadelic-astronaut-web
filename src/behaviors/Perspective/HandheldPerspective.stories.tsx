@@ -11,7 +11,7 @@ import { mmToUnits as mm } from '../../geometry/physicalScale';
 import './HandheldPerspective.css';
 
 const meta = {
-  title: 'Foundations/Behaviors/Perspective',
+  title: 'Library/Foundations/Behaviors/Perspective',
   component: Perspective,
   parameters: { layout: 'fullscreen' },
   argTypes: {

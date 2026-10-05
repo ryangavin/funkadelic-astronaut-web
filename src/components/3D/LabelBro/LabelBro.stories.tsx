@@ -9,7 +9,7 @@ import { TAPE_STOCKS, TAPE_WIDTHS, tapeMm, type TapeStock, type TapeWidth } from
 const DESK = '#ead3a7';
 
 const meta = {
-  title: 'Components/3D/Label Bro',
+  title: 'Library/Components/3D/Label Bro',
   component: LabelBro,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

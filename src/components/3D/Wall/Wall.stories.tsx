@@ -4,7 +4,7 @@ import { WallWindow } from '../WallWindow/WallWindow';
 import { WALL_BRICK, WALL_COURSE, WALL_FINISHES, WALL_HEIGHT, Wall } from './Wall';
 
 const meta = {
-  title: 'Foundations/Layout/Wall',
+  title: 'Library/Foundations/Layout/Wall',
   component: Wall,
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],

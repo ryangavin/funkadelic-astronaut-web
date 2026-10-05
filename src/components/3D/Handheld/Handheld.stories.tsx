@@ -1,6 +1,6 @@
 import { HANDHELD_SILHOUETTE } from './silhouette';
-import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
-import { DeskObjectStudy } from '../../../debug/ObjectStudy/DeskObjectStudy';
+import { checkDeskStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import festivalSketch from '../../../../assets/festival-scribble-fully-shaded.png';
@@ -10,7 +10,7 @@ import { HANDHELD_FINISHES, Handheld } from './Handheld';
 const LIVE_SET = 'https://www.youtube.com/watch?v=iVZmXA27KfA';
 
 const meta = {
-  title: 'Components/3D/Handheld',
+  title: 'Library/Components/3D/Handheld',
   component: Handheld,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

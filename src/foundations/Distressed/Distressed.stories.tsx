@@ -9,7 +9,7 @@ import '../../styles/cutout-ink.css';
  * Wrap content in `Distressed`; inside an SVG use `PrintInkFilter` directly.
  */
 const meta = {
-  title: 'Foundations/Styles/Distressed',
+  title: 'Library/Foundations/Styles/Distressed',
   component: Distressed,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

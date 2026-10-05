@@ -4,7 +4,7 @@ import { roomSurfaceExtents } from '../../geometry/roomCoverage';
 import { lightingSetup, type LightTuning } from '../../geometry/lightingSetup';
 import { roomSetup, roomFraming, positive, type PhysicalRoomInputs } from '../../geometry/roomSetup';
 import { mmToUnits } from '../../geometry/physicalScale';
-import { PerformanceOverlay } from '../../debug/PerformanceOverlay/PerformanceOverlay';
+import { PerformanceOverlay } from '../../experience/debug/PerformanceOverlay/PerformanceOverlay';
 import { LAMP_WIDTH, LAMP_HEIGHT } from '../../geometry/physicalScale';
 import { articulateLamp, lampPoseFromAngles, lampPoseAngles, type LampPose } from '../../components/3D/DeskLamp/articulation';
 import type React from 'react';

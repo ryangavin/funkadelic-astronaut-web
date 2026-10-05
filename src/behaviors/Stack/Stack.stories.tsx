@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
-import { MemberPile } from '../../sections/BandDossier/BandDossier';
+import { MemberPile } from '../../experience/sections/BandDossier/BandDossier';
 
 const meta = {
-  title: 'Foundations/Behaviors/Stack',
+  title: 'Library/Foundations/Behaviors/Stack',
   component: MemberPile,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

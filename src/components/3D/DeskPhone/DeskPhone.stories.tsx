@@ -1,5 +1,5 @@
-import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
-import { DeskObjectStudy } from '../../../debug/ObjectStudy/DeskObjectStudy';
+import { checkDeskStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy';
 import type { CSSProperties } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
@@ -13,7 +13,7 @@ import { DESK_PHONE_FINISHES, DESK_PHONE_FOOT, DESK_PHONE_HEIGHT, DeskPhone, SET
 import { DIAL_OFFSET, DIAL_PITCH, DIAL_SPEED, PULSE_RATE, pulsesFor, returnMs, travelFor } from './pulses';
 
 const meta = {
-  title: 'Components/3D/DeskPhone',
+  title: 'Library/Components/3D/DeskPhone',
   component: DeskPhone,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

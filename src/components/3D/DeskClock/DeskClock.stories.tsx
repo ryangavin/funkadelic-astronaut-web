@@ -1,11 +1,11 @@
-import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
-import { DeskObjectStudy } from '../../../debug/ObjectStudy/DeskObjectStudy';
+import { checkDeskStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import { DESK_CLOCK_FINISHES, DeskClock, readout } from './DeskClock';
 
 const meta = {
-  title: 'Components/3D/Desk Clock',
+  title: 'Library/Components/3D/Desk Clock',
   component: DeskClock,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],
