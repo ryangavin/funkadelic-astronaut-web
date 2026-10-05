@@ -52,27 +52,17 @@ export function EpkBar({ ink, id, children }: { ink: EpkInk; id?: string; childr
   );
 }
 
-/** Looks for the section index under the nameplate, to choose between. */
-export const EPK_NAV_LOOKS = ['ruled', 'index', 'tabs', 'ticker'] as const;
-export type EpkNavLook = (typeof EPK_NAV_LOOKS)[number];
-
-/** The page's own links, with the page each would be on in print and the spot ink of its tab. */
+/** The page's own links, each a tab in its own spot ink. */
 const NAV_LINKS = [
-  { href: '#music', label: 'Listen', page: '2', ink: 'violet' },
-  { href: '#live', label: 'Watch', page: '1', ink: 'periwinkle' },
-  { href: '#band', label: 'The band', page: '3', ink: 'lime' },
-  { href: '#book', label: 'Book us', page: '4', ink: 'pink' },
-] as const satisfies { href: string; label: string; page: string; ink: EpkInk }[];
+  { href: '#music', label: 'Listen', ink: 'violet' },
+  { href: '#live', label: 'Watch', ink: 'periwinkle' },
+  { href: '#band', label: 'The band', ink: 'lime' },
+  { href: '#book', label: 'Book us', ink: 'pink' },
+] as const satisfies { href: string; label: string; ink: EpkInk }[];
 
 export type EpkProps = {
   /** The record in the Bandcamp card. */
   release?: BandcampRelease;
-  /**
-   * How the section index under the nameplate looks: `ruled` links between
-   * column rules; `index` an "Inside" listing with page numbers; `tabs` a
-   * spot-ink tab per section; `ticker` reversed out of a night band.
-   */
-  nav?: EpkNavLook;
   className?: string;
   style?: React.CSSProperties;
 };
@@ -86,7 +76,7 @@ export type EpkProps = {
  * it. Wide it runs on one twelve-column grid, narrower it stacks in that same
  * order.
  */
-export function Epk({ release = FEATURED_RELEASE, nav = 'ruled', className = '', style }: EpkProps) {
+export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkProps) {
   return (
     <div className={`epk ${className}`} style={style}>
       <Weathered as="article" className="epk__paper torn-edge" patina flecks grain wear>
@@ -101,12 +91,9 @@ export function Epk({ release = FEATURED_RELEASE, nav = 'ruled', className = '',
               <span>Funkadelic</span> <span>Astronaut</span>
             </h1>
           </Distressed>
-          <nav className="epk__nav" data-look={nav} aria-label="On this page">
-            <span className="epk__nav-label" aria-hidden="true">
-              Inside
-            </span>
+          <nav className="epk__nav" aria-label="On this page">
             {NAV_LINKS.map(link => (
-              <a key={link.href} href={link.href} data-ink={link.ink} data-page={link.page}>
+              <a key={link.href} href={link.href} data-ink={link.ink}>
                 {link.label}
               </a>
             ))}
@@ -132,21 +119,19 @@ export function Epk({ release = FEATURED_RELEASE, nav = 'ruled', className = '',
             </figcaption>
           </figure>
 
-          <EpkBar ink="violet">Funk from the future</EpkBar>
+          <EpkBar ink="violet">{release.title}</EpkBar>
 
           <p className="epk__lede">
             A New Jersey funktronica trio: Ryan Gavin on keys, Kevin O’Neill on drums and Sam Luba on bass and vocals.
           </p>
 
-          <section className="epk-record" id="music" aria-labelledby="record-title">
+          <section className="epk-record" id="music" aria-label={`${release.title}, out now`}>
             <div className="epk-record__player">
               <p className="epk__small-label">Out now on Bandcamp</p>
               <BandcampPlayer release={release} />
             </div>
             <div className="epk-record__story">
-              <h2 className="epk-record__title" id="record-title">
-                {release.title}
-              </h2>
+              <h2 className="epk-record__title">Funk from the future</h2>
               <div className="epk-record__facts">
                 <div>
                   <p className="epk__small-label">Earlier records</p>
