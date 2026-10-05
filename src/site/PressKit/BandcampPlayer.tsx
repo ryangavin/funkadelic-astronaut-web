@@ -1,11 +1,13 @@
 import { type CSSProperties, useLayoutEffect, useRef, useState } from 'react';
 import { FEATURED_RELEASE, type BandcampRelease } from '../../content/releases';
 import { t } from '../../i18n/copy';
+import '../styles/newsprint.css';
+import './BandcampPlayer.css';
 
 /** The two embeds Bandcamp offers that suit the page: the whole player with its track list, or the cover alone with a play button. */
 export type BandcampEmbed = 'tracklist' | 'artwork';
 
-/** Bandcamp's large player, drawn on the newsprint in its ink. */
+/** Bandcamp's large player, drawn on the newsprint in its ink: tokens.css's --epk-stock and --epk-violet, which Bandcamp takes as hex in the URL. */
 export const bandcampPlayerSrc = (release: BandcampRelease, embed: BandcampEmbed = 'tracklist') =>
   `https://bandcamp.com/EmbeddedPlayer/album=${release.albumId}/size=large/bgcol=ece1c6/linkcol=5b48b0/${
     embed === 'artwork' ? 'minimal=true' : 'tracklist=true'

@@ -1,6 +1,8 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { youTubeId } from '../../components/2D/Polaroid/embed';
 import { t } from '../../i18n/copy';
+import '../styles/newsprint.css';
+import './LiveVideo.css';
 
 export type LiveVideoProps = {
   /** The whole set: a video file, or a YouTube link. */
@@ -75,7 +77,7 @@ export function LiveVideo({ video, loop, poster, title, label, className = '' }:
       ) : (
         <img className="live-video__loop" src={poster} alt="" />
       )}
-      {label ? <p className="live-video__label">{label}</p> : null}
+      {label ? <p className="live-video__label epk-label">{label}</p> : null}
       <button type="button" className="live-video__start" onClick={() => setMode('playing')}>
         <span className="live-video__play" aria-hidden="true" />
         <span className="live-video__cta">{mode === 'loop' ? t('pressKit.live.watch') : t('pressKit.live.play')}</span>
