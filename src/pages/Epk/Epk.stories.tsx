@@ -15,7 +15,6 @@ const meta = {
   title: 'Pages/EPK',
   component: Epk,
   parameters: { layout: 'fullscreen', viewport: { options: viewports } },
-  args: { today: new Date('2026-10-04') },
 } satisfies Meta<typeof Epk>;
 
 export default meta;
@@ -29,8 +28,11 @@ export const Poster: Story = {
     await expect(page.getByRole('heading', { name: /Three friends/i })).toBeVisible();
     for (const name of ['Ryan Gavin', 'Kevin O’Neill', 'Sam Luba']) await expect(page.getByRole('heading', { level: 3, name: new RegExp(name) })).toBeVisible();
     await expect(page.getByTitle(/on Bandcamp/i)).toHaveAttribute('src', expect.stringContaining(`album=${FEATURED_RELEASE.albumId}`));
-    await expect(page.getByRole('link', { name: 'samluba1@gmail.com' })).toHaveAttribute('href', expect.stringMatching(/^mailto:samluba1@gmail\.com/));
-    await expect(page.getByText('New dates soon')).toBeVisible();
+    // Booking is written out twice: in the pitch at the top and in the spec strip where a reader finishes.
+    const booking = page.getAllByRole('link', { name: 'samluba1@gmail.com' });
+    await expect(booking).toHaveLength(2);
+    for (const link of booking) await expect(link).toHaveAttribute('href', expect.stringMatching(/^mailto:samluba1@gmail\.com/));
+    await expect(page.getAllByRole('button', { name: 'Copy' })).toHaveLength(2);
   },
 };
 

@@ -1,11 +1,16 @@
 import type React from 'react';
-import festivalMap from '../../../assets/festival-map.webp';
+import { useState } from 'react';
+import kevinCutout from '../../../assets/epk/kevin-cutout.webp';
+import kevinPortrait from '../../../assets/epk/kevin-portrait-900.webp';
+import ryanCutout from '../../../assets/epk/ryan-cutout.webp';
+import ryanPortrait from '../../../assets/epk/ryan-portrait-900.webp';
+import samCutout from '../../../assets/epk/sam-cutout.webp';
+import samPortrait from '../../../assets/epk/sam-portrait-900.webp';
 import performance from '../../../assets/performance.webp';
 import { SocialIcon } from '../../components/2D/SocialIcon/SocialIcon';
 import { Distressed } from '../../foundations/Distressed/Distressed';
 import { BAND_MEMBER_PACKETS, LIVE_SET } from '../../sections/BandDossier/bandMembers';
 import { SHARED_STAGES } from '../../sections/BandDossier/bandOneSheet';
-import { nextShow, showLine } from '../Arrival/links';
 import { BANDCAMP_LINK, BOOKING_HREF, LISTEN_INKS, LISTEN_LINKS, SOCIAL_LINKS } from '../Home/Home';
 import { BandcampPlayer, FEATURED_RELEASE, type BandcampRelease } from './BandcampPlayer';
 import { LiveVideo } from './LiveVideo';
@@ -25,56 +30,65 @@ export const BACK_CATALOG = [
   { title: 'Impact', year: '2013' },
 ];
 
-/** The next real date, or that new ones are coming. */
-const nextShowLine = (today = new Date()) => {
-  const show = nextShow(today);
-  return show ? showLine(show) : 'New dates soon';
-};
-
 const list = (names: string[]) => `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 
-/** Each member's part, and the ink their block is framed in. */
+/** Each member's part, the ink their card is framed in, their stage portrait in colour, and their drawn cutout for the hero. */
 const MEMBERS = [
-  { part: 'Keys', ink: 'red' },
-  { part: 'Drums', ink: 'green' },
-  { part: 'Bass & vocals', ink: 'purple' },
-] as const satisfies { part: string; ink: EpkInk }[];
+  { part: 'Keys', ink: 'red', portrait: ryanPortrait, cutout: ryanCutout, focus: '35% 30%' },
+  { part: 'Drums', ink: 'green', portrait: kevinPortrait, cutout: kevinCutout, focus: '62% 30%' },
+  { part: 'Bass & vocals', ink: 'purple', portrait: samPortrait, cutout: samCutout, focus: '25% 40%' },
+] as const satisfies { part: string; ink: EpkInk; portrait: string; cutout: string; focus: string }[];
 
-/** A headline bar: bold caps on a band of one ink, ruled in black, as the poster's sections are introduced. */
-export function EpkBar({ ink, as: Heading = 'h2', id, children }: { ink: EpkInk; as?: 'h2' | 'h3'; id?: string; children: React.ReactNode }) {
+/** A headline bar: bold caps on a band of one ink, as the poster's two big sections are introduced. */
+export function EpkBar({ ink, id, children }: { ink: EpkInk; id?: string; children: React.ReactNode }) {
   return (
-    <Heading className="epk-bar" data-ink={ink} id={id}>
-      <span>{children}</span>
-    </Heading>
+    <h2 className="epk-bar" data-ink={ink} id={id}>
+      {children}
+    </h2>
   );
 }
 
-/** A photograph printed as the poster prints them: one ink, coarse halftone. */
-export function EpkPhoto({ src, alt, focus = '50% 50%', className = '' }: { src: string; alt: string; focus?: string; className?: string }) {
+/** The booking address, written out so it can be read and copied, not only clicked. */
+export function BookingLine({ className = '' }: { className?: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(BOOKING_EMAIL);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // No clipboard (an insecure origin, or permission refused): the address is on screen to select.
+    }
+  };
   return (
-    <figure className={`epk-photo ${className}`}>
-      <img src={src} alt={alt} loading="lazy" style={{ objectPosition: focus }} />
-    </figure>
+    <p className={`booking-line ${className}`}>
+      <span className="booking-line__label">Booking</span>
+      <a className="booking-line__email" href={BOOKING_HREF}>
+        {BOOKING_EMAIL}
+      </a>
+      <button type="button" className="booking-line__copy" onClick={copy} aria-live="polite">
+        {copied ? 'Copied' : 'Copy'}
+      </button>
+    </p>
   );
 }
 
 export type EpkProps = {
   /** The record in the Bandcamp card. */
   release?: BandcampRelease;
-  /** Today, for the next show in the spec strip. */
-  today?: Date;
   className?: string;
   style?: React.CSSProperties;
 };
 
 /**
- * The press kit as one printed poster: a masthead, headline bars in the
- * site's inks, the bio beside the live shot, a framed block for each of the
- * three, the record in Bandcamp's player, a live video and a spec strip of the
- * things a booker needs. Wide, it is laid out like the poster; narrower, the
- * columns stack in reading order.
+ * The press kit, laid out for the person deciding whether to book the band:
+ * the masthead, a pitch with the booking address beside the three of them,
+ * then the record and a live video, then the story and the band, and the
+ * booking address again at the bottom so nobody scrolls back up for it.
+ * Printed like a poster in the site's inks; wide it runs on one twelve-column
+ * grid, narrower it stacks in that same order.
  */
-export function Epk({ release = FEATURED_RELEASE, today, className = '', style }: EpkProps) {
+export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkProps) {
   return (
     <div className={`epk ${className}`} style={style}>
       <header className="epk__masthead">
@@ -84,128 +98,151 @@ export function Epk({ release = FEATURED_RELEASE, today, className = '', style }
             <span>Funkadelic</span> <span>Astronaut</span>
           </h1>
         </Distressed>
-        <nav className="epk__nav" aria-label="On this page">
-          <a href="#music">Listen</a>
-          <a href="#live">Watch</a>
-          <a href="#band">The band</a>
-          <a href={BOOKING_HREF}>Book us</a>
-        </nav>
       </header>
+      <nav className="epk__nav" aria-label="On this page">
+        <a href="#music">Listen</a>
+        <a href="#live">Watch</a>
+        <a href="#band">The band</a>
+        <a href="#book">Book us</a>
+      </nav>
 
       <main className="epk__sheet">
         <EpkBar ink="red">Funk from the future</EpkBar>
 
         <section className="epk__hero" aria-label="About the band">
-          <div className="epk__bio">
+          <div className="epk__trio" aria-hidden="true">
+            {[MEMBERS[1], MEMBERS[0], MEMBERS[2]].map((member, index) => (
+              <img
+                key={member.part}
+                src={member.cutout}
+                alt=""
+                className={`epk__trio-${index}`}
+                fetchPriority={index === 1 ? 'high' : undefined}
+              />
+            ))}
+          </div>
+          <div className="epk__pitch">
             <p className="epk__lede">
-              Funkadelic Astronaut is a New Jersey funktronica trio: Ryan Gavin on keyboards, Kevin O’Neill on drums and Sam Luba on bass
-              and vocals.
+              A New Jersey funktronica trio: Ryan Gavin on keys, Kevin O’Neill on drums and Sam Luba on bass and vocals.
             </p>
+            <p>Funk wired to electronics, with a deep pocket and room to stretch out live, on stages across the Northeast since 2012.</p>
+            <BookingLine />
+            <div className="epk__stages">
+              <p className="epk__small-label">Shared stages with</p>
+              <ul>
+                {SHARED_STAGES.map(name => (
+                  <li key={name}>{name}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section className="epk__listen" aria-label="Listen and watch">
+          <div className="epk-record" id="music">
+            <p className="epk__small-label">Out now on Bandcamp</p>
+            <h2 className="epk-record__title">{release.title}</h2>
+            <BandcampPlayer release={release} />
+          </div>
+          <div className="epk__watch">
+            <div className="epk__live" id="live">
+              <h2 className="epk__live-label">
+                <span>Live</span> “{LIVE_SET.caption}” at Barrier Brewing Co.
+              </h2>
+              <LiveVideo set={LIVE_SET} poster={performance} title={`Funkadelic Astronaut, “${LIVE_SET.caption}” live at Barrier Brewing Co.`} />
+            </div>
+            <div className="epk-more">
+              <div>
+                <p className="epk__small-label">Earlier records</p>
+                <ul className="epk-more__catalog">
+                  {BACK_CATALOG.map(record => (
+                    <li key={record.title}>
+                      <span>{record.title}</span>
+                      <span>{record.year}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="epk__small-label">Stream everywhere</p>
+                <div className="epk-more__links">
+                  {[...LISTEN_LINKS, BANDCAMP_LINK].map(link => (
+                    <a key={link.platform} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label}>
+                      <SocialIcon platform={link.platform} ink={LISTEN_INKS[link.platform] ?? 'blue'} size={34} label="" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <EpkBar ink="amber" id="band">
+          Three friends. One orbit.
+        </EpkBar>
+
+        <section className="epk__band" aria-labelledby="band">
+          <div className="epk__bio">
             <p>
               Ryan and Kevin started the band as high school friends in 2012, and the lineup locked in when Sam joined in 2017. Since then
-              they have taken their sound to stages across the Northeast.
+              they have taken their sound to stages across the Northeast, sharing bills with some of their own favorites.
             </p>
             <p>
               That sound is funk wired to electronics: a deep pocket from the rhythm section, synths and keys that take chances, and room to
-              stretch out live. Along the way they have shared bills with some of their own favorites, among them <strong>{list(SHARED_STAGES)}</strong>.
+              stretch out live.
             </p>
             <p>
               Their new record, <em>{release.title}</em>, came out in {release.year}, following{' '}
               {list(BACK_CATALOG.map(record => `${record.title} (${record.year})`))}.
             </p>
           </div>
-          <EpkPhoto className="epk__hero-photo" src={performance} alt="Funkadelic Astronaut performing live" focus="50% 40%" />
-        </section>
-
-        <EpkBar ink="amber" id="band">Three friends. One orbit.</EpkBar>
-
-        <div className="epk__body">
-          <section className="epk__members" aria-labelledby="band">
+          <div className="epk__members">
             {BAND_MEMBER_PACKETS.map((member, index) => {
-              const { part, ink } = MEMBERS[index];
+              const { part, ink, portrait, focus } = MEMBERS[index];
               return (
                 <article key={member.name} className="epk-member" data-ink={ink}>
-                  <EpkPhoto className="epk-member__photo" src={member.photo.src ?? ''} alt={member.photo.alt ?? member.name} focus={member.photo.focus} />
+                  <img
+                    className="epk-member__photo"
+                    src={portrait}
+                    alt={member.photo.alt ?? member.name}
+                    loading="lazy"
+                    style={{ objectPosition: focus }}
+                  />
                   <div className="epk-member__text">
                     <h3>
                       {member.name}
                       <small>{part}</small>
                     </h3>
                     {member.card.children}
-                    {member.facts?.length ? (
-                      <ul>
-                        {member.facts.map((fact, factIndex) => (
-                          <li key={factIndex}>{fact}</li>
-                        ))}
-                      </ul>
-                    ) : null}
                   </div>
                 </article>
               );
             })}
-          </section>
-
-          <aside className="epk-record" id="music" aria-label="Listen">
-            <p className="epk-record__label">Out now on Bandcamp</p>
-            <h2 className="epk-record__title">{release.title}</h2>
-            <BandcampPlayer release={release} />
-            <ul className="epk-record__catalog" aria-label="Earlier records">
-              {BACK_CATALOG.map(record => (
-                <li key={record.title}>
-                  <span>{record.title}</span>
-                  <span>{record.year}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="epk-record__links">
-              {[...LISTEN_LINKS, BANDCAMP_LINK].map(link => (
-                <a key={link.platform} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label}>
-                  <SocialIcon platform={link.platform} ink={LISTEN_INKS[link.platform] ?? 'blue'} size={34} label="" />
-                </a>
-              ))}
-            </div>
-          </aside>
-        </div>
-
-        <EpkBar ink="blue" id="live">
-          Live: “{LIVE_SET.caption}” at Barrier Brewing Co.
-        </EpkBar>
-        <section className="epk__live" aria-labelledby="live">
-          <LiveVideo set={LIVE_SET} poster={performance} title={`Funkadelic Astronaut, “${LIVE_SET.caption}” live at Barrier Brewing Co.`} />
+          </div>
         </section>
 
-        <footer className="epk-spec" aria-label="Booking">
-          <div className="epk-spec__cell epk-spec__cell--name">
-            <span>Funkadelic</span>
-            <span>Astronaut</span>
+        <footer className="epk-spec" id="book" aria-label="Booking">
+          <div className="epk-spec__name">
+            <span>Funkadelic</span> <span>Astronaut</span>
           </div>
-          <dl className="epk-spec__cell">
+          <dl className="epk-spec__fact epk-spec__from">
             <dt>From</dt>
             <dd>New Jersey</dd>
           </dl>
-          <dl className="epk-spec__cell">
+          <dl className="epk-spec__fact epk-spec__lineup">
             <dt>Lineup</dt>
             <dd>Keys · drums · bass · vox</dd>
           </dl>
-          <dl className="epk-spec__cell">
-            <dt>Next show</dt>
-            <dd>{nextShowLine(today)}</dd>
-          </dl>
-          <dl className="epk-spec__cell epk-spec__cell--book">
-            <dt>Booking</dt>
-            <dd>
-              <a href={BOOKING_HREF}>{BOOKING_EMAIL}</a>
-            </dd>
-          </dl>
-          <div className="epk-spec__cell epk-spec__cell--social">
+          <BookingLine className="epk-spec__book" />
+          <div className="epk-spec__social">
             {SOCIAL_LINKS.map(link => (
               <a key={link.platform} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label}>
-                <SocialIcon platform={link.platform} ink="black" print="flat" paper="transparent" size={30} label="" worn={false} />
+                <SocialIcon platform={link.platform} ink="black" print="flat" paper="transparent" size={26} label="" worn={false} />
               </a>
             ))}
           </div>
         </footer>
-        <div className="epk__border" style={{ backgroundImage: `url(${festivalMap})` }} aria-hidden="true" />
+        <div className="epk__border" aria-hidden="true" />
       </main>
     </div>
   );
