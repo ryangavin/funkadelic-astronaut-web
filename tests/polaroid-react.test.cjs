@@ -25,8 +25,8 @@ test('Polaroid is a captioned figure with the two instant-film formats', () => {
   assert.match(css, /\.polaroid__player \{[\s\S]+?width: calc\(max\(100%, 100cqh \* 16 \/ 9\) \/ var\(--polaroid-player-scale\)\);\s+height: calc\(max\(100cqh, 100cqw \* 9 \/ 16\) \/ var\(--polaroid-player-scale\) \+ 2 \* var\(--polaroid-chrome\)\);\s+translate: -50% -50%;\s+scale: var\(--polaroid-player-scale\);/);
   assert.doesNotMatch(css, /\.polaroid__player \{[\s\S]+?pointer-events: none/, 'a click on the picture plays or pauses');
   assert.ok(!fs.existsSync(path.join(root, 'src/components/2D/Polaroid/stream.ts')), 'the HLS player is gone: the live set is embedded from YouTube');
-  assert.match(read('src/sections/BandDossier/bandMembers.tsx'), /LIVE_SET: LiveSet = \{\s+video: WHAT_TO_DO,/);
-  assert.match(read('src/sections/BandDossier/bandMembers.tsx'), /WHAT_TO_DO = 'https:\/\/www\.youtube\.com\/watch\?v=iVZmXA27KfA'/);
+  assert.match(read('src/experience/sections/BandDossier/bandMembers.tsx'), /LIVE_SET: LiveSet = \{\s+video: WHAT_TO_DO,/);
+  assert.match(read('src/experience/sections/BandDossier/bandMembers.tsx'), /WHAT_TO_DO = 'https:\/\/www\.youtube\.com\/watch\?v=iVZmXA27KfA'/);
   assert.match(component, /<img className="polaroid__photo" src=\{src\} alt=\{alt\} \/>/);
   assert.match(component, /<figcaption className="polaroid__caption">/);
 

@@ -21,7 +21,7 @@ test('IndexCard sets type on printed rules and keeps clear of a clipped photo', 
   assert.match(css, /\.index-card__note \{[\s\S]+?font-family: var\(--font-handwritten/);
   assert.match(component, /signature\?: IndexCardSignature/);
   assert.match(component, /className="index-card__signature index-card__signature--scrawl"/);
-  const scrawls = read('src/sections/BandDossier/signatures.ts');
+  const scrawls = read('src/experience/sections/BandDossier/signatures.ts');
   for (const name of ['RYAN_SIGNATURE', 'KEVIN_SIGNATURE', 'SAM_SIGNATURE']) assert.match(scrawls, new RegExp(`export const ${name} = \\[`));
   assert.match(css, /\.index-card__signature \{[\s\S]+?font-family: var\(--index-card-signature-font/);
   assert.match(css, /\.index-card__stamp--bottom-left \{/);
@@ -52,7 +52,7 @@ test('Folder hinges its cover on the spine and carries a tab on the back leaf', 
   assert.match(component, /FOLDER_TABS = \['top', 'side'\]/);
   assert.match(css, /\.folder\[data-stamps='bottom'\] \.folder__stamp \{/);
   assert.match(css, /\.folder\[data-tab='side'\] \.folder__label \{[\s\S]+?writing-mode: vertical-rl/);
-  assert.match(read('src/sections/BandDossier/bandMembers.tsx'), /export const BAND_PACKET: PacketProps/);
+  assert.match(read('src/experience/sections/BandDossier/bandMembers.tsx'), /export const BAND_PACKET: PacketProps/);
 });
 
 test('Packet clips a Polaroid over an IndexCard and marks the print for the stack to lag', () => {
@@ -69,8 +69,8 @@ test('Packet clips a Polaroid over an IndexCard and marks the print for the stac
 });
 
 test('BandDossier is the band section: the live set in the cover, the pile and the folded one-sheet in the well', () => {
-  const section = read('src/sections/BandDossier/BandDossier.tsx');
-  const css = read('src/sections/BandDossier/BandDossier.css');
+  const section = read('src/experience/sections/BandDossier/BandDossier.tsx');
+  const css = read('src/experience/sections/BandDossier/BandDossier.css');
 
   assert.match(section, /export function MemberPile\(/);
   assert.match(section, /role="region" aria-roledescription="carousel" aria-label="Meet the band"/);
@@ -84,7 +84,7 @@ test('BandDossier is the band section: the live set in the cover, the pile and t
   // The cassette player is left in the cover under the print, with the demo tape in it unless told otherwise.
   assert.match(section, /tape = DEMO_TAPE,/);
   assert.match(section, /\{tape && \(\s+<div className="dossier__deck">\s+<Walkman \{\.\.\.tape\} finish="silver" rotation=\{deckRotation\} \/>/);
-  assert.match(read('src/sections/BandDossier/bandMembers.tsx'), /export const DEMO_TAPE: Tape = \{\s+src: demoTape,/);
+  assert.match(read('src/experience/sections/BandDossier/bandMembers.tsx'), /export const DEMO_TAPE: Tape = \{\s+src: demoTape,/);
   assert.match(css, /\.dossier__deck \{\s+position: absolute;\s+left: var\(--dossier-deck-x\);\s+bottom: var\(--dossier-deck-y\);\s+width: var\(--dossier-deck-width\);\s+z-index: 2;/);
   assert.match(css, /--dossier-deck-width: 94%;\s+--dossier-deck-x: -4%;\s+--dossier-deck-y: -14%;/);
   assert.match(section, /<MemberPile members=\{members\} selected=\{selected\} onSelect=\{setSelected\} spread=\{spread\} spreadX=\{spreadX\} duration=\{duration\} \/>\s+<OneSheet \{\.\.\.oneSheet\} rotation=\{bandRotation\} \/>/);
@@ -96,7 +96,7 @@ test('BandDossier is the band section: the live set in the cover, the pile and t
   assert.match(css, /\.dossier \{\s+--dossier-proof-width: 108%;/);
   assert.match(css, /\.dossier__proof \{\s+width: var\(--dossier-proof-width\);\s+margin-left: var\(--dossier-proof-x\)/);
   assert.match(css, /\.member-pile \{\s+position: relative;\s+translate: var\(--dossier-pile-x\) 0;\s+rotate: var\(--dossier-pile-rotation\)/);
-  assert.match(read('src/sections/BandDossier/BandDossier.stories.tsx'), /\.\.\.DOSSIER_PLACEMENT \}/);
+  assert.match(read('src/experience/sections/BandDossier/BandDossier.stories.tsx'), /\.\.\.DOSSIER_PLACEMENT \}/);
   assert.match(css, /\.member-pile__status \{[\s\S]+?clip-path: inset\(50%\)/);
   assert.doesNotMatch(read('styles/sections.css'), /\.dossier\b(?!-)/, 'the legacy stylesheet must not style the React section');
   // The sheet's wear is a Weathered surface, so a glossy print laid on it is not speckled.

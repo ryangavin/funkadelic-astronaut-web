@@ -7,8 +7,8 @@ const root = path.join(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 test('Handbill is a quarter-sheet of coloured card printed both sides and turned over by hand', () => {
-  const component = read('src/experiments/BandIntro/Handbill.tsx');
-  const css = read('src/experiments/BandIntro/Handbill.css');
+  const component = read('src/experience/experiments/BandIntro/Handbill.tsx');
+  const css = read('src/experience/experiments/BandIntro/Handbill.css');
 
   assert.match(component, /HANDBILL_STOCKS = \['goldenrod', 'orange', 'pink', 'sky', 'white'\]/);
   assert.match(component, /HANDBILL_SPOTS = \['red', 'blue', 'purple', 'green', 'amber'\]/);
@@ -40,8 +40,8 @@ test('Handbill is a quarter-sheet of coloured card printed both sides and turned
 });
 
 test('MiniZine is eight photocopied pages on four leaves that hinge on the spine', () => {
-  const component = read('src/experiments/BandIntro/MiniZine.tsx');
-  const css = read('src/experiments/BandIntro/MiniZine.css');
+  const component = read('src/experience/experiments/BandIntro/MiniZine.tsx');
+  const css = read('src/experience/experiments/BandIntro/MiniZine.css');
 
   assert.match(component, /ZINE_STOCKS = \['white', 'canary', 'goldenrod', 'lilac', 'pink'\]/);
   assert.match(component, /export const ZINE_PAGES = 8;/);
@@ -72,7 +72,7 @@ test('MiniZine is eight photocopied pages on four leaves that hinge on the spine
   assert.match(css, /\.zine-print__photo img \{[\s\S]+?filter: grayscale\(1\) contrast\(1\.9\)/);
   assert.match(css, /prefers-reduced-motion: reduce\) \{\s+\.zine__book,\s+\.zine__leaf \{\s+transition: none/);
 
-  const pages = read('src/experiments/BandIntro/MiniZine.band.tsx');
+  const pages = read('src/experience/experiments/BandIntro/MiniZine.band.tsx');
   assert.match(pages, /export const BAND_ZINE_PAGES = \[/);
   assert.equal((pages.match(/<ZineFolio page=\{(\d|page)\}/g) || []).length, 5);
 });
@@ -124,8 +124,9 @@ test('OneSheet is a letter page Z-folded in three, with the lower panels hung fr
   assert.match(css, /\.one-sheet-print__photo\[data-spill\] img \{\s+margin-top: calc\(-1 \* var\(--one-sheet-photo-spill, 0\) \* var\(--one-sheet-unit\)\)/);
   assert.match(css, /\.one-sheet-print__photo-spill \{[\s\S]+?margin: auto calc\(-12 \* var\(--one-sheet-unit\)\) calc\(-24 \* var\(--one-sheet-unit\)\)/);
   // The panel that shows folded carries the one-liner and the bands they have shared a stage with.
-  const content = read('src/sections/BandDossier/bandOneSheet.tsx');
-  assert.match(content, /SHARED_STAGES = \['The New Deal', 'Dopapod', 'Kung Fu', 'Consider the Source', 'Space Bacon', 'Solar Circuit'\]/);
+  const content = read('src/experience/sections/BandDossier/bandOneSheet.tsx');
+  assert.match(content, /import \{ list, SHARED_STAGES \} from '\.\.\/\.\.\/\.\.\/content\/stages';/);
+  assert.match(read('src/content/stages.ts'), /SHARED_STAGES = \['The New Deal', 'Dopapod', 'Kung Fu', 'Consider the Source', 'Space Bacon', 'Solar Circuit'\]/);
   assert.doesNotMatch(content, /BAND_ONE_SHEET_TOP = \([\s\S]+?BAND_PACKET\.card\.children[\s\S]+?\n\);\n\n\/\*\* The middle/);
   assert.match(css, /\.one-sheet__crease--mountain \{/);
   assert.match(css, /\.one-sheet__crease--valley \{/);
