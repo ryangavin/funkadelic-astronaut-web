@@ -98,7 +98,7 @@ test('BandDossier is the band section: the live set in the cover, the pile and t
   assert.match(css, /\.member-pile \{\s+position: relative;\s+translate: var\(--dossier-pile-x\) 0;\s+rotate: var\(--dossier-pile-rotation\)/);
   assert.match(read('src/experience/sections/BandDossier/BandDossier.stories.tsx'), /\.\.\.DOSSIER_PLACEMENT \}/);
   assert.match(css, /\.member-pile__status \{[\s\S]+?clip-path: inset\(50%\)/);
-  assert.doesNotMatch(read('styles/sections.css'), /\.dossier\b(?!-)/, 'the legacy stylesheet must not style the React section');
+  assert.doesNotMatch(read('legacy/styles/sections.css'), /\.dossier\b(?!-)/, 'the legacy stylesheet must not style the React section');
   // The sheet's wear is a Weathered surface, so a glossy print laid on it is not speckled.
   assert.doesNotMatch(read('src/components/2D/PaperSheet/PaperSheet.css'), /paper-sheet__wear/);
 });
