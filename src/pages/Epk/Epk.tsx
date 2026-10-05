@@ -1,10 +1,7 @@
 import type React from 'react';
 import { useState } from 'react';
-import kevinCutout from '../../../assets/epk/kevin-cutout.webp';
 import kevinPortrait from '../../../assets/epk/kevin-portrait-900.webp';
-import ryanCutout from '../../../assets/epk/ryan-cutout.webp';
 import ryanPortrait from '../../../assets/epk/ryan-portrait-900.webp';
-import samCutout from '../../../assets/epk/sam-cutout.webp';
 import samPortrait from '../../../assets/epk/sam-portrait-900.webp';
 import performance from '../../../assets/performance.webp';
 import { SocialIcon } from '../../components/2D/SocialIcon/SocialIcon';
@@ -32,12 +29,12 @@ export const BACK_CATALOG = [
 
 const list = (names: string[]) => `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 
-/** Each member's part, the ink their card is framed in, their stage portrait in colour, and their drawn cutout for the hero. */
+/** Each member's part, the ink their card is framed in, and their stage portrait in colour. */
 const MEMBERS = [
-  { part: 'Keys', ink: 'red', portrait: ryanPortrait, cutout: ryanCutout, focus: '35% 30%' },
-  { part: 'Drums', ink: 'green', portrait: kevinPortrait, cutout: kevinCutout, focus: '62% 30%' },
-  { part: 'Bass & vocals', ink: 'purple', portrait: samPortrait, cutout: samCutout, focus: '25% 40%' },
-] as const satisfies { part: string; ink: EpkInk; portrait: string; cutout: string; focus: string }[];
+  { part: 'Keys', ink: 'red', portrait: ryanPortrait, focus: '35% 30%' },
+  { part: 'Drums', ink: 'green', portrait: kevinPortrait, focus: '62% 30%' },
+  { part: 'Bass & vocals', ink: 'purple', portrait: samPortrait, focus: '25% 40%' },
+] as const satisfies { part: string; ink: EpkInk; portrait: string; focus: string }[];
 
 /** A headline bar: bold caps on a band of one ink, as the poster's two big sections are introduced. */
 export function EpkBar({ ink, id, children }: { ink: EpkInk; id?: string; children: React.ReactNode }) {
@@ -107,20 +104,22 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
       </nav>
 
       <main className="epk__sheet">
+        <section className="epk__live" id="live" aria-label="Live video">
+          <LiveVideo
+            set={LIVE_SET}
+            poster={performance}
+            title={`Funkadelic Astronaut, “${LIVE_SET.caption}” live at Barrier Brewing Co.`}
+            label={
+              <>
+                <span>Live</span> “{LIVE_SET.caption}” · Barrier Brewing Co.
+              </>
+            }
+          />
+        </section>
+
         <EpkBar ink="red">Funk from the future</EpkBar>
 
-        <section className="epk__hero" aria-label="About the band">
-          <div className="epk__trio" aria-hidden="true">
-            {[MEMBERS[1], MEMBERS[0], MEMBERS[2]].map((member, index) => (
-              <img
-                key={member.part}
-                src={member.cutout}
-                alt=""
-                className={`epk__trio-${index}`}
-                fetchPriority={index === 1 ? 'high' : undefined}
-              />
-            ))}
-          </div>
+        <section className="epk__intro" aria-label="About the band">
           <div className="epk__pitch">
             <p className="epk__lede">
               A New Jersey funktronica trio: Ryan Gavin on keys, Kevin O’Neill on drums and Sam Luba on bass and vocals.
@@ -136,52 +135,30 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
               </ul>
             </div>
           </div>
-        </section>
-
-        <section className="epk__listen" aria-label="Listen and watch">
           <div className="epk-record" id="music">
-            <p className="epk__small-label">Out now on Bandcamp</p>
-            <h2 className="epk-record__title">{release.title}</h2>
             <BandcampPlayer release={release} />
-          </div>
-          <div className="epk__watch">
-            <div className="epk__live" id="live">
-              <h2 className="epk__live-label">
-                <span>Live</span> “{LIVE_SET.caption}” at Barrier Brewing Co.
-              </h2>
-              <LiveVideo set={LIVE_SET} poster={performance} title={`Funkadelic Astronaut, “${LIVE_SET.caption}” live at Barrier Brewing Co.`} />
-            </div>
-            <div className="epk-more">
-              <div>
-                <p className="epk__small-label">Earlier records</p>
-                <ul className="epk-more__catalog">
-                  {BACK_CATALOG.map(record => (
-                    <li key={record.title}>
-                      <span>{record.title}</span>
-                      <span>{record.year}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <p className="epk__small-label">Stream everywhere</p>
-                <div className="epk-more__links">
-                  {[...LISTEN_LINKS, BANDCAMP_LINK].map(link => (
-                    <a key={link.platform} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label}>
-                      <SocialIcon platform={link.platform} ink={LISTEN_INKS[link.platform] ?? 'blue'} size={34} label="" />
-                    </a>
-                  ))}
-                </div>
+            <div className="epk-record__about">
+              <p className="epk__small-label">Out now on Bandcamp</p>
+              <h2 className="epk-record__title">{release.title}</h2>
+              <p className="epk__small-label">Earlier records</p>
+              <ul className="epk-record__catalog">
+                {BACK_CATALOG.map(record => (
+                  <li key={record.title}>
+                    <span>{record.title}</span>
+                    <span>{record.year}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="epk__small-label">Stream everywhere</p>
+              <div className="epk-record__links">
+                {[...LISTEN_LINKS, BANDCAMP_LINK].map(link => (
+                  <a key={link.platform} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label}>
+                    <SocialIcon platform={link.platform} ink={LISTEN_INKS[link.platform] ?? 'blue'} size={34} label="" />
+                  </a>
+                ))}
               </div>
             </div>
           </div>
-        </section>
-
-        <EpkBar ink="amber" id="band">
-          Three friends. One orbit.
-        </EpkBar>
-
-        <section className="epk__band" aria-labelledby="band">
           <div className="epk__bio">
             <p>
               Ryan and Kevin started the band as high school friends in 2012, and the lineup locked in when Sam joined in 2017. Since then
@@ -196,6 +173,13 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
               {list(BACK_CATALOG.map(record => `${record.title} (${record.year})`))}.
             </p>
           </div>
+        </section>
+
+        <EpkBar ink="amber" id="band">
+          Three friends. One orbit.
+        </EpkBar>
+
+        <section className="epk__band" aria-labelledby="band">
           <div className="epk__members">
             {BAND_MEMBER_PACKETS.map((member, index) => {
               const { part, ink, portrait, focus } = MEMBERS[index];

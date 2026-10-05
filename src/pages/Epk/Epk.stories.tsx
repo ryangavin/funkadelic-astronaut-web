@@ -36,12 +36,14 @@ export const Poster: Story = {
   },
 };
 
-/** The video is a still until it is asked for, then YouTube's player with sound. */
+/** The hero plays muted; one press swaps in YouTube's player with sound and controls. */
 export const PlayingTheVideo: Story = {
   play: async ({ canvasElement }) => {
     const page = within(canvasElement);
-    await userEvent.click(page.getByRole('button', { name: /^Play / }));
-    await expect(page.getByTitle(/live at Barrier Brewing/i)).toHaveAttribute('src', expect.stringContaining('youtube-nocookie.com/embed/iVZmXA27KfA'));
+    await userEvent.click(page.getByRole('button', { name: /^(Watch with sound|Play) / }));
+    const player = page.getByTitle(/live at Barrier Brewing Co\.$/i);
+    await expect(player).toHaveAttribute('src', expect.stringContaining('youtube-nocookie.com/embed/iVZmXA27KfA'));
+    await expect(player).toHaveAttribute('src', expect.not.stringContaining('mute=1'));
   },
 };
 

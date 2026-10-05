@@ -1,20 +1,23 @@
 /*
-  The press kit on a black ground, printed in the site's inks. One frame rule
-  holds everywhere: every module gets the same paper keyline, and only the
-  three member cards get a frame in their own ink.
+  The press kit laid over the Mission Control festival poster: the poster
+  runs the full height of the page, dimmed, so the band's stage sits behind
+  the masthead and the festival gate behind the booking strip, and it shows
+  in the gutters between the modules. One frame rule holds everywhere: every
+  module gets the same paper keyline, and only the member cards get a frame in
+  their own ink.
 
   Breakpoints:
-  - wide (1080px and up): one twelve-column grid. Every row splits 4 | 8, so
-    the pitch, the record and the bio share one left column.
+  - wide (1080px and up): one twelve-column grid; the intro row splits 4 | 8,
+    the pitch and the story on the left, the record on the right.
   - medium (680 to 1079px): the rows stack; members sit photo beside words.
-  - narrow (under 680px): one column; the drawn trio leads, members shorten
-    to their first paragraph.
+  - narrow (under 680px): one column; members shorten to their first paragraph.
 */
 .epk {
   --epk-ink: #121420;
   --epk-paper: #fbf8f1;
   --epk-red: #a52837;
-  --epk-green: #228542;
+  /* Darkened from the site's #228542 so paper text on it passes AA (5.07:1). */
+  --epk-green: #1e7a3c;
   --epk-purple: #9275b2;
   --epk-blue: #639ec8;
   --epk-amber: #c58930;
@@ -22,8 +25,11 @@
   --epk-gap: clamp(10px, 1.6vw, 20px);
 
   min-height: 100vh;
-  padding: clamp(8px, 2vw, 28px) clamp(8px, 2vw, 28px) 40px;
-  background: var(--epk-ink);
+  padding: clamp(8px, 2vw, 28px) clamp(8px, 4vw, 64px) 40px;
+  background:
+    linear-gradient(rgb(18 20 32 / 0.62), rgb(18 20 32 / 0.62)),
+    url('../../../assets/festival-map.webp') center top / cover no-repeat,
+    var(--epk-ink);
   color: var(--epk-ink);
   font-family: var(--font-body);
   font-size: clamp(15px, 0.5vw + 13px, 17px);
@@ -40,10 +46,21 @@
   color: inherit;
 }
 
+/* A night ring on a thin paper halo: at least 6:1 on every ground the page uses. */
 .epk a:focus-visible,
 .epk button:focus-visible {
-  outline: 3px solid var(--epk-amber);
-  outline-offset: 3px;
+  outline: 3px solid var(--epk-ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--epk-paper);
+}
+
+.epk .visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .epk [data-ink='red'] { --ink: var(--epk-red); --on-ink: var(--epk-paper); }
@@ -95,10 +112,9 @@
   /* "FUNKADELIC" runs the band's full width: Modak's caps are about 0.88em each. */
   font-size: 15.4cqw;
   line-height: 0.8;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--epk-ink);
-  text-shadow: 0.03em 0.03em 0 var(--epk-red);
 }
 
 .epk__wordmark span {
@@ -160,17 +176,122 @@
   scroll-margin-top: 12px;
 }
 
-/* Every row splits 4 | 8 on the one grid. */
-.epk__hero,
-.epk__listen,
-.epk__band {
+/* Hero: the live set, playing muted. */
+.epk__live {
+  background: var(--epk-ink);
+  border: var(--epk-keyline);
+  scroll-margin-top: 12px;
+}
+
+.live-video {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--epk-ink);
+}
+
+.live-video iframe,
+.live-video video,
+.live-video__still {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.live-video__still {
+  object-fit: cover;
+}
+
+/* The preview can't be clicked through: the button below is the way in. */
+.live-video[data-mode='preview'] iframe {
+  pointer-events: none;
+}
+
+.live-video__label {
+  position: absolute;
+  top: clamp(8px, 1.4vw, 18px);
+  left: clamp(8px, 1.4vw, 18px);
+  margin: 0;
+  padding: 4px 10px;
+  background: var(--epk-paper);
+  border: 2px solid var(--epk-ink);
+  font-weight: 700;
+  font-size: clamp(12px, 0.4vw + 10px, 15px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.live-video__label span {
+  margin-right: 4px;
+  padding: 0 6px;
+  background: var(--epk-red);
+  color: var(--epk-paper);
+}
+
+.live-video__start {
+  position: absolute;
+  left: clamp(8px, 1.4vw, 18px);
+  bottom: clamp(8px, 1.4vw, 18px);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 6px 16px 6px 6px;
+  border: 3px solid var(--epk-ink);
+  border-radius: 999px;
+  background: var(--epk-amber);
+  box-shadow: 4px 4px 0 var(--epk-ink);
+  color: var(--epk-ink);
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: translate 120ms ease, box-shadow 120ms ease;
+}
+
+.live-video__start:hover {
+  translate: -1px -1px;
+  box-shadow: 5px 5px 0 var(--epk-ink);
+}
+
+/* With no preview running, the still gets a big play button in the middle. */
+.live-video[data-mode='still'] .live-video__start {
+  left: 50%;
+  bottom: 50%;
+  translate: -50% 50%;
+}
+
+.live-video__play {
+  position: relative;
+  width: 36px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--epk-ink);
+}
+
+.live-video__play::after {
+  content: '';
+  position: absolute;
+  inset: 28% 24% 28% 36%;
+  background: var(--epk-amber);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+/* Intro: the pitch and the story beside the record. */
+.epk__intro {
   display: grid;
   grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  grid-template-areas:
+    'pitch record'
+    'bio record';
   gap: var(--epk-gap);
 }
 
-/* Hero: the pitch and booking beside the three of them, drawn, on the star map. */
 .epk__pitch {
+  grid-area: pitch;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -189,10 +310,6 @@
   line-height: 1.35;
 }
 
-.epk__stages {
-  margin-top: auto;
-}
-
 .epk__stages ul {
   display: flex;
   flex-wrap: wrap;
@@ -203,29 +320,21 @@
   font-weight: 700;
 }
 
-.epk__trio {
-  order: 2;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  min-height: 0;
-  padding: clamp(16px, 3vw, 40px) clamp(8px, 2vw, 24px) 0;
-  overflow: hidden;
-  background: var(--epk-paper) url('../../../assets/epk/star-map.webp') center / cover no-repeat;
+.epk__bio {
+  grid-area: bio;
+  padding: clamp(14px, 1.8vw, 24px);
+  background: rgb(18 20 32 / 0.9);
+  color: var(--epk-paper);
   border: var(--epk-keyline);
 }
 
-.epk__trio img {
-  display: block;
-  width: 34%;
-  height: auto;
-  filter: drop-shadow(5px 5px 0 rgb(18 20 32 / 0.85));
+.epk__bio p {
+  margin: 0 0 0.85em;
 }
 
-/* Ryan, centre, stands forward of the other two. */
-.epk__trio-0 { margin-right: -4%; translate: 0 4%; }
-.epk__trio-1 { position: relative; z-index: 1; width: 38% !important; }
-.epk__trio-2 { margin-left: -4%; translate: 0 4%; }
+.epk__bio p:last-child {
+  margin-bottom: 0;
+}
 
 /* Booking: the address in full, a copy button beside it. */
 .booking-line {
@@ -269,25 +378,32 @@
   cursor: pointer;
 }
 
-/* Listen and watch. */
+/* The record: Bandcamp's player beside the title, the earlier records and where to stream. */
 .epk-record {
+  grid-area: record;
   display: grid;
-  align-content: start;
-  gap: 10px;
+  grid-template-columns: minmax(350px, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 16px 24px;
   padding: clamp(12px, 1.4vw, 18px);
   background: var(--epk-paper);
   border: var(--epk-keyline);
   scroll-margin-top: 12px;
 }
 
-.epk-record > .epk__small-label {
+.epk-record__about {
+  display: grid;
+  gap: 8px;
+}
+
+.epk-record__about > .epk__small-label:first-child {
   color: var(--epk-red);
 }
 
 .epk-record__title {
-  margin: -4px 0 0;
+  margin: 0 0 12px;
   font-weight: 700;
-  font-size: clamp(20px, 1.6vw, 24px);
+  font-size: clamp(22px, 1.8vw, 28px);
   line-height: 1.15;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -306,31 +422,14 @@
   border: 0;
 }
 
-/* Beside the record: the live video, then the earlier records and where to stream. */
-.epk__watch {
-  display: flex;
-  flex-direction: column;
-  gap: var(--epk-gap);
-}
-
-.epk-more {
-  flex: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 14px 28px;
-  padding: clamp(12px, 1.4vw, 18px);
-  background: var(--epk-paper);
-  border: var(--epk-keyline);
-}
-
-.epk-more__catalog {
-  margin: 4px 0 0;
+.epk-record__catalog {
+  margin: 0 0 12px;
   padding: 0;
   list-style: none;
   border-top: 2px solid var(--epk-ink);
 }
 
-.epk-more__catalog li {
+.epk-record__catalog li {
   display: flex;
   justify-content: space-between;
   padding: 4px 0;
@@ -338,22 +437,18 @@
   font-size: 14px;
 }
 
-.epk-more__catalog li span:first-child {
+.epk-record__catalog li span:first-child {
   font-weight: 700;
 }
 
-.epk-more__links,
+.epk-record__links,
 .epk-spec__social {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
 
-.epk-more__links {
-  margin-top: 4px;
-}
-
-.epk-more__links a,
+.epk-record__links a,
 .epk-spec__social a {
   display: inline-grid;
   place-items: center;
@@ -361,103 +456,7 @@
   min-height: 44px;
 }
 
-.epk__live {
-  display: flex;
-  flex-direction: column;
-  background: var(--epk-ink);
-  border: var(--epk-keyline);
-  scroll-margin-top: 12px;
-}
-
-.epk__live-label {
-  margin: 0;
-  padding: 8px 12px;
-  background: var(--epk-paper);
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.epk__live-label span {
-  margin-right: 6px;
-  padding: 1px 8px;
-  background: var(--epk-blue);
-  border: 2px solid var(--epk-ink);
-}
-
-.live-video {
-  position: relative;
-  aspect-ratio: 16 / 9;
-  background: var(--epk-ink);
-}
-
-.live-video iframe,
-.live-video video,
-.live-video__start {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-.live-video__start {
-  padding: 0;
-  background: none;
-  cursor: pointer;
-}
-
-.live-video__start img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: saturate(0.85) brightness(0.85);
-}
-
-.live-video__play {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: clamp(64px, 9vw, 112px);
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  border: 3px solid var(--epk-ink);
-  border-radius: 50%;
-  background: var(--epk-amber);
-  box-shadow: 5px 5px 0 var(--epk-ink);
-  transition: scale 120ms ease;
-}
-
-.live-video__play::after {
-  content: '';
-  position: absolute;
-  inset: 28% 24% 28% 36%;
-  background: var(--epk-ink);
-  clip-path: polygon(0 0, 100% 50%, 0 100%);
-}
-
-.live-video__start:hover .live-video__play,
-.live-video__start:focus-visible .live-video__play {
-  scale: 1.08;
-}
-
-/* The story and the band. */
-.epk__bio {
-  padding: clamp(14px, 1.8vw, 24px);
-  color: var(--epk-paper);
-  border: var(--epk-keyline);
-}
-
-.epk__bio p {
-  margin: 0 0 0.85em;
-}
-
-.epk__bio p:last-child {
-  margin-bottom: 0;
-}
-
+/* The band. */
 .epk__members {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -480,7 +479,6 @@
 
 .epk-member__text {
   padding: 12px 14px 14px;
-  font-size: 0.94em;
 }
 
 .epk-member__text h3 {
@@ -572,40 +570,13 @@
 
 /* Medium: the rows stack in reading order. */
 @media (max-width: 1079px) {
-  .epk__hero,
-  .epk__listen,
-  .epk__band {
+  .epk__intro {
     grid-template-columns: 1fr;
-  }
-
-  .epk__trio {
-    order: -1;
-    max-height: 420px;
-  }
-
-  .epk__trio img {
-    width: 28%;
-  }
-
-  .epk__trio-1 {
-    width: 32% !important;
-  }
-
-  /* The record beside the earlier records and links, the video full width under both. */
-  .epk__listen {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
-      'record more'
-      'live live';
+      'pitch'
+      'record'
+      'bio';
   }
-
-  .epk__watch {
-    display: contents;
-  }
-
-  .epk-record { grid-area: record; }
-  .epk-more { grid-area: more; grid-template-columns: 1fr; align-content: start; }
-  .epk__live { grid-area: live; }
 
   .epk__members {
     grid-template-columns: 1fr;
@@ -643,32 +614,31 @@
 
 /* Narrow: one column, the essentials of each member. */
 @media (max-width: 679px) {
-  .epk__listen {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      'record'
-      'live'
-      'more';
-  }
-
   .epk-record {
+    grid-template-columns: 1fr;
     padding: 8px;
   }
 
   .epk-member {
     grid-template-columns: 112px minmax(0, 1fr);
+    border-width: 4px;
   }
 
   .epk-member__photo {
     border-right-width: 4px;
   }
 
-  .epk-member {
-    border-width: 4px;
-  }
-
   .epk-member__text p + p {
     display: none;
+  }
+
+  .live-video__start {
+    min-height: 44px;
+    font-size: 13px;
+  }
+
+  .live-video__play {
+    width: 30px;
   }
 
   .epk-spec {
@@ -699,7 +669,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .live-video__play {
+  .live-video__start {
     transition: none;
   }
 }
