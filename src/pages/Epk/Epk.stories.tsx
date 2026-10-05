@@ -28,9 +28,9 @@ export const Poster: Story = {
     await expect(page.getByRole('heading', { name: /Three friends/i })).toBeVisible();
     for (const name of ['Ryan Gavin', 'Kevin O’Neill', 'Sam Luba']) await expect(page.getByRole('heading', { level: 3, name: new RegExp(name) })).toBeVisible();
     await expect(page.getByTitle(/on Bandcamp/i)).toHaveAttribute('src', expect.stringContaining(`album=${FEATURED_RELEASE.albumId}`));
-    // Booking is offered twice: the address beside the pitch at the top, and a link at the foot where a reader finishes.
-    for (const name of ['samluba1@gmail.com', 'Book The Band'])
-      await expect(page.getByRole('link', { name })).toHaveAttribute('href', expect.stringMatching(/^mailto:samluba1@gmail\.com/));
+    // The foot offers the booking email; the masthead's Book us jumps to it.
+    await expect(page.getByRole('link', { name: 'Book The Band' })).toHaveAttribute('href', expect.stringMatching(/^mailto:samluba1@gmail\.com/));
+    await expect(page.getByRole('link', { name: 'Book us' })).toHaveAttribute('href', '#book');
     await expect(page.getByRole('link', { name: /on Instagram/ })).toBeVisible();
   },
 };

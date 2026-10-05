@@ -1,5 +1,4 @@
 import type React from 'react';
-import { useState } from 'react';
 import kevinPortrait from '../../../assets/epk/kevin-portrait-900.webp';
 import ryanPortrait from '../../../assets/epk/ryan-portrait-900.webp';
 import samPortrait from '../../../assets/epk/sam-portrait-900.webp';
@@ -23,8 +22,6 @@ export type EpkInk = 'violet' | 'lavender' | 'periwinkle' | 'pink' | 'lime';
 
 /** The cover's night sky, deepened: the ink the paper is printed in. Matches `--epk-night` in Epk.css. */
 const EPK_NIGHT = '#1c1640';
-
-export const BOOKING_EMAIL = 'samluba1@gmail.com';
 
 /** Earlier records, newest first, as they are on Bandcamp. */
 export const BACK_CATALOG = [
@@ -55,31 +52,6 @@ export function EpkBar({ ink, id, children }: { ink: EpkInk; id?: string; childr
   );
 }
 
-/** The booking address, written out so it can be read and copied, not only clicked. */
-export function BookingLine({ className = '' }: { className?: string }) {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(BOOKING_EMAIL);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // No clipboard (an insecure origin, or permission refused): the address is on screen to select.
-    }
-  };
-  return (
-    <p className={`booking-line ${className}`}>
-      <span className="booking-line__label">Booking</span>
-      <a className="booking-line__email" href={BOOKING_HREF}>
-        {BOOKING_EMAIL}
-      </a>
-      <button type="button" className="booking-line__copy" onClick={copy} aria-live="polite">
-        {copied ? 'Copied' : 'Copy'}
-      </button>
-    </p>
-  );
-}
-
 export type EpkProps = {
   /** The record in the Bandcamp card. */
   release?: BandcampRelease;
@@ -90,10 +62,9 @@ export type EpkProps = {
 /**
  * The press kit as one sheet of newsprint laid on the Mission Control
  * festival poster: a dateline and nameplate, the live set as the front-page
- * picture, the pitch with the booking address beside the story in columns,
- * the record boxed like an advertisement, the three of them, and the booking
- * address again in the classifieds at the foot so nobody scrolls back up for
- * it. The sheet is weathered stock; colour only arrives as spot inks run on
+ * picture, the pitch, the record beside its story in ruled columns, the three
+ * of them, and a way to book the band at the foot, with every place to find
+ * them. The sheet is weathered stock; colour only arrives as spot inks run on
  * it. Wide it runs on one twelve-column grid, narrower it stacks in that same
  * order.
  */
@@ -141,14 +112,9 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
 
           <EpkBar ink="violet">Funk from the future</EpkBar>
 
-          <section className="epk__intro" aria-label="About the band">
-            <p className="epk__lede">
-              A New Jersey funktronica trio: Ryan Gavin on keys, Kevin O’Neill on drums and Sam Luba on bass and vocals.
-            </p>
-            <div className="epk__aside">
-              <BookingLine />
-            </div>
-          </section>
+          <p className="epk__lede">
+            A New Jersey funktronica trio: Ryan Gavin on keys, Kevin O’Neill on drums and Sam Luba on bass and vocals.
+          </p>
 
           <section className="epk-record" id="music" aria-labelledby="record-title">
             <div className="epk-record__player">

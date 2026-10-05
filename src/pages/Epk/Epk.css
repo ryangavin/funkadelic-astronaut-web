@@ -110,7 +110,6 @@
 /* Every small caps label on the page: one size, one weight, one tracking. */
 .epk__small-label,
 .epk__dateline,
-.booking-line__label,
 .live-video__label,
 .epk-member h3 small {
   margin: 0;
@@ -324,28 +323,15 @@
   clip-path: polygon(0 0, 100% 50%, 0 100%);
 }
 
-/* Intro: the pitch as a deck across eight columns, booking and the bills beside it. */
-.epk__intro {
-  display: grid;
-  grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
-  align-items: start;
-  gap: var(--epk-gutter);
-}
-
+/* The pitch, as a deck under the first headline. */
 .epk__lede {
   margin: 0;
+  max-width: 24em;
   font-weight: 700;
   font-stretch: 75%;
   font-size: clamp(28px, 2.4vw + 14px, 50px);
   line-height: 1.02;
   text-wrap: balance;
-}
-
-.epk__aside {
-  display: grid;
-  gap: 14px;
-  padding-left: var(--epk-gutter);
-  border-left: var(--epk-rule);
 }
 
 .epk__bio {
@@ -362,46 +348,6 @@
   margin: 0 0 0.8em;
 }
 
-
-/* Booking: boxed like an ad, the address in full, a copy button beside it. */
-.booking-line {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 10px;
-  margin: 0;
-  padding: 10px 12px;
-  border: var(--epk-rule-heavy);
-  outline: var(--epk-rule);
-  outline-offset: -7px;
-}
-
-.booking-line__label {
-  width: 100%;
-  color: var(--epk-violet);
-}
-
-.booking-line__email {
-  font-weight: 700;
-  font-size: 1.1em;
-  overflow-wrap: anywhere;
-}
-
-.booking-line__copy {
-  min-height: 44px;
-  min-width: 72px;
-  margin-left: auto;
-  padding: 0 14px;
-  border: 0;
-  background: var(--epk-violet);
-  color: var(--epk-stock);
-  font: inherit;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: var(--epk-caps);
-  text-transform: uppercase;
-  cursor: pointer;
-}
 
 /* The record: Bandcamp's player in its own column, the title, the catalogue and the story beside it. */
 .epk-record {
@@ -608,15 +554,6 @@
 
 /* Medium: the rows stack in reading order; the story keeps its two columns. */
 @media (max-width: 1079px) {
-  .epk__intro {
-    grid-template-columns: 1fr;
-  }
-
-  .epk__aside {
-    padding-left: 0;
-    border-left: 0;
-  }
-
   .epk-record {
     grid-template-columns: minmax(350px, 1fr) minmax(0, 1fr);
   }
