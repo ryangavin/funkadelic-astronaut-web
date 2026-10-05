@@ -10,6 +10,10 @@ The full performance uses one inline video element and one HLS attachment. When 
 
 The home-page tuning panel was **Ribbons · D**, which replaced typography controls while preserving accepted typography. Hero → Video defaults in `app.js`: frequency 1.38, amplitude 27.4, rotation 0, horizontal offset 0.5, vertical offset 6.3. The typography notes below document the earlier studio workflow.
 
+## Tour
+
+Tour is presented as a sparse festival-day timetable: two bookings make a two-day board, three make a three-day board, and cards stack on phones. The current three-card design preview clearly labels the Olive's and bowling-alley records as sample/fictional data; the September 26, 2026 Nyack Neighborhood Music & Arts Festival entry is user-verified and links to the organizer's Instagram schedule. Keep the reusable empty-state template when no real dates exist, and never present placeholder details as announced shows.
+
 ## Gallery and print treatment
 
 Learn contains a manual overview/member gallery. Its verified member content and photo mappings live in `app.js`; image decoding, request versioning, live announcements and keyboard controls keep selection consistent. There is no auto-rotation. Footer profiles are the Instagram, YouTube and Facebook links from the official band homepage.
