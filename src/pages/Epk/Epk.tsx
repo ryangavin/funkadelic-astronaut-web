@@ -131,7 +131,7 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
               <BandcampPlayer release={release} />
             </div>
             <div className="epk-record__story">
-              <h2 className="epk-record__title">Funk from the future</h2>
+              <h2 className="epk-record__title">Future rock</h2>
               <div className="epk-record__facts">
                 <div>
                   <p className="epk__small-label">Earlier records</p>
