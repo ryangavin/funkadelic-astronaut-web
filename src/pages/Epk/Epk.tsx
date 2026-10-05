@@ -59,17 +59,17 @@ export function EpkBar({ ink, id, children }: { ink: EpkInk; id?: string; childr
 }
 
 /**
- * The EPK's live set: "Millenial Timemachine" in Nyack, NY, 31 July 2026, as
- * the band's YouTube titles it. The hero loop (assets/epk/live-loop.mp4) is a
+ * The EPK's live set: "Millenial Timemachine" at Nyack Neighborhood Porchfest
+ * 2026 (31 July), as the band's YouTube titles it. The hero loop (assets/epk/live-loop.mp4) is a
  * silent cut of the band's own footage of that set, from 0:22 to the end. The
  * desk keeps its own live set (LIVE_SET in bandMembers.tsx).
  */
 const EPK_LIVE_SET: LiveSet = {
   video: 'https://www.youtube.com/watch?v=QlC7tOQjGkM',
-  alt: 'Funkadelic Astronaut playing “Millenial Timemachine” in Nyack, NY, muted preview',
+  alt: 'Funkadelic Astronaut playing “Millenial Timemachine” at Nyack Neighborhood Porchfest 2026, muted preview',
   caption: 'Millenial Timemachine',
 };
-const EPK_LIVE_WHERE = 'Nyack, NY';
+const EPK_LIVE_EVENT = 'Nyack Neighborhood Porchfest 2026';
 
 /** The ribbon over each record in the list, newest first, as the members' columns are ruled. */
 const RECORD_INKS: EpkInk[] = ['violet', 'lime', 'pink', 'periwinkle', 'orange'];
@@ -136,15 +136,15 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
               set={EPK_LIVE_SET}
               loop={liveLoop}
               poster={livePoster}
-              title={`Funkadelic Astronaut, “${EPK_LIVE_SET.caption}” live in ${EPK_LIVE_WHERE}`}
+              title={`Funkadelic Astronaut, “${EPK_LIVE_SET.caption}” live at ${EPK_LIVE_EVENT}`}
               label={
                 <>
-                  <span>Live</span> “{EPK_LIVE_SET.caption}”
+                  <span>Live</span> {EPK_LIVE_EVENT}
                 </>
               }
             />
             <figcaption>
-              <strong>On stage.</strong> Funkadelic Astronaut playing “{EPK_LIVE_SET.caption}” in {EPK_LIVE_WHERE}. The whole set is on the
+              <strong>On stage.</strong> Funkadelic Astronaut playing “{EPK_LIVE_SET.caption}” at {EPK_LIVE_EVENT}. The whole set is on the
               band’s YouTube.
             </figcaption>
           </figure>
