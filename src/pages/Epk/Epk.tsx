@@ -93,7 +93,7 @@ export function Epk({ release = FEATURED_RELEASE, today, className = '', style }
       </header>
 
       <main className="epk__sheet">
-        <EpkBar ink="red">Funk, meet the future</EpkBar>
+        <EpkBar ink="red">Funk from the future</EpkBar>
 
         <section className="epk__hero" aria-label="About the band">
           <div className="epk__bio">
