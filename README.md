@@ -68,9 +68,9 @@ The full performance uses one inline video element and one HLS attachment. When 
 
 Repository: https://github.com/ryangavin/funkadelic-astronaut-web
 
-Public site: https://ryangavin.github.io/funkadelic-astronaut-web/
+Public site: https://funkadelicastronaut.com/ (GitHub Pages custom domain; DNS at Namecheap)
 
-Pushes to `main` run the full Node test suite and deploy through `.github/workflows/pages.yml`. No production build is required. The workflow stages both HTML pages, CSS, runtime JavaScript (including the ribbon studio, living video and poster motion), and `assets/`. All local asset paths are relative so the site works under the repository subpath. Dependencies, secrets, deployment staging, and local `output/` design/QA references are excluded from Git; only runtime files are included in the Pages artifact.
+Pushes to `main` run the Node test suite (`npm test`), then `npm run build`, and deploy the built `dist/` through `.github/workflows/pages.yml`. The home page is the React press kit (`index.html` → `src/main.tsx`); the old poster is built as `classic.html` with its runtime scripts and `assets/` copied alongside. Built pages link their files relatively (`base: './'`), so the same build works at the custom domain's root or any subpath. Dependencies, secrets, and local `output/` design/QA references are excluded from Git.
 
 The current home-page tuning panel is **Ribbons · D**, which replaces typography controls while preserving accepted typography. Hero → Video defaults in `app.js`: frequency 1.38, amplitude 27.4, rotation 0, horizontal offset 0.5, vertical offset 6.3. The typography notes below document the earlier studio workflow.
 
