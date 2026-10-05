@@ -373,13 +373,21 @@
   border-left: var(--epk-rule);
 }
 
-.epk-record__facts {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+/* The heading with the streaming links on its line, set right. */
+.epk-record__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
   gap: 8px var(--epk-gutter);
 }
 
-.epk-record__facts .epk__small-label {
+.epk-record__stream {
+  display: grid;
+  justify-items: end;
+}
+
+.epk-record__story .epk__small-label {
   margin-bottom: 6px;
 }
 
@@ -402,7 +410,6 @@
   flex: 1 1 0;
   display: flex;
   flex-direction: column;
-  border: var(--epk-rule);
   mix-blend-mode: multiply;
 }
 
@@ -412,32 +419,46 @@
   flex: 1 1 0;
   width: 100%;
   min-height: calc(100cqw + 220px);
-  border: 0;
+  /* No taller than the whole track list, or Bandcamp pads the space above the cover. */
+  max-height: calc(100cqw + var(--bandcamp-list));
+  border: var(--epk-rule);
 }
 
+/* The earlier records in one row, ruled apart: the title over its year. */
 .epk-record__catalog {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   margin: 0;
-  padding: 0;
+  padding: 6px 0 0;
   list-style: none;
   border-top: var(--epk-rule-heavy);
 }
 
 .epk-record__catalog li {
-  display: flex;
-  justify-content: space-between;
-  padding: 5px 0;
-  border-bottom: 1px dotted var(--epk-night);
+  display: grid;
+  padding: 0 12px;
   font-size: 15px;
+  line-height: 1.3;
+}
+
+.epk-record__catalog li:first-child {
+  padding-left: 0;
+}
+
+.epk-record__catalog li + li {
+  border-left: var(--epk-rule);
 }
 
 .epk-record__catalog li span:first-child {
   font-weight: 700;
 }
 
+/* The icons' own 44px tap targets pad them; pull the row flush with the column's edge. */
 .epk-record__links {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 0 2px;
+  margin-right: -7px;
 }
 
 .epk-record__links a {
@@ -562,8 +583,23 @@
     grid-template-columns: minmax(350px, 1fr) minmax(0, 1fr);
   }
 
-  .epk-record__facts {
-    grid-template-columns: 1fr;
+  /* The column is narrow: the streaming links drop under the heading, flush left. */
+  .epk-record__stream {
+    justify-items: start;
+  }
+
+  .epk-record__links {
+    margin: 0 0 0 -7px;
+  }
+
+  .epk-record__catalog {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 8px;
+  }
+
+  .epk-record__catalog li:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
   }
 
   .epk__bio {

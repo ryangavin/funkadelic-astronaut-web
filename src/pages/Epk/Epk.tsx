@@ -131,20 +131,9 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
               <BandcampPlayer release={release} />
             </div>
             <div className="epk-record__story">
-              <h2 className="epk-record__title">Future rock</h2>
-              <div className="epk-record__facts">
-                <div>
-                  <p className="epk__small-label">Earlier records</p>
-                  <ul className="epk-record__catalog">
-                    {BACK_CATALOG.map(record => (
-                      <li key={record.title}>
-                        <span>{record.title}</span>
-                        <span>{record.year}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
+              <div className="epk-record__head">
+                <h2 className="epk-record__title">Future rock</h2>
+                <div className="epk-record__stream">
                   <p className="epk__small-label">Stream everywhere</p>
                   <div className="epk-record__links">
                     {[...LISTEN_LINKS, BANDCAMP_LINK].map(link => (
@@ -154,6 +143,17 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
                     ))}
                   </div>
                 </div>
+              </div>
+              <div>
+                <p className="epk__small-label">Earlier records</p>
+                <ul className="epk-record__catalog">
+                  {BACK_CATALOG.map(record => (
+                    <li key={record.title}>
+                      <span>{record.title}</span>
+                      <span>{record.year}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
               <div className="epk__bio">
                 <p>
