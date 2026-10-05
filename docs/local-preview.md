@@ -9,7 +9,7 @@ PREVIEW_LABEL="Coordinator" PREVIEW_PORT=4174 STORYBOOK_PORT=6009 npm run dev
 PREVIEW_LABEL="Agent · room-study" PREVIEW_PORT=4175 STORYBOOK_PORT=6010 npm run dev
 ```
 
-The defaults are public port 4173 and internal port 6007. Open only the public port: `/`, `/press-kit.html`, or `/storybook/`. The internal Storybook port is an implementation detail, and its preview uses the public subpath. `PREVIEW_LABEL` prefixes browser titles without replacing the page/story name and survives story navigation. Omit it for ordinary titles. Restart the launcher to change the label or ports.
+The defaults are public port 4173 and internal port 6007. Open only the public port: `/` (the press kit in `src/site/`) or `/storybook/` (the site, experience and library stories). The internal Storybook port is an implementation detail, and its preview uses the public subpath. `PREVIEW_LABEL` prefixes browser titles without replacing the page/story name and survives story navigation. Omit it for ordinary titles. Restart the launcher to change the label or ports.
 
 `npm run storybook` remains an independent root-path Storybook on port 6006. `npm run build`, `npm run build-storybook`, and `npm run preview` keep their previous production behavior; labels are development-only.
 
