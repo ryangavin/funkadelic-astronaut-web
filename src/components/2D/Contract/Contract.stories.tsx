@@ -22,7 +22,7 @@ const WRITTEN: ContractSignature = {
 };
 
 const meta = {
-  title: 'Components/2D/Contract',
+  title: 'Library/Components/2D/Contract',
   component: Contract,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

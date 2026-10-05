@@ -5,10 +5,11 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "build": "tsc --noEmit && vite build && node scripts/copy-static-build.cjs",
+    "test:legacy": "cd legacy && node --test tests/*.test.cjs",
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "node --test tests/*.test.cjs",
+    "test": "node --test tests/*.test.cjs && npm run test:legacy",
     "test:stories": "vitest --project=storybook --run"
   },
   "devDependencies": {
@@ -18,6 +19,7 @@
     "@storybook/addon-mcp": "^10.6.0",
     "@storybook/addon-vitest": "^10.6.0",
     "@storybook/react-vite": "^10.6.0",
+    "@types/node": "^26.6.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
@@ -27,8 +29,7 @@
     "storybook": "^10.6.0",
     "typescript": "^7.0.2",
     "vite": "8.2.2",
-    "vitest": "^4.1.11",
-    "@types/node": "^26.6.1"
+    "vitest": "^4.1.11"
   },
   "dependencies": {
     "react": "^19.3.0",

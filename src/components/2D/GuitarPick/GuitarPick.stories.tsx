@@ -3,7 +3,7 @@ import { expect, within } from 'storybook/test';
 import { GuitarPick } from './GuitarPick';
 
 const meta = {
-  title: 'Components/2D/Guitar Pick',
+  title: 'Library/Components/2D/Guitar Pick',
   component: GuitarPick,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

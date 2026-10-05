@@ -1,5 +1,5 @@
-import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
-import { DeskObjectStudy } from '../../../debug/ObjectStudy/DeskObjectStudy';
+import { checkDeskStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, within } from 'storybook/test';
 import demoTape from '../../../../assets/audio/demo-tape.mp3';
@@ -8,7 +8,7 @@ import { PaperSheet } from '../../2D/PaperSheet/PaperSheet';
 import { WALKMAN_FINISHES, WALKMAN_SIDES, Walkman } from './Walkman';
 
 const meta = {
-  title: 'Components/3D/Walkman',
+  title: 'Library/Components/3D/Walkman',
   component: Walkman,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

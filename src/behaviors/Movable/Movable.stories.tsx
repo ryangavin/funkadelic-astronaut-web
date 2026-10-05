@@ -10,7 +10,7 @@ import { StickyNote } from '../../components/2D/StickyNote/StickyNote';
 import { MOVABLE_KEY_SCALE, MOVABLE_KEY_STEP, MOVABLE_KEY_TURN, Movable, MovableScale, type Place } from './Movable';
 
 const meta = {
-  title: 'Foundations/Behaviors/Movable',
+  title: 'Library/Foundations/Behaviors/Movable',
   component: Movable,
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],

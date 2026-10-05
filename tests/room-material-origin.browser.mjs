@@ -6,7 +6,7 @@ assert.ok(process.env.PREVIEW_URL, 'Set PREVIEW_URL to the assignment-owned unif
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage({ viewport: { width: 900, height: 650 } });
-  await page.goto(`${process.env.PREVIEW_URL}/storybook/iframe.html?id=debug-room-materials--stable-coverage&viewMode=story`);
+  await page.goto(`${process.env.PREVIEW_URL}/storybook/iframe.html?id=experience-debug-room-materials--stable-coverage&viewMode=story`);
   const preview = page.locator('[data-material-preview]');
   await preview.locator('.floor__course').first().waitFor();
   const landmarks = () => preview.evaluate(root => [...root.querySelectorAll('.wall__brick, .floor__butt')].map(element => {
@@ -46,7 +46,7 @@ try {
   assert.deepEqual(await landmarks(), before, 'Contracting coverage restores identical world landmarks');
   console.log(`PASS fixed camera: ${before.length} stable material landmarks; pixel difference ${difference.mean.toFixed(3)}/255`);
 
-  await page.goto(`${process.env.PREVIEW_URL}/storybook/iframe.html?id=debug-scale-bench--physical-setup&viewMode=story`);
+  await page.goto(`${process.env.PREVIEW_URL}/storybook/iframe.html?id=experience-debug-scale-bench--physical-setup&viewMode=story`);
   await page.locator('.floor__course').first().waitFor();
   const identity = () => page.locator('.wall__brick').evaluateAll(elements => Object.fromEntries(elements.map(element => [element.getAttribute('data-material-cell'), `${element.getAttribute('data-tone')}:${element.style.getPropertyValue('--wall-worn')}`])));
   const originalCells = await identity();

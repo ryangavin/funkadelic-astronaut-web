@@ -1,5 +1,5 @@
-import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
-import { DeskObjectStudy } from '../../../debug/ObjectStudy/DeskObjectStudy';
+import { checkDeskStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
@@ -11,7 +11,7 @@ import { TAPE_WIDTH, tapeMm, tapeUnits } from './tape';
 const DESK = '#ead3a7';
 
 const meta = {
-  title: 'Components/3D/Label Maker',
+  title: 'Library/Components/3D/Label Maker',
   component: LabelMaker,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

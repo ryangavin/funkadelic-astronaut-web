@@ -3,10 +3,10 @@ import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import festivalSketch from '../../../../assets/festival-scribble-fully-shaded.png';
 import { PaperSheet } from '../PaperSheet/PaperSheet';
 import { ONE_SHEET_STOCKS, OneSheet } from './OneSheet';
-import { BAND_ONE_SHEET_BOTTOM, BAND_ONE_SHEET_MIDDLE, BAND_ONE_SHEET_TOP } from '../../../sections/BandDossier/bandOneSheet';
+import { BAND_ONE_SHEET_BOTTOM, BAND_ONE_SHEET_MIDDLE, BAND_ONE_SHEET_TOP } from '../../../experience/sections/BandDossier/bandOneSheet';
 
 const meta = {
-  title: 'Components/2D/One-Sheet',
+  title: 'Library/Components/2D/One-Sheet',
   component: OneSheet,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

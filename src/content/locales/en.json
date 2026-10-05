@@ -1,0 +1,85 @@
+{
+  "band": {
+    "links": {
+      "applemusic": "Funkadelic Astronaut on Apple Music",
+      "spotify": "Funkadelic Astronaut on Spotify",
+      "youtube": "Funkadelic Astronaut on YouTube",
+      "deezer": "Funkadelic Astronaut on Deezer",
+      "instagram": "Funkadelic Astronaut on Instagram",
+      "facebook": "Funkadelic Astronaut on Facebook",
+      "bandsintown": "Funkadelic Astronaut on Bandsintown",
+      "bandcamp": "Funkadelic Astronaut on Bandcamp"
+    },
+    "members": {
+      "ryan": {
+        "part": "Keys",
+        "photoAlt": "Ryan Gavin playing keyboards at Crossroads",
+        "bio": [
+          "Ryan co-founded Funkadelic Astronaut in 2012 with longtime friend Kevin O’Neill.",
+          "Blending music and technology, he brings an adventurous touch to the keys, taking chances and helping steer the trio into unexpected territory."
+        ]
+      },
+      "kevin": {
+        "part": "Drums",
+        "photoAlt": "Kevin O’Neill playing drums at Crossroads",
+        "bio": [
+          "A naturally gifted drummer, Kevin has played with Ryan for nearly two decades, since high school, long before Funkadelic Astronaut had a name.",
+          "Behind the kit since day one, he’s a steady presence and more brother than bandmate."
+        ]
+      },
+      "sam": {
+        "part": "Bass & vocals",
+        "photoAlt": "Sam Luba singing and playing bass at Crossroads",
+        "bio": [
+          "Sam joined Funkadelic Astronaut in 2017, completing the band’s current lineup.",
+          "On bass and vocals, his songwriting and musical sensibilities solidified the band’s sound, giving the grooves their hooks and the jams somewhere to land."
+        ]
+      }
+    }
+  },
+  "pressKit": {
+    "dateline": {
+      "issue": "Vol. 7 No. 42",
+      "place": "New Jersey · Future rock",
+      "since": "Est. 2012 · Always free"
+    },
+    "wordmark": "funkadelic astronaut",
+    "nav": {
+      "label": "On this page",
+      "music": "Listen",
+      "live": "Watch",
+      "band": "The band",
+      "book": "Book us"
+    },
+    "live": {
+      "title": "Funkadelic Astronaut, “{{song}}” live at {{event}}",
+      "label": "<span>Live</span> {{event}}",
+      "caption": "<strong>On stage.</strong> Funkadelic Astronaut playing “{{song}}” at {{event}}.",
+      "watch": "Watch with sound",
+      "play": "Play"
+    },
+    "lede": "NJ trio ft. Ryan Gavin, Kevin O’Neill, and Sam Luba <strong>blast off</strong>",
+    "record": {
+      "label": "Records",
+      "heading": "Future rock",
+      "bio": {
+        "start": "Ryan and Kevin started the band as high school friends in 2012, and the lineup locked in when Sam joined in 2017. Since then they have taken their sound to stages across the Northeast, sharing bills with some of their own favorites: {{stages}}.",
+        "sound": "That sound is funk wired to electronics: a deep pocket from the rhythm section, synths and keys that take chances, and room to stretch out live.",
+        "records": "Their new record, <em>{{title}}</em>, came out in {{year}}, following {{earlier}}."
+      },
+      "catalog": "Records: press one to play it",
+      "earlier": "{{title}} ({{year}})"
+    },
+    "bandcamp": {
+      "title": "{{title}} by Funkadelic Astronaut on Bandcamp",
+      "fallback": "{{title}} by Funkadelic Astronaut"
+    },
+    "band": {
+      "heading": "Three friends. One orbit."
+    },
+    "foot": {
+      "label": "Booking",
+      "book": "Book The Band"
+    }
+  }
+}

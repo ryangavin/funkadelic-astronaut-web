@@ -5,7 +5,7 @@ const browser = await chromium.launch({ headless:true });
 try {
   const page=await browser.newPage({viewport:{width:1000,height:850}});
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
-  await page.goto(`${process.env.PREVIEW_URL}/storybook/iframe.html?id=debug-scale-bench--physical-setup&viewMode=story`);
+  await page.goto(`${process.env.PREVIEW_URL}/storybook/iframe.html?id=experience-debug-scale-bench--physical-setup&viewMode=story`);
   const diagram=page.getByRole('region',{name:'Room geometry diagram'}),drawing=page.locator('.room-diagram__drawing');
   await diagram.waitFor();
   const data=async key=>JSON.parse(await diagram.getAttribute(`data-${key}`));

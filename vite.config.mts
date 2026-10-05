@@ -33,12 +33,11 @@ export default defineConfig({
   } : undefined,
   // Built pages link their files relatively, so one build works at funkadelicastronaut.com's root or under any subpath.
   base: './',
+  // The old vanilla poster is kept in legacy/ but no longer built; public/ serves redirect stubs at its old URLs.
   build: {
     rollupOptions: {
       input: {
-        home: 'index.html',
-        classic: 'classic.html',
-        pressKit: 'press-kit.html'
+        home: 'index.html'
       }
     }
   },

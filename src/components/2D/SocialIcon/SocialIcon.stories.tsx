@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { SOCIAL_ICON_INK_NAMES, SOCIAL_PLATFORM_NAMES, SocialIcon } from './SocialIcon';
 
 const meta = {
-  title: 'Components/2D/Social Icon',
+  title: 'Library/Components/2D/Social Icon',
   component: SocialIcon,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

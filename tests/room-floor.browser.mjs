@@ -6,7 +6,7 @@ assert.ok(process.env.PREVIEW_URL,'Set PREVIEW_URL to the owned unified preview'
 const browser=await chromium.launch({headless:true});
 try {
  const page=await browser.newPage({viewport:{width:1280,height:900}});
- await page.goto(`${process.env.PREVIEW_URL}/storybook/iframe.html?id=debug-scale-bench--physical-setup&viewMode=story`);
+ await page.goto(`${process.env.PREVIEW_URL}/storybook/iframe.html?id=experience-debug-scale-bench--physical-setup&viewMode=story`);
  await page.getByRole('img',{name:'Wastebasket, 360 mm tall and 290 mm across'}).waitFor();
  const input=async(name,value)=>{const field=page.getByRole('spinbutton',{name,exact:true});await field.fill(String(value));await field.blur();};
  for(const [angle,fov,wall,height] of [[20,100,1800,770],[74.5,110,660,770],[40,110,1600,770],[90,85,660,750],[115,85,660,750]]) {

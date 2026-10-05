@@ -104,7 +104,7 @@ test('The office inkjet: a smaller gamut, ink into the fibre, a dither and the h
   assert.match(wrapper, /style=\{enabled \? \{ \.\.\.style, filter: `url\(#\$\{id\}\)` \} : style\}/);
 
   // The site plan is run off on it.
-  const page = (read('src/pages/Desk/PromoterDesk.tsx') + read('src/pages/Desk/DeskPapers.tsx'));
+  const page = (read('src/experience/Desk/PromoterDesk.tsx') + read('src/experience/Desk/DeskPapers.tsx'));
   assert.match(page, /<Inkjet className="site-plan__print" seed=\{3\}>\s+<img className="site-plan__map"/);
 
   const pen = read('src/components/3D/Pen/Pen.tsx');
@@ -275,14 +275,14 @@ test('Spill packs loose things on a point and sends them out in order when opene
   assert.match(css, /prefers-reduced-motion: reduce\) \{\s+\.spill \.spilled,\s+\.spill\[data-open='false'\] \.spilled \{\s+transition: none/);
 
   // The dossier takes loose things in its well, which is their containing block.
-  const dossier = read('src/sections/BandDossier/BandDossier.tsx');
+  const dossier = read('src/experience/sections/BandDossier/BandDossier.tsx');
   assert.match(dossier, /children\?: ReactNode;/);
   assert.match(dossier, /<OneSheet \{\.\.\.oneSheet\} rotation=\{bandRotation\} \/>\s+\{children\}/);
 });
 
 test('The promoter’s desk: everything its real size against the Walkman, the folder a button, its contents spilling out, all of it movable', () => {
-  const page = (read('src/pages/Desk/PromoterDesk.tsx') + read('src/pages/Desk/DeskPapers.tsx'));
-  const css = (read('src/pages/Desk/PromoterDesk.css') + read('src/pages/Desk/DeskPapers.css'));
+  const page = (read('src/experience/Desk/PromoterDesk.tsx') + read('src/experience/Desk/DeskPapers.tsx'));
+  const css = (read('src/experience/Desk/PromoterDesk.css') + read('src/experience/Desk/DeskPapers.css'));
   // Closed, the folder's box is twice the folder anyone can see: its other half lies on bare desk over the
   // running order and the site plan, so it catches nothing and only the button and the cover's links do.
   assert.match(css, /\.promoter-desk\[data-open='false'\] \.promoter-desk__folder \{\s+pointer-events: none;/);

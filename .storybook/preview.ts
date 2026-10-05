@@ -3,6 +3,20 @@ import '../src/styles/fonts.css';
 
 const preview: Preview = {
   parameters: {
+    options: {
+      // What the .com serves, then the desk experience, then the shared library both are built from.
+      storySort: {
+        order: [
+          'Site',
+          'Experience',
+          ['Arrival', 'Desk', 'Desk Settings', 'Perspective Desk', 'Desk Dossier', 'Poster', 'Sections', 'Experiments', 'Debug'],
+          'Library',
+          ['Components', ['2D', '3D'], 'Foundations'],
+        ],
+      },
+    },
+
+
     controls: {
       matchers: {
         color: /(background|color)$/i,

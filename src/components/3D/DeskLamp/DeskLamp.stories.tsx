@@ -1,6 +1,6 @@
 import { LAMP_WIDTH, LAMP_HEIGHT } from '../../../geometry/physicalScale';
-import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
-import { DeskObjectStudy } from '../../../debug/ObjectStudy/DeskObjectStudy';
+import { checkDeskStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, fn, userEvent, within } from 'storybook/test';
@@ -12,7 +12,7 @@ import { LampShadows } from './LampShadows';
 import { DESK_LAMP_ENAMELS, DeskLamp, LampLight } from './DeskLamp';
 
 const meta = {
-  title: 'Components/3D/Desk Lamp',
+  title: 'Library/Components/3D/Desk Lamp',
   component: DeskLamp,
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],

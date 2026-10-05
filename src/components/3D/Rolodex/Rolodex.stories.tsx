@@ -1,5 +1,5 @@
-import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
-import { DeskObjectStudy } from '../../../debug/ObjectStudy/DeskObjectStudy';
+import { checkDeskStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { ROLODEX_CARDS, ROLODEX_FINISHES, Rolodex } from './Rolodex';
@@ -7,7 +7,7 @@ import { RolodexCard } from './RolodexCard';
 import type { RolodexEntry } from './wheel';
 
 const meta = {
-  title: 'Components/3D/Rolodex',
+  title: 'Library/Components/3D/Rolodex',
   component: Rolodex,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

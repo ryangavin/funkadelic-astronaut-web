@@ -7,7 +7,7 @@ assert.ok(origin, 'Set PREVIEW_URL to the unified preview being tested');
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage();
-  for (const story of ['debug-scale-bench', 'foundations-room', 'pages-perspective-desk']) {
+  for (const story of ['experience-debug-scale-bench', 'library-foundations-room', 'experience-perspective-desk']) {
     for (const viewport of [{ width: 1280, height: 800 }, { width: 1000, height: 600 }, { width: 583, height: 460 }, { width: 390, height: 844 }]) {
       await page.setViewportSize(viewport);
       await page.goto(`${origin}/storybook/iframe.html?id=${story}--physical-setup&viewMode=story`);

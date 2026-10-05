@@ -1,8 +1,8 @@
 import { DESK_MM, UNITS_PER_MM } from '../../../geometry/physicalScale';
 import { Solid } from '../../../behaviors/Perspective/Perspective';
-import { PerspectiveDesk } from '../../../pages/Desk/PerspectiveDesk';
-import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
-import { DeskObjectStudy } from '../../../debug/ObjectStudy/DeskObjectStudy';
+import { PerspectiveDesk } from '../../../experience/Desk/PerspectiveDesk';
+import { checkDeskStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, fireEvent, waitFor, userEvent, within } from 'storybook/test';
@@ -16,7 +16,7 @@ import { CoffeeRings, Stained } from './Stained';
 import { COFFEE_DRIES, COFFEE_GONE, COFFEE_WET, DESK, ringUnder, setDown, stampRings, useCoffeeTrail } from './trail';
 
 const meta = {
-  title: 'Components/3D/Mug',
+  title: 'Library/Components/3D/Mug',
   component: Mug,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

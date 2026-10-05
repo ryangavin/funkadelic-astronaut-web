@@ -20,8 +20,8 @@ test('Stage lays a page out at 1440 design pixels and zooms it as one piece', ()
 });
 
 test('Home is one 11 x 17 poster on a Stage: the festival map edge to edge, everything pinned on it', () => {
-  const page = read('src/pages/Home/Home.tsx');
-  const stories = read('src/pages/Home/Home.stories.tsx');
+  const page = read('src/experience/Poster/Home.tsx');
+  const stories = read('src/experience/Poster/Home.stories.tsx');
 
   assert.match(page, /export const HOME_RATIO = 17 \/ 11;/);
   assert.match(page, /export const HOME_HEIGHT = Math\.round\(HOME_WIDTH \* HOME_RATIO\);/);
@@ -36,13 +36,16 @@ test('Home is one 11 x 17 poster on a Stage: the festival map edge to edge, ever
   assert.match(page, /<AdmissionTicket \{\.\.\.TOUR_ADMISSION_TICKET_PROPS\} rotation=\{0\} \/>/);
   assert.match(page, /<Pin x=\{at.passesX\} y=\{at.passesY\} width=\{at.passesWidth\} rotation=\{at.passesRotation\}>\s+<TourPasses/);
   assert.match(page, /<Pin x=\{at\.astronautX\} y=\{at\.astronautY\} width=\{at\.astronautWidth\} rotation=\{at\.astronautRotation\}>\s+<Astronaut \/>/);
-  assert.match(read('src/pages/Home/Home.stories.tsx'), /args: \{ \.\.\.HOME_LAYOUT, mapOpacity: 1 \}/);
+  assert.match(read('src/experience/Poster/Home.stories.tsx'), /args: \{ \.\.\.HOME_LAYOUT, mapOpacity: 1 \}/);
   assert.match(page, /<Pin x=\{at\.dossierX\} y=\{at\.dossierY\} width=\{at\.dossierWidth\}>/);
   assert.match(page, /<BandDossier rotation=\{at\.dossierRotation\} \/>/);
   assert.match(page, /<Pin x=\{0\} y=\{HOME_HEIGHT - HOME_FOOTER_HEIGHT\} width=\{HOME_WIDTH\}>\s+<footer[^>]*>\s+<Ribbon>/);
   assert.match(page, /LISTEN_INKS: Partial<Record<SocialPlatform, string>> = \{ applemusic: 'red', spotify: 'green', youtube: 'red', deezer: 'purple' \}/);
-  assert.match(page, /export const LISTEN_LINKS: HomeLink\[\] = \[/);
+  assert.match(page, /export const LISTEN_LINKS: HomeLink\[\] = LISTEN_HREFS\.map\(labelled\);/);
+  // The hrefs are band data in src/content; their labels come from the copy catalogue.
+  assert.match(read('src/content/links.ts'), /\{ platform: 'applemusic', href: 'https:\/\/music\.apple\.com\/us\/artist\/funkadelic-astronaut\/1208229110' \}/);
+  assert.equal(JSON.parse(read('src/content/locales/en.json')).band.links.applemusic, 'Funkadelic Astronaut on Apple Music');
   assert.ok(fs.existsSync(path.join(root, 'assets', 'festival-map.webp')));
-  assert.match(stories, /title: 'Pages\/Home'/);
+  assert.match(stories, /title: 'Experience\/Poster'/);
   for (const name of ['laptop', 'design', 'wide', 'tablet', 'phone']) assert.match(stories, new RegExp(`${name}: \\{ name: '`));
 });

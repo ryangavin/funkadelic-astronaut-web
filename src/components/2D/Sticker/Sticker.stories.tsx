@@ -9,7 +9,7 @@ import { PAPER_STOCKS } from '../PaperSheet/PaperSheet';
 import { SocialSticker } from './SocialSticker';
 
 const meta = {
-  title: 'Components/2D/Sticker',
+  title: 'Library/Components/2D/Sticker',
   component: SocialSticker,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

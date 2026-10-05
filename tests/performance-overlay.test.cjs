@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { frameWindow, observeFrameTiming } = require('../src/debug/PerformanceOverlay/frameTiming.ts');
+const { frameWindow, observeFrameTiming } = require('../src/experience/debug/PerformanceOverlay/frameTiming.ts');
 
 test('frame rate is count over elapsed time and old intervals leave the rolling window', () => {
   const window = frameWindow(100);

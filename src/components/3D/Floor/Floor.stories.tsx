@@ -4,7 +4,7 @@ import { GENTLE_DEPTH, Perspective } from '../../../behaviors/Perspective/Perspe
 import { FLOOR_BOARD, FLOOR_BOARD_RUN, FLOOR_LAYS, FLOOR_WOODS, Floor } from './Floor';
 
 const meta = {
-  title: 'Foundations/Layout/Floor',
+  title: 'Library/Foundations/Layout/Floor',
   component: Floor,
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],

@@ -5,7 +5,7 @@ import { PAPER_STOCKS } from '../PaperSheet/PaperSheet';
 import { PaperStrip, type PaperStripProps } from './PaperStrip';
 
 const meta = {
-  title: 'Foundations/Layout/Paper Strip', component: PaperStrip, tags: ['autodocs'],
+  title: 'Library/Foundations/Layout/Paper Strip', component: PaperStrip, tags: ['autodocs'],
   parameters: { layout: 'centered' },
   argTypes: {
     stock: { control: 'inline-radio', options: PAPER_STOCKS },

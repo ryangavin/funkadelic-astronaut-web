@@ -15,7 +15,7 @@ import { ObjectCastShadow } from './CastShadow';
 import { GENTLE_VIEW, GENTLE_DEPTH, PLAN_VIEW, Perspective, STANDING_VIEW, Solid, Standing } from './Perspective';
 
 const meta = {
-  title: 'Foundations/Behaviors/Perspective',
+  title: 'Library/Foundations/Behaviors/Perspective',
   component: Perspective,
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],

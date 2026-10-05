@@ -1,5 +1,5 @@
-import { checkDeskStudy } from '../../../debug/ObjectStudy/DeskObjectStudy.check';
-import { DeskObjectStudy } from '../../../debug/ObjectStudy/DeskObjectStudy';
+import { checkDeskStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy.check';
+import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import { Mug } from '../Mug/Mug';
@@ -11,7 +11,7 @@ import { StickyNote } from '../../2D/StickyNote/StickyNote';
 import { DESK_WOODS, Desk } from './Desk';
 
 const meta = {
-  title: 'Foundations/Layout/Desk',
+  title: 'Library/Foundations/Layout/Desk',
   component: Desk,
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],
