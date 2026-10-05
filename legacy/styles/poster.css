@@ -14,7 +14,7 @@
   inset: 0;
   pointer-events: none;
   z-index: 4;
-  background: url("../assets/paper-grain.svg") repeat;
+  background: url("../../assets/paper-grain.svg") repeat;
   opacity: 0.22;
   mix-blend-mode: soft-light;
 }
@@ -240,7 +240,7 @@
   mask-image: linear-gradient(to bottom, transparent, black 45px);
 }
 .hero::after {
-  background-image: url("../assets/paper-flecks.svg");
+  background-image: url("../../assets/paper-flecks.svg");
 }
 .scene::after {
   content: none;
@@ -250,7 +250,7 @@ body::after {
   inset: 0;
   z-index: 10000;
   pointer-events: none;
-  background: url("../assets/print-wear.svg") repeat;
+  background: url("../../assets/print-wear.svg") repeat;
   opacity: 0.5;
 }
 #video-dialog::after {
@@ -258,14 +258,14 @@ body::after {
   inset: 0;
   z-index: 10000;
   pointer-events: none;
-  background: url("../assets/print-wear.svg") repeat;
+  background: url("../../assets/print-wear.svg") repeat;
   opacity: 0.5;
 }
 .hero::after {
   content: "";
   inset: 0;
   pointer-events: none;
-  background: url("../assets/print-wear.svg") repeat;
+  background: url("../../assets/print-wear.svg") repeat;
   opacity: 0.5;
 }
 #video-dialog::after {
@@ -291,16 +291,16 @@ body::after {
   mask: var(--platform-logo) center / contain no-repeat;
 }
 .streaming-logo.applemusic {
-  --platform-logo: url("../assets/applemusic.svg");
+  --platform-logo: url("../../assets/applemusic.svg");
 }
 .streaming-logo.spotify {
-  --platform-logo: url("../assets/spotify.svg");
+  --platform-logo: url("../../assets/spotify.svg");
 }
 .streaming-logo.youtube {
-  --platform-logo: url("../assets/youtube.svg");
+  --platform-logo: url("../../assets/youtube.svg");
 }
 .streaming-logo.deezer {
-  --platform-logo: url("../assets/deezer.svg");
+  --platform-logo: url("../../assets/deezer.svg");
 }
 @media (max-width: 760px) {
   .streaming-links {
@@ -535,20 +535,20 @@ body::before {
   inset: 0;
   z-index: 9999;
   pointer-events: none;
-  background: url("../assets/paper-dark-flecks.svg") repeat;
+  background: url("../../assets/paper-dark-flecks.svg") repeat;
 }
 #video-dialog::before {
   content: "";
   inset: 0;
   z-index: 9999;
   pointer-events: none;
-  background: url("../assets/paper-dark-flecks.svg") repeat;
+  background: url("../../assets/paper-dark-flecks.svg") repeat;
 }
 .hero::before {
   content: "";
   inset: 0;
   pointer-events: none;
-  background: url("../assets/paper-dark-flecks.svg") repeat;
+  background: url("../../assets/paper-dark-flecks.svg") repeat;
 }
 #video-dialog::before {
   position: absolute;
@@ -663,18 +663,18 @@ html::after {
   inset: 0;
   z-index: 10001;
   pointer-events: none;
-  background-image: url("../assets/paper-torn-top.svg"), url("../assets/paper-torn-bottom.svg"), url("../assets/paper-torn-left.svg"), url("../assets/paper-torn-right.svg");
+  background-image: url("../../assets/paper-torn-top.svg"), url("../../assets/paper-torn-bottom.svg"), url("../../assets/paper-torn-left.svg"), url("../../assets/paper-torn-right.svg");
   background-position: center top, center bottom, left top, right top;
   background-size: 100% 1.667vw, 100% 1.667vw, 1.53vw 100%, 1.53vw 100%;
   background-repeat: no-repeat;
 }
 #video-dialog::before {
-  background-image: url("../assets/weathering-top-center.svg"),
-    url("../assets/weathering-left.svg"),
-    url("../assets/weathering-right.svg"),
-    url("../assets/weathering-bottom.svg"),
-    url("../assets/paper-dark-flecks.svg"),
-    url("../assets/paper-patina.svg");
+  background-image: url("../../assets/weathering-top-center.svg"),
+    url("../../assets/weathering-left.svg"),
+    url("../../assets/weathering-right.svg"),
+    url("../../assets/weathering-bottom.svg"),
+    url("../../assets/paper-dark-flecks.svg"),
+    url("../../assets/paper-patina.svg");
   background-position: center top, left top, right top, center 1250px, 0 0, 0 0;
   background-size: 880px 330px, 200px 1500px, 200px 1500px, 1200px 250px, 640px 640px, 900px 900px;
   background-repeat: no-repeat, repeat-y, repeat-y, no-repeat, repeat, repeat;
@@ -865,7 +865,7 @@ html::after {
 #inline-player {
   transform: none;
   will-change: auto;
-  background: var(--petrol) url("../assets/performance.webp") center / cover no-repeat;
+  background: var(--petrol) url("../../assets/performance.webp") center / cover no-repeat;
 }
 #inline-player video {
   mix-blend-mode: normal;
@@ -1155,7 +1155,7 @@ body::after {
 }
 .listen::after {
   display: block;
-  background-image: url("../assets/paper-dark-flecks.svg"), url("../assets/print-wear.svg");
+  background-image: url("../../assets/paper-dark-flecks.svg"), url("../../assets/print-wear.svg");
   background-size: 640px 640px, 360px 360px;
   background-position: 0 0;
   background-repeat: repeat;
@@ -1163,13 +1163,13 @@ body::after {
 }
 body::before {
   clip-path: none;
-  background-image: url("../assets/weathering-top-center.svg"), url("../assets/weathering-left.svg"), url("../assets/weathering-right.svg"), url("../assets/weathering-bottom.svg"), url("../assets/paper-patina.svg");
+  background-image: url("../../assets/weathering-top-center.svg"), url("../../assets/weathering-left.svg"), url("../../assets/weathering-right.svg"), url("../../assets/weathering-bottom.svg"), url("../../assets/paper-patina.svg");
   background-position: center top, left top, right top, center 1250px, 0 0;
   background-size: 880px 330px, 200px 1500px, 200px 1500px, 1200px 250px, 900px 900px;
   background-repeat: no-repeat, repeat-y, repeat-y, no-repeat, repeat;
 }
 .hero::before {
-  background-image: url("../assets/paper-dark-flecks.svg");
+  background-image: url("../../assets/paper-dark-flecks.svg");
   background-position: 0 0;
   background-size: 640px 640px;
   background-repeat: repeat;
@@ -1215,7 +1215,7 @@ html::after { inset: var(--poster-surround); }
     radial-gradient(ellipse at 8% 30%, #79502350 0%, #79502300 52%),
     radial-gradient(ellipse at 92% 70%, #71462060 0%, #71462000 58%),
     linear-gradient(165deg, #8b5d2b28, transparent 42%, #7b4d2638),
-    url("../assets/paper-dark-flecks.svg");
+    url("../../assets/paper-dark-flecks.svg");
   background-size: 100% 100%, 100% 100%, 100% 100%, 640px 640px;
   background-repeat: no-repeat, no-repeat, no-repeat, repeat;
 }

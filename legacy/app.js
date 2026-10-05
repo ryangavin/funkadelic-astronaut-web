@@ -156,7 +156,7 @@ if (gallery) {
       paperCorners: "tl-br",
       paperSeed: 1,
       polaroidClipCorner: "bottom-left",
-      photo: "assets/band-13.webp",
+      photo: "../assets/band-13.webp",
       alt: "Ryan Gavin playing keyboards at Crossroads",
       crop: "ryan",
       paragraphs: [
@@ -170,7 +170,7 @@ if (gallery) {
       paperCorners: "tr-bl",
       paperSeed: 2,
       polaroidClipCorner: null,
-      photo: "assets/band-22.webp",
+      photo: "../assets/band-22.webp",
       alt: "Kevin O’Neill playing drums at Crossroads",
       crop: "kevin",
       paragraphs: [
@@ -184,7 +184,7 @@ if (gallery) {
       paperCorners: "tl-br",
       paperSeed: 3,
       polaroidClipCorner: null,
-      photo: "assets/band-21.webp",
+      photo: "../assets/band-21.webp",
       alt: "Sam Luba singing and playing bass at Crossroads",
       crop: "sam",
       paragraphs: [

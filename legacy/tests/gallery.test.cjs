@@ -112,7 +112,7 @@ test("rapid selections ignore stale image completion and failed loads preserve c
   first.resolve();
   await flush();
   assert.equal(h.elements["#member-name"].textContent, "Kevin O’Neill");
-  assert.equal(h.photo.src, "assets/band-22.webp");
+  assert.equal(h.photo.src, "../assets/band-22.webp");
   h.elements["#next-member"].events.click();
   h.pending.shift().reject();
   await flush();

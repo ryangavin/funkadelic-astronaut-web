@@ -561,7 +561,7 @@ html:has(.launch-footer)::after { z-index: 10003; }
   inset: -48px 0;
   z-index: -3;
   pointer-events: none;
-  background-image: url("../assets/festival-scribble-fully-shaded.png");
+  background-image: url("../../assets/festival-scribble-fully-shaded.png");
   background-repeat: no-repeat;
   mix-blend-mode: multiply;
   filter: contrast(1.28) saturate(.82);
@@ -725,7 +725,7 @@ html:has(.launch-footer)::after { z-index: 10003; }
     radial-gradient(circle at 14% 24%, rgb(247 231 195 / .55) 0 1px, transparent 2px),
     radial-gradient(circle at 72% 66%, rgb(69 48 37 / .2) 0 1px, transparent 2px),
     repeating-linear-gradient(102deg, transparent 0 27px, rgb(73 52 42 / .08) 28px, transparent 29px 61px),
-    url("../assets/paper-grain.svg") repeat;
+    url("../../assets/paper-grain.svg") repeat;
   background-size: auto, auto, 73px 67px, 97px 83px, auto, 260px 260px;
   mix-blend-mode: soft-light;
   opacity: .62;

@@ -14,7 +14,7 @@ test("Band and Tour reuse one festival asset through distinct decorative layers"
   assert.match(band, /class="band-dossier" data-paper-cutout="scrap" data-paper-edge="soft"/);
   assert.match(band, /class="dossier-tab" data-paper-cutout="scrap" data-paper-edge="soft">TOUR DOSSIER · 2012—NOW/);
   assert.equal((band.match(/data-replaceable-group-photo/g) || []).length, 1);
-  assert.match(band, /data-replaceable-group-photo>[\s\S]+?<img src="assets\/performance\.webp" width="1920" height="1080" alt="Funkadelic Astronaut performing live"/);
+  assert.match(band, /data-replaceable-group-photo>[\s\S]+?<img src="\.\.\/assets\/performance\.webp" width="1920" height="1080" alt="Funkadelic Astronaut performing live"/);
   assert.match(band, /class="dossier-stamp"[^>]*>Funkadelic Astronaut/);
   assert.match(band, /class="dossier-route"[^>]*>NJ ↗ NORTHEAST/);
   assert.match(tour, /festival-world festival-world-tour/);
@@ -72,9 +72,9 @@ test("Band and Tour reuse one festival asset through distinct decorative layers"
   assert.doesNotMatch(css, /\.member-polaroid\s*\{[^}]+(?:background|clip-path|filter):/s);
   assert.match(css, /\.polaroid-image[^}]+clip-path:\s*polygon\([^)]*99\.15% 22%[^)]*\.35% 99\.2%[^)]*\)/s);
   assert.match(source, /name:\s*"Funkadelic Astronaut"[\s\S]+?photo:\s*null/);
-  assert.match(source, /name:\s*"Ryan Gavin"[\s\S]+?photo:\s*"assets\/band-13\.webp"/);
-  assert.match(source, /name:\s*"Kevin O’Neill"[\s\S]+?photo:\s*"assets\/band-22\.webp"/);
-  assert.match(source, /name:\s*"Sam Luba"[\s\S]+?photo:\s*"assets\/band-21\.webp"/);
+  assert.match(source, /name:\s*"Ryan Gavin"[\s\S]+?photo:\s*"\.\.\/assets\/band-13\.webp"/);
+  assert.match(source, /name:\s*"Kevin O’Neill"[\s\S]+?photo:\s*"\.\.\/assets\/band-22\.webp"/);
+  assert.match(source, /name:\s*"Sam Luba"[\s\S]+?photo:\s*"\.\.\/assets\/band-21\.webp"/);
   assert.match(source, /function slideContent\(direction, outgoing, fromOverview = false\)/);
   assert.match(source, /fromOverview[\s\S]+?translate:\s*"42% 12px"[\s\S]+?scale:\s*\.86/);
   assert.match(source, /const fromOverview = selected === 0 && next === 1;[\s\S]+?slideContent\(direction, false, fromOverview\)/);
