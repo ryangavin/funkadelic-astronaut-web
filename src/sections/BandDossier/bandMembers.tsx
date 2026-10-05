@@ -108,7 +108,7 @@ export const BAND_MEMBER_PACKETS: MemberPacket[] = [
       signature: { text: 'Kevin O’Neill', path: KEVIN_SIGNATURE, width: 236, rotation: 1.5 },
       children: (
         <>
-          <p>A naturally gifted drummer, Kevin has been making music with Ryan since before Funkadelic Astronaut had a name.</p>
+          <p>A naturally gifted drummer, Kevin has been playing with Ryan for nearly two decades, since they were in high school, long before Funkadelic Astronaut had a name.</p>
           <p>Behind the kit since day one, he brings a steady presence to a bond that runs deeper than bandmates, more like brothers.</p>
         </>
       ),
