@@ -35,14 +35,16 @@ export const Poster: Story = {
   },
 };
 
-/** The hero plays muted; one press swaps in YouTube's player with sound and controls. */
+/** The hero plays muted; one press swaps in the whole clip, from the site, with sound and controls. */
 export const PlayingTheVideo: Story = {
   play: async ({ canvasElement }) => {
     const page = within(canvasElement);
     await userEvent.click(page.getByRole('button', { name: /^(Watch with sound|Play) / }));
-    const player = page.getByTitle(/live at Nyack Neighborhood Porchfest 2026$/i);
-    await expect(player).toHaveAttribute('src', expect.stringContaining('youtube-nocookie.com/embed/QlC7tOQjGkM'));
-    await expect(player).toHaveAttribute('src', expect.not.stringContaining('mute=1'));
+    const player = page.getByLabelText(/live at Nyack Neighborhood Porchfest 2026$/i);
+    await expect(player.tagName).toBe('VIDEO');
+    await expect(player).toHaveAttribute('src', expect.stringContaining('nyack-set'));
+    await expect(player).toHaveAttribute('controls');
+    await expect((player as HTMLVideoElement).muted).toBe(false);
   },
 };
 

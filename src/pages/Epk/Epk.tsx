@@ -4,6 +4,7 @@ import kevinPortrait from '../../../assets/epk/kevin-portrait-900.webp';
 import ryanPortrait from '../../../assets/epk/ryan-portrait-900.webp';
 import samPortrait from '../../../assets/epk/sam-portrait-900.webp';
 import liveLoop from '../../../assets/epk/live-loop.mp4';
+import nyackSet from '../../../assets/epk/nyack-set.mp4';
 import livePoster from '../../../assets/epk/live-poster.webp';
 import { Weathered } from '../../behaviors/Weathered/Weathered';
 import { SOCIAL_PLATFORMS, SocialIcon } from '../../components/2D/SocialIcon/SocialIcon';
@@ -60,12 +61,14 @@ export function EpkBar({ ink, id, children }: { ink: EpkInk; id?: string; childr
 
 /**
  * The EPK's live set: "Millenial Timemachine" at Nyack Neighborhood Porchfest
- * 2026 (31 July), as the band's YouTube titles it. The hero loop (assets/epk/live-loop.mp4) is a
- * silent cut of the band's own footage of that set, from 0:22 to the end. The
- * desk keeps its own live set (LIVE_SET in bandMembers.tsx).
+ * 2026 (31 July), from the band's own footage, served from the site. Watch
+ * with sound plays the whole clip (assets/epk/nyack-set.mp4, the original
+ * repackaged as MP4); the hero loop (assets/epk/live-loop.mp4) is a silent cut
+ * of 0:26 to 0:44, where the band fills the frame. The desk keeps its own live
+ * set (LIVE_SET in bandMembers.tsx).
  */
 const EPK_LIVE_SET: LiveSet = {
-  video: 'https://www.youtube.com/watch?v=QlC7tOQjGkM',
+  video: nyackSet,
   alt: 'Funkadelic Astronaut playing “Millenial Timemachine” at Nyack Neighborhood Porchfest 2026, muted preview',
   caption: 'Millenial Timemachine',
 };
@@ -144,8 +147,7 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
               }
             />
             <figcaption>
-              <strong>On stage.</strong> Funkadelic Astronaut playing “{EPK_LIVE_SET.caption}” at {EPK_LIVE_EVENT}. The whole set is on the
-              band’s YouTube.
+              <strong>On stage.</strong> Funkadelic Astronaut playing “{EPK_LIVE_SET.caption}” at {EPK_LIVE_EVENT}.
             </figcaption>
           </figure>
 

@@ -30,7 +30,7 @@ const prefersStill = () => typeof matchMedia === 'function' && matchMedia('(pref
 export function LiveVideo({ set, loop, poster, title, label, className = '' }: LiveVideoProps) {
   const [mode, setMode] = useState<'loop' | 'still' | 'playing'>(() => (prefersStill() ? 'still' : 'loop'));
   const clip = useRef<HTMLVideoElement>(null);
-  const player = useRef<HTMLIFrameElement>(null);
+  const player = useRef<HTMLIFrameElement & HTMLVideoElement>(null);
   const id = youTubeId(set.video);
 
   // React does not reflect `muted` as an attribute, and browsers only autoplay a muted video.
@@ -61,7 +61,7 @@ export function LiveVideo({ set, loop, poster, title, label, className = '' }: L
             allowFullScreen
           />
         ) : (
-          <video src={set.video} poster={poster} controls autoPlay playsInline aria-label={title} />
+          <video ref={player} src={set.video} poster={poster} controls autoPlay playsInline aria-label={title} />
         )}
       </div>
     );
