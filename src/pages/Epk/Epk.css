@@ -47,6 +47,8 @@
   --epk-pink: #ec9ba5;
   --epk-lime: #9ccf3c;
   --epk-yellow: #e3d84e;
+  /* The cover's sunset. */
+  --epk-orange: #ef8a3c;
   --epk-rule: 1px solid var(--epk-night);
   --epk-rule-heavy: 3px solid var(--epk-night);
   --epk-gutter: clamp(16px, 2.2vw, 32px);
@@ -97,6 +99,7 @@
 .epk [data-ink='periwinkle'] { --ink: var(--epk-periwinkle); --on-ink: var(--epk-stock); }
 .epk [data-ink='pink'] { --ink: var(--epk-pink); --on-ink: var(--epk-night); }
 .epk [data-ink='lime'] { --ink: var(--epk-lime); --on-ink: var(--epk-night); }
+.epk [data-ink='orange'] { --ink: var(--epk-orange); --on-ink: var(--epk-night); }
 
 /* The sheet: weathered newsprint, torn at the edges, lifted off the poster by its shadow. */
 .epk__paper {
@@ -437,50 +440,76 @@
 }
 
 /*
-  The records in one row, ruled apart: the title over its year. Each one is a
-  button that puts that record in the player; the one playing is set in violet
-  and says so after its year.
+  The records in one row, styled as the member cards are: each under a ribbon
+  of its own spot ink, ruled apart in the gutters, the title over its year.
+  Each one is a button that puts that record in the player; the one playing
+  has its title highlighted in its own ink and says so in its chip.
 */
 .epk-record__catalog {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px var(--epk-gutter);
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: var(--epk-rule-heavy);
 }
 
+/* Ruled as the member cards are: the ribbon, then the column rule in the gutter starting below it. */
 .epk-record__catalog li {
+  container-type: inline-size;
+  position: relative;
   display: grid;
-  padding: 0 10px;
+  border-top: 8px solid var(--ink);
 }
 
-.epk-record__catalog li:first-child {
-  padding-left: 0;
-}
-
-.epk-record__catalog li + li {
+.epk-record__catalog li + li::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  bottom: 0;
+  left: calc(var(--epk-gutter) / -2);
   border-left: var(--epk-rule);
 }
 
+/* The title in the members' heavy condensed caps, the year in a chip of the record's ink like their parts. */
 .epk-record__catalog button {
   display: grid;
+  justify-items: start;
   align-content: start;
+  gap: 6px;
   min-height: 44px;
-  padding: 8px 0 2px;
+  padding: 10px 0 4px;
   border: 0;
   background: none;
   color: inherit;
   font: inherit;
-  font-size: 15px;
-  line-height: 1.25;
   text-align: left;
   cursor: pointer;
 }
 
+/*
+  Titles never wrap. The longest, TIME TO SAVE THE UNIVERSE, runs 10.4em in
+  this face, so 9.4% of a column fits it with a hair to spare; every title
+  shares that size, capped at 24px.
+*/
 .epk-record__catalog button span:first-child {
+  font-weight: 900;
+  font-stretch: 62%;
+  font-size: min(24px, 9.4cqw);
+  line-height: 0.95;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.epk-record__catalog button span:last-child {
+  padding: 2px 8px;
+  background: var(--ink);
+  color: var(--on-ink);
   font-weight: 700;
+  font-size: 11px;
+  letter-spacing: var(--epk-caps);
+  text-transform: uppercase;
 }
 
 .epk-record__catalog button:hover span:first-child {
@@ -488,8 +517,12 @@
   text-decoration-thickness: 2px;
 }
 
-.epk-record__catalog button[aria-pressed='true'] {
-  color: var(--epk-violet);
+/* The record playing has its title marked in its own ribbon's ink, like a highlighter. */
+.epk-record__catalog button[aria-pressed='true'] span:first-child {
+  margin-left: -4px;
+  padding: 1px 4px 0;
+  background: var(--ink);
+  color: var(--on-ink);
 }
 
 /* The icons' own 44px tap targets pad them; pull the row flush with the column's edge. */
@@ -543,10 +576,11 @@
   object-fit: cover;
 }
 
+/* The name, and its part in a chip of the member's ink standing exactly as tall as the name. */
 .epk-member h3 {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: stretch;
   justify-content: space-between;
   gap: 4px 8px;
   margin-bottom: 6px;
@@ -555,11 +589,13 @@
 }
 
 .epk-member h3 small {
-  padding: 2px 8px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
   background: var(--ink);
   color: var(--on-ink);
   font-stretch: 100%;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .epk-member p {
@@ -726,12 +762,11 @@
 
   .epk-record__catalog {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 8px;
+    row-gap: 14px;
   }
 
-  .epk-record__catalog li:nth-child(odd) {
-    padding-left: 0;
-    border-left: 0;
+  .epk-record__catalog li:nth-child(odd)::before {
+    content: none;
   }
 
   .epk-member,

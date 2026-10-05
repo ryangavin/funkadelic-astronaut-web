@@ -19,7 +19,7 @@ import '../../styles/torn-edge.css';
 import './Epk.css';
 
 /** The spot inks, sampled from the cover of Time to Save the Universe. */
-export type EpkInk = 'violet' | 'lavender' | 'periwinkle' | 'pink' | 'lime';
+export type EpkInk = 'violet' | 'lavender' | 'periwinkle' | 'pink' | 'lime' | 'orange';
 
 /** The cover's night sky, deepened: the ink the paper is printed in. Matches `--epk-night` in Epk.css. */
 const EPK_NIGHT = '#1c1640';
@@ -44,6 +44,9 @@ export function EpkBar({ ink, id, children }: { ink: EpkInk; id?: string; childr
     </Distressed>
   );
 }
+
+/** The ribbon over each record in the list, newest first, as the members' columns are ruled. */
+const RECORD_INKS: EpkInk[] = ['violet', 'lime', 'pink', 'periwinkle', 'orange'];
 
 /** The page's own links, each a tab in its own spot ink. */
 const NAV_LINKS = [
@@ -160,8 +163,8 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
               </div>
             </div>
             <ul className="epk-record__catalog" aria-label="Records: press one to play it">
-              {records.map(record => (
-                <li key={record.albumId}>
+              {records.map((record, index) => (
+                <li key={record.albumId} data-ink={RECORD_INKS[index % RECORD_INKS.length]}>
                   <button type="button" aria-pressed={record === playing} onClick={() => play(record)}>
                     <span>{record.title}</span> <span>{record === playing ? `${record.year} · Playing` : record.year}</span>
                   </button>
