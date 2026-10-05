@@ -363,7 +363,7 @@
 .epk-record {
   display: grid;
   grid-template-columns: minmax(350px, 4fr) minmax(0, 8fr);
-  gap: 16px var(--epk-gutter);
+  gap: var(--epk-gutter);
   scroll-margin-top: 12px;
 }
 
@@ -483,9 +483,9 @@
   display: flex;
   justify-content: center;
   align-items: stretch;
-  gap: 6px;
+  gap: 8px;
   min-height: 44px;
-  padding: 10px 0 4px;
+  padding: 10px 0 0;
   border: 0;
   background: none;
   color: inherit;
@@ -496,7 +496,7 @@
 /*
   Names never wrap, and the row stays one row wide. The five names run 31.4em
   of title type; the chips, gutters and a little room around each take about
-  450px; so the type is what is left over 31.4, capped at 24px. Narrower, the
+  520px; so the type is what is left over 31.4, capped at 24px. Narrower, the
   row wraps instead (see the medium breakpoint).
 */
 .epk-record__catalog button span:first-child {
@@ -504,20 +504,21 @@
   align-items: center;
   font-weight: 900;
   font-stretch: 62%;
-  font-size: min(24px, (100cqw - 450px) / 31.4);
+  font-size: min(24px, (100cqw - 520px) / 31.4);
   line-height: 1;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
+/* The year chip, sized and set as the members' part chips. */
 .epk-record__catalog button span:last-child {
   display: flex;
   align-items: center;
-  padding: 0 6px;
+  padding: 0 10px;
   background: var(--ink);
   color: var(--on-ink);
   font-weight: 700;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: var(--epk-caps);
 }
 
@@ -531,7 +532,7 @@
   the night ink: lime, pink and orange straight on newsprint are too faint to read.
 */
 .epk-record__catalog button[aria-pressed='true'] span:first-child {
-  color: color-mix(in oklab, var(--ink), var(--epk-night) 55%);
+  color: color-mix(in oklab, var(--ink), var(--epk-night) 65%);
 }
 
 /* The icons' own 44px tap targets pad them; pull the row flush with the column's edge. */
