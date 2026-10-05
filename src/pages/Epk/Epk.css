@@ -194,6 +194,114 @@
   color: var(--epk-violet);
 }
 
+.epk__nav-label {
+  display: none;
+}
+
+/* Index: "Inside" and a listing with the page each section would be on, Book us boxed at the end. */
+.epk__nav[data-look='index'] {
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0 4px;
+}
+
+.epk__nav[data-look='index'] .epk__nav-label {
+  display: block;
+  margin-right: 10px;
+  padding: 2px 10px;
+  background: var(--epk-night);
+  color: var(--epk-stock);
+  font-weight: 900;
+  font-stretch: 62%;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+
+.epk__nav[data-look='index'] a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 0 12px 0 0;
+  border: 0;
+}
+
+.epk__nav[data-look='index'] a:not(:last-child)::after {
+  content: 'p. ' attr(data-page);
+  font-stretch: 100%;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.epk__nav[data-look='index'] a:last-child {
+  margin-left: auto;
+  padding: 0 14px;
+  min-height: 34px;
+  border: var(--epk-rule-heavy);
+}
+
+/* Tabs: each section a spot-ink tab standing on the double rule. */
+.epk__nav[data-look='tabs'] {
+  align-items: flex-end;
+  gap: 0 8px;
+  padding-top: 10px;
+  border-top: 0;
+}
+
+.epk__nav[data-look='tabs'] a {
+  min-height: 40px;
+  padding: 0 clamp(14px, 2vw, 26px);
+  border: 0;
+  background: var(--ink);
+  color: var(--on-ink);
+  mix-blend-mode: multiply;
+  font-weight: 900;
+  font-stretch: 62%;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+}
+
+.epk__nav[data-look='tabs'] a:nth-child(odd) {
+  rotate: -1.5deg;
+}
+
+.epk__nav[data-look='tabs'] a:nth-child(even) {
+  rotate: 1deg;
+}
+
+/* Ticker: the links reversed out of a night band, starred apart, like a paper's teaser strip. */
+.epk__nav[data-look='ticker'] {
+  background: var(--epk-night);
+  border: 0;
+  outline: 1px solid var(--epk-night);
+  outline-offset: 3px;
+}
+
+.epk__nav[data-look='ticker'] a {
+  color: var(--epk-stock);
+  border: 0;
+  letter-spacing: 0.14em;
+}
+
+.epk__nav[data-look='ticker'] a + a::before {
+  content: '★';
+  margin-right: clamp(10px, 2vw, 28px);
+  margin-left: calc(-1 * clamp(10px, 2vw, 28px));
+  color: var(--epk-yellow);
+  font-size: 12px;
+}
+
+.epk__nav[data-look='ticker'] a + a {
+  display: flex;
+  align-items: center;
+}
+
+.epk__nav[data-look='ticker'] a:last-child {
+  color: var(--epk-yellow);
+}
+
 .epk__sheet {
   display: grid;
   gap: var(--epk-gutter);

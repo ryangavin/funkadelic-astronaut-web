@@ -46,5 +46,10 @@ export const PlayingTheVideo: Story = {
   },
 };
 
+/** The section index under the nameplate, in each look being chosen between. */
+export const NavIndex: Story = { args: { nav: 'index' } };
+export const NavTabs: Story = { args: { nav: 'tabs' } };
+export const NavTicker: Story = { args: { nav: 'ticker' } };
+
 export const Tablet: Story = { globals: { viewport: { value: 'tablet' } } };
 export const Phone: Story = { globals: { viewport: { value: 'phone' } } };
