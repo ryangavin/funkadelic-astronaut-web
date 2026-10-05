@@ -1,9 +1,9 @@
 # Desk settings — the production cabin and the coffee counter
 
 A setting gate for the D01–D05 sequence: the same promoter's desk, in two other
-places. Stories are `Pages/Desk Settings → Production Trailer` and
+places. Stories are `Experience/Desk Settings → Production Trailer` and
 `→ Coffee Counter`; the settings themselves are prop bundles in
-[`src/pages/Desk/settings.tsx`](../src/pages/Desk/settings.tsx).
+[`src/experience/Desk/settings.tsx`](../src/experience/Desk/settings.tsx).
 
 Both carry the same nine objects — dossier, Walkman, Handheld, site plan, run
 sheet, contract, pen, Label Bro, mug — at their own real sizes, because a gate
