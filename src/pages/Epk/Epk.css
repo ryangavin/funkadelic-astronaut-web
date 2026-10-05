@@ -208,7 +208,7 @@
   min-height: 44px;
   padding: 0 clamp(14px, 2vw, 26px);
   background: var(--ink);
-  color: var(--on-ink);
+  color: var(--epk-stock);
   mix-blend-mode: multiply;
   font-weight: 900;
   font-stretch: 62%;
@@ -216,6 +216,16 @@
   letter-spacing: 0.02em;
   text-decoration: none;
   text-transform: uppercase;
+}
+
+/*
+  Every tab is lettered in paper, as Listen and Watch are. Lime and pink are too
+  light for that, so their tabs are deepened toward the night ink (olive, plum)
+  until the paper letters read as clearly as on Watch (about 4.3 to 4.6:1).
+*/
+.epk__nav a[data-ink='lime'],
+.epk__nav a[data-ink='pink'] {
+  background: color-mix(in srgb, var(--ink), var(--epk-night) 55%);
 }
 
 .epk__nav a:hover {
