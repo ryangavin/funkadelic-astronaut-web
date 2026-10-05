@@ -454,38 +454,31 @@
   container-type: inline-size;
   grid-column: 1 / -1;
   display: flex;
+  /*
+    Names never wrap, and the row stays one row wide. The five names and their
+    years run 42.3em of this type; the gaps, gutters and a little room around
+    each take about 250px; so the type is what is left over 42.3, capped at
+    24px. Narrower, the row wraps instead (see the medium breakpoint).
+  */
+  --epk-record-type: min(24px, (100cqw - 250px) / 42.3);
   gap: 8px var(--epk-gutter);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/* Ruled as the member cards are: the ribbon, then the column rule in the gutter starting below it. */
+/* Each column shares the row's spare room alike; the ribbon sits over the name alone, exactly as wide as it, centred. */
 .epk-record__catalog li {
   flex: 1 1 auto;
-  position: relative;
   display: flex;
-  border-top: 8px solid var(--ink);
 }
 
-.epk-record__catalog li + li::before {
-  content: '';
-  position: absolute;
-  top: 18px;
-  bottom: 0;
-  left: calc(var(--epk-gutter) / -2);
-  border-left: var(--epk-rule);
-}
-
-/* Centred in its column: the title in the members' heavy condensed caps, the year beside it in a chip of the record's ink. */
 .epk-record__catalog button {
   flex: 1;
   display: flex;
   justify-content: center;
-  align-items: stretch;
-  gap: 8px;
   min-height: 44px;
-  padding: 10px 0 0;
+  padding: 0;
   border: 0;
   background: none;
   color: inherit;
@@ -493,36 +486,30 @@
   cursor: pointer;
 }
 
-/*
-  Names never wrap, and the row stays one row wide. The five names run 31.4em
-  of title type; the chips, gutters and a little room around each take about
-  520px; so the type is what is left over 31.4, capped at 24px. Narrower, the
-  row wraps instead (see the medium breakpoint).
-*/
-.epk-record__catalog button span:first-child {
+/* The ribbon, then the name in the members' heavy condensed caps with its year beside it. */
+.epk-record__name {
   display: flex;
-  align-items: center;
-  font-weight: 900;
+  align-items: baseline;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 8px solid var(--ink);
   font-stretch: 62%;
-  font-size: min(24px, (100cqw - 520px) / 31.4);
+  font-size: var(--epk-record-type);
   line-height: 1;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
-/* The year chip, sized and set as the members' part chips. */
-.epk-record__catalog button span:last-child {
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-  background: var(--ink);
-  color: var(--on-ink);
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: var(--epk-caps);
+.epk-record__name > span:first-child {
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
-.epk-record__catalog button:hover span:first-child {
+/* The year in brackets, a weight lighter. */
+.epk-record__name > span:last-child {
+  font-weight: 500;
+}
+
+.epk-record__catalog button:hover .epk-record__name > span:first-child {
   text-decoration: underline;
   text-decoration-thickness: 2px;
 }
@@ -531,7 +518,7 @@
   The record playing has its title set in its own ribbon's ink, deepened with
   the night ink: lime, pink and orange straight on newsprint are too faint to read.
 */
-.epk-record__catalog button[aria-pressed='true'] span:first-child {
+.epk-record__catalog button[aria-pressed='true'] .epk-record__name > span:first-child {
   color: color-mix(in oklab, var(--ink), var(--epk-night) 65%);
 }
 
@@ -668,18 +655,11 @@
     grid-template-columns: minmax(350px, 1fr) minmax(0, 1fr);
   }
 
-  /* Too narrow for one row at a readable size: the records wrap, each row sharing its room alike. Ribbons part them; a rule could land at a row's edge. */
+  /* Too narrow for one row at a readable size: the records wrap, each row sharing its room alike. */
   .epk-record__catalog {
     flex-wrap: wrap;
     row-gap: 14px;
-  }
-
-  .epk-record__catalog button span:first-child {
-    font-size: 20px;
-  }
-
-  .epk-record__catalog li + li::before {
-    content: none;
+    --epk-record-type: 20px;
   }
 
   /* The column is narrow: the streaming links drop under the heading, flush left. */

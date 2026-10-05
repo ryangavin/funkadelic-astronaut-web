@@ -166,7 +166,9 @@ export function Epk({ release = FEATURED_RELEASE, className = '', style }: EpkPr
               {records.map((record, index) => (
                 <li key={record.albumId} data-ink={RECORD_INKS[index % RECORD_INKS.length]}>
                   <button type="button" aria-pressed={record === playing} onClick={() => play(record)}>
-                    <span>{record.title}</span> <span>{record.year}</span>
+                    <span className="epk-record__name">
+                      <span>{record.title}</span> <span>({record.year})</span>
+                    </span>
                   </button>
                 </li>
               ))}

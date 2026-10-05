@@ -50,11 +50,11 @@ export const PlayingTheVideo: Story = {
 export const PickingARecord: Story = {
   play: async ({ canvasElement }) => {
     const page = within(canvasElement);
-    const magrathea = page.getByRole('button', { name: /^Magrathea 2018/ });
+    const magrathea = page.getByRole('button', { name: 'Magrathea (2018)' });
     await userEvent.click(magrathea);
     await expect(magrathea).toHaveAttribute('aria-pressed', 'true');
     await expect(page.getByTitle(/^Magrathea by Funkadelic Astronaut/)).toHaveAttribute('src', expect.stringContaining('album=3829388634'));
-    await userEvent.click(page.getByRole('button', { name: new RegExp(`^${FEATURED_RELEASE.title} ${FEATURED_RELEASE.year}`) }));
+    await userEvent.click(page.getByRole('button', { name: `${FEATURED_RELEASE.title} (${FEATURED_RELEASE.year})` }));
     await expect(page.getByTitle(/on Bandcamp$/)).toHaveAttribute('src', expect.stringContaining(`album=${FEATURED_RELEASE.albumId}`));
   },
 };
