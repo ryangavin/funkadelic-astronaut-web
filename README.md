@@ -68,7 +68,7 @@ The full performance uses one inline video element and one HLS attachment. When 
 
 Repository: https://github.com/ryangavin/funkadelic-astronaut-web
 
-Public site: https://ryangavin.github.io/funkadelic-astronaut-web/
+Public site: https://funkadelicastronaut.com/ (GitHub Pages custom domain; DNS at Namecheap)
 
 Pushes to `main` run the full Node test suite and deploy through `.github/workflows/pages.yml`. No production build is required. The workflow stages both HTML pages, CSS, runtime JavaScript (including the ribbon studio, living video and poster motion), and `assets/`. All local asset paths are relative so the site works under the repository subpath. Dependencies, secrets, deployment staging, and local `output/` design/QA references are excluded from Git; only runtime files are included in the Pages artifact.
 
