@@ -35,20 +35,15 @@ const squash = (text: string | null | undefined) => (text ?? '').replace(/\s+/g,
 const wholeText = (expected: string) => (_: string, element: Element | null) =>
   !!element && squash(element.textContent) === expected && ![...element.children].some(child => squash(child.textContent) === expected);
 
-/**
- * Every link and button on the page, in document order: what the keyboard must reach. An iframe's
- * fallback content is never shown by a browser, so it is not on the page.
- */
-const controls = (root: HTMLElement) =>
-  [...root.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')].filter(element => !element.parentElement?.closest('iframe'));
+/** Every link and button on the page, in document order: what the keyboard must reach. */
+const controls = (root: HTMLElement) => [...root.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')];
 const describe = (element: Element | null) => `${element?.tagName.toLowerCase()} "${element?.getAttribute('aria-label') ?? squash(element?.textContent)}"`;
 
 /**
  * The keyboard reaches every control, in document order, and each shows where focus is.
  * No positive tabindex anywhere means Tab follows document order; no control is taken out of it;
- * each one takes focus, matches :focus-visible, and is visible on screen. (Testing Library's simulated
- * Tab can't be used here: it tries to focus the fallback link React puts inside the Bandcamp iframe,
- * which no browser shows, and sticks there.)
+ * each one takes focus, matches :focus-visible, and is visible on screen. (Each control is focused
+ * directly; the real Tab key is checked end to end in e2e/navigation.spec.ts.)
  */
 const tabThroughEverything = async (root: HTMLElement) => {
   for (const element of root.querySelectorAll('[tabindex]')) await expect(Number(element.getAttribute('tabindex')), describe(element)).toBeLessThanOrEqual(0);

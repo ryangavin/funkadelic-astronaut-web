@@ -70,8 +70,7 @@
       "earlier": "{{title}} ({{year}})"
     },
     "bandcamp": {
-      "title": "{{title}} by Funkadelic Astronaut on Bandcamp",
-      "fallback": "{{title}} by Funkadelic Astronaut"
+      "title": "{{title}} by Funkadelic Astronaut on Bandcamp"
     },
     "band": {
       "heading": "Three friends. One orbit."

@@ -18,11 +18,24 @@ const column = (page: Page, name: string) =>
     .getByRole('article')
     .filter({ has: page.getByRole('heading', { name: new RegExp(escapeRegExp(name)) }) });
 
-/** A cold load of a link straight to the music, in a new tab, as when a visitor follows a shared link. */
+/**
+ * A cold load of a link straight to the music, as when a visitor follows a shared link: it opens at the music, and
+ * once everything has loaded and the web fonts are in (which can move the page under it), the music is still the
+ * section at the top: its heading on screen, the page heading above it scrolled away.
+ */
 async function expectDeepLinkLands(page: Page) {
   await page.goto('./#music');
   await expect(page).toHaveURL(/#music$/);
-  await expect(sectionFor(page, '#music')).toBeInViewport();
+  const music = sectionFor(page, '#music');
+  await expect(music).toBeInViewport();
+
+  await expect
+    .poll(() => page.evaluate(async () => document.readyState === 'complete' && (await document.fonts.ready).status === 'loaded'), {
+      message: 'the page has loaded and its fonts are in',
+    })
+    .toBe(true);
+  await expect(music.getByRole('heading').first()).toBeInViewport();
+  await expect(page.getByRole('heading', { level: 1, name: exactly(BAND_NAME) })).not.toBeInViewport();
 }
 
 test.describe('Without JavaScript', () => {

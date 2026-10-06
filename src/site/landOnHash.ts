@@ -4,24 +4,24 @@ import { useEffect } from 'react';
 const TAKING_OVER = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const;
 
 /**
- * Lands a cold load of `/#section` on that section. The page is pre-rendered,
- * so the browser normally finds the fragment and scrolls to it itself; then
- * the window has already moved and this does nothing. It stays as a safety
- * net for a load where the browser did not land (the section was not found in
- * time, or something put the window back at the top); the redirects from old
- * addresses (`press-kit.html`, `classic.html`, `404.html`) carry the hash over
- * and land the same way.
+ * Lands a cold load of `/#section` on that section, and keeps it there while
+ * the page settles. The page is pre-rendered, so the browser normally finds
+ * the fragment and scrolls to it itself; this then finds the window already
+ * on the section and only keeps it there. If the browser did not land (the
+ * window is still at the top), this lands; the redirects from old addresses
+ * (`press-kit.html`, `classic.html`, `404.html`) carry the hash over and land
+ * the same way.
  *
- * Once the page has rendered, this does what following one of the page's own
- * tabs does: jumps straight to the section (no smooth scroll, as the tabs
- * don't animate either, so reduced motion is respected) and moves the
- * keyboard there, so the next Tab carries on from the section. The section
- * takes focus through a temporary `tabindex="-1"`, removed when focus leaves.
+ * Once the page is live, this does what following one of the page's own tabs
+ * does: jumps straight to the section (no smooth scroll, as the tabs don't
+ * animate either, so reduced motion is respected) and moves the keyboard
+ * there, so the next Tab carries on from the section. The section takes
+ * focus through a temporary `tabindex="-1"`, removed when focus leaves.
  *
  * An empty hash, or one that names nothing on the page, does nothing. Nor does
  * a reload or a trip back or forward through history, where the browser
- * restores the visitor's own place, or a window that has already been
- * scrolled. Focus is only taken if nothing else has it yet. Images and web
+ * restores the visitor's own place, or a window that has been scrolled
+ * somewhere other than the section. Focus is only taken if nothing else has it yet. Images and web
  * fonts that settle late can move the section, so once the page has loaded
  * and its fonts are in it lines the section up again, unless the visitor has
  * scrolled (by any means: wheel, scrollbar, find in page), clicked, touched or
@@ -30,7 +30,9 @@ const TAKING_OVER = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const;
  */
 export function landOnHash(hash: string = location.hash): () => void {
   const target = findTarget(hash);
-  if (!target || window.scrollY !== 0 || restoresItsOwnPlace()) return () => {};
+  if (!target || restoresItsOwnPlace()) return () => {};
+  // Scrolled, but not to the section: the visitor (or something else) has moved the page, which beats the hash.
+  if (window.scrollY !== 0 && !landedOn(target)) return () => {};
 
   const align = () => target.scrollIntoView({ block: 'start', behavior: 'instant' });
   align();
@@ -80,6 +82,17 @@ export function useLandOnHash() {
 function restoresItsOwnPlace() {
   const [navigation] = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
   return navigation?.type === 'reload' || navigation?.type === 'back_forward';
+}
+
+/**
+ * Whether the window sits where landing on `target` leaves it: the section at the top, below its scroll margin
+ * (give or take a few pixels), or, for a section too near the end to reach the top, scrolled as far as it goes.
+ */
+function landedOn(target: HTMLElement) {
+  const top = target.getBoundingClientRect().top;
+  const margin = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+  const atTheEnd = window.scrollY >= document.documentElement.scrollHeight - window.innerHeight - 1;
+  return Math.abs(top - margin) <= 4 || (atTheEnd && top >= 0 && top < window.innerHeight);
 }
 
 function findTarget(hash: string): HTMLElement | null {
