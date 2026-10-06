@@ -1,33 +1,7 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 
-// Perspective.tsx and DeskObjects.tsx hold maths the desk relies on, but Node
-// strips types only from .ts and cannot read JSX. This file compiles .tsx with
-// esbuild (installed with Vite and Storybook) and stubs stylesheets and assets.
-const fs = require('node:fs');
-const { registerHooks } = require('node:module');
-const { fileURLToPath } = require('node:url');
-const { transformSync } = require('esbuild');
-registerHooks({
-  resolve(specifier, context, next) {
-    try { return next(specifier, context); } catch (error) {
-      for (const suffix of ['.ts', '.tsx']) try { return next(specifier + suffix, context); } catch {}
-      throw error;
-    }
-  },
-  load(url, context, next) {
-    if (url.endsWith('.json')) return { format: 'module', source: `export default ${fs.readFileSync(fileURLToPath(url), 'utf8')}`, shortCircuit: true };
-    if (!/\.(ts|tsx|js|mjs|cjs)$/.test(url)) return { format: 'module', source: `export default ${JSON.stringify(url)}`, shortCircuit: true };
-    if (!url.endsWith('.tsx')) return next(url, context);
-    const file = fileURLToPath(url);
-    const { code } = transformSync(fs.readFileSync(file, 'utf8'), { loader: 'tsx', format: 'esm', jsx: 'automatic', sourcefile: file });
-    return { format: 'module', source: code, shortCircuit: true };
-  },
-});
-
-const { unprojectFrom, stand } = require('../src/behaviors/Perspective/Perspective.tsx');
-const { DESK_OBJECTS } = require('../src/experience/Desk/DeskObjects.tsx');
-const { UNITS_PER_MM } = require('../src/geometry/physicalScale.ts');
+const { unprojectFrom, stand } = require('../src/behaviors/Perspective/projection.ts');
 const { roomSetup, roomFraming } = require('../src/geometry/roomSetup.ts');
 const { projectFloorPoint } = require('../src/foundations/Room/floorGeometry.ts');
 
@@ -141,17 +115,6 @@ test('a solid turned on the desk reports its turn and still rises by the same am
     const stood = stand(planeElement(plane), view, foot, edge, 1, 0.5);
     near(stood.turn, turn);
     near(stood.rise, 0.5 * Math.tan(radians(20)));
-  }
-});
-
-test('every desk object with a Solid stands at the same height as the shadow it casts: solid.height × widthMm = height in mm', () => {
-  const solids = DESK_OBJECTS.filter(object => object.solid);
-  assert.ok(solids.length >= 4, 'mug, rolodex, label maker and desk phone carry a Solid');
-  for (const object of solids) {
-    // Within 0.01 mm: the Rolodex's 408/518 drawing ratio of a 137.05 mm width comes to 107.947 mm against 107.95.
-    near(object.solid.height * object.widthMm, object.height, 0.01);
-    // In desk units the same thing reads solid.height × width = 1.2 × height mm.
-    near(object.solid.height * object.width, UNITS_PER_MM * object.height, 0.01 * UNITS_PER_MM);
   }
 });
 

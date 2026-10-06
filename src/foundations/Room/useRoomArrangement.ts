@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { Place } from '../../behaviors/Movable/Movable';
 import { usePlaces } from '../../behaviors/Movable/places';
+import { flightElapsed, flightPlace, flightProgress } from './flight';
 
 export type RoomArrangement = Record<string, Place>;
-
-/** The most of a flight one frame can account for: about six frames at 60 Hz. */
-const ARRANGE_MAX_STEP_MS = 100;
 
 /** Scene-owned target layouts, animated through the Room's shared place store.
  * Shadows and elevated drawings see the same intermediate positions as objects.
@@ -30,15 +28,12 @@ export function useRoomArrangement() {
       return;
     }
     const flights = Object.entries(targets).map(([id, to]) => ({ id, to, from: places.get(id) ?? to, last: places.get(id) }));
-    // A stalled frame (often the one mounting whatever started the flight)
-    // advances it by one step at most, so slow frames slow the motion rather than skip it.
     let last = performance.now();
     let elapsed = 0;
     const tick = (now: number) => {
-      elapsed += Math.min(Math.max(0, now - last), ARRANGE_MAX_STEP_MS);
+      elapsed = flightElapsed(elapsed, last, now);
       last = now;
-      const progress = Math.min(1, elapsed / duration);
-      const ease = 1 - (1 - progress) ** 3;
+      const progress = flightProgress(elapsed, duration);
       for (let index = flights.length - 1; index >= 0; index--) {
         const flight = flights[index];
         if (places.get(flight.id) !== flight.last) {
@@ -46,13 +41,7 @@ export function useRoomArrangement() {
           flights.splice(index, 1);
           continue;
         }
-        const { from, to } = flight;
-        const at = progress === 1 ? to : {
-          x: from.x + (to.x - from.x) * ease,
-          y: from.y + (to.y - from.y) * ease,
-          rotation: (from.rotation ?? 0) + ((to.rotation ?? 0) - (from.rotation ?? 0)) * ease,
-          scale: (from.scale ?? 1) + ((to.scale ?? 1) - (from.scale ?? 1)) * ease,
-        };
+        const at = flightPlace(flight.from, flight.to, progress);
         flight.last = at;
         places.set(flight.id, at);
       }

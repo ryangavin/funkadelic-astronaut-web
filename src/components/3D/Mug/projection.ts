@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { measurePlane, unprojectFrom, usePerspectiveView } from '../../../behaviors/Perspective/Perspective';
+import { usePerspectiveView } from '../../../behaviors/Perspective/Perspective';
+import { measurePlane, unprojectFrom } from '../../../behaviors/Perspective/projection';
 import { elevatedLayer } from '../../../behaviors/Perspective/elevation';
 import { BASE_LAYER } from '../Wastebasket/cylinder';
 
