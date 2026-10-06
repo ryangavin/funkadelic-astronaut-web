@@ -12,6 +12,7 @@ How to work in this repo: where things go, which tests to run, what CI runs and 
 | `src/components`, `src/behaviors`, `src/foundations`, `src/styles`, `src/geometry` | Shared library | **Library / Components / 2D/...**, **Library / Components / 3D/...**, **Library / Foundations / ...** |
 | `legacy/` | The old vanilla-JS poster with its scripts and styles; kept, not deployed, not served by `npm run dev` | — |
 | `assets/` | Images, fonts, audio and video; copied whole into `dist/` by `scripts/copy-static-build.cjs` because the site loads some files by fixed `/assets/...` URL | — |
+| `e2e/` | Playwright tests of the built site, one file per area (`visitor-tasks`, `navigation`, `layout`, `accessibility`, `page-health`), with shared fixtures in `e2e/support/`; config in `playwright.config.ts` | — |
 | `docs/` | Design notes; the experience is in `docs/experience.md` | — |
 
 Rules:
@@ -31,14 +32,16 @@ Rules:
 | `npm run build` | `tsc --noEmit`, the Vite build of the site, static copy | Once before pushing (it includes the `tsc` check, so skip the separate one) |
 | `npm run test:stories` | The site's stories (`src/site/**`) as browser tests in headless Chromium, with their play functions as assertions | Once before pushing site changes |
 | `npm run build-storybook` | Storybook builds, every story included | Before pushing story or Storybook config changes |
+| `npm run test:e2e` | The released site end to end (`e2e/`, Playwright): builds it, serves `dist/` with `vite preview` on port 4180, and runs what a visitor does (bios, record player, live set, booking and platform links, in-page tabs, old URLs, keyboard, axe, reduced motion) at phone, tablet and desktop sizes in Chromium. Third-party origins are stubbed. It includes `npm run build`, so skip that one when you run this | Once before pushing changes to the site, `src/content`, `index.html`, `public/` or the build |
+| `npx playwright test e2e/<file>.spec.ts --project=desktop` | One e2e file at one size | While working on the e2e tests |
 
-Only the site is tested end to end. The experience and the shared library are unreleased: their stories are visual only by policy, with no play functions, and `vite.config.mts` excludes everything outside `src/site` from `npm run test:stories`. Their only tests are the pure geometry and maths in `tests/`. `legacy/` has no tests.
+Only the site is tested end to end. The e2e tests check behaviour a visitor can see or do (roles, names, link destinations, what gets mounted, the URL); they never check CSS, class names, layout geometry or exact copy, which the site's stories cover. The experience and the shared library are unreleased: their stories are visual only by policy, with no play functions, and `vite.config.mts` excludes everything outside `src/site` from `npm run test:stories`. Their only tests are the pure geometry and maths in `tests/`. `legacy/` has no tests.
 
 Run each command once; don't run the full suites in overlapping configurations. `npm run dev` serves the site at `/` and Storybook at `/storybook/`; stop it when you are done.
 
 ## CI
 
-- Pull requests (`.github/workflows/ci.yml`): `npm test` and `npm run build`; `npm run build-storybook`; `npm run test:stories`. CI on the PR is the final check.
+- Pull requests (`.github/workflows/ci.yml`): `npm test` and `npm run build`; `npm run build-storybook`; `npm run test:stories`; `npm run test:e2e` (the Playwright report is uploaded when it fails). CI on the PR is the final check.
 - Pushes to `main` (`.github/workflows/pages.yml`): `npm test`, `npm run build`, then deploy `dist/` to GitHub Pages.
 
 ## PR review checklist

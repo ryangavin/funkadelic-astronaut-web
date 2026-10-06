@@ -4,6 +4,8 @@ output/
 _site/
 dist/
 storybook-static/
+playwright-report/
+test-results/
 .DS_Store
 .env
 .env.*
