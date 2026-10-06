@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "node scripts/dev.mjs",
-    "build": "tsc --noEmit && vite build && node scripts/copy-static-build.cjs",
+    "build": "tsc --noEmit && vite build && vite build --ssr src/site/entry-server.tsx --outDir node_modules/.cache/prerender && node scripts/prerender.mjs && node scripts/copy-static-build.cjs",
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",

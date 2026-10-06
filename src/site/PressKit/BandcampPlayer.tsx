@@ -67,9 +67,8 @@ export function BandcampPlayer({ release = FEATURED_RELEASE, fit = false, classN
         loading="lazy"
         seamless
         style={embed === 'artwork' && side ? { width: side, height: side } : undefined}
-      >
-        <a href={release.href}>{t('pressKit.bandcamp.fallback',{ title: release.title })}</a>
-      </iframe>
+      />
+      {/* No fallback inside the iframe: browsers never show one, and in pre-rendered HTML it would parse as text and fail hydration. */}
     </div>
   );
 }

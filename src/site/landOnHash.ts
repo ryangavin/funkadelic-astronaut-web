@@ -4,9 +4,11 @@ import { useEffect } from 'react';
 const TAKING_OVER = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const;
 
 /**
- * Lands a cold load of `/#section` on that section. The page is rendered by
- * React into an empty `#root`, so the browser looks for the fragment before
- * the section exists and never scrolls to it; the redirects from old
+ * Lands a cold load of `/#section` on that section. The page is pre-rendered,
+ * so the browser normally finds the fragment and scrolls to it itself; then
+ * the window has already moved and this does nothing. It stays as a safety
+ * net for a load where the browser did not land (the section was not found in
+ * time, or something put the window back at the top); the redirects from old
  * addresses (`press-kit.html`, `classic.html`, `404.html`) carry the hash over
  * and land the same way.
  *

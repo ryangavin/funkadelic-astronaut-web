@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { youTubeId } from '../../components/2D/Polaroid/embed';
 import { t } from '../../i18n/copy';
 import '../styles/newsprint.css';
@@ -31,15 +31,22 @@ const prefersStill = () => typeof matchMedia === 'function' && matchMedia('(pref
  * play button instead of the loop.
  */
 export function LiveVideo({ video, loop, poster, title, label, className = '' }: LiveVideoProps) {
-  const [mode, setMode] = useState<'loop' | 'still' | 'playing'>(() => (prefersStill() ? 'still' : 'loop'));
+  // The page is pre-rendered, where there is no visitor to ask, so it starts as the loop (a video that waits on its
+  // poster, as it carries no `autoplay`) and turns to the still before the browser next paints if they want less motion.
+  const [mode, setMode] = useState<'loop' | 'still' | 'playing'>('loop');
   const clip = useRef<HTMLVideoElement>(null);
   const player = useRef<HTMLIFrameElement & HTMLVideoElement>(null);
   const id = youTubeId(video);
 
-  // React does not reflect `muted` as an attribute, and browsers only autoplay a muted video.
+  useLayoutEffect(() => {
+    if (prefersStill()) setMode(current => (current === 'loop' ? 'still' : current));
+  }, []);
+
+  // React does not reflect `muted` as an attribute, and browsers only autoplay a muted video. The loop is started
+  // here, not by `autoplay`, so nothing moves before reduced motion has been asked about.
   useEffect(() => {
     const element = clip.current;
-    if (mode !== 'loop' || !element) return;
+    if (mode !== 'loop' || !element || prefersStill()) return;
     element.muted = true;
     // Only a refusal to autoplay means the still; a hidden tab pausing it to save power plays again when shown.
     element.play().catch((error: DOMException) => {
@@ -73,7 +80,7 @@ export function LiveVideo({ video, loop, poster, title, label, className = '' }:
   return (
     <div className={`live-video ${className}`} data-mode={mode}>
       {mode === 'loop' ? (
-        <video ref={clip} className="live-video__loop" src={loop} poster={poster} muted loop playsInline autoPlay preload="auto" aria-hidden="true" />
+        <video ref={clip} className="live-video__loop" src={loop} poster={poster} muted loop playsInline preload="auto" aria-hidden="true" />
       ) : (
         <img className="live-video__loop" src={poster} alt="" />
       )}
