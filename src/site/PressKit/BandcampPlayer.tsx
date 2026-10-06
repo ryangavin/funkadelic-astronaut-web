@@ -35,9 +35,15 @@ export type BandcampPlayerProps = {
 export function BandcampPlayer({ release = FEATURED_RELEASE, fit = false, className = '' }: BandcampPlayerProps) {
   const box = useRef<HTMLDivElement>(null);
   const [room, setRoom] = useState<{ width: number; height: number }>();
+  // Whether the embed has been decided. The pre-rendered page can't know the room the player will get, so it holds a
+  // placeholder of the player's size and gives the frame its src only once the layout effect has picked the embed:
+  // Bandcamp loads once, not once as pre-rendered and again when the fit swaps the embed. The trade-off: the player
+  // starts loading after hydration rather than from the HTML. Without JavaScript, the <noscript> player stands in.
+  const [ready, setReady] = useState(false);
 
   useLayoutEffect(() => {
     const element = box.current;
+    setReady(true);
     if (!fit || !element) return;
     // Where the stylesheet stops fitting the box (it goes back to static when stacked), the player keeps its whole track list.
     const measure = () =>
@@ -51,6 +57,7 @@ export function BandcampPlayer({ release = FEATURED_RELEASE, fit = false, classN
   const embed: BandcampEmbed = fit && room && room.height < room.width + TRACKLIST_MIN_EXTRA ? 'artwork' : 'tracklist';
   // The cover alone is square: as large as both the width and the height allow.
   const side = room ? Math.min(room.width, room.height) : undefined;
+  const title = t('pressKit.bandcamp.title', { title: release.title });
 
   return (
     <div
@@ -60,14 +67,24 @@ export function BandcampPlayer({ release = FEATURED_RELEASE, fit = false, classN
       data-embed={embed}
       style={{ '--bandcamp-list': `${playerHeight(release.tracks)}px` } as CSSProperties}
     >
-      <iframe
-        key={embed}
-        title={t('pressKit.bandcamp.title',{ title: release.title })}
-        src={bandcampPlayerSrc(release, embed)}
-        loading="lazy"
-        seamless
-        style={embed === 'artwork' && side ? { width: side, height: side } : undefined}
-      />
+      {ready ? (
+        <iframe
+          key={embed}
+          title={title}
+          src={bandcampPlayerSrc(release, embed)}
+          loading="lazy"
+          seamless
+          style={embed === 'artwork' && side ? { width: side, height: side } : undefined}
+        />
+      ) : (
+        <>
+          <div className="bandcamp-player__placeholder" aria-hidden="true" />
+          {/* React leaves <noscript> children unhydrated, so this pre-rendered player can't mismatch. */}
+          <noscript>
+            <iframe title={title} src={bandcampPlayerSrc(release)} loading="lazy" seamless />
+          </noscript>
+        </>
+      )}
       {/* No fallback inside the iframe: browsers never show one, and in pre-rendered HTML it would parse as text and fail hydration. */}
     </div>
   );

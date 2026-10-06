@@ -20,6 +20,8 @@
 .epk-member__photo {
   display: block;
   width: 100%;
+  /* The img's width and height attributes say what the file is; the box is always 4:3 across the column. */
+  height: auto;
   aspect-ratio: 4 / 3;
   object-fit: cover;
 }

@@ -74,6 +74,8 @@ async function expectWholeSet(request: APIRequestContext, baseURL: string, src: 
 
 async function expectOnePressPlaysTheSet(page: Page, request: APIRequestContext, baseURL: string, press: () => Promise<void>) {
   await expect(liveSetButton(page)).toBeInViewport();
+  // The loop is given its file only once the page has loaded.
+  await expect(heroLoop(page)).toHaveAttribute('src', /\S/);
   const loopSrc = (await heroLoop(page).getAttribute('src'))!;
   expect(loopSrc).toBeTruthy();
   await expect(livePlayer(page)).toHaveCount(0);

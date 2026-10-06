@@ -3,8 +3,13 @@
   mix-blend-mode: multiply;
 }
 
-/* On its own, the player is as tall as its whole track list. */
-.bandcamp-player iframe {
+/*
+  On its own, the player is as tall as its whole track list. The placeholder
+  holds the player's place, at its size, until the embed is decided
+  (BandcampPlayer.tsx), so nothing moves when the frame replaces it.
+*/
+.bandcamp-player iframe,
+.bandcamp-player__placeholder {
   display: block;
   width: 100%;
   height: calc(100cqw + var(--bandcamp-list));
@@ -22,7 +27,8 @@
   min-height: 0;
 }
 
-.bandcamp-player[data-fit] iframe {
+.bandcamp-player[data-fit] iframe,
+.bandcamp-player[data-fit] .bandcamp-player__placeholder {
   position: absolute;
   top: 0;
   left: 0;
@@ -38,8 +44,16 @@
     flex: none;
   }
 
-  .bandcamp-player[data-fit] iframe {
+  .bandcamp-player[data-fit] iframe,
+  .bandcamp-player[data-fit] .bandcamp-player__placeholder {
     position: static;
     height: calc(100cqw + var(--bandcamp-list));
+  }
+}
+
+/* Without JavaScript the <noscript> player shows instead, in the placeholder's place. */
+@media (scripting: none) {
+  .bandcamp-player__placeholder {
+    display: none;
   }
 }

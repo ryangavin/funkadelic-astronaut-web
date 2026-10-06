@@ -3,7 +3,7 @@
 /* Archivo, heavy and condensed: the headlines, labels and links. */
 @font-face {
   font-family: 'Archivo';
-  src: url('../../../assets/fonts/archivo/Archivo-latin.woff2') format('woff2');
+  src: url('../../../assets/fonts/archivo/Archivo-site.woff2') format('woff2');
   font-style: normal;
   font-weight: 100 900;
   font-stretch: 62% 125%;
@@ -13,7 +13,7 @@
 /* Bowlby One: the nameplate. */
 @font-face {
   font-family: 'Bowlby One';
-  src: url('../../../assets/fonts/bowlby-one/BowlbyOne-latin.woff2') format('woff2');
+  src: url('../../../assets/fonts/bowlby-one/BowlbyOne-site.woff2') format('woff2');
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -22,7 +22,7 @@
 /* Newsreader, made for reading news on screens: the copy. */
 @font-face {
   font-family: 'Newsreader';
-  src: url('../../../assets/fonts/newsreader/Newsreader-latin.woff2') format('woff2');
+  src: url('../../../assets/fonts/newsreader/Newsreader-site.woff2') format('woff2');
   font-style: normal;
   font-weight: 200 800;
   font-display: swap;
@@ -30,7 +30,7 @@
 
 @font-face {
   font-family: 'Newsreader';
-  src: url('../../../assets/fonts/newsreader/Newsreader-Italic-latin.woff2') format('woff2');
+  src: url('../../../assets/fonts/newsreader/Newsreader-Italic-site.woff2') format('woff2');
   font-style: italic;
   font-weight: 200 800;
   font-display: swap;
@@ -38,7 +38,7 @@
 
 @font-face {
   font-family: 'Archivo';
-  src: url('../../../assets/fonts/archivo/Archivo-Italic-latin.woff2') format('woff2');
+  src: url('../../../assets/fonts/archivo/Archivo-Italic-site.woff2') format('woff2');
   font-style: italic;
   font-weight: 100 900;
   font-stretch: 62% 125%;

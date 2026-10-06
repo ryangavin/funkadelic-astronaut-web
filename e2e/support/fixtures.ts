@@ -22,7 +22,10 @@ type Fixtures = {
   failOnErrors: void;
 };
 
-const STUB_PAGE = '<!doctype html><html lang="en"><head><title>Stub</title></head><body><main><h1>Stubbed third-party page</h1></main></body></html>';
+/** The heading of the stub page every third-party page load gets, so a test can tell a stubbed frame has loaded. */
+export const STUB_HEADING = 'Stubbed third-party page';
+
+const STUB_PAGE = `<!doctype html><html lang="en"><head><title>Stub</title></head><body><main><h1>${STUB_HEADING}</h1></main></body></html>`;
 
 export const test = base.extend<Fixtures>({
   brokenLinks: [[], { option: true }],

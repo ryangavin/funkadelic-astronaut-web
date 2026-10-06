@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 import { expect, waitFor } from 'storybook/test';
+import { NYACK_SET } from '../content/liveSet';
 import { Site } from './Site';
 
 /** The site, with a callback once it has hydrated: the same tree on the server and in the browser. */
@@ -89,5 +90,19 @@ export const HydratesWithReducedMotion: Story = {
   play: async context => {
     await hydratesCleanly(context);
     await expect(context.canvasElement.querySelector('video')).toBeNull();
+  },
+};
+
+/**
+ * The pre-rendered loop shows its poster and downloads nothing before the page has loaded. (The preloads in the
+ * head come from the build's server render only, so the e2e tests check those.)
+ */
+export const PrerendersTheLoopWithoutItsFile: Story = {
+  play: async () => {
+    const parsed = document.createElement('div');
+    parsed.innerHTML = renderToString(<Site />);
+    const loop = parsed.querySelector('video');
+    await expect(loop).toHaveAttribute('poster', NYACK_SET.poster);
+    await expect(loop).not.toHaveAttribute('src');
   },
 };

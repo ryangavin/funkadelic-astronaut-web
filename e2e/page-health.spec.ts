@@ -3,7 +3,8 @@ import { BOOKING_EMAIL } from '@content/links';
 import catalogue from '@content/locales/en.json';
 import type { APIRequestContext, Page } from '@playwright/test';
 import { BANDCAMP_HREF, BAND_NAME, BOOKING_HREF, EARLIER_RELEASES, FEATURED_RELEASE, LISTEN_HREFS, MEMBERS, memberPart, SOCIAL_HREFS } from './support/content';
-import { escapeRegExp, expect, openSite, test } from './support/fixtures';
+import { bringIntoView, escapeRegExp, expect, openSite, settle, STUB_HEADING, test } from './support/fixtures';
+import { livePlayer, liveSetButton, recordPlayer } from './support/page';
 
 /** The page as it arrives: it loads cleanly, says what it is, and old addresses still find it. */
 
@@ -15,6 +16,86 @@ test('the press kit loads in English with a title, a main landmark and a page he
   await expect(page.getByRole('main')).toHaveCount(1);
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   // Every built script, stylesheet, font and image it asked for loaded: the error fixture fails on any 4xx/5xx.
+});
+
+/** Every URL the page asks for from here on, in order. */
+function watchRequests(page: Page) {
+  const requested: string[] = [];
+  page.on('request', request => requested.push(request.url()));
+  return requested;
+}
+
+test.describe('what the page downloads', () => {
+  test.describe('with no motion preference', () => {
+    test.use({ reducedMotion: 'no-preference' });
+
+    test('the whole live set is not downloaded until the visitor presses play', async ({ page }) => {
+      const requested = watchRequests(page);
+      await openSite(page);
+      await settle(page);
+      const beforePress = [...requested];
+
+      await bringIntoView(liveSetButton(page));
+      await liveSetButton(page).click();
+      const player = livePlayer(page);
+      await expect(player).toBeVisible();
+      const set = new URL((await player.getAttribute('src'))!, page.url()).href;
+      expect(beforePress, 'the whole set was asked for before the press').not.toContain(set);
+      await expect.poll(() => requested.includes(set), { message: 'the press asks for the whole set' }).toBe(true);
+    });
+  });
+
+  test.describe('with reduced motion requested', () => {
+    test.use({ reducedMotion: 'reduce' });
+
+    test('the page asks for no video at all', async ({ page }) => {
+      const videos: string[] = [];
+      page.on('request', request => {
+        if (request.resourceType() === 'media' || new URL(request.url()).pathname.endsWith('.mp4')) videos.push(request.url());
+      });
+      await openSite(page);
+      await settle(page);
+      // Nothing is still on its way that could be a video.
+      await page.waitForLoadState('networkidle');
+      expect(videos).toEqual([]);
+    });
+  });
+
+  test('the head asks early for the nameplate font and the first screen images, and each is downloaded once', async ({ page }) => {
+    const requested = watchRequests(page);
+    await openSite(page);
+    await settle(page);
+    const preloads = await page.locator('head link[rel="preload"]').evaluateAll(links =>
+      links.map(link => ({ href: (link as HTMLLinkElement).href, as: link.getAttribute('as'), crossOrigin: link.getAttribute('crossorigin') })),
+    );
+    // The nameplate's font is among them. A font preload must be CORS, as the stylesheet's font requests are, or the
+    // browser downloads the font twice.
+    const fonts = preloads.filter(preload => preload.as === 'font');
+    const nameplateFont = await page.evaluate(() => getComputedStyle(document.querySelector('h1')!).fontFamily.split(',')[0].replace(/['"]/g, '').trim());
+    expect(fonts.some(font => decodeURIComponent(font.href).replace(/[\s_-]/g, '').toLowerCase().includes(nameplateFont.replace(/\s/g, '').toLowerCase())), `the ${nameplateFont} font is preloaded`).toBe(true);
+    for (const font of fonts) expect(font, font.href).toEqual(expect.objectContaining({ href: expect.stringMatching(/\.woff2$/), crossOrigin: '' }));
+    expect(preloads.filter(preload => preload.as === 'image').length).toBeGreaterThanOrEqual(1);
+    for (const { href } of preloads) {
+      expect(requested.filter(url => url === href), `${href} is downloaded once`).toHaveLength(1);
+    }
+  });
+
+  test('the record player is mounted once and asks Bandcamp for its player once', async ({ page }) => {
+    const frames: string[] = [];
+    page.on('frameattached', frame => frames.push(frame.url()));
+    const requested = watchRequests(page);
+    await openSite(page);
+    await settle(page);
+
+    const player = recordPlayer(page, FEATURED_RELEASE.title);
+    await expect(player).toHaveCount(1);
+    await bringIntoView(player);
+    // The (stubbed) player has loaded in the frame: any earlier or second frame would have been asked for by now.
+    await expect(player.contentFrame().getByRole('heading', { name: STUB_HEADING })).toBeVisible();
+    expect(frames, 'frames attached to the page').toHaveLength(1);
+    const asked = requested.filter(url => url.startsWith('https://bandcamp.com/EmbeddedPlayer/'));
+    expect(asked).toEqual([await player.getAttribute('src')]);
+  });
 });
 
 /** The `content` of a `<meta>` or the `href` of a `<link>` in the head; head tags have no role, so they are found by name. */
