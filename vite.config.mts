@@ -1,6 +1,6 @@
 /// <reference types="vitest/config" />
 import { existsSync, readFileSync, statSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import { previewLabelHead } from './scripts/preview-label.mjs';
@@ -42,7 +42,7 @@ export default defineConfig({
             pathname = '';
           }
           const file = join(outDir, pathname);
-          if (pathname && file.startsWith(outDir) && existsSync(file) && statSync(file).isFile()) return next();
+          if (pathname && file.startsWith(outDir + sep) && existsSync(file) && statSync(file).isFile()) return next();
           res.statusCode = 404;
           res.setHeader('Content-Type', 'text/html; charset=utf-8');
           res.end(readFileSync(join(outDir, '404.html')));

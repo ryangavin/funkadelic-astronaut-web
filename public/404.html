@@ -9,12 +9,14 @@
     GitHub Pages serves this page for every missing path, at the depth that was asked for, so a relative URL here
     would resolve against the broken path. Every URL is absolute from the site root instead.
   -->
-  <meta http-equiv="refresh" content="0; url=/">
+  <!-- Without JS there is no way to know the root or keep the hash, so the refresh goes to the domain's root. -->
+  <noscript><meta http-equiv="refresh" content="0; url=/"></noscript>
   <script>
     // The site root: `/` on funkadelicastronaut.com; on a `<user>.github.io/<repo>/` project site, the first path segment.
     var repo = location.pathname.split('/')[1];
     var root = /\.github\.io$/.test(location.hostname) && repo ? '/' + repo + '/' : '/';
-    location.replace(root + location.hash);
+    // If the root itself is missing, sending the visitor there would loop; the link below is all that's left.
+    if (location.pathname !== root) location.replace(root + location.hash);
   </script>
 </head>
 <body>
