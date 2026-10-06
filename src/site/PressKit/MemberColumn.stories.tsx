@@ -27,7 +27,14 @@ const meta = {
   play: async ({ canvasElement, args }) => {
     const page = within(canvasElement);
     await expect(page.getByRole('heading', { level: 3, name: new RegExp(`^${args.name}\\s*${t(`band.members.${args.id}.part`)}$`) })).toBeVisible();
-    await expect(page.getByRole('img', { name: t(`band.members.${args.id}.photoAlt`) })).toBeVisible();
+    const portrait = page.getByRole('img', { name: t(`band.members.${args.id}.photoAlt`) });
+    await expect(portrait).toBeVisible();
+    // Offered at three sizes, so a narrow column fetches a smaller file; the box stays 4:3 across the column.
+    await expect(portrait).toHaveAttribute('srcset', expect.stringMatching(/-portrait-450[^,]* 450w, [^,]*-portrait-675[^,]* 675w, [^,]*-portrait-900[^,]* 900w$/));
+    await expect(portrait).toHaveAttribute('sizes', expect.stringContaining('(max-width: 679px)'));
+    await expect(portrait).toHaveAttribute('loading', 'lazy');
+    const box = portrait.getBoundingClientRect();
+    await expect(box.width / box.height).toBeCloseTo(4 / 3, 1);
     for (const paragraph of t(`band.members.${args.id}.bio`)) await expect(page.getByText(paragraph)).toBeVisible();
   },
 } satisfies Meta<typeof MemberColumn>;

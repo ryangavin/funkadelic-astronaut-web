@@ -1,8 +1,8 @@
 import type { Page } from '@playwright/test';
 import catalogue from '@content/locales/en.json';
-import { BAND_NAME, BOOKING_HREF, BOOKING_LABEL, MEMBERS, SOCIAL_HREFS } from './support/content';
-import { escapeRegExp, expect, expectPlaying, linksTo, openSite, test } from './support/fixtures';
-import { heroLoop, liveSetButton, sectionFor } from './support/page';
+import { BAND_NAME, BOOKING_HREF, BOOKING_LABEL, FEATURED_RELEASE, MEMBERS, SOCIAL_HREFS } from './support/content';
+import { bringIntoView, escapeRegExp, expect, expectPlaying, linksTo, openSite, test } from './support/fixtures';
+import { heroLoop, liveSetButton, recordPlayer, sectionFor } from './support/page';
 
 /**
  * Supporting checks: the page arrives already written (the build pre-renders
@@ -66,6 +66,15 @@ test.describe('Without JavaScript', () => {
 
   test('a link straight to a section opens at that section', async ({ page }) => {
     await expectDeepLinkLands(page);
+  });
+
+  test('a visitor still gets the record player, loaded with the new record', async ({ page }) => {
+    await openSite(page);
+    const player = recordPlayer(page, FEATURED_RELEASE.title);
+    await expect(player).toHaveCount(1);
+    await expect(player).toHaveAttribute('src', new RegExp(`^https://bandcamp\\.com/EmbeddedPlayer/album=${FEATURED_RELEASE.albumId}/`));
+    await bringIntoView(player);
+    await expect(player).toBeVisible();
   });
 });
 

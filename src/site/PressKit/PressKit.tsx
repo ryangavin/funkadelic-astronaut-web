@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import type React from 'react';
+import liveLoopNarrow from '../../../assets/epk/live-loop-640.mp4';
 import { Weathered } from '../../behaviors/Weathered/Weathered';
 import { Distressed } from '../../foundations/Distressed/Distressed';
 import '../../styles/torn-edge.css';
@@ -8,6 +9,7 @@ import { NYACK_SET } from '../../content/liveSet';
 import { MEMBERS } from '../../content/members';
 import { FEATURED_RELEASE, type BandcampRelease } from '../../content/releases';
 import { Copy, t } from '../../i18n/copy';
+import { Preloads } from '../Preloads';
 import { IconLinks } from './IconLinks';
 import type { PressKitInk } from './inks';
 import { LiveVideo } from './LiveVideo';
@@ -47,6 +49,7 @@ export function PressKit({ release = FEATURED_RELEASE, className = '', style }: 
   const bookingId = useId();
   return (
     <div className={`epk ${className}`} style={style}>
+      <Preloads />
       <Weathered as="article" className="epk__paper torn-edge" patina flecks grain wear>
         <header className="epk__masthead">
           <p className="epk__dateline epk-label">
@@ -71,6 +74,7 @@ export function PressKit({ release = FEATURED_RELEASE, className = '', style }: 
             <LiveVideo
               video={NYACK_SET.video}
               loop={NYACK_SET.loop}
+              narrowLoop={liveLoopNarrow}
               poster={NYACK_SET.poster}
               title={t('pressKit.live.title', live)}
               label={<Copy k="pressKit.live.label" values={live} />}

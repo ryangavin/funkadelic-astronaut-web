@@ -13,11 +13,13 @@
     "build-storybook": "storybook build",
     "test": "node --test tests/*.test.cjs",
     "test:stories": "vitest --project=storybook --run",
-    "test:e2e": "npm run build && playwright test"
+    "test:e2e": "npm run build && playwright test",
+    "lighthouse": "lhci autorun --config=scripts/lighthouserc.cjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@chromatic-com/storybook": "^5.3.1",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.63.0",
     "@storybook/addon-a11y": "^10.6.0",
     "@storybook/addon-docs": "^10.6.0",
