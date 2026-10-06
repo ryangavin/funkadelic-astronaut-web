@@ -43,7 +43,7 @@ export type PressKitProps = {
  * `pressKit` and `band` namespaces; its design tokens from ../styles/tokens.css.
  */
 export function PressKit({ release = FEATURED_RELEASE, className = '', style }: PressKitProps) {
-  const live = { song: NYACK_SET.song, event: NYACK_SET.event };
+  const live = { event: NYACK_SET.event };
   const bookingId = useId();
   return (
     <div className={`epk ${className}`} style={style}>
