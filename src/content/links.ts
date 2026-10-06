@@ -10,7 +10,7 @@ type BandLinkData = { platform: SocialPlatform; href: string };
 export const LISTEN_HREFS = [
   { platform: 'applemusic', href: 'https://music.apple.com/us/artist/funkadelic-astronaut/1208229110' },
   { platform: 'spotify', href: 'https://open.spotify.com/artist/5qpVp5gTB9QXi38qTyJ6oe' },
-  { platform: 'youtube', href: 'https://www.youtube.com/funkadelicastronaut' },
+  { platform: 'youtube', href: 'https://www.youtube.com/@funkadelicastronaut' },
   { platform: 'deezer', href: 'https://www.deezer.com/artist/11985446' },
 ] as const satisfies BandLinkData[];
 

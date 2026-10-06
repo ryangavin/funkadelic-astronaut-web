@@ -1,6 +1,6 @@
 import catalogue from '@content/locales/en.json';
 import type { APIRequestContext, Page } from '@playwright/test';
-import { BANDCAMP_HREF, BAND_NAME, BOOKING_HREF, LISTEN_HREFS, MEMBERS, memberPart, SOCIAL_HREFS } from './support/content';
+import { BANDCAMP_HREF, BAND_NAME, BOOKING_HREF, EARLIER_RELEASES, FEATURED_RELEASE, LISTEN_HREFS, MEMBERS, memberPart, SOCIAL_HREFS } from './support/content';
 import { escapeRegExp, expect, openSite, test } from './support/fixtures';
 
 /** The page as it arrives: it loads cleanly, says what it is, and old addresses still find it. */
@@ -138,6 +138,17 @@ test('search engines read the band, its members and its profiles from the struct
   // Every member, by name, with what they play.
   expect(band.member.map((role: { member: { name: string }; roleName: string }) => [role.member.name, role.roleName])).toEqual(
     MEMBERS.map(member => [member.name, memberPart(member.id)]),
+  );
+  // The band has one identity on the page, and every record is credited to it.
+  expect(band['@id']).toBe(new URL('#band', band.url).href);
+  expect(band.album).toEqual(
+    [FEATURED_RELEASE, ...EARLIER_RELEASES].map(release => expect.objectContaining({
+      '@type': 'MusicAlbum',
+      name: release.title,
+      url: release.href,
+      datePublished: release.year,
+      byArtist: { '@id': band['@id'] },
+    })),
   );
   // Every profile the page links to.
   expect([...band.sameAs].sort()).toEqual([...LISTEN_HREFS, ...SOCIAL_HREFS, BANDCAMP_HREF].map(l => l.href).sort());

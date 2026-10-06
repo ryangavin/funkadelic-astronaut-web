@@ -14,24 +14,33 @@ import { list, SHARED_STAGES } from '../src/content/stages.ts';
  * - the build gets /llms.txt (https://llmstxt.org), a short Markdown summary for language models.
  *
  * The name, address and picture come from index.html's own `og:site_name`, canonical link and `og:image`; the
- * members, their parts and start years, the genre, where they are, the bio, the records and every link from
- * src/content.
+ * founding year, members, their parts and start years, the genre, where they are, the bio, the records and every
+ * link from src/content.
+ *
+ * It runs only in the client build of the press kit (index.html). A server-side build (`vite build --ssr`), whose
+ * output has neither the page nor the live set, and Storybook's build, whose page is its own iframe.html, skip it.
  */
 export function structuredData(): Plugin {
   let indexHtml = '';
+  let enabled = false;
   return {
     name: 'structured-data',
+    apply: 'build',
     configResolved(config) {
       indexHtml = resolve(config.root, 'index.html');
+      const input = config.build.rolldownOptions?.input ?? config.build.rollupOptions?.input ?? 'index.html';
+      const inputs = typeof input === 'string' ? [input] : Array.isArray(input) ? input : Object.values(input);
+      enabled = !config.build.ssr && inputs.some(file => resolve(config.root, file) === indexHtml);
     },
     transformIndexHtml(html, { filename }) {
       // Only the press kit; not Storybook's or Vitest's own pages.
-      if (resolve(filename) !== indexHtml) return html;
+      if (!enabled || resolve(filename) !== indexHtml) return html;
       // `<` is escaped so no value can close the script element.
       const json = JSON.stringify(musicGroup(headOf(html)), null, 2).replace(/</g, '\\u003c');
       return html.replace('</head>', () => `  <script type="application/ld+json">\n${json}\n    </script>\n  </head>`);
     },
     generateBundle(_options, bundle) {
+      if (!enabled) return;
       // The live set is a hashed build asset, so its address is only known here.
       const liveSet = Object.values(bundle).find(
         file => file.type === 'asset' && file.originalFileNames.some(name => name.endsWith('assets/epk/nyack-set.mp4')),
@@ -59,24 +68,47 @@ function headOf(html: string): Head {
   };
 }
 
-// The dateline reads "<where they are> · <genre>".
+// The dateline reads "<where they are> · <genre>" and "Est. <year> · …".
 const [LOCATION, GENRE] = catalogue.pressKit.dateline.place.split(' · ');
-const FOUNDED = Math.min(...MEMBERS.map(member => member.since));
+const FOUNDED = catalogue.pressKit.dateline.since.match(/\bEst\. (\d{4})\b/)?.[1];
+if (!FOUNDED) throw new Error('structured-data: the dateline (pressKit.dateline.since) no longer gives an "Est. <year>"');
 const PROFILES = [BANDCAMP_HREF, ...LISTEN_HREFS, ...SOCIAL_HREFS];
 
+/**
+ * Where the band is, as a place: the state the copy names ("NJ trio", "New Jersey"), with no town until the band
+ * gives one.
+ */
+const PLACE = {
+  '@type': 'Place',
+  name: LOCATION,
+  address: { '@type': 'PostalAddress', addressRegion: 'NJ', addressCountry: 'US' },
+};
+
 function musicGroup(head: Head) {
+  const id = new URL('#band', head.url).href;
   return {
     '@context': 'https://schema.org',
     '@type': 'MusicGroup',
+    '@id': id,
     ...head,
+    logo: new URL('icon-512.png', head.url).href,
     genre: GENRE,
-    location: { '@type': 'Place', name: LOCATION },
-    foundingDate: String(FOUNDED),
-    member: MEMBERS.map(({ id, name, since }) => ({
+    location: PLACE,
+    foundingLocation: PLACE,
+    foundingDate: FOUNDED,
+    member: MEMBERS.map(({ id: member, name, since }) => ({
       '@type': 'OrganizationRole',
       member: { '@type': 'Person', name },
-      roleName: catalogue.band.members[id].part,
+      roleName: catalogue.band.members[member].part,
       startDate: String(since),
+    })),
+    album: [FEATURED_RELEASE, ...EARLIER_RELEASES].map(release => ({
+      '@type': 'MusicAlbum',
+      name: release.title,
+      url: release.href,
+      datePublished: release.year,
+      numTracks: release.tracks,
+      byArtist: { '@id': id },
     })),
     sameAs: PROFILES.map(link => link.href),
   };
@@ -93,7 +125,7 @@ function llmsTxt(head: Head, liveSetUrl: string) {
   const bookingEmail = BOOKING_HREF.replace(/^mailto:/, '').split('?')[0];
   return `# ${head.name}
 
-> ${LOCATION} ${GENRE.toLowerCase()} trio, together since ${FOUNDED}: ${list(MEMBERS.map(member => member.name))}.
+> ${LOCATION} ${GENRE.toLowerCase()} trio, founded in ${FOUNDED}: ${list(MEMBERS.map(member => member.name))}.
 
 ## About
 
