@@ -43,7 +43,7 @@ const expectPlaying = async (canvasElement: HTMLElement, playing: BandcampReleas
 export const Featured: Story = {
   play: async ({ canvasElement }) => {
     const page = within(canvasElement);
-    const section = page.getByRole('region', { name: t('pressKit.record.label') });
+    const section = page.getByRole('region', { name: t('pressKit.record.heading') });
     await expect(within(section).getByRole('heading', { level: 2, name: t('pressKit.record.heading') })).toBeVisible();
 
     for (const link of [...LISTEN_HREFS, BANDCAMP_HREF]) {

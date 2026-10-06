@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { BANDCAMP_HREF, LISTEN_HREFS } from '../../content/links';
 import { EARLIER_RELEASES, type BandcampRelease } from '../../content/releases';
 import { list, SHARED_STAGES } from '../../content/stages';
@@ -22,6 +22,8 @@ export function RecordSection({ release }: { release: BandcampRelease }) {
   const [playing, setPlaying] = useState(release);
   const records = [release, ...EARLIER_RELEASES];
   const player = useRef<HTMLDivElement>(null);
+  // The section is a region named by its own heading.
+  const headingId = useId();
   const play = (record: BandcampRelease) => {
     setPlaying(record);
     // Stacked on a phone, the list is below the player: bring the player back into view.
@@ -29,13 +31,15 @@ export function RecordSection({ release }: { release: BandcampRelease }) {
     if (top < 0) player.current?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   };
   return (
-    <section className="epk-record" id="music" aria-label={t('pressKit.record.label')}>
+    <section className="epk-record" id="music" aria-labelledby={headingId}>
       <div className="epk-record__player" ref={player}>
         <BandcampPlayer release={playing} fit />
       </div>
       <div className="epk-record__story">
         <div className="epk-record__head">
-          <h2 className="epk-record__title epk-headline">{t('pressKit.record.heading')}</h2>
+          <h2 className="epk-record__title epk-headline" id={headingId}>
+            {t('pressKit.record.heading')}
+          </h2>
           <IconLinks className="epk-record__links" links={[...LISTEN_HREFS, BANDCAMP_HREF]} />
         </div>
         <div className="epk__bio epk-copy">

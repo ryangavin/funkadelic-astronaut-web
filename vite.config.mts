@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import { previewLabelHead } from './scripts/preview-label.mjs';
 import react from '@vitejs/plugin-react';
@@ -33,6 +34,10 @@ export default defineConfig({
   } : undefined,
   // Built pages link their files relatively, so one build works at funkadelicastronaut.com's root or under any subpath.
   base: './',
+  // `@content/...` is src/content, as tsconfig.json's `paths` says; the e2e tests import band data through it.
+  resolve: {
+    alias: { '@content': fileURLToPath(new URL('./src/content', import.meta.url)) },
+  },
   // The old vanilla poster is kept in legacy/ but no longer built; public/ serves redirect stubs at its old URLs.
   build: {
     rollupOptions: {

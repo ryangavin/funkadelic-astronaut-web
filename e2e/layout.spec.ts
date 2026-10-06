@@ -1,5 +1,6 @@
 import { BOOKING_HREF, FEATURED_RELEASE, MEMBERS } from './support/content';
 import { escapeRegExp, expect, linksTo, openSite, settle, test } from './support/fixtures';
+import { liveSetButton, recordPlayer, sectionFor } from './support/page';
 
 /**
  * At every size (the phone, tablet and desktop projects) the whole page is
@@ -39,8 +40,9 @@ test('every link and button can be pressed without anything covering it', async 
 test('everything a visitor came for is visible', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   await expect(page.getByRole('navigation')).toBeVisible();
-  await expect(page.getByRole('figure').getByRole('button')).toBeVisible();
-  await expect(page.getByTitle(new RegExp(escapeRegExp(FEATURED_RELEASE.title)))).toBeVisible();
+  await expect(liveSetButton(page)).toBeVisible();
+  await expect(recordPlayer(page, FEATURED_RELEASE.title)).toBeVisible();
+  for (const hash of ['#music', '#band', '#book']) await expect(sectionFor(page, hash)).toBeVisible();
   const sheet = page.getByRole('heading', { level: 1 });
   for (const member of MEMBERS) {
     const name = page.getByRole('heading', { name: new RegExp(escapeRegExp(member.name)) });

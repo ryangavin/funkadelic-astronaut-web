@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import type { Page } from '@playwright/test';
 import { expect, expectPlaying, openSite, test } from './support/fixtures';
+import { heroLoop, livePlayer, liveSetButton } from './support/page';
 
 /** Accessibility checks that run at every size, and the page for visitors who ask for less motion. */
 
@@ -25,8 +26,7 @@ test.describe('with no motion preference', () => {
 
   test('the live set greets visitors with a moving loop', async ({ page }) => {
     await openSite(page);
-    // The loop is decorative and hidden from assistive technology, so it has no accessible handle; it is the figure's video.
-    await expectPlaying(page.getByRole('figure').locator('video'));
+    await expectPlaying(heroLoop(page));
   });
 });
 
@@ -35,7 +35,7 @@ test.describe('with reduced motion requested', () => {
 
   test('nothing moves until the visitor asks it to', async ({ page }) => {
     await openSite(page);
-    await expect(page.getByRole('figure').getByRole('button')).toBeVisible();
+    await expect(liveSetButton(page)).toBeVisible();
     // Once everything has loaded (an autoplaying video would have started by then), nothing is moving.
     await page.waitForLoadState('load');
     await expect.poll(() => motion(page)).toEqual({ playingVideos: 0, runningAnimations: 0 });
@@ -43,7 +43,7 @@ test.describe('with reduced motion requested', () => {
 
   test('a visitor can still watch the live set', async ({ page }) => {
     await openSite(page);
-    await page.getByRole('figure').getByRole('button').click();
-    await expectPlaying(page.getByRole('figure').getByLabel(/\S/));
+    await liveSetButton(page).click();
+    await expectPlaying(livePlayer(page));
   });
 });
