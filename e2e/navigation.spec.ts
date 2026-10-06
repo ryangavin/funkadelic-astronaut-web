@@ -54,11 +54,7 @@ test('each tab at the top takes a visitor to its section and the keyboard carrie
 });
 
 test('a link straight to a section opens the page at that section', async ({ page, context }) => {
-  // Known site bug: a cold load of /#music, /#band or /#book stays at the top. The browser looks for the fragment
-  // while parsing the HTML, before React has rendered the sections, and does not scroll once they appear. The old
-  // press-kit.html and classic.html redirects carry the hash over, so they land at the top too. Remove this line
-  // when the site scrolls to the fragment after its first render; Playwright then reports an unexpected pass.
-  test.fail(true, 'cold-loaded #section links do not scroll to the section');
+  // The sections are rendered by React after the browser has looked for the fragment, so the site lands on it itself.
   await openSite(page);
   for (const hash of await tabHashes(page)) {
     await test.step(hash, async () => {
@@ -69,6 +65,44 @@ test('a link straight to a section opens the page at that section', async ({ pag
       await fresh.close();
     });
   }
+});
+
+test('an old press-kit.html link to a section opens the page at that section, the keyboard carrying on from there', async ({ page }) => {
+  await page.goto('./press-kit.html#music');
+  await expectLandedOn(page, '#music');
+
+  const stops = tabStops(page);
+  const expected = await firstStopFrom(sectionFor(page, '#music'), stops);
+  expect(expected, 'there is something to tab to from #music').toBeGreaterThanOrEqual(0);
+  await page.keyboard.press('Tab');
+  await expect(stops.nth(expected)).toBeFocused();
+});
+
+test('reloading after scrolling away from a linked section keeps the visitor where they were', async ({ page }) => {
+  await page.goto('./#music');
+  await expectLandedOn(page, '#music');
+
+  // The visitor goes on to the foot of the page, well away from the record.
+  const scrolledTo = () => page.evaluate(() => Math.round(window.scrollY));
+  const landedAt = await scrolledTo();
+  // An instant jump (the End key scrolls smoothly, so where it is read would depend on timing), settled once the
+  // browser has dispatched its scroll event and a frame has passed, so it has recorded the place for the reload.
+  await page.evaluate(
+    () =>
+      new Promise(resolve => {
+        window.addEventListener('scroll', () => requestAnimationFrame(() => requestAnimationFrame(resolve)), { once: true });
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
+      }),
+  );
+  const before = await scrolledTo();
+  expect(before).toBeGreaterThan(landedAt + 100);
+
+  await page.reload();
+  await expect(page.getByRole('main')).toBeVisible();
+  // Past the page's load, its fonts and two more frames: past any landing or re-alignment the site would do.
+  await page.evaluate(() => document.fonts.ready.then(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))));
+  await expect(page).toHaveURL(/#music$/);
+  await expect.poll(async () => Math.abs((await scrolledTo()) - before)).toBeLessThanOrEqual(2);
 });
 
 test('Tab visits every link and button in reading order, each on screen as it takes focus', async ({ page }) => {
