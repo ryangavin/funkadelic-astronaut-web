@@ -65,5 +65,3 @@ export function Label({ text = '', color = 'red', cut = 'straight', rotation = 0
 export const labelMm = tapeMm;
 /** A character's worth of tape, in millimetres. */
 export const LABEL_PITCH_MM = CHARACTER_PITCH * 0.25;
-/** The tape's width in millimetres: 3/8 of an inch. */
-export const LABEL_WIDTH_MM = TAPE_WIDTH * 0.25;

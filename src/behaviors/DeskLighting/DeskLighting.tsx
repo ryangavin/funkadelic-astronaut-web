@@ -31,26 +31,6 @@ export function castRatio(height: number, light: DeskLight) {
 /** As far as a shadow is allowed to reach: one desk. */
 export const CAST_REACH = 1440;
 
-/**
- * Where a point standing `height` above the surface throws its shadow, as an
- * offset from the point itself, with how much larger it is drawn there and how
- * dark it falls. A point under the bulb throws nothing, which is the one case
- * worth checking by hand.
- */
-export function castFrom(x: number, y: number, height: number, light: DeskLight) {
-  const dx = x - light.x;
-  const dy = y - light.y;
-  const distance = Math.hypot(dx, dy);
-  const ratio = castRatio(height, light);
-  const length = Math.min(light.tuning?.shadowReach ?? CAST_REACH, distance * ratio);
-  return {
-    x: distance ? dx / distance * length : 0,
-    y: distance ? dy / distance * length : 0,
-    scale: 1 + Math.min(2, ratio),
-    opacity: light.on ? (light.shadowStrength ?? DEFAULT_SHADOW_STRENGTH) / (1 + (distance / (light.tuning?.shadowAttenuation ?? DEFAULT_LIGHT_TUNING.shadowAttenuation)) ** 2) : 0,
-  };
-}
-
 /*
   The light is a store rather than a piece of state, and the difference is the
   whole performance of the desk.

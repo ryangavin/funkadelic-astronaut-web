@@ -45,9 +45,6 @@ export type ContractPaper = (typeof CONTRACT_PAPERS)[number];
 export const CONTRACT_HANDS = ['ryan', 'kevin', 'sam'] as const;
 export type ContractHand = (typeof CONTRACT_HANDS)[number];
 
-/** The page, in 720ths of its width: US letter, an inch of margin all round, three inches of rule to sign on. */
-export const CONTRACT_PAGE = { width: 720, height: 932, margin: 84, rule: 246 } as const;
-
 /**
  * How tall the desk stamp is, as a multiple of the width of its own drawing:
  * 58 mm against the 78 mm the drawing is wide. A wooden hand stamp with a

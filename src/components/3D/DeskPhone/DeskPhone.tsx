@@ -5,9 +5,6 @@ import { Dial } from './Dial';
 import { click as clickTone } from './sound';
 import './DeskPhone.css';
 
-export { DIAL_DIGITS, DIAL_OFFSET, DIAL_PITCH, DIAL_SPEED, DIAL_STOP, DIAL_TRAVEL, PULSE_RATE, digitFor, pulsesFor, returnMs, travelFor } from './pulses';
-export { Dial } from './Dial';
-
 /** Independent rotary desk phone. Measurements are millimetres; the artwork
  * includes room beside the housing for the handset cord. */
 /** How wide the whole arrangement is, in millimetres. */
