@@ -62,6 +62,11 @@ export default defineConfig({
   } : undefined,
   // Built pages link their files relatively, so one build works at funkadelicastronaut.com's root or under any subpath.
   base: './',
+  // The server build (`vite build --ssr`, see scripts/prerender.mjs) renders HTML for dist/index.html, so an asset it
+  // imports is written as the same `./assets/name-hash.ext` URL the client build links, not a file:// URL of its own.
+  experimental: {
+    renderBuiltUrl: (filename, { ssr }) => (ssr ? `./${filename}` : { relative: true }),
+  },
   // `@content/...` is src/content, as tsconfig.json's `paths` says; the e2e tests import band data through it.
   resolve: {
     alias: { '@content': fileURLToPath(new URL('./src/content', import.meta.url)) },
