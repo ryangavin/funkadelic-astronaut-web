@@ -55,13 +55,13 @@ export const EarlierRelease: Story = {
   },
 };
 
-/** Fitted to a box with room for the cover and a few tracks: the full player. */
+/**
+ * Fitted to a box with room for the cover and a few tracks: the full player. A visual reference only:
+ * here the fitted player behaves as an unfitted one, so FittedShort is the story that tests fitting.
+ */
 export const FittedTall: Story = {
   args: { fit: true },
   decorators: [room(900)],
-  play: async ({ canvasElement }) => {
-    await expect(await playerOf(canvasElement, FEATURED_RELEASE)).toHaveAttribute('src', expect.stringContaining('/tracklist=true/'));
-  },
 };
 
 /** Fitted to a box with no room for the tracks: the cover alone; growing the box brings the track list back, shrinking it takes it away. */
