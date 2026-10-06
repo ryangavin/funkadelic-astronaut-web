@@ -1,6 +1,7 @@
 import { CoffeeRings } from '../../components/3D/Mug/Stained';
 import { DESK, useCoffeeTrail } from '../../components/3D/Mug/trail';
-import { PAPER_MM, mmToUnits } from '../../geometry/physicalScale';
+import { mmToUnits } from '../../geometry/physicalScale';
+import { DESK_OBJECT_SIZES, type DeskObjectId, type DeskObjectSize } from './deskObjectSizes';
 import { RunSheet, SitePlan } from './DeskPapers';
 import { Contract } from '../../components/2D/Contract/Contract';
 import { Handbill } from '../experiments/BandIntro/Handbill';
@@ -17,11 +18,11 @@ import { Relief } from '../../behaviors/Perspective/Relief';
 import { CradleRelief } from '../../behaviors/Perspective/CradleRelief';
 import { elevatedLayer, ROUND_CASE, type StudyCamera, type StudyShape } from '../../behaviors/Perspective/elevation';
 import { DeskClock } from '../../components/3D/DeskClock/DeskClock';
-import { DeskPhone, DESK_PHONE_WIDTH, DESK_PHONE_DEPTH, DESK_PHONE_HEIGHT, DESK_PHONE_FOOT, SET_BODY_HEIGHT } from '../../components/3D/DeskPhone/DeskPhone';
+import { DeskPhone } from '../../components/3D/DeskPhone/DeskPhone';
 import { Handheld } from '../../components/3D/Handheld/Handheld';
 import { HANDHELD_SILHOUETTE } from '../../components/3D/Handheld/silhouette';
-import { LabelBro, LABEL_BRO_HEIGHT, LABEL_BRO_FOOT } from '../../components/3D/LabelBro/LabelBro';
-import { MUG_FOOT, MUG_HEIGHT, MUG_SILHOUETTE, MUG_TALL, Mug } from '../../components/3D/Mug/Mug';
+import { LabelBro } from '../../components/3D/LabelBro/LabelBro';
+import { MUG_SILHOUETTE, Mug } from '../../components/3D/Mug/Mug';
 import { Pen } from '../../components/3D/Pen/Pen';
 import { Rolodex } from '../../components/3D/Rolodex/Rolodex';
 import { Walkman } from '../../components/3D/Walkman/Walkman';
@@ -49,29 +50,35 @@ const HANDLE: Inspect = { fill: 0.7, upright: false };
 /* The handbill is one big button to turn it over, so nothing is left of its face to pick it up by:
    it comes up on the first press, and is turned over while it is up. */
 const TURN_OVER: Inspect = { fill: 0.9, grab: 'anywhere' };
-const OBJECT_DRAWINGS: Omit<ObjectSpec, 'width'>[] = [
-  { id: 'sitePlan', name: 'Festival site plan', widthMm: PAPER_MM.width, ratio: PAPER_MM.height / PAPER_MM.width, height: .2, flat: true, place: { x: 400, y: 455, rotation: -8 }, content: <SitePlan /> , inspect: READ },
-  { id: 'poster', name: 'Band poster', widthMm: PAPER_MM.width, ratio: PAPER_MM.height / PAPER_MM.width, height: .2, flat: true, place: { x: 455, y: 385, rotation: -5 }, content: <Handbill front={BAND_HANDBILL_FRONT} back={BAND_HANDBILL_BACK} stock="goldenrod" spot="purple" /> , inspect: TURN_OVER },
-  { id: 'setTimes', name: 'Set times', widthMm: PAPER_MM.width, ratio: PAPER_MM.height / PAPER_MM.width, height: .2, flat: true, place: { x: 655, y: 415, rotation: 4 }, content: <RunSheet /> , inspect: READ },
-  { id: 'contract', name: 'Performance contract', widthMm: PAPER_MM.width, ratio: PAPER_MM.height / PAPER_MM.width, height: .2, flat: true, place: { x: 960, y: 415, rotation: -3 }, content: <Contract rotation={0} /> , inspect: READ },
-  { id: 'dossier', name: 'Band dossier', widthMm: 482, ratio: 915/1440, height: 1, flat: true, place: { x: 200, y: 330, rotation: -2 } },
-  { id: 'clock', name: 'Desk clock', widthMm: 90, ratio: 560/720, height: 15, place: { x: 60, y: 65, rotation: -4 }, content: <DeskClock /> },
+/* How each thing is drawn and where it lies. How big it is — width, depth,
+   height and any Solid — is its row in ./deskObjectSizes.ts, by id. */
+type ObjectDrawing = Omit<ObjectSpec, 'width' | 'widthMm' | 'ratio' | 'height' | 'solid'> & { id: DeskObjectId };
+const OBJECT_DRAWINGS: ObjectDrawing[] = [
+  { id: 'sitePlan', name: 'Festival site plan', flat: true, place: { x: 400, y: 455, rotation: -8 }, content: <SitePlan /> , inspect: READ },
+  { id: 'poster', name: 'Band poster', flat: true, place: { x: 455, y: 385, rotation: -5 }, content: <Handbill front={BAND_HANDBILL_FRONT} back={BAND_HANDBILL_BACK} stock="goldenrod" spot="purple" /> , inspect: TURN_OVER },
+  { id: 'setTimes', name: 'Set times', flat: true, place: { x: 655, y: 415, rotation: 4 }, content: <RunSheet /> , inspect: READ },
+  { id: 'contract', name: 'Performance contract', flat: true, place: { x: 960, y: 415, rotation: -3 }, content: <Contract rotation={0} /> , inspect: READ },
+  { id: 'dossier', name: 'Band dossier', flat: true, place: { x: 200, y: 330, rotation: -2 } },
+  { id: 'clock', name: 'Desk clock', place: { x: 60, y: 65, rotation: -4 }, content: <DeskClock /> },
   // CradleRelief works its own rail and ball elevations out of the width it is given.
-  { id: 'cradle', name: 'Newton’s cradle', widthMm: 120, ratio: 600/720, height: 90, place: { x: 330, y: 65 }, shapes: [{ path: 'M3 5H97V95H3Z', heightMm: 8 }, { path: 'M8 20H92V23H8Z M8 77H92V80H8Z', heightMm: 90 }] },
-  { id: 'mug', name: 'Mug', widthMm: 140, ratio: 1, height: MUG_TALL, place: { x: 1010, y: 570, rotation: -15 }, shapes: MUG_SILHOUETTE, solid: { height: MUG_HEIGHT, foot: MUG_FOOT }, content: <Mug shadow="contact" /> },
-  { id: 'rolodex', name: 'Rolodex', widthMm: 137.05, ratio: 624/518, height: 107.95, place: { x: 1170, y: 330, rotation: 4 }, solid: { localCoordinates: true, height: 408/518, foot: { x: .5, y: 312/518 } }, content: <Rolodex rotation={0} loose={false} /> , inspect: HANDLE },
-  { id: 'handheld', name: 'Handheld', widthMm: 170, ratio: 327/720, height: 23, place: { x: 30, y: 250, rotation: -5 }, content: <Handheld rotation={0} />, shapes: [{ path: HANDHELD_SILHOUETTE }], colors: ['#17181b', '#141519', '#090a0d'] , inspect: HANDLE },
-  { id: 'labelBro', name: 'Label Bro', widthMm: 183, ratio: 772/732, height: 78, place: { x: 755, y: 515, rotation: -5 }, solid: { localCoordinates: true, height: LABEL_BRO_HEIGHT, foot: LABEL_BRO_FOOT }, content: <LabelBro rotation={0} defaultOn defaultText="BACKLINE" /> , inspect: HANDLE },
-  { id: 'pen', name: 'Pen', widthMm: 149, ratio: 60/720, height: 7, place: { x: 450, y: 330, rotation: 8 }, shapes: [{ path: 'M.3 28H3.3V18H17.2V28H19.7V33H96.4L99.9 50L96.4 67H19.7V72H.3Z' }] },
-  { id: 'walkman', name: 'Walkman', widthMm: 112, ratio: 590/720, height: 30, place: { x: 770, y: 260, rotation: -6 }, content: <Walkman rotation={0} /> , inspect: HANDLE },
+  { id: 'cradle', name: 'Newton’s cradle', place: { x: 330, y: 65 }, shapes: [{ path: 'M3 5H97V95H3Z', heightMm: 8 }, { path: 'M8 20H92V23H8Z M8 77H92V80H8Z', heightMm: 90 }] },
+  { id: 'mug', name: 'Mug', place: { x: 1010, y: 570, rotation: -15 }, shapes: MUG_SILHOUETTE, content: <Mug shadow="contact" /> },
+  { id: 'rolodex', name: 'Rolodex', place: { x: 1170, y: 330, rotation: 4 }, content: <Rolodex rotation={0} loose={false} /> , inspect: HANDLE },
+  { id: 'handheld', name: 'Handheld', place: { x: 30, y: 250, rotation: -5 }, content: <Handheld rotation={0} />, shapes: [{ path: HANDHELD_SILHOUETTE }], colors: ['#17181b', '#141519', '#090a0d'] , inspect: HANDLE },
+  { id: 'labelBro', name: 'Label Bro', place: { x: 755, y: 515, rotation: -5 }, content: <LabelBro rotation={0} defaultOn defaultText="BACKLINE" /> , inspect: HANDLE },
+  { id: 'pen', name: 'Pen', place: { x: 450, y: 330, rotation: 8 }, shapes: [{ path: 'M.3 28H3.3V18H17.2V28H19.7V33H96.4L99.9 50L96.4 67H19.7V72H.3Z' }] },
+  { id: 'walkman', name: 'Walkman', place: { x: 770, y: 260, rotation: -6 }, content: <Walkman rotation={0} /> , inspect: HANDLE },
   // Its own drawing, in millimetres: the phone alone
   // since the answering machine became its own component. The silhouette is the
   // 221 by 229 housing within that plan, and it stands at the moulding's height.
-  { id: 'phone', name: 'Desk phone', widthMm: DESK_PHONE_WIDTH, ratio: DESK_PHONE_DEPTH / DESK_PHONE_WIDTH, height: SET_BODY_HEIGHT, place: { x: 45, y: 415 }, solid: { height: DESK_PHONE_HEIGHT, foot: DESK_PHONE_FOOT }, content: <DeskPhone rotation={0} sound={false} />, shapes: [{ path: 'M33.1 12H81Q91.6 12 91.6 23.3V72.3Q91.6 88.3 76.6 88.3H37.5Q22.5 88.3 22.5 72.3V23.3Q22.5 12 33.1 12Z' }] , inspect: HANDLE },
+  { id: 'phone', name: 'Desk phone', place: { x: 45, y: 415 }, content: <DeskPhone rotation={0} sound={false} />, shapes: [{ path: 'M33.1 12H81Q91.6 12 91.6 23.3V72.3Q91.6 88.3 76.6 88.3H37.5Q22.5 88.3 22.5 72.3V23.3Q22.5 12 33.1 12Z' }] , inspect: HANDLE },
 ];
 // Width describes the entire artwork box (including cord/empty folder spread),
 // not necessarily the physical footprint. Keep silhouettes and Solid feet local.
-export const DESK_OBJECTS: ObjectSpec[] = OBJECT_DRAWINGS.map(object => ({ ...object, width: mmToUnits(object.widthMm) }));
+export const DESK_OBJECTS: ObjectSpec[] = OBJECT_DRAWINGS.map(object => {
+  const size: DeskObjectSize = DESK_OBJECT_SIZES[object.id];
+  return { ...object, widthMm: size.widthMm, ratio: size.ratio, height: size.heightMm, ...(size.solid && { solid: size.solid }), width: mmToUnits(size.widthMm) };
+});
 export const DEFAULT_OBJECT_PLACEMENTS = Object.fromEntries(DESK_OBJECTS.map(object => [object.id, { rotation: 0, scale: 1, ...object.place }]));
 export type ObjectPlacements = Record<string, Place>;
 
