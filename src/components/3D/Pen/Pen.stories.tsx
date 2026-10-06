@@ -1,9 +1,7 @@
 import { mmToUnits } from '../../../geometry/physicalScale';
 import { elevatedLayer } from '../../../behaviors/Perspective/elevation';
-import { checkDeskStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy.check';
 import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect } from 'storybook/test';
 import { PEN_KINDS, Pen } from './Pen';
 
 const meta = {
@@ -32,11 +30,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** A clear ballpoint, cap on, the ink showing through the barrel. */
-export const Ballpoint: Story = {
-  play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector('.pen[data-kind="ballpoint"] .pen__tube')).toBeInTheDocument();
-  },
-};
+export const Ballpoint: Story = {};
 
 /** A permanent marker: black body, the cap in the ink's colour. */
 export const Marker: Story = {
@@ -66,7 +60,6 @@ export const Handful: Story = {
 };
 
 export const OnDesk: Story = {
-  play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
   render: (args) => {

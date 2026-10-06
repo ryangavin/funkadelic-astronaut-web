@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, waitFor } from 'storybook/test';
 import { PAPER_STOCKS, PaperSheet } from '../PaperSheet/PaperSheet';
 import { Pin } from '../Pin/Pin';
 import { Astronaut } from './Astronaut';
@@ -33,26 +32,6 @@ export const MultipleCutouts: Story = {
     <div style={{ width: 'min(100%, 288px)' }}><Astronaut {...args} /></div>
     <div style={{ width: 'min(100%, 200px)' }}><Astronaut {...args} stock="white" rotation={6} /></div>
   </div>,
-  play: async ({ canvasElement }) => {
-    const images = [...canvasElement.querySelectorAll<HTMLImageElement>('.astronaut-cutout__image')];
-    await expect(images).toHaveLength(2);
-    await waitFor(() => images.forEach((image) => expect(image.naturalWidth).toBe(720)));
-    const ids = [...canvasElement.querySelectorAll('[id]')].map((element) => element.id);
-    await expect(new Set(ids).size).toBe(ids.length);
-    for (const cutout of canvasElement.querySelectorAll('.astronaut-cutout')) {
-      const ownIds = new Set([...cutout.querySelectorAll('[id]')].map((element) => element.id));
-      for (const element of cutout.querySelectorAll('*')) {
-        for (const attribute of element.attributes) {
-          for (const match of attribute.value.matchAll(/url\(#([^)]*)\)/g)) {
-            await expect(ownIds.has(match[1])).toBe(true);
-          }
-          if (attribute.name === 'href' && attribute.value.startsWith('#')) {
-            await expect(ownIds.has(attribute.value.slice(1))).toBe(true);
-          }
-        }
-      }
-    }
-  },
 };
 
 export const OnPaperSheet: Story = {

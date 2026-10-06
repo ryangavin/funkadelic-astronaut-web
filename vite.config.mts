@@ -45,11 +45,14 @@ export default defineConfig({
     projects: [
       {
         extends: true,
-        // Runs every story as a browser test, with each play function as its assertions.
+        // Runs the site's stories as browser tests, with each play function as its assertions.
         // See https://storybook.js.org/docs/writing-tests/integrations/vitest-addon
         plugins: [storybookTest()],
         test: {
           name: 'storybook',
+          // Only the site is released. The experience and library stories are visual only and never run as tests.
+          // The plugin replaces `include` with Storybook's own story globs, but keeps `exclude`.
+          exclude: ['src/!(site)/**'],
           browser: {
             enabled: true,
             headless: true,

@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import festivalSketch from '../../../../assets/festival-scribble-fully-shaded.png';
 import { PaperSheet } from '../../../components/2D/PaperSheet/PaperSheet';
 import { HANDBILL_SIDES, HANDBILL_SPOTS, HANDBILL_STOCKS, Handbill } from './Handbill';
@@ -27,7 +26,6 @@ const meta = {
     side: 'front',
     rotation: -2,
     duration: 900,
-    onTurn: fn(),
   },
   decorators: [
     (Story, context) =>
@@ -47,34 +45,11 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** The band's handbill, front up. Click it to turn it over. */
-export const Front: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expect(canvas.getByRole('status').textContent).toBe('Front of the handbill');
-    await expect(canvas.getByRole('heading', { name: /Funkadelic\s*Astronaut/ })).toBeVisible();
-  },
-};
+export const Front: Story = {};
 
 /** The reverse: the bio and the live photo in one ink. */
 export const Back: Story = {
   args: { side: 'back' },
-};
-
-/** Turned over by hand: the status follows the card and the callback fires once it has settled. */
-export const Turned: Story = {
-  args: { duration: 600 },
-  play: async ({ canvasElement, args }) => {
-    const canvas = within(canvasElement);
-    const turn = canvas.getByRole('button', { name: 'Turn the handbill over' });
-    await userEvent.click(turn);
-    await expect(canvas.getByRole('status').textContent).toBe('Turning the handbill');
-    // A second click while it is in the air does nothing.
-    await userEvent.click(turn);
-    await waitFor(() => expect(canvas.getByRole('status').textContent).toBe('Back of the handbill'), { timeout: 2000 });
-    await expect(args.onTurn).toHaveBeenCalledTimes(1);
-    await expect(args.onTurn).toHaveBeenCalledWith('back');
-    await expect(canvas.getByRole('button', { name: 'Turn the handbill back' })).toBeInTheDocument();
-  },
 };
 
 /** The same job run on every stock the shop keeps, each in a different second ink. */

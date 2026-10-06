@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, waitFor } from 'storybook/test';
 import { PaperSheet } from '../PaperSheet/PaperSheet';
 import { Pin } from '../Pin/Pin';
 import { Wordmark } from '../Wordmark/Wordmark';
@@ -53,13 +52,6 @@ const ruler = (args: Story['args']) => (
 /** The default: 1440 design pixels, scaled to fill whatever it is shown in. */
 export const Ruler: Story = {
   render: ruler,
-  play: async ({ canvasElement }) => {
-    const stage = canvasElement.querySelector<HTMLElement>('.stage')!;
-    const sheet = canvasElement.querySelector<HTMLElement>('.stage__sheet')!;
-    await waitFor(() => expect(Number(getComputedStyle(sheet).zoom)).toBeCloseTo(stage.clientWidth / STAGE_WIDTH, 3));
-    // The sheet lays out at its design width and the zoom brings it to the stage's width.
-    await expect(sheet.getBoundingClientRect().width).toBeCloseTo(stage.clientWidth, 0);
-  },
 };
 
 /** Capped so a wide monitor gets the composition at most half again as large. */

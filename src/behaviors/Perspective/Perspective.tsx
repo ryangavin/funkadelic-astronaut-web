@@ -227,8 +227,14 @@ export function Perspective({ angle = GENTLE_VIEW, depth = GENTLE_DEPTH, width =
     above it scrolling — which matters, because the desk sits in pages that
     scroll and in a bench with a scroller of its own, and a stale box would let
     a thing track the pointer at a constant offset without any error to show for it.
+
+    A resize is only reported on the next rendered frame, though, and a frame can
+    be a long way off when rasterising is slow: a press straight after the view is
+    reframed would map the pointer through the old width. So it is also taken when
+    a press starts, which is before anything has been written and costs one read.
   */
   const measured = useRef<PlaneMetrics | null>(null);
+  const remeasure = () => { if (plane.current) measured.current = measurePlane(plane.current); };
   useLayoutEffect(() => {
     const element = plane.current;
     if (!element) return;
@@ -256,7 +262,7 @@ export function Perspective({ angle = GENTLE_VIEW, depth = GENTLE_DEPTH, width =
     <div className={`perspective ${className}`} style={vars}>
       {/* The eye: its perspective is in surface units, which only a descendant of the container can measure. */}
       <div className="perspective__eye">
-        <div className="perspective__plane" ref={plane}>
+        <div className="perspective__plane" ref={plane} onPointerDownCapture={remeasure}>
           <PerspectiveView.Provider value={view}>
             <MovableProject.Provider value={project}>{children}</MovableProject.Provider>
           </PerspectiveView.Provider>

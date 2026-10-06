@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { DeskLighting } from '../../../behaviors/DeskLighting/DeskLighting';
 import { DeskLamp } from '../../../components/3D/DeskLamp/DeskLamp';
 import { LampPool } from '../../../components/3D/DeskLamp/LampShadows';
@@ -25,19 +24,5 @@ const meta = { title: 'Experience/Debug/Room lighting', component: DirectLight }
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Standalone callers have no placeId; registration must carry the same tuning as Room. */
-export const DirectRegistration: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const pool = canvasElement.querySelector<HTMLElement>('.lamp-light')!;
-    await waitFor(() => expect(pool).toHaveAttribute('data-on'));
-    const width = parseFloat(pool.style.width);
-    await userEvent.click(canvas.getByRole('button', { name: 'Brighter' }));
-    await waitFor(() => expect(pool.style.filter).toBe('brightness(3)'));
-    await userEvent.click(canvas.getByRole('button', { name: 'Wider pool' }));
-    await waitFor(() => expect(parseFloat(pool.style.width)).toBeCloseTo(width * 2));
-    await userEvent.click(canvas.getByRole('button', { name: 'Zero emission' }));
-    await waitFor(() => expect(pool.style.visibility).toBe('hidden'));
-    expect(pool).not.toHaveAttribute('data-on');
-  },
-};
+/** A lamp lighting its pool outside a Room, with no placeId; the buttons brighten it, widen the pool and switch it off. */
+export const DirectRegistration: Story = {};

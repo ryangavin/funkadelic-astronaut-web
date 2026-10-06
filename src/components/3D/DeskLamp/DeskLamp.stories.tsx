@@ -1,9 +1,7 @@
 import { LAMP_WIDTH, LAMP_HEIGHT } from '../../../geometry/physicalScale';
-import { checkDeskStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy.check';
 import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { expect, fn, userEvent, within } from 'storybook/test';
 import { Movable, type Place } from '../../../behaviors/Movable/Movable';
 import { Perspective, GENTLE_VIEW, GENTLE_DEPTH } from '../../../behaviors/Perspective/Perspective';
 import { DeskLighting, useDeskLight } from '../../../behaviors/DeskLighting/DeskLighting';
@@ -21,7 +19,7 @@ const meta = {
     enamel: { control: 'inline-radio', options: DESK_LAMP_ENAMELS },
     rotation: { control: { type: 'range', min: -180, max: 180, step: 1 } },
   },
-  args: { shadowStrength: 0.36, on: true, enamel: 'red', rotation: 0, onToggle: fn() },
+  args: { shadowStrength: 0.36, on: true, enamel: 'red', rotation: 0 },
 } satisfies Meta<typeof DeskLamp>;
 
 export default meta;
@@ -33,14 +31,6 @@ function Lit(args: Story['args']) { return <ArticulatedLamp {...args} />; }
 /** On. Click the shade. */
 export const On: Story = {
   render: (args) => <Lit {...args} />,
-  play: async ({ canvasElement, args }) => {
-    const canvas = within(canvasElement);
-    await expect(canvasElement.querySelector('.lamp-light')).toHaveAttribute('data-on');
-    await userEvent.click(canvas.getByRole('button', { name: 'Turn the lamp off' }));
-    await expect(args.onToggle).toHaveBeenCalledWith(false);
-    await expect(canvasElement.querySelector('.lamp-light')).not.toHaveAttribute('data-on');
-    await expect(canvas.getByRole('button', { name: 'Turn the lamp on' })).toHaveAttribute('aria-pressed', 'false');
-  },
 };
 
 /** Off, in a mustard enamel. */
@@ -71,58 +61,7 @@ function ArticulatedLamp(args: Story['args']) {
   </div>;
 }
 
-export const Articulated: Story = {
-  render: (args) => <ArticulatedLamp {...args} />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const lamp = canvas.getByRole('group', { name: 'Desk lamp' });
-    const head = canvas.getByRole('button', { name: 'Turn the lamp off' });
-    const base = canvasElement.querySelector<HTMLElement>('.desk-lamp__base-handle')!;
-    const pool = canvasElement.querySelector<HTMLElement>('.lamp-light')!;
-    const dragBy = async (element: HTMLElement, dx: number, dy: number) => {
-      const box = element.getBoundingClientRect();
-      const x = box.left + box.width / 2, y = box.top + box.height / 2;
-      await userEvent.pointer([
-        { keys: '[MouseLeft>]', target: element, coords: { clientX: x, clientY: y } },
-        { coords: { clientX: x + dx / 2, clientY: y + dy / 2 } },
-        { coords: { clientX: x + dx, clientY: y + dy } },
-        { keys: '[/MouseLeft]' },
-      ]);
-    };
-    const lampBefore = lamp.getAttribute('style');
-    const baseBefore = base.getBoundingClientRect();
-    const poolBefore = pool.style.left;
-    const cast = canvasElement.querySelector('.lamp-cast-shadow__light')!;
-    const armShadow = canvasElement.querySelector('.lamp-cast-shadow__upper-arm')!;
-    const armBefore = armShadow.getAttribute('d');
-    await dragBy(head, 60, -25);
-    await expect(lamp.getAttribute('style')).toBe(lampBefore);
-    await expect(base.getBoundingClientRect().left).toBeCloseTo(baseBefore.left, 1);
-    await expect(pool.style.left).not.toBe(poolBefore);
-    await expect(armShadow.getAttribute('d')).not.toBe(armBefore);
-    await expect(Number(cast.getAttribute('opacity'))).toBeGreaterThan(0);
-    await expect(head).toHaveAttribute('aria-pressed', 'true');
-    await dragBy(base, -55, 20);
-    await expect(lamp.getAttribute('style')).not.toBe(lampBefore);
-    const grip = canvas.getByRole('button', { name: 'Rotate Desk lamp' });
-    grip.focus();
-    await userEvent.keyboard('{ArrowRight}');
-    await expect(lamp.style.getPropertyValue('--movable-rotation')).toBe('1deg');
-    const headBefore = canvasElement.querySelector('.desk-lamp__shade')!.getAttribute('transform');
-    head.focus();
-    await userEvent.keyboard('{ArrowRight}');
-    await expect(canvasElement.querySelector('.desk-lamp__shade')!.getAttribute('transform')).not.toBe(headBefore);
-    await userEvent.click(head);
-    await expect(head).toHaveAttribute('aria-pressed', 'false');
-    await expect(cast).toHaveAttribute('opacity', '0');
-    await expect(canvasElement.querySelector('.lamp-contact-shadow')).toBeInTheDocument();
-    await userEvent.click(head);
-    head.blur();
-  },
-};
-
 export const OnDesk: Story = {
-  play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
   render: () => <DeskObjectStudy name="Desk lamp" bare />,

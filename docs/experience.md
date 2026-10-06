@@ -9,7 +9,7 @@ Where things live:
 - `src/behaviors`, `src/foundations`, `src/styles`, `src/geometry` — Storybook **Library / Foundations**: **Behaviors** for interaction and perspective, **Styles** for print and surface treatments, **Layout** for composition primitives.
 - `src/content/` — the band's data (links, members, releases, live set, stages), shared with the site.
 
-Storybook is the workshop: it runs with accessibility checks, generated documentation and the MCP addon at `/mcp`. Compositions are written as React and mirrored by stories; there is no in-browser page editor. The Vitest addon runs every story as a browser test in headless Chromium, with each play function as its assertions: `npm run test:stories` from the terminal, or the Testing Module in the Storybook sidebar. See [AGENTS.md](../AGENTS.md) for the test commands.
+Storybook is the workshop: it runs with accessibility checks, generated documentation and the MCP addon at `/mcp`. Compositions are written as React and mirrored by stories; there is no in-browser page editor. The experience is unreleased, so its stories are visual only, with no play functions, and `npm run test:stories` does not run them; only the site's stories are browser-tested. See [AGENTS.md](../AGENTS.md) for the test commands.
 
 ## Desk lamp
 

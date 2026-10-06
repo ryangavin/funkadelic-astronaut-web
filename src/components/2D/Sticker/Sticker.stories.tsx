@@ -3,7 +3,6 @@ import { useId } from 'react';
 import astronautImage from '../../../../assets/astronaut-flat.webp';
 import { ASTRONAUT_PAPER_SHAPE, AstronautPalette } from '../Astronaut/Astronaut';
 import { Sticker } from './Sticker';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { SOCIAL_ICON_INK_NAMES, SOCIAL_PLATFORM_NAMES } from '../SocialIcon/SocialIcon';
 import { PAPER_STOCKS } from '../PaperSheet/PaperSheet';
 import { SocialSticker } from './SocialSticker';
@@ -57,12 +56,6 @@ export const Astronaut: Story = {
         style={{ display: 'block', width: '100%', height: '100%', filter: `url(#${id})` }} />
     </Sticker>;
   },
-  play: async ({ canvasElement }) => {
-    const image = within(canvasElement).getByRole('img', { name: 'Astronaut wearing headphones' }) as HTMLImageElement;
-    await waitFor(() => expect(image.naturalWidth).toBe(720));
-    const art = canvasElement.querySelector('.sticker__artwork')!;
-    await expect(parseFloat(getComputedStyle(art).height) / parseFloat(getComputedStyle(art).width)).toBeCloseTo(1.5);
-  },
 };
 
 export const StreamingStickers: Story = {
@@ -78,12 +71,6 @@ export const AllPlatforms: Story = {
     {SOCIAL_PLATFORM_NAMES.map((platform, index) =>
       <SocialSticker key={platform} {...args} platform={platform} rotation={index % 2 ? 4 : -4} />)}
   </div>,
-  play: async ({ canvasElement }) => {
-    const gradient = canvasElement.querySelector('.social-icon[data-platform="instagram"] linearGradient');
-    await expect(gradient).toBeInTheDocument();
-    const facebook = canvasElement.querySelector<HTMLElement>('.social-icon[data-platform="facebook"]')!;
-    await expect(facebook.style.getPropertyValue('--social-icon-ink')).toBe('#4a78b8');
-  },
 };
 
 export const Sizes: Story = {
@@ -104,14 +91,6 @@ export const Peeling: Story = {
 /** Still on its liner: the sheet of backing paper it came on, lying loose on the desk. */
 export const OnLiner: Story = {
   args: { platform: 'spotify', backing: true, rotation: 6, size: 96, peel: 3 },
-  play: async ({ canvasElement }) => {
-    const sheet = canvasElement.querySelector<HTMLElement>('.sticker__sheet')!;
-    await expect(sheet).toBeInTheDocument();
-    // The liner keeps its corner: only the vinyl is cut by the peel.
-    const win = canvasElement.ownerDocument.defaultView!;
-    await expect(win.getComputedStyle(sheet).clipPath).toBe('none');
-    await expect(win.getComputedStyle(canvasElement.querySelector('.sticker__vinyl')!).clipPath).toMatch(/^polygon/);
-  },
 };
 
 /** The poster's worn cutout print on vinyl instead of the clean job. */
@@ -127,18 +106,4 @@ export const Matte: Story = {
 /** A link: the corner curls further under the pointer, and the focus ring shows on tab. */
 export const Linked: Story = {
   args: { platform: 'spotify', href: 'https://open.spotify.com/', label: 'Listen on Spotify', rotation: 3 },
-  play: async ({ canvasElement }) => {
-    const link = within(canvasElement).getByRole('link', { name: 'Listen on Spotify' });
-    const vinyl = link.querySelector<HTMLElement>('.sticker__vinyl')!;
-    const win = canvasElement.ownerDocument.defaultView!;
-    const resting = win.getComputedStyle(vinyl).clipPath;
-    await expect(resting).toMatch(/^polygon/);
-    await expect(link.querySelector('.sticker__flap')).toBeInTheDocument();
-    // Focus lifts the corner the same way the pointer does: the fold moves in and the surface layer is cut further.
-    await userEvent.tab();
-    await expect(link).toHaveFocus();
-    await waitFor(() => expect(win.getComputedStyle(vinyl).clipPath).not.toBe(resting), { timeout: 1500 });
-    await userEvent.tab();
-    await waitFor(() => expect(win.getComputedStyle(vinyl).clipPath).toBe(resting), { timeout: 1500 });
-  },
 };

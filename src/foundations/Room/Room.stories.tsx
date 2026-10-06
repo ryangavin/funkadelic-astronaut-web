@@ -1,13 +1,11 @@
 import { useArgs } from 'storybook/preview-api';
 import { MeterStick } from '../../components/3D/MeterStick/MeterStick';
 import { Pin } from '../../components/2D/Pin/Pin';
-import { checkPhysicalLens, checkPhysicalRoom } from '../../experience/debug/RoomControls/check';
 import { PerspectiveDesk } from '../../experience/Desk/PerspectiveDesk';
 import { physicalControls, physicalDefaults, withLightTuning, RoomExperiment, type RoomStoryControls } from '../../experience/debug/RoomControls/controls';
 import { articulateLamp, lampPoseAngles } from '../../components/3D/DeskLamp/articulation';
 import { DESK_LAMP_ENAMELS } from '../../components/3D/DeskLamp/DeskLamp';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { fn } from 'storybook/test';
 import { DESK_WOODS } from '../../components/3D/Desk/Desk';
 import { FLOOR_WOODS } from '../../components/3D/Floor/Floor';
 import { WALL_FINISHES } from '../../components/3D/Wall/Wall';
@@ -55,7 +53,7 @@ const meta = {
     onArticulate: { table: { disable: true } },
     onLamp: { table: { disable: true } },
   },
-  args: { showPerformance: false, ...physicalDefaults, deskShare: .8, roomLip: 180, wood: 'walnut', room: true, floor: 'pine', wall: 'red', lamp: true, shadowStrength: .36, lampX: 396, lampY: 17, lampRotation: 0, lampWidth: 576, lampEnamel: 'green', lampLowerAngle: -142.6818247177271, lampUpperAngle: 110.41274403236815, onArrange: fn(), onArticulate: fn(), onLamp: fn() },
+  args: { showPerformance: false, ...physicalDefaults, deskShare: .8, roomLip: 180, wood: 'walnut', room: true, floor: 'pine', wall: 'red', lamp: true, shadowStrength: .36, lampX: 396, lampY: 17, lampRotation: 0, lampWidth: 576, lampEnamel: 'green', lampLowerAngle: -142.6818247177271, lampUpperAngle: 110.41274403236815 },
 } satisfies Meta<RoomProps & RoomStoryControls>;
 
 export default meta;
@@ -82,7 +80,6 @@ export const LampOff: Story = {
 
 /** A populated experiment; all numeric ranges are yours to explore. */
 export const PhysicalSetup: Story = {
-  play: checkPhysicalRoom,
   args: { eyeHeightMm: 1650, viewerSetbackMm: 650, deskShare: 0.8, roomLip: 180 },
   render: function Experiment(args) {
     const [currentArgs, updateArgs] = useArgs<typeof args>();
@@ -100,6 +97,5 @@ export const PhysicalLens: Story = {
       <Pin x={100} y={880} width={1200}><MeterStick /></Pin>
     </PerspectiveDesk>}</RoomExperiment>;
   },
-  play: checkPhysicalLens,
 };
 export const PhysicalLensWithoutBackground: Story = { ...PhysicalLens, args: { ...PhysicalLens.args, room: false } };

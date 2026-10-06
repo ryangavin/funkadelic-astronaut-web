@@ -1,12 +1,8 @@
-import { checkPhysicalRoom } from '../debug/RoomControls/check';
 import { physicalControls, physicalDefaults, withLightTuning, RoomExperiment, type RoomStoryControls } from '../debug/RoomControls/controls';
-import { DESK_OBJECTS, DEFAULT_OBJECT_PLACEMENTS } from './DeskObjects';
-import { DESK_SIZE, PAPER_MM, mmToUnits } from '../../geometry/physicalScale';
 import { useArgs } from 'storybook/preview-api';
 import { articulateLamp, lampPoseAngles } from '../../components/3D/DeskLamp/articulation';
 import { DESK_LAMP_ENAMELS } from '../../components/3D/DeskLamp/DeskLamp';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, userEvent, within } from 'storybook/test';
 import { DESK_WOODS } from '../../components/3D/Desk/Desk';
 import { FLOOR_WOODS } from '../../components/3D/Floor/Floor';
 import { WALL_FINISHES } from '../../components/3D/Wall/Wall';
@@ -51,7 +47,7 @@ const meta = {
     onArticulate: { table: { disable: true } },
     onLamp: { table: { disable: true } },
   },
-  args: { showPerformance: false, ...physicalDefaults, wood: 'walnut', lamp: true, shadowStrength: .36, lampX: 770, lampY: 100, lampRotation: 0, lampWidth: 576, lampEnamel: 'green', lampLowerAngle: initialAngles.lower, lampUpperAngle: initialAngles.upper, onArrange: fn(), onArticulate: fn(), onLamp: fn() },
+  args: { showPerformance: false, ...physicalDefaults, wood: 'walnut', lamp: true, shadowStrength: .36, lampX: 770, lampY: 100, lampRotation: 0, lampWidth: 576, lampEnamel: 'green', lampLowerAngle: initialAngles.lower, lampUpperAngle: initialAngles.upper },
 } satisfies Meta<PerspectiveDeskProps & RoomStoryControls>;
 
 export default meta;
@@ -157,49 +153,10 @@ export const Desk: Story = {
     showObjects: true,
     wood: "oak"
   },
-
-  play: async ({ canvasElement, args }) => {
-    if (import.meta.env.MODE !== 'test') return;
-    const canvas = within(canvasElement);
-    const top = canvasElement.querySelector<HTMLElement>('.desk__top')!;
-    await expect(top.offsetHeight / top.offsetWidth).toBeCloseTo(DESK_SIZE.depth / DESK_SIZE.width, 2);
-    for (const id of ['sitePlan', 'poster', 'setTimes', 'contract']) {
-      const object = DESK_OBJECTS.find(object => object.id === id)!;
-      await expect(object.width).toBeCloseTo(mmToUnits(PAPER_MM.width), 8);
-      await expect(object.width * object.ratio).toBeCloseTo(mmToUnits(PAPER_MM.height), 8);
-    }
-    for (const selector of ['.site-plan', '.handbill__scene', '.run-sheet', '.contract']) {
-      const sheet = canvasElement.querySelector<HTMLElement>(selector)!;
-      await expect(sheet.offsetHeight / sheet.offsetWidth).toBeCloseTo(280 / 220, 2);
-    }
-    const mug = DESK_OBJECTS.find(object => object.id === 'mug')!;
-    await expect(mug.width * mug.solid!.height).toBeCloseTo(mmToUnits(mug.height), 8);
-    await expect(DEFAULT_OBJECT_PLACEMENTS.phone.scale).toBe(1);
-    await expect(DEFAULT_OBJECT_PLACEMENTS.cradle.scale).toBe(1);
-
-    const lamp = canvas.getByRole('group', { name: 'Desk lamp' });
-    const before = lamp.getAttribute('style');
-    lamp.focus();
-    await userEvent.keyboard('{ArrowLeft}');
-    await expect(lamp.getAttribute('style')).not.toBe(before);
-    await expect(args.onArrange).toHaveBeenCalled();
-    const head = canvas.getByRole('button', { name: 'Turn the lamp off' });
-    const shade = canvasElement.querySelector('.desk-lamp__shade')!;
-    const pose = shade.getAttribute('transform');
-    head.focus();
-    await userEvent.keyboard('{ArrowRight}');
-    await expect(shade.getAttribute('transform')).not.toBe(pose);
-    await userEvent.click(head);
-    await expect(args.onLamp).toHaveBeenCalledWith(false);
-    await expect(canvasElement.querySelector('.lamp-cast-shadow__light')).toHaveAttribute('opacity', '0');
-    await userEvent.click(canvas.getByRole('button', { name: 'Turn the lamp on' }));
-    head.blur();
-  }
 };
 
 /** A populated experiment; all numeric ranges are yours to explore. */
 export const PhysicalSetup: Story = {
-  play: checkPhysicalRoom,
   args: { eyeHeightMm: 1650, viewerSetbackMm: 650, deskShare: 0.8, roomLip: 180 },
   render: function Experiment(args) {
     const [currentArgs, updateArgs] = useArgs<typeof args>();

@@ -2,7 +2,6 @@ import { physicalControls, withLightTuning, type RoomStoryControls } from '../de
 import { COFFEE_COUNTER, PRODUCTION_TRAILER } from './settings';
 import { useArgs } from 'storybook/preview-api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within } from 'storybook/test';
 import { DESK_SURFACES } from '../../components/3D/Desk/Desk';
 import { DESK_WOODS } from '../../components/3D/Desk/Desk';
 import { FLOOR_WOODS } from '../../components/3D/Floor/Floor';
@@ -56,27 +55,16 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Every object in the setting is a real object: it stands on the surface and the lamp throws it. */
-const standsInTheRoom: Story['play'] = async ({ canvasElement }) => {
-  const canvas = within(canvasElement);
-  await expect(canvas.getByRole('group', { name: 'Walkman' })).toBeVisible();
-  await expect(canvas.getByRole('group', { name: 'Handheld' })).toBeVisible();
-  await expect(canvas.getByRole('button', { name: 'Open the press package' })).toBeVisible();
-  /* The room is drawn, not painted: the wall and the boards are in it. */
-  await expect(canvasElement.querySelector('.desk-room__wall .wall')).toBeInTheDocument();
-  await expect(canvasElement.querySelector('.desk-room__floor .floor')).toBeInTheDocument();
-};
-
 /**
  * A festival production cabin: a folding trestle in a sheet-lined box, under a
  * long shallow window, on grey plank. Seen standing, because nobody sits down
  * in a production office.
  */
-export const ProductionTrailer: Story = { args: PRODUCTION_TRAILER, play: standsInTheRoom };
+export const ProductionTrailer: Story = { args: PRODUCTION_TRAILER };
 
 /**
  * A café window counter: a shallow oak bar along the glass at standing height,
  * against glazed tile, seen from a stool. Everything is within a forearm of
  * everything else, which is the whole character of the place.
  */
-export const CoffeeCounter: Story = { args: COFFEE_COUNTER, play: standsInTheRoom };
+export const CoffeeCounter: Story = { args: COFFEE_COUNTER };

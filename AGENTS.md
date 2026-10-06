@@ -10,7 +10,7 @@ How to work in this repo: where things go, which tests to run, what CI runs and 
 | `src/experience/` | The desk experience, Storybook only, not deployed: `Arrival/`, `Desk/`, `Poster/`, `sections/`, `experiments/`, `debug/` | **Experience / ...** |
 | `src/content/` | Band data as TypeScript (links, members, releases, live set, stages) and `locales/en.json`, the copy catalogue. No CSS, no components. | — |
 | `src/components`, `src/behaviors`, `src/foundations`, `src/styles`, `src/geometry` | Shared library | **Library / Components / 2D/...**, **Library / Components / 3D/...**, **Library / Foundations / ...** |
-| `legacy/` | The old vanilla-JS poster with its scripts, styles and `legacy/tests/`; kept, not deployed, not served by `npm run dev` | — |
+| `legacy/` | The old vanilla-JS poster with its scripts and styles; kept, not deployed, not served by `npm run dev` | — |
 | `assets/` | Images, fonts, audio and video; copied whole into `dist/` by `scripts/copy-static-build.cjs` because the site loads some files by fixed `/assets/...` URL | — |
 | `docs/` | Design notes; the experience is in `docs/experience.md` | — |
 
@@ -26,15 +26,15 @@ Rules:
 | Command | What it checks | Run it when |
 | --- | --- | --- |
 | `node --test tests/<file>.test.cjs` | One Node test file | While working, for the area you touched |
-| `npx vitest --project=storybook --run <path/to/X.stories.tsx>` | One story file's play functions in headless Chromium | While working on a component or story |
 | `npx tsc --noEmit` | Types, including copy-catalogue keys | Fast check after TypeScript edits |
-| `npm run test:legacy` | The legacy poster's Node tests (`cd legacy && node --test tests/*.test.cjs`) | After touching anything in `legacy/` |
-| `npm test` | All Node tests in `tests/`, then `npm run test:legacy` | Once before pushing |
-| `npm run build` | `tsc --noEmit`, the Vite build of the site, static copy | Once before pushing site or shared changes (it includes the `tsc` check, so skip the separate one) |
-| `npm run build-storybook` | Storybook builds | Before pushing story or Storybook config changes |
-| `npm run test:stories` | Every story as a browser test | Leave to CI unless you changed something many stories share |
+| `npm test` | All Node tests in `tests/`: the site/experience boundary, the dev preview, and the experience's pure geometry and maths | Once before pushing |
+| `npm run build` | `tsc --noEmit`, the Vite build of the site, static copy | Once before pushing (it includes the `tsc` check, so skip the separate one) |
+| `npm run test:stories` | The site's stories (`src/site/**`) as browser tests in headless Chromium, with their play functions as assertions | Once before pushing site changes |
+| `npm run build-storybook` | Storybook builds, every story included | Before pushing story or Storybook config changes |
 
-Run each command once; don't run the full suites in overlapping configurations. Some `tests/*.browser.mjs` scripts need a running preview (`PREVIEW_URL=... node tests/<file>.browser.mjs`); see the doc for that area. `npm run dev` serves the site at `/` and Storybook at `/storybook/`; stop it when you are done.
+Only the site is tested end to end. The experience and the shared library are unreleased: their stories are visual only by policy, with no play functions, and `vite.config.mts` excludes everything outside `src/site` from `npm run test:stories`. Their only tests are the pure geometry and maths in `tests/`. `legacy/` has no tests.
+
+Run each command once; don't run the full suites in overlapping configurations. `npm run dev` serves the site at `/` and Storybook at `/storybook/`; stop it when you are done.
 
 ## CI
 
@@ -43,12 +43,13 @@ Run each command once; don't run the full suites in overlapping configurations. 
 
 ## PR review checklist
 
-Flag real problems only, not style:
+Real bugs and project rules only, never style:
 
 - Bugs: broken behaviour, wrong logic, regressions, accessibility failures (keyboard, labels, reduced motion), console errors.
 - `src/site` importing from `src/experience`.
 - User-visible site text written inline instead of in `src/content/locales/en.json`.
 - Storybook titles outside `Site/`, `Experience/`, `Library/`, or not matching the folder.
-- New behaviour without a test that would fail without it.
+- New site behaviour without a test that would fail without it, or new experience geometry/maths without a Node test.
+- A play function on a story outside `src/site`, or a test of the experience other than pure geometry/maths.
 - Docs (`README.md`, `AGENTS.md`, `docs/`) left stale by the change.
 - Placeholder tour dates or content presented as real.

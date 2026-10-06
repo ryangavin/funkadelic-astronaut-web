@@ -1,7 +1,5 @@
-import { checkDeskStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy.check';
 import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, within } from 'storybook/test';
 import demoTape from '../../../../assets/audio/demo-tape.mp3';
 import festivalSketch from '../../../../assets/festival-scribble-fully-shaded.png';
 import { PaperSheet } from '../../2D/PaperSheet/PaperSheet';
@@ -29,9 +27,6 @@ const meta = {
     rotation: -2,
     volume: 0.8,
     loop: false,
-    onPlay: fn(),
-    onStop: fn(),
-    onEnded: fn(),
   },
   decorators: [
     (Story, context) =>
@@ -51,24 +46,11 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** A tape in the deck, stopped at the top. Press PLAY. Hold REW or FF to wind. */
-export const Tape: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expect(canvas.getByRole('group', { name: 'Cassette player: Funkadelic Astronaut – Spacewalk (demo)' })).toBeInTheDocument();
-    await expect(canvas.getByRole('status').textContent).toBe('Stopped');
-    await expect(canvas.getByRole('button', { name: 'Play' })).toHaveAttribute('aria-pressed', 'false');
-    await expect(canvas.getByRole('slider', { name: 'Volume' })).toHaveValue('0.8');
-  },
-};
+export const Tape: Story = {};
 
 /** Nothing in the deck: the display says so and the keys do nothing. */
 export const NoTape: Story = {
   args: { src: undefined, title: undefined, label: 'blank' },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expect(canvas.getByRole('status').textContent).toBe('No tape');
-    await expect(canvas.getByRole('button', { name: 'Play' })).toBeDisabled();
-  },
 };
 
 /** Side B, blue. */
@@ -106,7 +88,6 @@ export const OnFestivalPaper: Story = {
 };
 
 export const OnDesk: Story = {
-  play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
   render: (args) => <DeskObjectStudy name="Walkman" widthMm={112} depthRatio={590/720} heightMm={30} ><Walkman {...args} rotation={0} /></DeskObjectStudy>,

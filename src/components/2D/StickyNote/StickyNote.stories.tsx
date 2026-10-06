@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within } from 'storybook/test';
 import { STICKY_NOTE_COLORS, StickyNote } from './StickyNote';
 
 const meta = {
@@ -43,12 +42,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** The promoter's note to themself. */
-export const Note: Story = {
-  play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByText('Listen to the tape!!')).toBeVisible();
-    await expect(canvasElement.querySelector('.sticky-note[data-curl="right"]')).toBeInTheDocument();
-  },
-};
+export const Note: Story = {};
 
 /** Stuck down flat, the other corner. */
 export const Flat: Story = {

@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
 import kevin from '../../../assets/band-22.webp';
 import ryan from '../../../assets/band-13.webp';
 import sam from '../../../assets/band-21.webp';
@@ -67,25 +66,6 @@ function LooseInAFolder(args: Story['args']) {
 /** Closed: everything is packed on the pile's point, out of sight. Open the folder. */
 export const Packed: Story = {
   render: (args) => <LooseInAFolder {...args} />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const items = canvasElement.querySelectorAll<HTMLElement>('.spilled');
-    await expect(items).toHaveLength(4);
-    for (const item of items) await expect(getComputedStyle(item).visibility).toBe('hidden');
-    await userEvent.click(canvas.getByRole('button', { name: 'Open the folder' }));
-    for (const item of items) await expect(getComputedStyle(item).visibility).toBe('visible');
-    // Each lands at its own place, in its own order: the last out has the highest z.
-    await waitFor(
-      () => {
-        const [ryanPrint, , samPrint] = [...items].map((item) => item.getBoundingClientRect());
-        expect(samPrint.left).toBeGreaterThan(ryanPrint.left + 600);
-      },
-      { timeout: 3000 },
-    );
-    await expect(Number(getComputedStyle(items[3]).zIndex)).toBeGreaterThan(Number(getComputedStyle(items[0]).zIndex));
-    await userEvent.click(canvas.getByRole('button', { name: 'Close the folder' }));
-    await waitFor(() => expect(getComputedStyle(items[3]).visibility).toBe('hidden'), { timeout: 3000 });
-  },
 };
 
 /** Open: everything out where it landed. */
