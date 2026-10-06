@@ -15,7 +15,10 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "paths": {
+      "@content/*": ["./src/content/*"]
+    }
   },
-  "include": ["src", ".storybook", "vite.config.mts"]
+  "include": ["src", ".storybook", "vite.config.mts", "e2e", "playwright.config.ts"]
 }

@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import type React from 'react';
 import { Weathered } from '../../behaviors/Weathered/Weathered';
 import { Distressed } from '../../foundations/Distressed/Distressed';
@@ -43,6 +44,7 @@ export type PressKitProps = {
  */
 export function PressKit({ release = FEATURED_RELEASE, className = '', style }: PressKitProps) {
   const live = { song: NYACK_SET.song, event: NYACK_SET.event };
+  const bookingId = useId();
   return (
     <div className={`epk ${className}`} style={style}>
       <Weathered as="article" className="epk__paper torn-edge" patina flecks grain wear>
@@ -96,12 +98,13 @@ export function PressKit({ release = FEATURED_RELEASE, className = '', style }: 
             ))}
           </section>
 
-          <footer className="epk-foot" id="book" aria-label={t('pressKit.foot.label')}>
-            <a className="epk-foot__book epk-headline" href={BOOKING_HREF}>
+          {/* A region named by the booking call it leads with, the only words it prints. */}
+          <section className="epk-foot" id="book" aria-labelledby={bookingId}>
+            <a className="epk-foot__book epk-headline" href={BOOKING_HREF} id={bookingId}>
               {t('pressKit.foot.book')}
             </a>
             <IconLinks className="epk-foot__links" links={[...SOCIAL_HREFS, ...LISTEN_HREFS, BANDCAMP_HREF]} />
-          </footer>
+          </section>
         </main>
       </Weathered>
     </div>

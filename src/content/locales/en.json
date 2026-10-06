@@ -60,7 +60,6 @@
     },
     "lede": "NJ trio ft. Ryan Gavin, Kevin O’Neill, and Sam Luba <strong>blast off</strong>",
     "record": {
-      "label": "Records",
       "heading": "Future rock",
       "bio": {
         "start": "Ryan and Kevin started the band as high school friends in 2012, and the lineup locked in when Sam joined in 2017. Since then they have taken their sound to stages across the Northeast, sharing bills with some of their own favorites: {{stages}}.",
@@ -78,7 +77,6 @@
       "heading": "Three friends. One orbit."
     },
     "foot": {
-      "label": "Booking",
       "book": "Book The Band"
     }
   }
