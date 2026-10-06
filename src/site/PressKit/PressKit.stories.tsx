@@ -25,7 +25,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const live = { song: NYACK_SET.song, event: NYACK_SET.event };
+const live = { event: NYACK_SET.event };
 
 /** A catalogue entry as a reader sees it: its inline markup printed, not shown. */
 const plain = (text: string) => text.replace(/<\/?(span|strong|em)>/g, '');

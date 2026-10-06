@@ -52,9 +52,9 @@
       "book": "Book us"
     },
     "live": {
-      "title": "Funkadelic Astronaut, “{{song}}” live at {{event}}",
+      "title": "Funkadelic Astronaut live at {{event}}",
       "label": "<span>Live</span> {{event}}",
-      "caption": "<strong>On stage.</strong> Funkadelic Astronaut playing “{{song}}” at {{event}}.",
+      "caption": "<strong>On stage.</strong> Funkadelic Astronaut blasting off at {{event}}.",
       "watch": "Watch with sound",
       "play": "Play"
     },

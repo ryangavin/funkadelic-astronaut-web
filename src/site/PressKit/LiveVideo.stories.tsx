@@ -4,7 +4,7 @@ import { NYACK_SET } from '../../content/liveSet';
 import { Copy, t } from '../../i18n/copy';
 import { LiveVideo } from './LiveVideo';
 
-const live = { song: NYACK_SET.song, event: NYACK_SET.event };
+const live = { event: NYACK_SET.event };
 const title = t('pressKit.live.title', live);
 
 /** A YouTube link for the player's other path. The live set itself is served from the site, so this id is made up: only the URL built from it is checked. */
