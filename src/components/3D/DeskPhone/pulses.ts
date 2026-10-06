@@ -24,13 +24,13 @@
 */
 
 /** Degrees between one finger hole and the next. */
-export const DIAL_PITCH = 30;
+const DIAL_PITCH = 30;
 /** Degrees of lost motion: the hole for 1 at rest to the finger stop, silent on the way back. */
-export const DIAL_OFFSET = 40;
+const DIAL_OFFSET = 40;
 /** Where the finger stop stands, in degrees clockwise from twelve. */
 export const DIAL_STOP = 120;
 /** Pulses a second, the rate the exchange counts at. */
-export const PULSE_RATE = 10;
+const PULSE_RATE = 10;
 /** The governor's speed on the return, in degrees a second. */
 export const DIAL_SPEED = DIAL_PITCH * PULSE_RATE;
 /** How long a pulse holds the line broken, in milliseconds. */
@@ -77,9 +77,6 @@ export const digitFor = (pulses: number): number | undefined => (pulses <= 0 ? u
 
 /** The angle still to run when pulse `n` of `of` breaks the line; the last one lands as the wheel hits home. */
 export const pulseAt = (n: number, of: number): number => DIAL_PITCH * (of - n);
-
-/** How long the governor takes to bring an arc home, in milliseconds. */
-export const returnMs = (angle: number): number => (Math.max(0, angle) / DIAL_SPEED) * 1000;
 
 /** A bearing in degrees clockwise from twelve, for a point measured from the dial's centre. */
 export const bearing = (dx: number, dy: number): number => ((Math.atan2(dx, -dy) * 180) / Math.PI + 360) % 360;

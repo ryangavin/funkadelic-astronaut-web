@@ -16,7 +16,7 @@ const lit = (...segments: Segment[]) => segments.reduce((mask, segment) => mask 
 /** The seven-segment outline, for telling a digit-only display which ghosts to draw. */
 export const OUTLINE = lit('a', 'b', 'c', 'd', 'e', 'f', 'g1', 'g2');
 
-export const GLYPHS: Record<string, number> = {
+const GLYPHS: Record<string, number> = {
   ' ': 0,
   '0': lit('a', 'b', 'c', 'd', 'e', 'f'),
   '1': lit('b', 'c'),
@@ -98,7 +98,7 @@ const LOOKALIKES: Record<string, string> = {
 };
 
 /** What the display can show for a character: upper case, diacritics stripped, blank if it has no glyph. */
-export function normalise(char: string): string {
+function normalise(char: string): string {
   const plain = (LOOKALIKES[char] ?? char).normalize('NFD').replace(/\p{M}/gu, '').toUpperCase();
   return plain in GLYPHS ? plain : ' ';
 }
@@ -106,11 +106,8 @@ export function normalise(char: string): string {
 /** The segment mask for one character. */
 export const encode = (char: string): number => GLYPHS[normalise(char)] ?? 0;
 
-/** Which segments a mask lights. */
-export const litSegments = (mask: number): Segment[] => SEGMENTS.filter((segment) => mask & bit(segment));
-
 /** Blank cells between the end of a scrolling title and its start coming round again. */
-export const SCROLL_GAP = 3;
+const SCROLL_GAP = 3;
 
 /** How many steps a title takes to scroll all the way round; 0 when it fits. */
 export const scrollLength = (text: string, cells: number): number => (text.length > cells ? text.length + SCROLL_GAP : 0);

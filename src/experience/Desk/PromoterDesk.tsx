@@ -54,7 +54,7 @@ export const mm = (millimetres: number) => Math.round((millimetres * REFERENCE.u
 export const DESK_HEIGHT = 810;
 
 /** Real widths, in millimetres, of what lies on the desk. Each component's box is measured across the thing itself. */
-export const REAL_WIDTHS = {
+const REAL_WIDTHS = {
   /** A letter-size manila folder, open: 9½ x 11¾ inches a leaf. */
   folder: 482,
   walkman: 112,

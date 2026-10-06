@@ -23,16 +23,16 @@ import { MUG_FOOT } from './Mug';
 import type { RingMask } from './CoffeeRing';
 
 /** The ring's box against the mug's: a mug 140 mm across the handle stands on a base that leaves an 83 mm ring, drips and all. */
-export const MUG_RING = 83 / 140;
+const MUG_RING = 83 / 140;
 
 /** How dark a ring is the moment the mug comes off it, 0 to 1. */
-export const COFFEE_WET = 0.7;
+const COFFEE_WET = 0.7;
 
 /** What is left of a ring after the mug is lifted once more: it dries toward the wood. */
-export const COFFEE_DRIES = 0.8;
+const COFFEE_DRIES = 0.8;
 
 /** Fainter than this and a ring has dried into the wood: it fades out and the desk is rid of it. A dozen or so stay. */
-export const COFFEE_GONE = 0.04;
+const COFFEE_GONE = 0.04;
 
 /** The wood itself, which everything else lies on. */
 export const DESK = 'desk';
@@ -54,7 +54,7 @@ type Point = { x: number; y: number };
 const RADIANS = Math.PI / 180;
 
 /** The ring under a mug. The base is off the centre of the mug's box, so turning the mug swings the ring round with it. */
-export function ringUnder({ x, y, rotation = 0, width: baseWidth, scale = 1 }: MugPlace): { x: number; y: number; width: number } {
+function ringUnder({ x, y, rotation = 0, width: baseWidth, scale = 1 }: MugPlace): { x: number; y: number; width: number } {
   const width = baseWidth * scale;
   const turn = rotation * RADIANS;
   const offsetX = (MUG_FOOT.x - 0.5) * width;
@@ -122,7 +122,7 @@ const spread = (mask: RingMask) => ({
  * outlines of whatever lay over it cut out. `over` is what is on the desk,
  * underneath first. Returns one stain per surface that caught anything, by id.
  */
-export function stampRings(place: MugPlace, over: readonly Surface[], id: number): Record<string, CoffeeStain> {
+function stampRings(place: MugPlace, over: readonly Surface[], id: number): Record<string, CoffeeStain> {
   const ring = ringUnder(place);
   const rotation = (place.rotation ?? 0) + ringTurn(place.x, place.y);
   const middle = { x: ring.x + ring.width / 2, y: ring.y + ring.width / 2 };
@@ -165,7 +165,7 @@ const dry = (ring: CoffeeStain): CoffeeStain => {
  * drying out, which takes a moment, so one that has reached the wood is held
  * at nothing until the mug is set down once more. Newest first, per surface.
  */
-export function setDown(trail: CoffeeTrail, place: MugPlace, over: readonly Surface[] = []): CoffeeTrail {
+function setDown(trail: CoffeeTrail, place: MugPlace, over: readonly Surface[] = []): CoffeeTrail {
   const last = Math.max(0, ...Object.values(trail).flatMap((rings) => rings.map((ring) => ring.id)));
   const fresh = stampRings(place, over, last + 1);
   const next: CoffeeTrail = {};

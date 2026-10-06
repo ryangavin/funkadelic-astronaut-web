@@ -32,7 +32,7 @@ export const HOLE_SIZE = 15;
 /** The clear wheel's outside diameter, in millimetres. */
 export const WHEEL_SIZE = 105;
 /** The square the whole dial is drawn in, in millimetres. */
-export const DIAL_BOX = 118;
+const DIAL_BOX = 118;
 
 const radians = (degrees: number) => (degrees * Math.PI) / 180;
 

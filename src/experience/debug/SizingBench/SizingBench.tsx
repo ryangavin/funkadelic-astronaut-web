@@ -37,7 +37,7 @@ export type SizingBenchProps = Omit<PerspectiveDeskProps, 'only' | 'showSettings
   objectPlacements?: ObjectPlacements;
 };
 
-export const PAPER_IDS = DESK_OBJECTS.filter(object => object.flat && object.widthMm === PAPER_MM.width).map(object => object.id);
+const PAPER_IDS = DESK_OBJECTS.filter(object => object.flat && object.widthMm === PAPER_MM.width).map(object => object.id);
 export const OBJECT_IDS = DESK_OBJECTS.map(object => object.id);
 
 /** Everything at a scale of one: the composition's positions, but the world's sizes. */

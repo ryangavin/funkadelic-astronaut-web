@@ -22,12 +22,12 @@ import './DeskDossier.css';
 // Reuse the promoter's filing order and physical sizes, converted from its
 // half-millimetre units to the Room's 1.2 units/mm. Only this scene owns targets.
 const physical = 0.6;
-export const DOSSIER_SPILL_TARGETS: RoomArrangement = Object.fromEntries(
+const DOSSIER_SPILL_TARGETS: RoomArrangement = Object.fromEntries(
   Object.entries(DESK_LAYOUT.spilled).map(([id, place]) => [`dossier-${id}`, {
     ...place, x: id === 'pass' ? 880 : 110 + place.x * physical, y: id === 'pass' ? 650 : 190 + place.y * physical,
   }]),
 );
-export const DOSSIER_OPEN_TARGETS: RoomArrangement = {
+const DOSSIER_OPEN_TARGETS: RoomArrangement = {
   lamp: { x: 980, y: 40, rotation: 0 },
   dossier: { x: 350, y: 250, rotation: -1, scale: 1 },
   sitePlan: { x: 45, y: 165, rotation: -8 },

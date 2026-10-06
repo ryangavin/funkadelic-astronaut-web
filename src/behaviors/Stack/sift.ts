@@ -11,7 +11,7 @@ export const STACK_TILTS = [-2.4, 1.9, -1.1, 2.8, -3.2, 1.4];
 
 /** Sideways lean per packet, as a percentage of its width: each card keeps its own
     lean wherever it sits in the pile, so the pile zigzags a little. */
-export const STACK_SHIFTS = [2.5, -3.5, 3, -2.5, 3.5, -3];
+const STACK_SHIFTS = [2.5, -3.5, 3, -2.5, 3.5, -3];
 
 /** How the packet at each depth lies: staggered upward by a head row each, so the
     name on every card shows above the card in front of it, with a slight tilt so the pile still reads as handled. Offsets are percentages, tilt degrees. */
@@ -113,7 +113,7 @@ export function lagKeyframes(side: 1 | -1 = 1): Keyframe[] {
 }
 
 /** The point in the flight when the packet passes the pile and changes layer. */
-export function layerSwitchAt(kind: StackMoveKind) {
+function layerSwitchAt(kind: StackMoveKind) {
   return kind === 'toBack' ? 0.5 : 0.42;
 }
 

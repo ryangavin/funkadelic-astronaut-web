@@ -15,7 +15,7 @@ const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
 /** What the display shows for a moment: the hours and minutes, the meridian flag, and the date line. */
-export function readout(at: Date, hours: 12 | 24) {
+function readout(at: Date, hours: 12 | 24) {
   const h = at.getHours();
   const shown = hours === 12 ? h % 12 || 12 : h;
   const time = `${hours === 12 ? String(shown).padStart(2, ' ') : String(shown).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`;

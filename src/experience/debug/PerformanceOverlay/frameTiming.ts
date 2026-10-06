@@ -1,7 +1,7 @@
 export type FrameTiming = { fps: number; frameMs: number; samples: number };
 
 /** Rates are measured over elapsed time, not averaged instantaneous FPS. */
-export function frameWindow(windowMs = 2000) {
+function frameWindow(windowMs = 2000) {
   const intervals: { end: number; ms: number }[] = [];
   let previous: number | undefined;
   return {
