@@ -4,12 +4,13 @@ import { join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import { previewLabelHead } from './scripts/preview-label.mjs';
+import { structuredData } from './scripts/structured-data.mts';
 import react from '@vitejs/plugin-react';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import { playwright } from '@vitest/browser-playwright';
 
 export default defineConfig({
-  plugins: [react(), {
+  plugins: [react(), structuredData(), {
     name: 'local-preview-label',
     apply: 'serve',
     transformIndexHtml(html) {
