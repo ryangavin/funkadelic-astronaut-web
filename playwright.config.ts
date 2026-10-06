@@ -20,6 +20,9 @@ export default defineConfig({
     baseURL,
     trace: 'retain-on-failure',
     browserName: 'chromium',
+    // Google Chrome rather than Playwright's Chromium: the live set is H.264/AAC MP4, which open-source Chromium
+    // builds do not decode on Linux, and the tests check that it really plays. GitHub's Ubuntu runners ship Chrome.
+    channel: 'chrome',
   },
   projects: [
     { name: 'phone', use: { viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true } },
@@ -27,12 +30,12 @@ export default defineConfig({
     { name: 'desktop', use: { viewport: { width: 1440, height: 900 } } },
   ],
   webServer: {
-    // Always a fresh production build, so the tests see what would be deployed, served as `npm run preview` serves it.
-    command: `npm run build && vite preview --host 127.0.0.1 --port ${PORT} --strictPort`,
+    // Serves dist/ as `npm run preview` does. Build it first: `npm run test:e2e` does, so a build failure shows as one.
+    command: `npx vite preview --host 127.0.0.1 --port ${PORT} --strictPort`,
     url: baseURL,
     reuseExistingServer: false,
-    timeout: 180_000,
-    stdout: 'ignore',
+    timeout: 60_000,
+    stdout: 'pipe',
     stderr: 'pipe',
   },
 });

@@ -83,21 +83,15 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Cache Playwright browsers
-        id: playwright-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-      - name: Install Playwright Chromium with system deps
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
-      - name: Install Playwright system deps (browser cached)
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
-      # Playwright's webServer runs `npm run build` and serves dist/, so the build happens inside this step.
-      - name: E2E tests against the built site (npm run test:e2e)
-        run: npm run test:e2e
+      # The tests run in Google Chrome (playwright.config.ts: channel 'chrome'), which the runner image ships,
+      # so there is no Playwright browser to download or cache. This shows which version ran.
+      - name: Google Chrome version
+        run: google-chrome --version
+      # `npm run test:e2e` is these two steps; they are split so a build failure shows as its own step.
+      - name: Build site (npm run build)
+        run: npm run build
+      - name: E2E tests against the built site (npx playwright test)
+        run: npx playwright test
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v4

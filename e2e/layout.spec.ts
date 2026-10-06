@@ -1,38 +1,54 @@
-import { expect, openSite, test } from './support/fixtures';
+import { BOOKING_HREF, FEATURED_RELEASE, MEMBERS } from './support/content';
+import { escapeRegExp, expect, linksTo, openSite, settle, test } from './support/fixtures';
 
 /**
  * At every size (the phone, tablet and desktop projects) the whole page is
  * usable. These tests deliberately say nothing about how it is laid out:
- * only that nothing runs off the side, and that everything can be seen and
- * pressed once it is scrolled to.
+ * only that nothing runs off the side, that what a visitor came for can be
+ * seen, and that every control can be pressed without anything covering it.
  */
 
 test.beforeEach(async ({ page }) => {
   await openSite(page);
+  // Fonts and lazy images change the page's shape as they arrive; check the page they leave.
+  await settle(page);
 });
 
 test('the page never scrolls sideways', async ({ page }) => {
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-  expect(overflow, 'width beyond the window, in px').toBeLessThanOrEqual(0);
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), {
+      message: 'width beyond the window, in px',
+    })
+    .toBeLessThanOrEqual(0);
 });
 
-test('every link and button can be scrolled to and pressed without anything covering it', async ({ page }) => {
-  const controls = await page.getByRole('link').or(page.getByRole('button')).all();
-  expect(controls.length).toBeGreaterThan(0);
-  for (const control of controls) {
-    await control.scrollIntoViewIfNeeded();
-    await expect(control).toBeInViewport();
-    // A trial click runs every actionability check, including that this control, not something over it, gets the pointer.
+test('every link and button can be pressed without anything covering it', async ({ page }) => {
+  const controls = page.getByRole('link').or(page.getByRole('button'));
+  const count = await controls.count();
+  expect(count).toBeGreaterThan(0);
+  for (let index = 0; index < count; index++) {
+    // Looked up afresh each time, so a control the page re-renders is never checked through a stale handle.
+    const control = controls.nth(index);
+    await expect(control).toBeVisible();
+    // A trial click scrolls the control into view and waits until it is stable, enabled and receives the pointer
+    // itself (nothing over it), without pressing it.
     await control.click({ trial: true });
   }
 });
 
-test('every heading, picture and player can be scrolled to and seen', async ({ page }) => {
-  const things = await page.getByRole('heading').or(page.getByRole('img')).or(page.getByTitle(/\S/)).all();
-  expect(things.length).toBeGreaterThan(0);
-  for (const thing of things) {
-    await thing.scrollIntoViewIfNeeded();
-    await expect(thing).toBeVisible();
-    await expect(thing).toBeInViewport();
+test('everything a visitor came for is visible', async ({ page }) => {
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(page.getByRole('navigation')).toBeVisible();
+  await expect(page.getByRole('figure').getByRole('button')).toBeVisible();
+  await expect(page.getByTitle(new RegExp(escapeRegExp(FEATURED_RELEASE.title)))).toBeVisible();
+  const sheet = page.getByRole('heading', { level: 1 });
+  for (const member of MEMBERS) {
+    const name = page.getByRole('heading', { name: new RegExp(escapeRegExp(member.name)) });
+    await expect(name).toBeVisible();
+    const column = page.getByRole('article').filter({ has: name }).filter({ hasNot: sheet });
+    await expect(column.getByRole('img')).toBeVisible();
+    await expect(column.getByRole('paragraph').first()).toBeVisible();
   }
+  const [booking] = await linksTo(page, BOOKING_HREF);
+  await expect(booking).toBeVisible();
 });

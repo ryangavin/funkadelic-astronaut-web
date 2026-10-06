@@ -48,8 +48,13 @@ export const test = base.extend<Fixtures>({
         page.on('pageerror', error => errors.push(`uncaught error: ${error.message}`));
         page.on('requestfailed', request => {
           if (new URL(request.url()).origin !== ownOrigin) return;
-          // A video element cancels its own range requests as it seeks and buffers; that is not a failure.
-          if (request.resourceType() === 'media' && request.failure()?.errorText === 'net::ERR_ABORTED') return;
+          // A video element cancels its own range requests when it seeks, buffers ahead or is unmounted (the hero
+          // loop gives way to the whole set). Chromium reports only that cancellation as ERR_ABORTED; a response
+          // the server cuts short fails with a different code (ERR_CONTENT_LENGTH_MISMATCH, ERR_INCOMPLETE_CHUNKED_ENCODING,
+          // ERR_CONNECTION_RESET) and is still caught, as is any aborted request that was not a media range request.
+          const cancelledRange =
+            request.resourceType() === 'media' && 'range' in request.headers() && request.failure()?.errorText === 'net::ERR_ABORTED';
+          if (cancelledRange) return;
           errors.push(`request failed: ${request.url()} (${request.failure()?.errorText})`);
         });
         page.on('response', response => {
@@ -89,4 +94,60 @@ export async function linksTo(page: Page, href: string): Promise<Locator[]> {
 export async function openSite(page: Page, path = './') {
   await page.goto(path);
   await expect(page.getByRole('main')).toBeVisible();
+}
+
+/**
+ * Waits until the page has finished changing shape: everything it loads up
+ * front has loaded, its web fonts are in, and every lazy image has been
+ * brought into view once and has loaded. Then it goes back to the top.
+ */
+export async function settle(page: Page) {
+  await page.waitForLoadState('load');
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    for (const image of [...document.images]) {
+      image.scrollIntoView({ block: 'center' });
+      await new Promise(requestAnimationFrame);
+    }
+  });
+  await expect
+    .poll(() => page.evaluate(() => [...document.images].every(image => image.complete)), { message: 'every image has loaded' })
+    .toBe(true);
+  await page.evaluate(() => window.scrollTo(0, 0));
+}
+
+/**
+ * Scrolls `target` into view and waits until the page has stopped moving
+ * under it, as a visitor would before tapping. Two things move the page
+ * after a scroll: the site's own smooth scroll (pressing a record brings the
+ * player back into view), and Chrome itself, which routes a click by hit-test
+ * data a frame behind a long programmatic jump. Without this, a click
+ * straight after Playwright's scroll can land on whatever used to be there.
+ */
+export async function bringIntoView(target: Locator) {
+  let previous: string | undefined;
+  await expect
+    .poll(
+      async () => {
+        await target.scrollIntoViewIfNeeded();
+        const box = JSON.stringify(await target.boundingBox());
+        const still = box === previous;
+        previous = box;
+        return still;
+      },
+      { message: 'the page has stopped moving' },
+    )
+    .toBe(true);
+  await expect(target).toBeInViewport();
+}
+
+/** HTMLMediaElement.HAVE_FUTURE_DATA: enough is decoded to play on from here. */
+const HAVE_FUTURE_DATA = 3;
+
+/** Asserts that a video is really playing: it has decoded data to play and its playhead moves. */
+export async function expectPlaying(video: Locator) {
+  const state = () => video.evaluate((element: HTMLVideoElement) => ({ readyState: element.readyState, time: element.currentTime }));
+  await expect.poll(async () => (await state()).readyState, { message: 'the video has decoded data to play' }).toBeGreaterThanOrEqual(HAVE_FUTURE_DATA);
+  const start = (await state()).time;
+  await expect.poll(async () => (await state()).time, { message: 'the playhead moves' }).toBeGreaterThan(start);
 }
