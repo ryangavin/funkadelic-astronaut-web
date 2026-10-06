@@ -42,7 +42,7 @@ export const listening = (id: string) => ({ event: 'listening', id, channel: CHA
 /** A call on the player: playVideo, pauseVideo, seekTo, setVolume, mute, unMute, setLoop. */
 export const command = (func: string, args: unknown[] = [], id = '') => ({ event: 'command', func, args, id, channel: CHANNEL });
 
-export type PlayerInfo = {
+type PlayerInfo = {
   playerState?: number;
   currentTime?: number;
   duration?: number;
@@ -51,7 +51,7 @@ export type PlayerInfo = {
   videoData?: { title?: string };
 };
 
-export type PlayerMessage = { event: string; info?: PlayerInfo | number; id?: string };
+type PlayerMessage = { event: string; info?: PlayerInfo | number; id?: string };
 
 /** A message from the frame, or nothing for anything else that arrives on the window. */
 export function parseMessage(data: unknown): PlayerMessage | undefined {
@@ -77,7 +77,7 @@ export function clock(seconds: number | undefined): string {
 }
 
 /** One press of a volume key. */
-export const VOLUME_STEP = 0.1;
+const VOLUME_STEP = 0.1;
 
 export const stepVolume = (volume: number, direction: 1 | -1) =>
   Math.min(1, Math.max(0, Math.round((volume + direction * VOLUME_STEP) * 10) / 10));

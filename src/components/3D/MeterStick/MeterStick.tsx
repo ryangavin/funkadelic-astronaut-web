@@ -7,7 +7,6 @@ export const STICK_VARIANTS = {
   tenCentimeter: { length: 100, width: 40, height: 6, label: 'Ten-centimeter stick', description: 'Ten-centimeter stick', brand: '10 cm' },
 } as const;
 export type StickVariant = keyof typeof STICK_VARIANTS;
-export const METER_STICK_MM = STICK_VARIANTS.meter;
 export const METER_STICK_OUTLINE = 'M0 0H100V100H0Z';
 
 export type MeterStickProps = {

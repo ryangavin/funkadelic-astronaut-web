@@ -3,8 +3,6 @@ import { useId } from 'react';
 import { InkjetFilter, type InkjetFilterProps } from './InkjetFilter';
 import './Inkjet.css';
 
-export { InkjetFilter } from './InkjetFilter';
-
 export type InkjetProps = Omit<InkjetFilterProps, 'id'> & {
   children?: React.ReactNode;
   /** Send it to the printer, or leave it as the file it was. */

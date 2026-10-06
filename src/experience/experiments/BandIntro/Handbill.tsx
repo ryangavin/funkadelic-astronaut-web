@@ -15,7 +15,7 @@ export const HANDBILL_SIDES = ['front', 'back'] as const;
 export type HandbillSide = (typeof HANDBILL_SIDES)[number];
 
 /** How long the card takes to turn over, in milliseconds. */
-export const HANDBILL_TURN_MS = 900;
+const HANDBILL_TURN_MS = 900;
 
 export type HandbillProps = {
   /** What is printed on the front. Use the print furniture: `HandbillTitle`, `HandbillKicker` and the rest. */

@@ -41,7 +41,7 @@ export type ContractSignature = {
 export const SIGNATURE_BOX = { width: 320, height: 110, rule: 92 } as const;
 
 /** The nib: how broad it is at a standstill, how fine it starves to, and the speed it starves at. */
-export const NIB = {
+const NIB = {
   /** Width of the line at a standstill, in box units. */
   wide: 5,
   /** Width it starves to when the hand is running, in box units. */
@@ -51,7 +51,7 @@ export const NIB = {
 } as const;
 
 /** How far the ink has to travel before what is on the page counts as a signature rather than a scratch. */
-export const CONTRACT_SIGNED_LENGTH = 90;
+const CONTRACT_SIGNED_LENGTH = 90;
 
 /** How long the ink stays wet before it has dried into the stock, in milliseconds. */
 export const CONTRACT_DRY_MS = 2600;
@@ -81,12 +81,12 @@ function smooth(values: number[], radius = 2): number[] {
 }
 
 /** How wide the line is at a given speed, in box units per millisecond: broad at a standstill, fine on the run. */
-export function nibWidth(speed: number): number {
+function nibWidth(speed: number): number {
   return NIB.fine + (NIB.wide - NIB.fine) * Math.exp(-Math.max(0, speed) / NIB.starve);
 }
 
 /** The speed of the hand at each point of a stroke, smoothed the way a nib smooths it. */
-export function speeds(stroke: ContractStroke): number[] {
+function speeds(stroke: ContractStroke): number[] {
   const raw = stroke.map((point, index) => {
     if (index === 0) return 0;
     const previous = stroke[index - 1];
@@ -154,7 +154,7 @@ export function ribbon(stroke: ContractStroke): string {
 }
 
 /** A bead of ink standing on the paper: where it is, and how far it spread. */
-export type ContractPool = { x: number; y: number; r: number };
+type ContractPool ={ x: number; y: number; r: number };
 
 /**
  * Where the ink pooled. The nib leaves a bead wherever the hand hesitated or
@@ -183,7 +183,7 @@ export function pools(stroke: ContractStroke): ContractPool[] {
 }
 
 /** How far the nib travelled over a stroke, in box units. */
-export function strokeLength(stroke: ContractStroke): number {
+function strokeLength(stroke: ContractStroke): number {
   let length = 0;
   for (let index = 1; index < stroke.length; index += 1) {
     length += Math.hypot(stroke[index].x - stroke[index - 1].x, stroke[index].y - stroke[index - 1].y);
@@ -260,7 +260,7 @@ function seeded(text: string, salt: number): number {
 }
 
 /** How a particular stamp came down: never square, never evenly inked, never all there. */
-export type ContractImpression = {
+type ContractImpression = {
   /** How far off square it landed, in degrees. */
   angle: number;
   /** Which way the hand leaned on it, in degrees round the face: that edge printed and the far one didn't. */

@@ -24,7 +24,7 @@ import type { WallFinish } from '../../components/3D/Wall/Wall';
 import './Room.css';
 
 /** How deep the desk top is, front edge to the wall: the surface everything in here stands on. */
-export const DESK_DEPTH = ROOM_DESK_DEPTH;
+const DESK_DEPTH = ROOM_DESK_DEPTH;
 /** What the lamp is called in the room's places. */
 export const ROOM_LAMP = 'lamp';
 /** Where the lamp stands until somebody carries it somewhere else. */

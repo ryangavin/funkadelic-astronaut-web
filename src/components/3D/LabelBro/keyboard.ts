@@ -29,7 +29,7 @@ const PITCH = 48;
 const ROW = (n: number) => 340 + n * PITCH;
 
 /** What a key is made of, which is the only thing that sets its colour. */
-export type KeyTone = 'dark' | 'light' | 'print' | 'power';
+type KeyTone = 'dark' | 'light' | 'print' | 'power';
 
 /** An icon the cap carries instead of a legend. */
 export type KeyIcon = 'power' | 'home' | 'bluetooth' | 'feed' | 'up' | 'down' | 'left' | 'right' | 'enter' | 'shift' | 'barcode' | 'backlight';
@@ -174,7 +174,7 @@ const arrows: Key[] = [
 export const KEYS: Key[] = [...rowA, ...rowB, ...rowC, ...rowD, ...rowE, ...rowF, ...rowG, ...rowH, ...arrows];
 
 /** The keys that put a character on the tape. */
-export const TYPING = KEYS.filter((key) => key.char !== undefined);
+const TYPING = KEYS.filter((key) => key.char !== undefined);
 
 /** Find the key a pressed keyboard character belongs to, so a real key lights the drawn one. */
 export function keyFor(character: string): Key | undefined {

@@ -47,7 +47,7 @@ export function roomCoverage({ angle, depth: d, deskWidth, deskDepth, stand, des
  * Count work before Floor builds course/joint arrays or Wall scans brick cells.
  * The course bound also limits independent SVG grain-filter surfaces.
  */
-export const ROOM_MATERIAL_BUDGET = { floorCourses: 128, materialCells: 10000 };
+const ROOM_MATERIAL_BUDGET = { floorCourses: 128, materialCells: 10000 };
 export function roomSurfaceExtents(inputs: Parameters<typeof roomCoverage>[0], overrides: {
   span?: number; front?: number; wallHeight?: number;
 } = {}) {

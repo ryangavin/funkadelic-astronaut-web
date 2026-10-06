@@ -11,18 +11,18 @@ export type Pivot = { x: number; y: number };
 const MIDDLE: Pivot = { x: 0.5, y: 0.5 };
 
 /** How far the pointer travels before a press becomes a drag, in screen pixels. */
-export const MOVABLE_DRAG_THRESHOLD = 5;
+const MOVABLE_DRAG_THRESHOLD = 5;
 /** How far an arrow key moves a thing, in units; with shift held, five times that. */
 const MOVABLE_KEY_STEP = 10;
 /** How far a bracket key turns a thing, in degrees; with shift held, five times that. */
 const MOVABLE_KEY_TURN = 1;
 /** What a turn snaps to, in degrees, while shift is held. */
-export const MOVABLE_SNAP_TURN = 15;
+const MOVABLE_SNAP_TURN = 15;
 /** How much a key changes the size; with shift held, five times that. */
 const MOVABLE_KEY_SCALE = 0.02;
 /** How small and how large a thing can be drawn. */
-export const MOVABLE_MIN_SCALE = 0.25;
-export const MOVABLE_MAX_SCALE = 4;
+const MOVABLE_MIN_SCALE = 0.25;
+const MOVABLE_MAX_SCALE = 4;
 
 /** Presses that start on a control belong to it: the thing is picked up by its body. */
 const CONTROLS = 'button, a, input, select, textarea, iframe, video, [role="slider"], [role="button"]';

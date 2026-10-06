@@ -21,28 +21,14 @@ import {
 } from './ink';
 import './Contract.css';
 
-export {
-  CONTRACT_DRY_MS,
-  CONTRACT_HAND_MS,
-  CONTRACT_HAND_STEP,
-  CONTRACT_SIGNED_LENGTH,
-  CONTRACT_THUMP_MS,
-  NIB,
-  SIGNATURE_BOX,
-  isSigned,
-  nibWidth,
-  signatureLength,
-  type ContractPoint,
-  type ContractSignature,
-  type ContractStroke,
-} from './ink';
+export { signatureLength, type ContractSignature } from './ink';
 
 /** The stock it was run off on: fresh white bond, the pink second sheet of a carbon set, or the goldenrod file copy. */
 export const CONTRACT_PAPERS = ['bond', 'carbon', 'goldenrod'] as const;
 export type ContractPaper = (typeof CONTRACT_PAPERS)[number];
 
 /** Whose hand countersigned it. The three of them write nothing like each other. */
-export const CONTRACT_HANDS = ['ryan', 'kevin', 'sam'] as const;
+const CONTRACT_HANDS =['ryan', 'kevin', 'sam'] as const;
 export type ContractHand = (typeof CONTRACT_HANDS)[number];
 
 /**
@@ -58,7 +44,7 @@ export type ContractHand = (typeof CONTRACT_HANDS)[number];
  * worth nothing and the drawing is exactly the footprint it always was. The
  * Contract stands its own stamp up, since the stamp belongs to the page.
  */
-export const CONTRACT_STAMP_HEIGHT = 112 / 150;
+const CONTRACT_STAMP_HEIGHT =112 / 150;
 
 /** Where the mount's top face is, as a fraction of the whole height: 24 mm of the 58. */
 const CONTRACT_STAMP_MOUNT = 0.41;

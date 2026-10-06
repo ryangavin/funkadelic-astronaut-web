@@ -22,7 +22,7 @@ export type IndexCardNote = {
   size?: number;
 };
 
-export const INDEX_CARD_STAMP_POSITIONS = ['top-right', 'bottom-left', 'bottom-right', 'signature'] as const;
+const INDEX_CARD_STAMP_POSITIONS = ['top-right', 'bottom-left', 'bottom-right', 'signature'] as const;
 export type IndexCardStampPosition = (typeof INDEX_CARD_STAMP_POSITIONS)[number];
 
 export type IndexCardSignature = {

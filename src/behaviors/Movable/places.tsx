@@ -41,7 +41,7 @@ export type PlaceStore = {
   subscribe: (id: string, listener: () => void) => () => void;
 };
 
-export function makePlaces(initial: Record<string, Place> = {}): PlaceStore {
+function makePlaces(initial: Record<string, Place> = {}): PlaceStore {
   let places: Record<string, Place> = { ...initial };
   const arranging = new Set<string>();
   const listeners = new Map<string, Set<() => void>>();

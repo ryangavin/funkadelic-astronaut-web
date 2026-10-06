@@ -1,4 +1,3 @@
-import { mmToUnits } from '../../../geometry/physicalScale';
 import type React from 'react';
 import { useId } from 'react';
 import { useMugLayer } from './projection';
@@ -23,8 +22,6 @@ export const MUG_TALL = 95;
 /** Estimated ordinary coffee-mug height relative to its 140 mm artwork box.
  * The visible body occupies 140/240 of that box: about 82 mm diameter. */
 export const MUG_HEIGHT = MUG_TALL / 140;
-/** Artwork width in the shared desk coordinate system. */
-export const MUG_WIDTH = mmToUnits(140);
 /** Where it stands within that drawing: the middle of it, now that nothing stands beside it. */
 export const MUG_FOOT = { x: 0.5, y: 0.5 };
 

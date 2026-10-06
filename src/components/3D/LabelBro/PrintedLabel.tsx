@@ -1,8 +1,6 @@
 import type React from 'react';
-import { MARGINS, STOCK, advance, capHeight, printBand, tapeMm, tapeUnits, type Margin, type TapeStock, type TapeWidth } from './tape';
+import { MARGINS, STOCK, advance, capHeight, printBand, tapeUnits, type Margin, type TapeStock, type TapeWidth } from './tape';
 import './PrintedLabel.css';
-
-export { TAPE_STOCKS, TAPE_WIDTHS, tapeMm, type Margin, type TapeStock, type TapeWidth } from './tape';
 
 export type PrintedLabelProps = {
   /** What was printed on it. */
@@ -80,6 +78,3 @@ export function PrintedLabel({ text = '', width = 12, stock = 'black-on-white', 
     </div>
   );
 }
-
-/** How long a strip carrying this text runs, in millimetres. */
-export const printedMm = tapeMm;

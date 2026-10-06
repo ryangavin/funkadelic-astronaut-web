@@ -23,7 +23,7 @@
 */
 
 /** What a pile of frames came to. */
-export type FrameStats = {
+type FrameStats = {
   /** How many frames went into it. Zero means there is nothing to say yet. */
   frames: number;
   /** Frames a second at the median. */
@@ -52,7 +52,7 @@ export type FrameReadout = {
   stalls: number;
 };
 
-export type MeterOptions = {
+type MeterOptions = {
   /** How many frames each pile remembers. */
   sample?: number;
   /** How often to report, in milliseconds. Kept slow: the report repaints the readout. */
@@ -97,7 +97,7 @@ function pile(size: number) {
   };
 }
 
-export type FrameMeter = {
+type FrameMeter = {
   /** The current reading, for a caller that would rather ask than be told. */
   read(): FrameReadout;
   /** Throw away every frame gathered so far and start again. */
@@ -190,7 +190,7 @@ export function attachFrameMeter(win: Window, options: MeterOptions = {}): Frame
 }
 
 /** Where a reading sits against the budget, for something to colour. */
-export type FrameState = 'waiting' | 'good' | 'tight' | 'over';
+type FrameState ='waiting' | 'good' | 'tight' | 'over';
 
 export function frameState(stats: FrameStats, budgetMs = BUDGET_MS): FrameState {
   if (!stats.frames) return 'waiting';

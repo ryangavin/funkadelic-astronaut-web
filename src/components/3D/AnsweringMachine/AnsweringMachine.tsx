@@ -7,10 +7,6 @@ import { beep as beepTone } from '../DeskPhone/sound';
 
 /** Compact cassette answering machine, styled and scaled to accompany the Walkman.
  * Playback walks recordings in order and preserves the message counter and transport. */
-/** How wide the machine is, in millimetres. */
-export const MACHINE_WIDTH = 180;
-/** How deep, in millimetres. */
-export const MACHINE_DEPTH = 120;
 
 export type AnsweringMachineMessage = {
   /** Who left it, as it would go on the message pad. */

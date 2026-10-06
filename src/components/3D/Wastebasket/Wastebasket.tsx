@@ -1,7 +1,6 @@
 import { BASE_LAYER, cylinderSide, layerTransform, type CylinderLayer } from './cylinder';
 import { useId } from 'react';
 import './Wastebasket.css';
-export { WASTEBASKET_MM } from './dimensions';
 /** Mug-style layered cylinder artwork, with explicit projected base and rim planes. */
 export function Wastebasket({color='#77877b',interior='#35473b',label='Wastebasket, 360 mm tall and 290 mm across',className='',layer}:{color?:string;interior?:string;label?:string;className?:string;layer?:{above:boolean;split:number;top:CylinderLayer;cut:CylinderLayer}}) {
   const id=`wastebasket-${useId().replace(/:/g,'')}`;

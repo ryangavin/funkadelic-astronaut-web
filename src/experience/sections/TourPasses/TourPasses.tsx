@@ -4,8 +4,8 @@ import { Stage } from '../../../components/2D/Stage/Stage';
 import { TourPass } from '../../../components/2D/TourPass/TourPass';
 import { TOUR_DATES } from '../../../components/2D/TourPass/TourPass.data';
 
-export const TOUR_PASSES_WIDTH = 1300;
-export const TOUR_PASSES_HEIGHT = 580;
+const TOUR_PASSES_WIDTH = 1300;
+const TOUR_PASSES_HEIGHT = 580;
 
 /** Coordinates within the row, independent of where the group sits on a page. */
 export const TOUR_PASSES_LAYOUT = {

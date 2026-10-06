@@ -9,10 +9,10 @@ import { BAND_MEMBER_PACKETS, DEMO_TAPE, LIVE_SET, type LiveSet, type MemberPack
 import { BAND_ONE_SHEET } from './bandOneSheet';
 import './BandDossier.css';
 
-export { BAND_MEMBER_PACKETS, BAND_PACKET, DEMO_TAPE, LIVE_SET, type LiveSet, type MemberPacket, type Tape } from './bandMembers';
+export { BAND_MEMBER_PACKETS, BAND_PACKET, DEMO_TAPE, LIVE_SET } from './bandMembers';
 export { BAND_ONE_SHEET } from './bandOneSheet';
 
-export type MemberPileProps = Pick<StackProps, 'spread' | 'spreadX' | 'duration' | 'side'> & {
+type MemberPileProps =Pick<StackProps, 'spread' | 'spreadX' | 'duration' | 'side'> & {
   /** The members, in filing order. */
   members?: MemberPacket[];
   /** Which member starts on top. */

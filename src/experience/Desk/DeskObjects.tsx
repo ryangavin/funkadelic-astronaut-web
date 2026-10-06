@@ -182,7 +182,7 @@ function PositionedSolid({ object }: { object: ObjectSpec }) {
   return <Solid {...object.solid!}>{object.content}</Solid>;
 }
 
-export const DeskObject = memo(function DeskObject({ object, place, camera, layer, held, onFront, onSettle }: { onSettle?: (place: Place) => void; object: ObjectSpec; place: Place; camera: StudyCamera; layer: number; held: boolean; onFront: (id: string) => void }) {
+const DeskObject = memo(function DeskObject({ object, place, camera, layer, held, onFront, onSettle }: { onSettle?: (place: Place) => void; object: ObjectSpec; place: Place; camera: StudyCamera; layer: number; held: boolean; onFront: (id: string) => void }) {
   const follows = worksItselfOutFromWhereItStands(object);
   const places = usePlaces();
   /* Subscribed only by the thing that still needs it; the hook is always called,

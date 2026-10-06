@@ -3,9 +3,9 @@ import { unproject, usePerspectiveView } from '../Perspective/Perspective';
 import './Inspectable.css';
 
 /** How much of the stage a thing held up fills, across and down. */
-export const INSPECT_FILL = 0.82;
+const INSPECT_FILL = 0.82;
 /** How large a thing may be drawn when held up, as a multiple of its size on the surface. */
-export const INSPECT_MAX_SCALE = 14;
+const INSPECT_MAX_SCALE = 14;
 
 /** Presses that belong to whatever they landed on: picking a thing up is never also working it. */
 const INSPECT_CONTROLS = 'button, a, input, select, textarea, iframe, video, [role="slider"], [role="button"], [role="switch"]';

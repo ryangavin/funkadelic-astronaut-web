@@ -41,7 +41,7 @@ function context(): Context {
 type Tone = { frequency: number; ms: number; level: number; shape?: OscillatorType };
 
 /** One short tone, faded in and out so it does not click on its own edges. */
-export function tone({ frequency, ms, level, shape = 'sine' }: Tone): void {
+function tone({ frequency, ms, level, shape = 'sine' }: Tone): void {
   const audio = context();
   if (!audio || level <= 0) return;
   try {

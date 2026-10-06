@@ -17,14 +17,14 @@ import '../../styles/fonts.css';
 import './Home.css';
 
 /** The poster's design size: 1440 across and 11 x 17 in proportion, so 2225 high. */
-export const HOME_WIDTH = STAGE_WIDTH;
-export const HOME_RATIO = 17 / 11;
+const HOME_WIDTH = STAGE_WIDTH;
+const HOME_RATIO = 17 / 11;
 export const HOME_HEIGHT = Math.round(HOME_WIDTH * HOME_RATIO);
 
 /** The footer ribbon's block, from the seam to the poster's bottom edge. */
-export const HOME_FOOTER_HEIGHT = 150;
+const HOME_FOOTER_HEIGHT = 150;
 
-export type HomeLink = { platform: SocialPlatform; href: string; label: string };
+type HomeLink = { platform: SocialPlatform; href: string; label: string };
 
 /** The band's links from src/content, each with the label the copy catalogue reads it out with. */
 const labelled = ({ platform, href }: { platform: BandPlatform; href: string }): HomeLink => ({ platform, href, label: t(`band.links.${platform}`) });
@@ -33,14 +33,12 @@ export const LISTEN_LINKS: HomeLink[] = LISTEN_HREFS.map(labelled);
 
 export const SOCIAL_LINKS: HomeLink[] = SOCIAL_HREFS.map(labelled);
 
-export const BANDCAMP_LINK: HomeLink = labelled(BANDCAMP_HREF);
+const BANDCAMP_LINK: HomeLink = labelled(BANDCAMP_HREF);
 
 /** The platform inks the hero prints the streaming marks in. */
 export const LISTEN_INKS: Partial<Record<SocialPlatform, string>> = { applemusic: 'red', spotify: 'green', youtube: 'red', deezer: 'purple' };
 
 export { BOOKING_HREF };
-
-export { TOUR_DATES } from '../../components/2D/TourPass/TourPass.data';
 
 /**
  * Where everything is pinned, in design pixels from the poster's top left, with

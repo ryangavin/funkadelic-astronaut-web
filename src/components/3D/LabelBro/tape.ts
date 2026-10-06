@@ -17,10 +17,10 @@
 */
 
 /** A drawing unit is a quarter of a millimetre. */
-export const UNIT_MM = 0.25;
+const UNIT_MM = 0.25;
 
 /** Millimetres to drawing units. */
-export const mmUnits = (mm: number) => mm / UNIT_MM;
+const mmUnits = (mm: number) => mm / UNIT_MM;
 
 /** The cassettes this machine takes, in millimetres across. 24 mm needs the bigger body. */
 export const TAPE_WIDTHS = [3.5, 6, 9, 12, 18] as const;

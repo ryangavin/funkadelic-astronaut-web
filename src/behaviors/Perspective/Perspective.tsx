@@ -9,12 +9,10 @@ export const PLAN_VIEW = 90;
 export const STANDING_VIEW = 60;
 /** A little off overhead: keeps the original plan artwork almost round. */
 export const GENTLE_VIEW = 84;
-/** How far the eye is from the surface, in the surface's own units. Far enough that the convergence is gentle. */
-export const PERSPECTIVE_DEPTH = 3200;
 /** A distant eye keeps the gentle view almost parallel across the desk. */
 export const GENTLE_DEPTH = 8000;
 /** The design width of a surface, in units, matching a sheet and a desk. */
-export const PERSPECTIVE_WIDTH = DESK_SIZE.width;
+const PERSPECTIVE_WIDTH = DESK_SIZE.width;
 
 export type PerspectiveProps = {
   /** Where the eye is, in degrees above the surface. 90 is straight down, the way everything is drawn; 60 is standing at a desk. */
@@ -31,10 +29,10 @@ export type PerspectiveProps = {
 };
 
 /** A point on the surface, in its own units. */
-export type SurfacePoint = { x: number; y: number };
+type SurfacePoint = { x: number; y: number };
 
 /** The numbers the view is built from: how far the surface is tipped away, in radians, and how far off it the eye is. */
-export type View = { tilt: number; depth: number; width: number; targetY?: number };
+type View = { tilt: number; depth: number; width: number; targetY?: number };
 
 /**
  * Where a point on the screen falls on the tilted surface, in the surface's
@@ -55,7 +53,7 @@ export function unproject(plane: HTMLElement, view: View, clientX: number, clien
  * something is dragged across the plane: the plane neither moves nor resizes
  * for that. So it is measured when it really changes and held in between.
  */
-export type PlaneMetrics = { left: number; bottom: number; across: number; ratio: number };
+type PlaneMetrics = { left: number; bottom: number; across: number; ratio: number };
 
 export function measurePlane(plane: HTMLElement): PlaneMetrics {
   // Measure the untransformed eye wrapper. A center hinge or negative tilt can
@@ -96,7 +94,7 @@ export function usePerspectiveView() {
 }
 
 /** Where a thing's top face has to be drawn for it to stand on the surface. */
-export type Stood = {
+type Stood = {
   /** How far up the surface the top face goes, as a multiple of the thing's own width. */
   rise: number;
   /** How far across, the same way: away from the eye's line, so a thing to the left of it shows its left side. */
@@ -123,7 +121,7 @@ const ON_ITS_BOTTOM: Foot = { x: 0.5, y: 1 };
  * comes back as a place in the surface for the top face to be drawn at, and
  * the plane's own projection does the rest.
  */
-export function stand(plane: HTMLElement, view: View, foot: { left: number; top: number }, edge: { left: number; top: number }, reach: number, height: number): Stood {
+function stand(plane: HTMLElement, view: View, foot: { left: number; top: number }, edge: { left: number; top: number }, reach: number, height: number): Stood {
   const { tilt, depth, width } = view;
   /* Where the thing stands, and where its own right-hand edge is, both on the surface. */
   const at = unproject(plane, view, foot.left, foot.top);
@@ -149,17 +147,6 @@ export function stand(plane: HTMLElement, view: View, foot: { left: number; top:
   */
   const splay = ((h * Math.cos(tilt)) / depth) * (at.x - width / 2);
   return { rise: rise / across, splay: splay / across, turn };
-}
-
-/**
- * How deep a surface has to be, in its units, to draw a given height on the
- * screen once it is tipped away. Depth foreshortens, so a desk that is to
- * fill its frame at a standing view must be deeper than the frame is tall.
- */
-export function surfaceDepth(drawn: number, { angle = GENTLE_VIEW, depth = GENTLE_DEPTH }: { angle?: number; depth?: number } = {}) {
-  const tilt = ((PLAN_VIEW - angle) * Math.PI) / 180;
-  const room = depth * Math.cos(tilt) - drawn * Math.sin(tilt);
-  return room > 0 ? Math.round((drawn * depth) / room) : Infinity;
 }
 
 /**

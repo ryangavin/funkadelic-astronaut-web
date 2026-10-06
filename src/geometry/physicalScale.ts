@@ -10,7 +10,7 @@ export const DESK_SIZE = {
   height: mmToUnits(DESK_MM.height),
 } as const;
 /** Full lamp artwork bounds, including its articulated arm; not its base footprint. */
-export const LAMP_MM = { artworkWidth: 480, bulbHeight: 350 } as const;
+const LAMP_MM = { artworkWidth: 480, bulbHeight: 350 } as const;
 export const LAMP_WIDTH = mmToUnits(LAMP_MM.artworkWidth);
 export const LAMP_HEIGHT = mmToUnits(LAMP_MM.bulbHeight);
 /** User-approved rounded paper dimensions, portrait (not exact US Letter). */

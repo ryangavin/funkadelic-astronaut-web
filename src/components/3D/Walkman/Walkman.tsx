@@ -13,13 +13,13 @@ export type WalkmanSide = (typeof WALKMAN_SIDES)[number];
 export type WalkmanMode = 'stop' | 'play' | 'ff' | 'rew';
 
 /** Characters across the title display. */
-export const WALKMAN_TITLE_CELLS = 10;
+const WALKMAN_TITLE_CELLS = 10;
 /** How often a long title steps along while playing, in milliseconds. */
-export const WALKMAN_SCROLL_MS = 320;
+const WALKMAN_SCROLL_MS = 320;
 /** How fast the tape winds while a key is held, as a multiple of real time. */
-export const WALKMAN_WIND_RATE = 8;
+const WALKMAN_WIND_RATE = 8;
 /** How far a tap on a wind key jumps, in seconds, for those who cannot hold it. */
-export const WALKMAN_SKIP_SECONDS = 10;
+const WALKMAN_SKIP_SECONDS = 10;
 
 export type WalkmanProps = {
   /** The tape: an audio file URL. Without one the display reads NO TAPE. */

@@ -3,8 +3,6 @@ import { useClosingPresence } from '../Presence/useClosingPresence';
 import { Movable, type MovableProps, type Place } from '../Movable/Movable';
 import './Spill.css';
 
-export type { Place } from '../Movable/Movable';
-
 /** How long one item's flight takes, in milliseconds. */
 export const SPILL_FLIGHT_MS = 900;
 /** The pause between one item leaving and the next, in milliseconds. */

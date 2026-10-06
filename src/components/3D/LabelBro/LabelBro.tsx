@@ -5,12 +5,8 @@ import { PrintedLabel } from './PrintedLabel';
 import { STOCK, TAPE_WIDTHS, tapeMm, tapeUnits, widthLabel, type Margin, type TapeStock, type TapeWidth } from './tape';
 import './LabelBro.css';
 
-export { PrintedLabel, type PrintedLabelProps } from './PrintedLabel';
-export { TAPE_STOCKS, TAPE_WIDTHS, STOCK, tapeMm, type Margin, type TapeStock, type TapeWidth } from './tape';
-export { KEYS, BODY, type Key } from './keyboard';
-
 /** How many characters the machine will hold before it says the label is full. */
-export const LABEL_BRO_LIMIT = 32;
+const LABEL_BRO_LIMIT = 32;
 
 /** How thick the machine is, as a multiple of the width of its drawing: 78 mm against 183. */
 export const LABEL_BRO_HEIGHT = 312 / BODY.w;

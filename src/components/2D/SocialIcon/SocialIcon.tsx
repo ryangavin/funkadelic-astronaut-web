@@ -25,7 +25,7 @@ export type SocialIconProps = {
 };
 
 /** The site's fountain-pen inks. */
-export const SOCIAL_ICON_INKS = {
+const SOCIAL_ICON_INKS = {
   black: '#121420',
   red: '#a52837',
   green: '#228542',

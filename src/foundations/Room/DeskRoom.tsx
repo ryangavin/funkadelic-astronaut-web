@@ -16,17 +16,15 @@ import './DeskRoom.css';
  * is the size it is in a room.
  */
 /** How much of the room the frame takes in: 1.3 metres, a hand's width past the desk each side. */
-export const ROOM_WIDTH = 1580;
+const ROOM_WIDTH = 1580;
 /** What is left of the frame for the desk once the room is around it. */
 export const ROOM_DESK_SHARE = DESK_WIDTH / ROOM_WIDTH;
 /** How high the desk top stands off the boards: 750 millimetres, an ordinary desk. */
-export const DESK_STAND = DESK_SIZE.height;
+const DESK_STAND = DESK_SIZE.height;
 /** How deep the desk is, front edge to the wall it stands against: 800 millimetres. */
 export const ROOM_DESK_DEPTH = DESK_SIZE.depth;
 /** How far the frame reaches below the desk's front edge, in desk units on the screen: a strip of the boards under it. */
 export const ROOM_LIP = 60;
-/** How much floor and wall is drawn: 2.2 metres, so the frame is covered however the eye moves. */
-export const ROOM_SPAN = mmToUnits(2200);
 /*
   The boards run across the drawing, so what we see of them is their length.
   Only a shallow strip of floor is in frame and it is foreshortened hard, so a
@@ -60,7 +58,7 @@ const THROW_TEMPER = 0.42;
  * desk's own depth, so the floor cannot quietly end up level with the desk
  * top, and the wall's foot cannot end up anywhere but where the boards stop.
  */
-export function floorLies(angle: number, stand: number) {
+function floorLies(angle: number, stand: number) {
   const tilt = ((90 - angle) * Math.PI) / 180;
   return { tilt, back: stand * Math.cos(tilt), down: stand * Math.sin(tilt) };
 }

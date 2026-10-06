@@ -10,12 +10,12 @@ export const ZINE_STOCKS = ['white', 'canary', 'goldenrod', 'lilac', 'pink'] as 
 export type ZineStock = (typeof ZINE_STOCKS)[number];
 
 /** One letter sheet folded into eight: four leaves, eight pages. */
-export const ZINE_PAGES = 8;
-export const ZINE_LEAVES = ZINE_PAGES / 2;
+const ZINE_PAGES = 8;
+const ZINE_LEAVES = ZINE_PAGES / 2;
 /** Spreads: 0 is the closed cover, 1 to 3 the inside, 4 the closed back. */
 export const ZINE_SPREADS = ZINE_LEAVES;
 /** How long a page takes to turn, in milliseconds. */
-export const ZINE_TURN_MS = 800;
+const ZINE_TURN_MS = 800;
 
 export type MiniZineProps = {
   /** The eight pages in reading order, the cover first. Missing pages are left blank. */
@@ -36,7 +36,7 @@ export type MiniZineProps = {
 const clampSpread = (spread: number) => Math.max(0, Math.min(ZINE_SPREADS, Math.round(spread)));
 
 /** What a screen reader is told is open. */
-export const describeSpread = (spread: number) =>
+const describeSpread =(spread: number) =>
   spread <= 0 ? 'Cover' : spread >= ZINE_SPREADS ? 'Back cover' : `Pages ${2 * spread} and ${2 * spread + 1} of ${ZINE_PAGES}`;
 
 /**

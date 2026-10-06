@@ -41,7 +41,7 @@ const PAPER_IDS = DESK_OBJECTS.filter(object => object.flat && object.widthMm ==
 export const OBJECT_IDS = DESK_OBJECTS.map(object => object.id);
 
 /** Everything at a scale of one: the composition's positions, but the world's sizes. */
-export const LIFE_SIZE: ObjectPlacements = Object.fromEntries(Object.entries(DEFAULT_OBJECT_PLACEMENTS).map(([id, place]) => [id, { ...place, scale: 1 }]));
+const LIFE_SIZE: ObjectPlacements = Object.fromEntries(Object.entries(DEFAULT_OBJECT_PLACEMENTS).map(([id, place]) => [id, { ...place, scale: 1 }]));
 
 const RULER_ID = 'sizing-ruler';
 const RULER_PLACE: Place = { x: mmToUnits(40), y: mmToUnits(DESK_MM.depth - 200), rotation: 0 };
@@ -125,7 +125,7 @@ function Readout({ root, shown, placements, targetPx, deskWidthMm }: { root: HTM
 }
 
 /** Which things the stage puts on the desk. */
-export function shownAt(stage: SizingStage, focus: string): readonly string[] {
+function shownAt(stage: SizingStage, focus: string): readonly string[] {
   if (stage === 'papers') return PAPER_IDS;
   if (stage === 'one') return OBJECT_IDS.includes(focus) ? [focus] : [];
   return OBJECT_IDS;

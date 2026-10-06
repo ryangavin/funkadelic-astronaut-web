@@ -1,5 +1,5 @@
-export const PRINT_CADENCE_MS = 150;
-export const JITTER_PRESETS = {
+const PRINT_CADENCE_MS = 150;
+const JITTER_PRESETS = {
   cutout: { x: 1.6, y: 2.3, rotation: .7 },
   print: { x: .45, y: .8, rotation: .55 },
 } as const;
