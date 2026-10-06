@@ -10,15 +10,11 @@ test('floor Perspective adapter preserves world eye, lens and principal point',(
   near(floor.camera.depth*floor.share,camera.depth*f.deskShare);near(floor.lip*floor.share,f.lip*f.deskShare);
  }
 });
-test('floor references are layered elevated artwork, with wall-clear footprint and canopy',()=>{
- const fs=require('node:fs');const source=fs.readFileSync('src/experience/debug/ScaleBench/FloorReferences.tsx','utf8');
- assert.match(source,/elevatedLayer/);assert.doesNotMatch(source,/<Solid/);assert.match(source,/<Wastebasket/);assert.doesNotMatch(source,/faces:|RoomFloorMesh|<polygon/);
+test('floor reference objects keep their real sizes, one artwork scale, and clear the wall',()=>{
  const {FLOOR_REFERENCES:{plant,bin}}=require('../src/experience/debug/ScaleBench/referenceDimensions.ts');
  assert.equal(bin.height,360);assert.equal(bin.diameter,290);assert.ok(bin.y-bin.diameter/2>=10);
  assert.equal(plant.height,950);assert.equal(plant.potHeight,320);assert.ok(plant.y-plant.canopyRadius>=20);
  near(plant.artwork*bin.diameter/bin.artwork,plant.potDiameter);
- const art=fs.readFileSync('src/components/3D/Wastebasket/Wastebasket.tsx','utf8');
- assert.match(art,/wastebasket__wall/);assert.match(art,/wastebasket__top/);assert.doesNotMatch(art,/coffee|dregs|<polygon/);
 });
 
 

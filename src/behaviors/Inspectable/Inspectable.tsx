@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type HTMLAttributes, type ReactNode } from 'react';
-import { unproject, usePerspectiveView } from '../Perspective/Perspective';
+import { usePerspectiveView } from '../Perspective/Perspective';
+import { unproject } from '../Perspective/projection';
 import './Inspectable.css';
 
 /** How much of the stage a thing held up fills, across and down. */

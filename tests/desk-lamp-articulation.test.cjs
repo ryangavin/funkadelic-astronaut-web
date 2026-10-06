@@ -46,6 +46,36 @@ test('lower hinge yields only when needed and sequential poses retain rigid link
   assert.ok(excursion > 10);
 });
 
+test('the head reaches any target within the arms\' span exactly, and stops just short of full extension or full fold beyond it', () => {
+  const [a, b] = LAMP_ARMS;
+  const headDistance = pose => Math.hypot(pose.head.x - LAMP_BASE.x, pose.head.y - LAMP_BASE.y);
+  for (const direction of [0, 0.7, 2, -2.5]) {
+    const towards = distance => ({ x: LAMP_BASE.x + distance * Math.cos(direction), y: LAMP_BASE.y + distance * Math.sin(direction) });
+    for (const distance of [Math.abs(a - b) + 1, (a + b) / 2, a + b - 1]) {
+      const target = towards(distance), { head } = articulateLamp(target);
+      assert.ok(Math.hypot(head.x - target.x, head.y - target.y) < 1e-8);
+    }
+    for (const distance of [a + b, a + b + 50, 1e6]) {
+      const pose = articulateLamp(towards(distance));
+      assert.ok(Math.abs(headDistance(pose) - (a + b - 0.01)) < 1e-8);
+      assert.ok(Math.abs(Math.atan2(pose.head.y - LAMP_BASE.y, pose.head.x - LAMP_BASE.x) - direction) < 1e-8, 'stays on the line to the target');
+    }
+    for (const distance of [Math.abs(a - b), 1]) assert.ok(Math.abs(headDistance(articulateLamp(towards(distance))) - (Math.abs(a - b) + 0.01)) < 1e-8);
+  }
+  // Aimed at its own base there is no direction to reach in; it folds to the left rather than failing.
+  const folded = articulateLamp(LAMP_BASE);
+  assert.ok(Math.abs(folded.head.y - LAMP_BASE.y) < 1e-8 && folded.head.x < LAMP_BASE.x);
+});
+
+test('joint angles turned into a pose and back give the same angles', () => {
+  const { lampPoseAngles, lampPoseFromAngles } = require('../src/components/3D/DeskLamp/articulation.ts');
+  for (const lower of [-170, -45, 0, 38, 120]) for (const upper of [-90, 10, 179]) {
+    const angles = lampPoseAngles(lampPoseFromAngles(lower, upper));
+    assert.ok(Math.abs(angles.lower - lower) < 1e-8);
+    assert.ok(Math.abs(angles.upper - upper) < 1e-8);
+  }
+});
+
 test('saved joint angles restore the exact articulated pose', () => {
   const { lampPoseAngles, lampPoseFromAngles } = require('../src/components/3D/DeskLamp/articulation.ts');
   let pose = articulateLamp({ x: 200, y: 420 });
