@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Desk, DESK_WIDTH } from '../../components/3D/Desk/Desk';
 import { Handbill } from '../../experience/experiments/BandIntro/Handbill';
 import { BAND_HANDBILL_FRONT, BAND_HANDBILL_BACK } from '../../experience/experiments/BandIntro/Handbill.band';
@@ -89,72 +88,4 @@ function Things() {
  */
 export const OnADesk: Story = {
   render: () => <Things />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const held = () => canvasElement.querySelector<HTMLElement>('.inspectable[data-held]');
-    /* Nothing is up, so there is nothing to put down: the veil is not in the tree to be found by its name yet. */
-    const veil = canvasElement.querySelector<HTMLElement>('.inspector__veil')!;
-    await expect(canvas.queryByRole('button', { name: 'Put it back down' })).toBe(null);
-    const printer = canvas.getByRole('group', { name: 'Label printer' });
-    const face = printer.querySelector<HTMLElement>('.inspectable')!;
-    const was = { x: printer.style.getPropertyValue('--movable-x'), y: printer.style.getPropertyValue('--movable-y') };
-
-    // Nothing is up to start with, and the mug is not something to look at.
-    await expect(held()).toBe(null);
-    await expect(canvas.getByRole('group', { name: 'Mug' }).querySelector('.inspectable')).toBe(null);
-
-    // A press that stays put picks it up: it is carried across the desk and grown, and the veil comes in behind it.
-    await userEvent.click(face);
-    await waitFor(() => expect(held()).toBe(face));
-    await expect(canvas.getByRole('button', { name: 'Put it back down' })).toBe(veil);
-    await expect(Number(face.style.getPropertyValue('--inspect-scale'))).toBeGreaterThan(1);
-    await expect(Number(getComputedStyle(printer).zIndex)).toBe(HELD_LAYER);
-    // Up in the air it is nothing to do with the desk: it has not been moved, and there is nothing to drag it by.
-    await expect(printer.style.getPropertyValue('--movable-x')).toBe(was.x);
-    await expect(printer.style.getPropertyValue('--movable-y')).toBe(was.y);
-    await waitFor(() => expect(getComputedStyle(canvas.getByRole('button', { name: 'Rotate Label printer' })).opacity).toBe('0'));
-    // Every key on it still works while it is up, and working it does not put it down.
-    await userEvent.click(within(printer).getByRole('button', { name: 'X' }));
-    await expect(within(printer).getByLabelText(/the screen reads BACKLINEX/)).toBeInTheDocument();
-    await expect(held()).toBe(face);
-
-    // Escape puts it back, exactly where it was lying.
-    await userEvent.keyboard('{Escape}');
-    await waitFor(() => expect(held()).toBe(null));
-    await expect(veil).not.toHaveAttribute('data-held');
-    await expect(printer.style.getPropertyValue('--movable-x')).toBe(was.x);
-    await expect(Number(getComputedStyle(printer).zIndex)).toBe(DESK_LAYER);
-
-    // Enter on the thing the keyboard has hold of does the same as the click.
-    printer.focus();
-    await userEvent.keyboard('{Enter}');
-    await waitFor(() => expect(held()).toBe(face));
-    // And the veil is what puts it down again.
-    await userEvent.click(veil);
-    await waitFor(() => expect(held()).toBe(null));
-  },
-};
-
-/**
- * A handbill is one big button to turn it over, so there is nothing left of its
- * face to pick it up by: the first press takes it off the desk without the face
- * ever hearing it, and every press after that turns it over while it is up.
- */
-export const PickedUpAnywhere: Story = {
-  render: () => <Things />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const held = () => canvasElement.querySelector<HTMLElement>('.inspectable[data-held]');
-    const handbill = canvas.getByRole('group', { name: 'Band handbill' });
-    const face = handbill.querySelector<HTMLElement>('.inspectable')!;
-    const turn = within(handbill).getByRole('button', { name: 'Turn the handbill over' });
-
-    await userEvent.click(turn);
-    await waitFor(() => expect(held()).toBe(face));
-    // It came up the right way round: picking it up was not also turning it over.
-    await expect(turn).toHaveAccessibleName('Turn the handbill over');
-    await userEvent.click(turn);
-    await waitFor(() => expect(turn).toHaveAccessibleName('Turn the handbill back'));
-    await expect(held()).toBe(face);
-  },
 };

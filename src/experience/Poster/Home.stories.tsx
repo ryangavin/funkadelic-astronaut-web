@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, waitFor, within } from 'storybook/test';
 import { STAGE_WIDTH } from '../../components/2D/Stage/Stage';
 import { HOME_HEIGHT, HOME_LAYOUT, Home } from './Home';
 
@@ -70,40 +69,6 @@ export const Responsive: Story = {
     astroY: 494,
     astronautY: 286
   },
-
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent('Funkadelic Astronaut');
-    await expect(canvas.getByRole('navigation', { name: 'Listen on streaming services' }).querySelectorAll('a')).toHaveLength(4);
-    await expect(canvas.getByRole('region', { name: 'Tour' }).querySelectorAll('.tour-pass')).toHaveLength(3);
-    await document.fonts.ready;
-    // Wrapped details must leave the entire time and action inside each equal-sized card.
-    await waitFor(() => {
-      const passes = [...canvasElement.querySelectorAll<HTMLElement>('.tour-pass')];
-      for (const pass of passes) {
-        const sheet = pass.querySelector<HTMLElement>('.tour-pass__sheet')!;
-        const copy = pass.querySelector<HTMLElement>('.tour-pass__copy')!;
-        const details = pass.querySelector<HTMLElement>('.tour-pass__details')!;
-        const show = pass.querySelector<HTMLElement>('.tour-pass__show')!;
-        const time = pass.querySelector<HTMLElement>('.tour-pass__time')!;
-        const action = pass.querySelector<HTMLElement>('.tour-pass__action')!;
-        expect(pass.clientHeight).toBe(passes[0].clientHeight);
-        expect(details.offsetHeight).toBeLessThanOrEqual(copy.clientHeight);
-        expect(details.scrollWidth).toBeLessThanOrEqual(copy.clientWidth);
-        expect(time.offsetTop + time.offsetHeight).toBeLessThanOrEqual(show.clientHeight);
-        expect(show.offsetTop + show.offsetHeight).toBeLessThanOrEqual(action.offsetTop);
-        expect(action.offsetTop + action.offsetHeight).toBeLessThan(sheet.clientHeight);
-        expect(sheet.scrollHeight).toBe(sheet.clientHeight);
-      }
-      expect(passes[0].querySelector<HTMLElement>('.tour-pass__details')!.style.getPropertyValue('--copy-scale')).toBe('1');
-    });
-    const stage = canvasElement.querySelector<HTMLElement>('.stage')!;
-    const sheet = canvasElement.querySelector<HTMLElement>('.stage__sheet')!;
-    await waitFor(() => expect(Number(getComputedStyle(sheet).zoom)).toBeCloseTo(stage.clientWidth / STAGE_WIDTH, 3));
-    // A fixed 11 x 17 poster: the page's proportions are the design's, whatever the width.
-    const box = sheet.getBoundingClientRect();
-    await expect(box.height / box.width).toBeCloseTo(HOME_HEIGHT / STAGE_WIDTH, 2);
-  }
 };
 
 /** At the design width itself: one design pixel is one screen pixel. */

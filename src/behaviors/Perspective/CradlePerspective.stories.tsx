@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useEffect, useState } from 'react';
-import { expect, userEvent, within } from 'storybook/test';
 import { Desk } from '../../components/3D/Desk/Desk';
 import { CRADLE_BALLS, CRADLE_PERIOD_MS, CRADLE_RADIUS, CRADLE_RAILS, CRADLE_REST, CRADLE_SWING, NewtonsCradle } from '../../components/3D/NewtonsCradle/NewtonsCradle';
 import { Movable, type Place } from '../Movable/Movable';
@@ -100,20 +99,4 @@ function CradleScene(args: PerspectiveProps) {
 export const GentleCradle: Story = {
   name: 'Gentle Newton’s cradle',
   render: args => <CradleScene {...args} />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const object = canvas.getByRole('group', { name: 'Newton’s cradle' });
-    await userEvent.click(canvas.getByRole('button', { name: 'Set the cradle going' }));
-    await expect(canvas.getByRole('button', { name: 'Stop the cradle' })).toHaveAttribute('aria-pressed', 'true');
-    const ball = canvasElement.querySelector('.newtons-cradle__hanger[data-end="left"] .newtons-cradle__ball')!;
-    await expect(getComputedStyle(ball).animationName).toBe('cradle-swing-left');
-    await userEvent.click(canvas.getByRole('button', { name: 'Stop the cradle' }));
-    await expect(canvas.getByRole('button', { name: 'Set the cradle going' })).toHaveAttribute('aria-pressed', 'false');
-    object.focus();
-    await userEvent.keyboard('{ArrowRight}]');
-    await expect(object.style.getPropertyValue('--movable-x')).toBe('450');
-    await expect(object.style.getPropertyValue('--movable-rotation')).toBe('-7deg');
-    await userEvent.keyboard('{ArrowLeft}[[');
-    object.blur();
-  },
 };

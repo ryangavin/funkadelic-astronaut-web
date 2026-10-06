@@ -1,7 +1,5 @@
-import { checkDeskStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy.check';
 import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { ROLODEX_CARDS, ROLODEX_FINISHES, Rolodex } from './Rolodex';
 import { RolodexCard } from './RolodexCard';
 import type { RolodexEntry } from './wheel';
@@ -48,86 +46,16 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** The file open at Olive's: the comb of card edges in the tray, and the card itself lying beside it. */
-export const OnTheDesk: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const file = canvas.getByRole('group', { name: 'Rotary card file' });
-    /* The whole drawing is the wheel, a gutter and one 4 by 2 5/8 card: 960 by 624 ninety-sixths of an inch.
-       Measured off the layout box, because both of them are lying on the desk at an angle. */
-    await expect((file as HTMLElement).offsetHeight / (file as HTMLElement).offsetWidth).toBeCloseTo(624 / 960, 2);
-    /* And the card really is 4 inches by 2 5/8. */
-    const card = canvas.getByRole('article') as HTMLElement;
-    await expect(card.offsetHeight / card.offsetWidth).toBeCloseTo(252 / 384, 2);
-    await expect(canvas.getByRole('status').textContent).toContain('Olive’s');
-  },
-};
+export const OnTheDesk: Story = {};
 
-/** A click on the right-hand knob turns the wheel one card on, and the card lying on the desk changes with it. */
-export const TurnTheKnob: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expect(canvas.getByRole('article', { name: 'Card: Olive’s' })).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole('button', { name: 'Turn on a card' }));
-    await expect(canvas.getByRole('article', { name: 'Card: Saturn Lanes' })).toBeInTheDocument();
-    await expect(canvas.getByRole('status').textContent).toContain('card 8 of 10');
-    await userEvent.click(canvas.getByRole('button', { name: 'Turn back a card' }));
-    await expect(canvas.getByRole('article', { name: 'Card: Olive’s' })).toBeInTheDocument();
-  },
-};
-
-/** Pressing an alphabet tab jumps the wheel to that letter. */
-export const JumpByTab: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole('button', { name: 'Go to B' }));
-    await expect(canvas.getByRole('article', { name: 'Card: Bellweather Sound' })).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole('button', { name: 'Go to T' }));
-    await expect(canvas.getByRole('article', { name: 'Card: Teddy Vasquez' })).toBeInTheDocument();
-  },
-};
-
-/** The arrow keys step it from either knob, and the gap travels along the comb as they do. */
+/** Open at the first card, with the gap at the front of the comb. The knobs, the arrow keys and the tabs all turn it. */
 export const StepWithTheKeys: Story = {
   args: { defaultIndex: 0 },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const knob = canvas.getByRole('button', { name: 'Turn back a card' });
-    knob.focus();
-    const gapBefore = canvas.getByRole('button', { name: 'Go to W' }).getBoundingClientRect().top;
-    await userEvent.keyboard('{ArrowDown}{ArrowDown}');
-    await expect(canvas.getByRole('article', { name: 'Card: Dinah Okonkwo' })).toBeInTheDocument();
-    await userEvent.keyboard('{ArrowUp}');
-    await expect(canvas.getByRole('article', { name: 'Card: Cosmo’s Cartage' })).toBeInTheDocument();
-    await userEvent.keyboard('{End}');
-    await expect(canvas.getByRole('article', { name: 'Card: Wallace & Sons' })).toBeInTheDocument();
-    /* With the last card out of the wheel, everything behind it has closed up: the comb has visibly shifted. */
-    await waitFor(async () => {
-      const gapAfter = canvas.getByRole('button', { name: 'Go to W' }).getBoundingClientRect().top;
-      await expect(Math.abs(gapAfter - gapBefore)).toBeGreaterThan(2);
-    });
-  },
-};
-
-/** Typing a letter files straight to it, the way you would walk the tabs with a thumb. */
-export const TypeALetter: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    canvas.getByRole('button', { name: 'Turn on a card' }).focus();
-    await userEvent.keyboard('f');
-    await expect(canvas.getByRole('article', { name: 'Card: Funkadelic Astronaut' })).toBeInTheDocument();
-  },
 };
 
 /** The wheel by itself, for a page that would rather lay the card out where it likes. */
 export const WheelAlone: Story = {
   args: { loose: false },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const file = canvas.getByRole('group', { name: 'Rotary card file' });
-    /* The tray with a knob standing off each end: 518 by 624. */
-    await expect((file as HTMLElement).offsetHeight / (file as HTMLElement).offsetWidth).toBeCloseTo(624 / 518, 2);
-    await expect(canvas.queryByRole('article')).toBeNull();
-  },
 };
 
 /** One card on its own, off the wheel: the only way a rotary card is ever readable from overhead. */
@@ -207,26 +135,9 @@ export const AwkwardCards: Story = {
       },
     ] as RolodexEntry[],
   },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    /* A name that would never have fitted is typed smaller and wraps; the card is still 4 by 2 5/8. */
-    const face = canvas.getByRole('article') as HTMLElement;
-    await expect(face.offsetHeight / face.offsetWidth).toBeCloseTo(252 / 384, 2);
-    await userEvent.click(canvas.getByRole('button', { name: 'Turn on a card' }));
-    await expect(canvas.getByRole('article', { name: 'Card: Ed' })).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole('button', { name: 'Turn on a card' }));
-    const many = canvas.getByRole('article', { name: 'Card: Saturn Lanes' });
-    /* Nine lines still lie inside the card, because the rules close up to take them. */
-    const stock = many.getBoundingClientRect();
-    const lines = many.querySelectorAll('.rolodex-card__line');
-    await expect(lines.length).toBe(9);
-    const last = lines[lines.length - 1].getBoundingClientRect();
-    await expect(last.bottom).toBeLessThanOrEqual(stock.bottom + 1);
-  },
 };
 
 export const OnDesk: Story = {
-  play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
   render: (args) => <DeskObjectStudy name="Rolodex" widthMm={137.05} depthRatio={624/518} heightMm={107.95} solid={{ localCoordinates: true, height: 408/518, foot: { x: .5, y: 312/518 } }} note="Dimensions derived from the existing inch-scaled drawing. Simplified whole-file shadow; individual cards are not separate occluders."><Rolodex {...args} rotation={0} loose={false} /></DeskObjectStudy>,

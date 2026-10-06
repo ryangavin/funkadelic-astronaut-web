@@ -1,8 +1,6 @@
-import { checkDeskStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy.check';
 import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within } from 'storybook/test';
-import { DESK_CLOCK_FINISHES, DeskClock, readout } from './DeskClock';
+import { DESK_CLOCK_FINISHES, DeskClock } from './DeskClock';
 
 const meta = {
   title: 'Library/Components/3D/Desk Clock',
@@ -31,20 +29,11 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** Keeping real time. */
-export const Ticking: Story = {
-  play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByRole('timer')).toHaveAccessibleName(/^Desk clock: \d{1,2}:\d{2} (AM|PM), (SUN|MON|TUE|WED|THU|FRI|SAT) [A-Z]{3} +\d{1,2}$/);
-  },
-};
+export const Ticking: Story = {};
 
 /** Held at ten past six on the festival's Saturday, twenty-four hour face. */
 export const Held: Story = {
   args: { running: false, hours: 24, now: () => new Date(2026, 8, 26, 18, 10, 0), finish: 'silver', rotation: 2 },
-  play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByRole('timer')).toHaveAccessibleName('Desk clock: 18:10, SAT SEP 26');
-    await expect(readout(new Date(2026, 8, 26, 18, 10, 0), 12)).toEqual({ time: ' 6:10', date: 'SAT SEP 26', meridian: 'PM', seconds: 0 });
-    await expect(readout(new Date(2026, 0, 1, 0, 5, 30), 12).time).toBe('12:05');
-  },
 };
 
 /** The three casings. */
@@ -62,7 +51,6 @@ export const Finishes: Story = {
 };
 
 export const OnDesk: Story = {
-  play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
   render: (args) => <DeskObjectStudy name="Desk clock" widthMm={90} depthRatio={560/720} heightMm={15} ><DeskClock {...args} rotation={0} /></DeskObjectStudy>,

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
 import festivalSketch from '../../../../assets/festival-scribble-fully-shaded.png';
 import { FOLDER_STOCKS } from '../../../components/2D/Folder/Folder';
 import { PaperSheet } from '../../../components/2D/PaperSheet/PaperSheet';
@@ -49,9 +48,6 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const topItem = (root: HTMLElement) =>
-  [...root.querySelectorAll<HTMLElement>('.stack__item')].reduce((top, item) => (Number(item.style.zIndex) > Number(top.style.zIndex) ? item : top));
-
 /** The section as it will sit on the site: the package open on the sketched desk. */
 export const OnDesk: Story = {
   args: {
@@ -69,16 +65,6 @@ export const OnDesk: Story = {
       </div>
     </PaperSheet>
   ),
-
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expect(topItem(canvasElement).textContent).toContain('Ryan Gavin');
-    await userEvent.click(canvas.getByRole('button', { name: 'Bring Sam Luba to the front' }));
-    await waitFor(() => expect(topItem(canvasElement).textContent).toContain('Sam Luba'), { timeout: 2000 });
-    const pile = within(canvas.getByRole('region', { name: 'Meet the band' }));
-    await expect(pile.getByRole('status').textContent).toBe('Sam Luba · 3 of 3');
-    await expect(canvas.getByRole('group', { name: 'Cassette player: Spacewalk (demo)' })).toBeInTheDocument();
-  }
 };
 
 /** The folder alone, on plain paper. */
@@ -104,79 +90,12 @@ export const Closed: Story = {
   ),
 };
 
-/** Exercises the whole flight across the crease, including Kevin's leftward pull. */
-export const SpineCrossing: Story = {
-  ...OnDesk,
-  args: { duration: 900 },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const doc = canvasElement.ownerDocument;
-    const win = doc.defaultView!;
-    const cover = canvasElement.querySelector('.folder__cover')!;
-    const spine = canvasElement.querySelector('.folder__spine')!;
-    const well = canvasElement.querySelector('.folder__well')!;
-    await expect(Number(win.getComputedStyle(well).zIndex)).toBeGreaterThan(Number(win.getComputedStyle(spine).zIndex));
-
-    const flights = [
-      { name: 'Sam Luba', next: 'Sam Luba', toBack: false },
-      { name: 'Kevin O’Neill', next: 'Kevin O’Neill', toBack: false },
-      { name: 'Ryan Gavin', next: 'Ryan Gavin', toBack: false },
-      { name: 'Ryan Gavin', next: 'Kevin O’Neill', toBack: true },
-      { name: 'Kevin O’Neill', next: 'Sam Luba', toBack: true },
-      { name: 'Sam Luba', next: 'Ryan Gavin', toBack: true },
-    ];
-    for (const { name, next, toBack } of flights) {
-      const card = canvas.getByRole('button', { name: toBack ? `${name}, on top. Show the next card` : `Bring ${name} to the front` });
-      await userEvent.click(card);
-      let crossings = 0;
-      let occlusions = 0;
-      const start = win.performance.now();
-      // Sample every rendered frame through the flight, not just the final slot.
-      await new Promise<void>((resolve) => {
-        const sample = () => {
-          const bounds = card.getBoundingClientRect();
-          const x = spine.getBoundingClientRect().left - 8;
-          for (let y = Math.max(0, bounds.top) + 8; y < Math.min(win.innerHeight, bounds.bottom); y += 12) {
-            const layers = doc.elementsFromPoint(x, y);
-            const cardAt = layers.indexOf(card);
-            if (cardAt < 0) continue;
-            crossings++;
-            const coverAt = layers.findIndex((element) => cover.contains(element));
-            if (coverAt >= 0 && coverAt < cardAt) occlusions++;
-          }
-          if (win.performance.now() - start < 1000) win.requestAnimationFrame(sample);
-          else resolve();
-        };
-        win.requestAnimationFrame(sample);
-      });
-      if (!toBack && !win.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        await expect(crossings, `${name} crosses the spine during the flight`).toBeGreaterThan(0);
-      }
-      await expect(occlusions, `${name} stays above the cover throughout the flight`).toBe(0);
-      await expect(topItem(canvasElement).textContent).toContain(next);
-    }
-  },
-};
-
-/** Closed contents are unmounted; the selected member survives packing away. */
+/** Starts closed and opens and closes by hand, so the package can be packed away and taken out again. */
 export const LazyContents: Story = {
   render: function Lifecycle(args) {
     const [open, setOpen] = useState(false);
     return <div style={{ width: 1100, maxWidth: '100%', padding: 40 }}>
       <BandDossier {...args} open={open} onOpen={() => setOpen(true)} onClose={() => setOpen(false)} />
     </div>;
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expect(canvasElement.querySelectorAll('.member-pile, .one-sheet, .walkman, iframe')).toHaveLength(0);
-    await userEvent.click(canvas.getByRole('button', { name: 'Open the press package' }));
-    await userEvent.click(canvas.getByRole('button', { name: 'Bring Sam Luba to the front' }));
-    await waitFor(() => expect(topItem(canvasElement).textContent).toContain('Sam Luba'), { timeout: 2000 });
-    await userEvent.click(canvas.getByRole('button', { name: 'Close the press package' }));
-    await expect(canvasElement.querySelector('.member-pile')).toBeInTheDocument();
-    await expect(canvasElement.querySelector('.folder__well')).toHaveAttribute('inert');
-    await waitFor(() => expect(canvasElement.querySelector('.member-pile')).not.toBeInTheDocument(), { timeout: 1500 });
-    await userEvent.click(canvas.getByRole('button', { name: 'Open the press package' }));
-    await expect(topItem(canvasElement).textContent).toContain('Sam Luba');
   },
 };

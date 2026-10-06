@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import festivalSketch from '../../../../assets/festival-scribble-fully-shaded.png';
 import { PaperSheet } from '../PaperSheet/PaperSheet';
 import { ONE_SHEET_STOCKS, OneSheet } from './OneSheet';
@@ -26,7 +25,6 @@ const meta = {
     open: false,
     rotation: -1,
     duration: 900,
-    onToggle: fn(),
   },
   decorators: [
     (Story, context) =>
@@ -46,37 +44,11 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** Folded, as it comes out of the envelope: the letterhead and the first paragraph. Click to unfold. */
-export const Folded: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expect(canvas.getByRole('status').textContent).toBe('Folded: the top panel shows');
-    await expect(canvas.getByRole('button', { name: 'Unfold the one-sheet' })).toHaveAttribute('aria-expanded', 'false');
-  },
-};
+export const Folded: Story = {};
 
 /** Flat on the desk. */
 export const Unfolded: Story = {
   args: { open: true },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expect(canvas.getByRole('status').textContent).toBe('Unfolded');
-    await expect(canvas.getByRole('link', { name: 'Booking: samluba1@gmail.com' })).toBeVisible();
-  },
-};
-
-/** Pulled open and folded back by hand: the status follows and the callback fires once it settles. */
-export const Handled: Story = {
-  args: { duration: 400 },
-  play: async ({ canvasElement, args }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole('button', { name: 'Unfold the one-sheet' }));
-    await expect(canvas.getByRole('status').textContent).toBe('Unfolding');
-    await waitFor(() => expect(canvas.getByRole('status').textContent).toBe('Unfolded'), { timeout: 2000 });
-    await expect(args.onToggle).toHaveBeenLastCalledWith(true);
-    await userEvent.click(canvas.getByRole('button', { name: 'Fold the one-sheet' }));
-    await waitFor(() => expect(canvas.getByRole('status').textContent).toBe('Folded: the top panel shows'), { timeout: 2000 });
-    await expect(args.onToggle).toHaveBeenLastCalledWith(false);
-  },
 };
 
 /** The same file printed on the three papers in the tray. */

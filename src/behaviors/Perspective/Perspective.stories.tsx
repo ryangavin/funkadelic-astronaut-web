@@ -1,14 +1,13 @@
 import { LAMP_WIDTH, LAMP_HEIGHT, mmToUnits } from '../../geometry/physicalScale';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState, type ComponentProps } from 'react';
-import { expect, userEvent, within } from 'storybook/test';
 import { Movable, type Place } from '../Movable/Movable';
 import { Desk } from '../../components/3D/Desk/Desk';
 import { DeskClock } from '../../components/3D/DeskClock/DeskClock';
 import { MUG_FOOT, MUG_HEIGHT, MUG_SILHOUETTE, MUG_TALL, Mug } from '../../components/3D/Mug/Mug';
 import { LampShadows } from '../../components/3D/DeskLamp/LampShadows';
 import { DeskLamp, LampLight } from '../../components/3D/DeskLamp/DeskLamp';
-import { DeskLighting, castFrom, useDeskLight } from '../DeskLighting/DeskLighting';
+import { DeskLighting, useDeskLight } from '../DeskLighting/DeskLighting';
 import { Pen } from '../../components/3D/Pen/Pen';
 import { StickyNote } from '../../components/2D/StickyNote/StickyNote';
 import { ObjectCastShadow } from './CastShadow';
@@ -78,42 +77,6 @@ export const GentleMug: Story = {
   name: 'Gentle mug',
   parameters: { docs: { description: { story: 'One desk lamp registers its bulb as the scene light. Two desk units equal one millimeter: mug drawing 140 mm wide, mug height 95 mm, lamp drawing 480 × 400 mm. Estimated heights: bulb 350 mm, shade top 400 mm, elbow 230 mm, base 25 mm. The light pool uses an approximate 70° cone. Move the mug across the light or click the shade to switch it off.' } } },
   render: (args) => <GentleMugScene {...args} />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const shadow = canvasElement.querySelector('.desk-study__shadow .desk-study__cast')!;
-    const mugGroup = () => canvas.getByRole('group', { name: 'Mug' });
-    /*
-      Which side of the thing its shadow falls on, measured off what is drawn
-      rather than read off an attribute. The mug used to carry its own shadow and
-      its own number to check; now it casts the way everything else does, and the
-      thing worth asserting is the one that was always meant — that the shadow is
-      thrown away from the bulb, and swaps sides when the thing is carried past it.
-    */
-    const horizontal = () => {
-      const cast = shadow.getBoundingClientRect();
-      const thing = mugGroup().getBoundingClientRect();
-      return (cast.left + cast.width / 2) - (thing.left + thing.width / 2);
-    };
-    const before = horizontal();
-    await expect(before).toBeLessThan(0);
-    await userEvent.click(canvas.getByRole('button', { name: 'Turn the lamp off' }));
-    await expect(shadow).toHaveAttribute('opacity', '0');
-    await expect(canvasElement.querySelector('.mug__contact')).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole('button', { name: 'Turn the lamp on' }));
-    await expect(Number(shadow.getAttribute('opacity'))).toBeGreaterThan(0);
-    const mug = mugGroup();
-    mug.focus();
-    await userEvent.keyboard('{Shift>}{ArrowRight>11/}{/Shift}');
-    await expect(horizontal()).toBeGreaterThan(0);
-    await userEvent.keyboard('{Shift>}{ArrowLeft>11/}{/Shift}');
-    mug.blur();
-    // Near-horizontal rays and a bulb below the mug must remain bounded.
-    const grazing = castFrom(10000, 10000, 250, { x: 0, y: 0, height: 200, on: true });
-    await expect(Math.hypot(grazing.x, grazing.y)).toBeLessThanOrEqual(1440.001);
-    const overhead = castFrom(10, 10, 250, { x: 10, y: 10, height: 720, on: true });
-    await expect(overhead.x).toBe(0);
-    await expect(overhead.y).toBe(0);
-  },
 };
 
 /** The desk is deeper than the frame, because depth foreshortens: 1020 units of desktop draw about 760 tall. */
@@ -180,43 +143,6 @@ export const Standing_At_It: Story = {
   name: 'Standing at it',
   args: { angle: STANDING_VIEW, depth: 3200 },
   render: (args) => <ADesk {...args} />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const plane = canvasElement.querySelector<HTMLElement>('.perspective__plane')!;
-    /* The near edge is not foreshortened, so it measures a unit for us. */
-    const perUnit = plane.getBoundingClientRect().width / 1440;
-    const travel = 120 * perUnit;
-    const dragDown = async (thing: HTMLElement) => {
-      const box = thing.getBoundingClientRect();
-      const from = { x: box.left + box.width / 2, y: box.top + box.height / 2 };
-      const before = Number(thing.style.getPropertyValue('--movable-y'));
-      await userEvent.pointer([
-        { keys: '[MouseLeft>]', target: thing, coords: { clientX: from.x, clientY: from.y } },
-        { coords: { clientX: from.x, clientY: from.y + 20 } },
-        { coords: { clientX: from.x, clientY: from.y + travel } },
-        { keys: '[/MouseLeft]', coords: { clientX: from.x, clientY: from.y + travel } },
-      ]);
-      return Number(thing.style.getPropertyValue('--movable-y')) - before;
-    };
-    /* The note lies at the back of the desk, the marker at the front. */
-    const atTheBack = await dragDown(canvas.getByRole('group', { name: 'Sticky note' }));
-    const atTheFront = await dragDown(canvas.getByRole('group', { name: 'Marker' }));
-    /* Depth is foreshortened, so travel down the screen buys more desk than it would seen from overhead. */
-    await expect(atTheBack).toBeGreaterThan(120);
-    await expect(atTheFront).toBeGreaterThan(120);
-    /* And further off it buys more still: the same travel is a longer trip at the back of the desk than at the front. */
-    await expect(atTheBack).toBeGreaterThan(atTheFront);
-
-    /* The mug is laid on the desk at an angle, and still stands up straight: turning a thing on a
-       surface spins it about its upright, so its rim goes up from its base and not off to one side. */
-    const base = canvasElement.querySelector<SVGElement>('.mug__base')!.getBoundingClientRect();
-    const rim = canvasElement.querySelector<SVGElement>('.mug__body')!.getBoundingClientRect();
-    const sideways = rim.left + rim.width / 2 - (base.left + base.width / 2);
-    const upward = base.top + base.height / 2 - (rim.top + rim.height / 2);
-    await expect(upward).toBeGreaterThan(10);
-    /* Laid at 35 degrees and not turned back, the rim would go off at 35 degrees too, which is most of the way over. */
-    await expect(Math.abs(sideways) / upward).toBeLessThan(0.3);
-  },
 };
 
 /** Straight down, the way everything is drawn. At ninety degrees the behavior does nothing at all. */

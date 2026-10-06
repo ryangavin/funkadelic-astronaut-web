@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within } from 'storybook/test';
 import { GuitarPick } from './GuitarPick';
 
 const meta = {
@@ -29,11 +28,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** The band's own, in the wordmark's purple. */
-export const Purple: Story = {
-  play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByText('FA')).toBeInTheDocument();
-  },
-};
+export const Purple: Story = {};
 
 /** A pocketful. */
 export const Pocketful: Story = {

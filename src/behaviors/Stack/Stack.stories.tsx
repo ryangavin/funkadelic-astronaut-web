@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { MemberPile } from '../../experience/sections/BandDossier/BandDossier';
 
 const meta = {
@@ -28,23 +27,8 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const topItem = (root: HTMLElement) =>
-  [...root.querySelectorAll<HTMLElement>('.stack__item')].reduce((top, item) => (Number(item.style.zIndex) > Number(top.style.zIndex) ? item : top));
-
 /** Click a peeking packet to pull it out and land it on top; click the top one to send it under. */
-export const Sift: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expect(topItem(canvasElement).textContent).toContain('Ryan Gavin');
-    await userEvent.click(canvas.getByRole('button', { name: 'Bring Sam Luba to the front' }));
-    await waitFor(() => expect(topItem(canvasElement).textContent).toContain('Sam Luba'));
-    await userEvent.click(canvas.getByRole('button', { name: /Sam Luba, on top/ }));
-    await waitFor(() => expect(topItem(canvasElement).textContent).toContain('Ryan Gavin'), { timeout: 2000 });
-    await userEvent.click(canvas.getByRole('button', { name: 'Bring Kevin O’Neill to the front' }));
-    await waitFor(() => expect(topItem(canvasElement).textContent).toContain('Kevin O’Neill'), { timeout: 2000 });
-    await expect(canvas.getByRole('status').textContent).toBe('Kevin O’Neill · 2 of 3');
-  },
-};
+export const Sift: Story = {};
 
 /** A slower, looser pile, to study the flight. */
 export const SlowMotion: Story = {

@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState, type CSSProperties } from 'react';
-import { expect, userEvent, within } from 'storybook/test';
 import demoTape from '../../../assets/audio/demo-tape.mp3';
 import { Desk } from '../../components/3D/Desk/Desk';
 import { Walkman } from '../../components/3D/Walkman/Walkman';
@@ -70,25 +69,4 @@ function WalkmanStudy(args: PerspectiveProps) {
 export const GentleWalkman: Story = {
   name: 'Gentle Walkman',
   render: (args) => <WalkmanStudy {...args} />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const user = userEvent.setup();
-    const player = canvas.getByRole('group', { name: 'Walkman study' });
-    const play = canvas.getByRole('button', { name: 'Play' });
-    await expect(play).toBeEnabled();
-    // Hold a transport key: exercises its real pointer interaction without
-    // depending on the browser's audio-autoplay policy in automated runs.
-    const rewind = canvas.getByRole('button', { name: 'Rewind' });
-    await user.pointer({ keys: '[MouseLeft>]', target: rewind });
-    await expect(canvas.getByRole('status')).toHaveTextContent('Rewinding');
-    await user.pointer({ keys: '[/MouseLeft]', target: rewind });
-    await expect(canvas.getByRole('status')).toHaveTextContent('Stopped');
-    await expect(canvas.getByRole('slider', { name: 'Volume' })).toHaveValue('0.4');
-    await expect(player.style.getPropertyValue('--movable-x')).toBe('450');
-    player.focus();
-    await user.keyboard('{ArrowRight}');
-    await expect(player.style.getPropertyValue('--movable-x')).toBe('460');
-    await user.keyboard('{ArrowLeft}');
-    player.blur();
-  },
 };

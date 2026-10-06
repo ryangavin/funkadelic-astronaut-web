@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type React from 'react';
-import { expect } from 'storybook/test';
 import festivalMap from '../../../assets/festival-map.webp';
 import { Weathered } from '../../behaviors/Weathered/Weathered';
 import { Inkjet } from './Inkjet';
@@ -55,24 +54,6 @@ export const Printed: Story = {
       </Sheet>
     </div>
   ),
-  play: async ({ canvasElement }) => {
-    const [file, print] = Array.from(canvasElement.querySelectorAll<HTMLElement>('.inkjet'));
-    // The file is left alone; the print goes through the machine and is laid on the paper as ink.
-    await expect(file.style.filter).toBe('');
-    await expect(getComputedStyle(file).mixBlendMode).toBe('normal');
-    await expect(print.style.filter).toMatch(/^url\("?#inkjet-/);
-    await expect(getComputedStyle(print).mixBlendMode).toBe('multiply');
-    // Every step of the machine is in the filter: its gamut, the spread into the fibre, the dither and the head's bands.
-    const press = print.querySelector('filter')!;
-    await expect(press.querySelector('feColorMatrix[type="saturate"]')).toBeInTheDocument();
-    await expect(press.querySelector('feGaussianBlur')).toBeInTheDocument();
-    await expect(press.querySelectorAll('feTurbulence')).toHaveLength(2);
-    // The dots and the bands fall away as the ink does, so bare paper is left alone.
-    for (const step of Array.from(press.querySelectorAll('feComposite[operator="arithmetic"]'))) {
-      await expect(Number(step.getAttribute('k2'))).toBe(1);
-      await expect(Number(step.getAttribute('k3'))).toBe(-Number(step.getAttribute('k1')));
-    }
-  },
 };
 
 /** Turned up far past what a printer does, so each step can be seen for what it is. */

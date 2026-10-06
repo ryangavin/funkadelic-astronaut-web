@@ -67,16 +67,8 @@ export const DESK_FIELDS = [
 type StripField = (typeof CAMERA_FIELDS | typeof DESK_FIELDS)[number];
 
 type RoomArgs = RoomProps & RoomStoryControls;
-/** Play functions have no native way to set args, so the scene publishes one. */
+/** The scene's current args, and how the camera strip changes them: `live` while dragging, `set` when let go. */
 export type RoomSeam = { args: RoomArgs; set: (next: Partial<RoomArgs>) => void; live: (next: Partial<RoomArgs>) => void };
-type SeamHost = HTMLDivElement & { __roomSeam?: RoomSeam };
-
-/** Read the seam a rendered room experiment published for its play function. */
-export function roomSeam(canvasElement: HTMLElement): RoomSeam {
-  const host = canvasElement.querySelector<SeamHost>('.room-scene');
-  if (!host?.__roomSeam) throw new Error('No room scene is rendered; RoomExperiment publishes the seam.');
-  return host.__roomSeam;
-}
 
 const reading = (unit: 'mm' | '°', value: number) => unit === 'mm' ? `${value.toFixed(0)} mm · ${(value / 25.4).toFixed(1)} in` : `${value.toFixed(0)}${unit}`;
 
@@ -141,7 +133,6 @@ export function RoomScene({ seam, children }: { seam: RoomSeam; children: ReactN
       role="region"
       aria-label="Room preview"
       tabIndex={0}
-      ref={(node: SeamHost | null) => { if (node) node.__roomSeam = seam; }}
     >{children}</div>
     <CameraStrip seam={seam} />
   </div>;

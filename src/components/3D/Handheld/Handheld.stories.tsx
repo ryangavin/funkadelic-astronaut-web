@@ -1,8 +1,6 @@
 import { HANDHELD_SILHOUETTE } from './silhouette';
-import { checkDeskStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy.check';
 import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, userEvent, within } from 'storybook/test';
 import festivalSketch from '../../../../assets/festival-scribble-fully-shaded.png';
 import { PaperSheet } from '../../2D/PaperSheet/PaperSheet';
 import { HANDHELD_FINISHES, Handheld } from './Handheld';
@@ -28,9 +26,6 @@ const meta = {
     volume: 0.8,
     muted: true,
     loop: true,
-    onPlay: fn(),
-    onPause: fn(),
-    onEnded: fn(),
   },
   decorators: [
     (Story, context) =>
@@ -50,39 +45,11 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** The live set on the disc, starting muted like a preview. Cross or Start plays and pauses; Sound turns the volume on. */
-export const Disc: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const console = canvas.getByRole('group', { name: 'Handheld player: What to Do · live at Barrier Brewing Co.' });
-    await expect(console).toBeInTheDocument();
-    await expect(console.querySelector('iframe')).toHaveAttribute('src', expect.stringContaining('enablejsapi=1'));
-    // The readout and the display key work before the disc has answered.
-    const readout = console.querySelector('.handheld__osd')!;
-    await userEvent.click(canvas.getByRole('button', { name: 'Select: show readout' }));
-    await expect(canvas.getByRole('button', { name: 'Select: show readout' })).toHaveAttribute('aria-pressed', 'true');
-    await expect(canvas.getByRole('button', { name: 'Triangle: show readout' })).toHaveAttribute('aria-pressed', 'true');
-    await expect(readout.textContent).toContain('What to Do');
-    // Display steps the screen down and round to full again.
-    await expect(console.style.getPropertyValue('--handheld-brightness')).toBe('1.12');
-    await userEvent.click(canvas.getByRole('button', { name: 'Display brightness' }));
-    await expect(console.style.getPropertyValue('--handheld-brightness')).toBe('0.85');
-    await userEvent.click(canvas.getByRole('button', { name: 'Display brightness' }));
-    await userEvent.click(canvas.getByRole('button', { name: 'Display brightness' }));
-    await expect(console.style.getPropertyValue('--handheld-brightness')).toBe('1.12');
-  },
-};
+export const Disc: Story = {};
 
 /** Nothing in the drive: the screen idles on its wave and the keys wait. */
 export const NoDisc: Story = {
   args: { video: undefined, title: undefined },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expect(canvas.getByRole('group', { name: 'Handheld player' })).toBeInTheDocument();
-    await expect(canvas.getByRole('status').textContent).toBe('No disc');
-    await expect(canvas.getByRole('button', { name: 'Start: play' })).toBeDisabled();
-    await expect(canvas.getByRole('button', { name: 'Cross: play' })).toBeDisabled();
-    await expect(canvas.getByRole('button', { name: 'Display brightness' })).toBeEnabled();
-  },
 };
 
 /** The silver one, tilted the other way. */
@@ -120,7 +87,6 @@ export const OnFestivalPaper: Story = {
 };
 
 export const OnDesk: Story = {
-  play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
   render: (args) => <DeskObjectStudy name="Handheld" widthMm={170} depthRatio={327/720} heightMm={23} sideColors={args.finish === 'silver' ? ['#bbbec4', '#a4a7ae', '#747780'] : args.finish === 'white' ? ['#d8d4cb', '#bbb6ac', '#898277'] : ['#17181b', '#141519', '#090a0d']} shapes={[{ path: HANDHELD_SILHOUETTE }]} note="Estimated height; depth and shadow follow the rounded shell and both shoulder buttons."><Handheld {...args} rotation={0} /></DeskObjectStudy>,

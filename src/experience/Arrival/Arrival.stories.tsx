@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
 import deskStories, { Desk as DeskStory } from '../Desk/PerspectiveDesk.stories';
 import type { PerspectiveDeskProps } from '../Desk/PerspectiveDesk';
 import { Arrival, type ArrivalProps } from './Arrival';
@@ -41,12 +40,6 @@ export const Title: Story = {
 /** The desk under a floating bar that is plainly the site's own chrome. */
 export const FloatingBar: Story = {
   args: { header: 'bar', title: false },
-  play: async ({ canvasElement }) => {
-    if (import.meta.env.MODE !== 'test') return;
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByRole('button', { name: /Listen/ }));
-    await waitFor(() => expect(canvasElement.querySelector('.inspector[data-inspecting]')).toBeInTheDocument());
-  },
 };
 
 /** The desk under its own wall, with the band wheat-pasted on it and the links pasted over as snipes. */

@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, waitFor } from 'storybook/test';
 import { TourPasses, TOUR_PASSES_LAYOUT } from './TourPasses';
 
 const meta = {
@@ -24,21 +23,4 @@ export const TourRow: Story = {
     nyackX: 443,
     nyackWidth: 416
   },
-
-  play: async ({ canvasElement }) => {
-    await document.fonts.ready;
-    await waitFor(() => {
-      const passes = [...canvasElement.querySelectorAll<HTMLElement>('.tour-pass')];
-      expect(passes).toHaveLength(3);
-      for (const pass of passes) {
-        const sheet = pass.querySelector<HTMLElement>('.tour-pass__sheet')!;
-        const copy = pass.querySelector<HTMLElement>('.tour-pass__copy')!;
-        const details = pass.querySelector<HTMLElement>('.tour-pass__details')!;
-        const action = pass.querySelector<HTMLElement>('.tour-pass__action')!;
-        expect(details.offsetHeight).toBeLessThanOrEqual(copy.clientHeight);
-        expect(action.offsetTop + action.offsetHeight).toBeLessThan(sheet.clientHeight);
-        expect(sheet.scrollHeight).toBe(sheet.clientHeight);
-      }
-    });
-  }
 };

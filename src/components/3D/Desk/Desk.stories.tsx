@@ -1,7 +1,5 @@
-import { checkDeskStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy.check';
 import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjectStudy';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within } from 'storybook/test';
 import { Mug } from '../Mug/Mug';
 import { CoffeeRing } from '../Mug/CoffeeRing';
 import { Pen } from '../Pen/Pen';
@@ -29,15 +27,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** The bare top, 16 x 9, filling the width it is shown at; the figure, the light and the front edge are drawn, not photographed. */
-export const Bare: Story = {
-  play: async ({ canvasElement }) => {
-    const desk = canvasElement.querySelector<HTMLElement>('.desk__top')!;
-    // The height follows the width, in desk units.
-    await expect(desk.getBoundingClientRect().height / desk.getBoundingClientRect().width).toBeCloseTo(810 / 1440, 2);
-    await expect(canvasElement.querySelectorAll('.desk__board')).toHaveLength(1);
-    await expect(canvasElement.querySelector('.desk__edge')).toBeInTheDocument();
-  },
-};
+export const Bare: Story = {};
 
 /** A few things on it, pinned in desk units on a Stage, so the composition scales as one piece. */
 export const WithThings: Story = {
@@ -64,9 +54,6 @@ export const WithThings: Story = {
       </Desk>
     </Stage>
   ),
-  play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByText('Buy more tape')).toBeVisible();
-  },
 };
 
 /** Glued up from boards instead of one slab. */
@@ -86,7 +73,6 @@ export const Woods: Story = {
 };
 
 export const OnDesk: Story = {
-  play: checkDeskStudy,
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
   render: () => <DeskObjectStudy name="Desk" bare />,

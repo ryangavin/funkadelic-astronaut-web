@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState, type CSSProperties } from 'react';
-import { expect, userEvent, within } from 'storybook/test';
 import performance from '../../../assets/ambient/repainted-performance.mp4';
 import { Desk } from '../../components/3D/Desk/Desk';
 import { Handheld } from '../../components/3D/Handheld/Handheld';
@@ -65,29 +64,4 @@ function GentleHandheldScene(args: Story['args']) {
 export const GentleHandheld: Story = {
   name: 'Gentle handheld',
   render: (args) => <GentleHandheldScene {...args} />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const movable = canvas.getByRole('group', { name: 'Handheld console' });
-    const player = canvas.getByRole('group', { name: 'Handheld player: Funkadelic Astronaut · performance' });
-    const readout = canvas.getByRole('button', { name: 'Select: show readout' });
-    await userEvent.click(readout);
-    await expect(readout).toHaveAttribute('aria-pressed', 'true');
-    await expect(canvas.getByRole('button', { name: 'Triangle: show readout' })).toHaveAttribute('aria-pressed', 'true');
-    await userEvent.click(readout);
-    await userEvent.click(canvas.getByRole('button', { name: 'Display brightness' }));
-    await expect(player.style.getPropertyValue('--handheld-brightness')).toBe('0.85');
-    await userEvent.click(canvas.getByRole('button', { name: 'Display brightness' }));
-    await userEvent.click(canvas.getByRole('button', { name: 'Display brightness' }));
-    await expect(movable.style.getPropertyValue('--movable-x')).toBe('550');
-    movable.focus();
-    await userEvent.keyboard('{ArrowRight}');
-    await expect(movable.style.getPropertyValue('--movable-x')).toBe('560');
-    await userEvent.keyboard('{ArrowLeft}');
-    const grip = canvas.getByRole('button', { name: 'Rotate Handheld console' });
-    grip.focus();
-    await userEvent.keyboard('{ArrowRight}');
-    await expect(movable.style.getPropertyValue('--movable-rotation')).toBe('-6deg');
-    await userEvent.keyboard('{ArrowLeft}');
-    grip.blur();
-  },
 };

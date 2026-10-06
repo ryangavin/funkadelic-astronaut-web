@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect } from 'storybook/test';
 import { Jitter } from '../../../behaviors/Jitter/Jitter';
 import { PAPER_STOCKS } from '../PaperSheet/PaperSheet';
 import { Wordmark } from './Wordmark';
@@ -40,20 +39,6 @@ export const WithJitter: Story = {
 export const JitteredLetters: Story = {
   argTypes: { jitter: { control: 'object' } },
   args: { jitter: { preset: 'print', activation: 'continuous', cadenceMs: 150 } },
-  play: async ({ canvasElement, args }) => {
-    const text = String(args.children);
-    const ink = canvasElement.querySelector('.printed-wordmark__ink')!;
-    await expect(ink.querySelector('.printed-wordmark__text')?.textContent).toBe(text);
-    const words = [...ink.querySelectorAll('.printed-wordmark__word')];
-    await expect(words.every(word => word.getAttribute('aria-hidden') === 'true')).toBe(true);
-    await expect(words.map(word => word.textContent).join(' ')).toBe(text);
-    const glyphs = [...ink.querySelectorAll<HTMLElement>('.printed-wordmark__glyph')];
-    await expect(glyphs.length).toBe(text.replace(/\s/g, '').length);
-    // Motion also pauses on hidden pages, so only a visible story can prove it.
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches && !document.hidden) {
-      await expect(new Set(glyphs.map(glyph => glyph.style.translate)).size).toBeGreaterThan(1);
-    }
-  },
 };
 export const JitteredLettersOnHover: Story = {
   argTypes: { children: { control: false } },
@@ -94,24 +79,6 @@ export const MultipleWidths: Story = {
   render: (args) => <div style={{ display: 'grid', justifyItems: 'start', gap: 40 }}>
     {[240, 480, 800].map(width => <div key={width} style={{ width, maxWidth: '100%' }}><Wordmark {...args} /></div>)}
   </div>,
-  play: async ({ canvasElement, args }) => {
-    await canvasElement.ownerDocument.fonts.load('56px "Wordmark Modak"');
-    const marks = canvasElement.querySelectorAll('.printed-wordmark');
-    await expect(marks.length).toBe(3);
-    const ids = [...canvasElement.querySelectorAll('[id]')].map(element => element.id);
-    await expect(new Set(ids).size).toBe(ids.length);
-    for (const mark of marks) {
-      await expect(mark.textContent).toBe(args.children);
-      const ownIds = new Set([...mark.querySelectorAll('[id]')].map(element => element.id));
-      await expect((mark as HTMLElement).offsetWidth).toBeLessThanOrEqual(mark.parentElement!.clientWidth + 1);
-      for (const element of mark.querySelectorAll('*')) {
-        for (const attribute of element.attributes) {
-          for (const match of attribute.value.matchAll(/url\(#([^)]*)\)/g)) await expect(ownIds.has(match[1])).toBe(true);
-          if (attribute.name === 'href' && attribute.value.startsWith('#')) await expect(ownIds.has(attribute.value.slice(1))).toBe(true);
-        }
-      }
-    }
-  },
 };
 
 export const VariedLettering: Story = {

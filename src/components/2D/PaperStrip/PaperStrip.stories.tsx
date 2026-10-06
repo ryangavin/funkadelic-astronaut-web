@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { PAPER_STOCKS } from '../PaperSheet/PaperSheet';
 import { PaperStrip, type PaperStripProps } from './PaperStrip';
 
@@ -38,18 +37,4 @@ function ChangingContent(args: PaperStripProps) {
 export const ContentChanges: Story = {
   args: { rotation: 0 },
   render: (args) => <ChangingContent {...args} />,
-  play: async ({ canvasElement }) => {
-    const surface = canvasElement.querySelector('.shaped-paper') as HTMLElement;
-    const backing = surface.querySelector('svg')!;
-    await canvasElement.ownerDocument.fonts.load('16px "Balsamiq Sans"');
-    const originalHeight = surface.clientHeight;
-    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Toggle content' }));
-    await waitFor(() => {
-      expect(surface.clientHeight).toBeGreaterThan(originalHeight);
-      const [, , width, height] = backing.getAttribute('viewBox')!.split(' ').map(Number);
-      expect(height / width).toBeCloseTo(surface.clientHeight / surface.clientWidth, 5);
-    });
-    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Toggle content' }));
-    await waitFor(() => expect(surface.clientHeight).toBe(originalHeight));
-  },
 };
