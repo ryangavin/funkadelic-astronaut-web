@@ -11,8 +11,13 @@ import { test as base, expect, type Locator, type Page } from '@playwright/test'
  * - `failOnErrors`: the test fails if the site logs a console error, throws an
  *   uncaught error, or one of its own requests fails or answers 4xx/5xx (so a
  *   missing built asset fails every test that loads the page).
+ *
+ * A test that visits a broken link on purpose lists its path in the
+ * `brokenLinks` option; that page's own 404 (the answer and the console line
+ * Chrome logs for it) is expected there, and nothing else is excused.
  */
 type Fixtures = {
+  brokenLinks: string[];
   stubThirdParties: void;
   failOnErrors: void;
 };
@@ -20,6 +25,8 @@ type Fixtures = {
 const STUB_PAGE = '<!doctype html><html lang="en"><head><title>Stub</title></head><body><main><h1>Stubbed third-party page</h1></main></body></html>';
 
 export const test = base.extend<Fixtures>({
+  brokenLinks: [[], { option: true }],
+
   stubThirdParties: [
     async ({ context, baseURL }, use) => {
       const ownOrigin = new URL(baseURL!).origin;
@@ -38,12 +45,17 @@ export const test = base.extend<Fixtures>({
   ],
 
   failOnErrors: [
-    async ({ context, baseURL }, use) => {
+    async ({ context, baseURL, brokenLinks }, use) => {
       const ownOrigin = new URL(baseURL!).origin;
       const errors: string[] = [];
+      const isBrokenLink = (url: string, status: number) =>
+        status === 404 && new URL(url).origin === ownOrigin && brokenLinks.includes(new URL(url).pathname);
       const watch = (page: Page) => {
         page.on('console', message => {
-          if (message.type() === 'error') errors.push(`console error: ${message.text()}`);
+          if (message.type() !== 'error') return;
+          const source = message.location().url;
+          if (source && / 404 /.test(message.text()) && isBrokenLink(source, 404)) return;
+          errors.push(`console error: ${message.text()}`);
         });
         page.on('pageerror', error => errors.push(`uncaught error: ${error.message}`));
         page.on('requestfailed', request => {
@@ -58,6 +70,7 @@ export const test = base.extend<Fixtures>({
           errors.push(`request failed: ${request.url()} (${request.failure()?.errorText})`);
         });
         page.on('response', response => {
+          if (isBrokenLink(response.url(), response.status())) return;
           if (new URL(response.url()).origin === ownOrigin && response.status() >= 400) {
             errors.push(`HTTP ${response.status()}: ${response.url()}`);
           }

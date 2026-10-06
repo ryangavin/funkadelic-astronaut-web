@@ -1,4 +1,6 @@
 /// <reference types="vitest/config" />
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import { previewLabelHead } from './scripts/preview-label.mjs';
@@ -21,6 +23,31 @@ export default defineConfig({
         res.writeHead(302, { Location: req.url.replace('/storybook', '/storybook/') });
         res.end();
       });
+    },
+  }, {
+    // `vite preview` (and so the e2e tests) answers like GitHub Pages: a path with no file gets dist/404.html with
+    // status 404, not Vite's SPA fallback to index.html. `mpa` turns that fallback off for preview only (the dev
+    // server keeps its default); existing `.html` files and `/` → `/index.html` still resolve, and the middleware
+    // below, which runs after the static files and that rewrite, answers everything left over.
+    name: 'pages-not-found',
+    config: (_config, { isPreview }) => (isPreview ? { appType: 'mpa' } : undefined),
+    configurePreviewServer(server) {
+      const outDir = resolve(server.config.root, server.config.build.outDir);
+      return () => {
+        server.middlewares.use((req, res, next) => {
+          let pathname: string;
+          try {
+            pathname = decodeURIComponent(new URL(req.url ?? '/', 'http://preview').pathname);
+          } catch {
+            pathname = '';
+          }
+          const file = join(outDir, pathname);
+          if (pathname && file.startsWith(outDir) && existsSync(file) && statSync(file).isFile()) return next();
+          res.statusCode = 404;
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          res.end(readFileSync(join(outDir, '404.html')));
+        });
+      };
     },
   }],
   server: process.env.UNIFIED_PREVIEW ? {
