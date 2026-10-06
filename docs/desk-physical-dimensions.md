@@ -3,8 +3,12 @@
 One millimetre is 1.2 desk units (`src/geometry/physicalScale.ts`). The desktop is
 1200 × 800 mm, 750 mm above the floor. Camera distance and placements use desk
 units; viewport fitting and preview zoom do not change physical dimensions.
-Object base widths in `DeskObjects.tsx` are millimetres, converted once. A saved
-`placement.scale` is a deliberate uniform size override, with default 1.
+Object base widths, depth ratios, heights and Solid heights live in
+`src/experience/Desk/deskObjectSizes.ts` (plain TypeScript, drawing on each
+component's `size.ts`), in millimetres, converted once by `DeskObjects.tsx`. A
+thing drawn in a Solid must stand as tall as its shadow is cast from:
+`solid.height × widthMm = heightMm`, checked by `tests/desk-object-heights.test.cjs`.
+A saved `placement.scale` is a deliberate uniform size override, with default 1.
 
 Dimensions below are width × depth × height, in millimetres. Existing art remains
 in its own coordinates. A box containing whitespace is not a physical footprint.

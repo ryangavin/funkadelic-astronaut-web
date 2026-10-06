@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { BODY, KEYS, type Key, type KeyIcon, keyFor, keyName } from './keyboard';
+import { KEYS, type Key, type KeyIcon, keyFor, keyName } from './keyboard';
 import { PrintedLabel } from './PrintedLabel';
 import { STOCK, TAPE_WIDTHS, tapeMm, tapeUnits, widthLabel, type Margin, type TapeStock, type TapeWidth } from './tape';
 import './LabelBro.css';
@@ -8,11 +8,8 @@ import './LabelBro.css';
 /** How many characters the machine will hold before it says the label is full. */
 const LABEL_BRO_LIMIT = 32;
 
-/** How thick the machine is, as a multiple of the width of its drawing: 78 mm against 183. */
-export const LABEL_BRO_HEIGHT = 312 / BODY.w;
-
-/** Where it meets the desk within its own drawing: the middle of its footprint, since it sits flat on all of it. */
-export const LABEL_BRO_FOOT = { x: 0.5, y: 0.5 };
+/* The machine's physical size lives in ./size.ts, where the Node tests can read it. */
+export { LABEL_BRO_FOOT, LABEL_BRO_HEIGHT } from './size';
 
 /** How long a key stays down after a press, in milliseconds. */
 const PRESS_MS = 120;
