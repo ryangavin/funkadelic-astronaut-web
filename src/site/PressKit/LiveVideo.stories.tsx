@@ -98,6 +98,16 @@ export const WaitsForThePageToLoad: Story = {
   },
 };
 
+/** A page whose load event never comes (a slow third-party embed holding it up) still gets its loop, after a short wait. */
+export const DoesNotWaitForeverOnTheLoadEvent: Story = {
+  beforeEach: holdPageLoad,
+  play: async ({ canvasElement }) => {
+    const loop = canvasElement.querySelector('video');
+    await expect(loop).not.toHaveAttribute('src');
+    await waitFor(() => expect(loop).toHaveAttribute('src', NYACK_SET.loop), { timeout: 4000 });
+  },
+};
+
 /** On a narrow screen the loop is the smaller cut. */
 export const LoopOnAPhone: Story = {
   globals: { viewport: { value: 'phone' } },

@@ -28,6 +28,9 @@ const prefersStill = () => typeof matchMedia === 'function' && matchMedia('(pref
 /** The site's narrow breakpoint (tokens.css). */
 const NARROW = '(max-width: 679px)';
 
+/** The longest the loop waits for the page's load event after hydration before it starts anyway. */
+const LOOP_WAIT_MS = 2500;
+
 /**
  * The live set as the page's hero: a silent cut of it loops, muted, once
  * the page has loaded, served from the site so it starts at once with no
@@ -49,31 +52,32 @@ export function LiveVideo({ video, loop, narrowLoop, poster, title, label, class
     if (prefersStill()) setMode(current => (current === 'loop' ? 'still' : current));
   }, []);
 
-  // The loop waits until the page has loaded and the browser is next idle (after it has painted), so it never competes
-  // with the first paint for the network.
+  // The loop waits for the page's load event, so it doesn't compete with the first screen for the network, but no
+  // longer than LOOP_WAIT_MS: a slow third party (Bandcamp's player) holding up `load` must not hold up the loop.
+  // Either way it starts in a task after the next frame has painted.
   useEffect(() => {
     if (mode !== 'loop' || loopSrc || prefersStill()) return;
     const choose = () => setLoopSrc(narrowLoop && matchMedia(NARROW).matches ? narrowLoop : loop);
     let frame: number | undefined;
-    let timer: number | undefined;
-    let idle: number | undefined;
-    // The next frame, then a task after it has painted, then the browser's next idle moment (Safari has no
-    // requestIdleCallback; there the task after the paint is enough).
-    const afterPaint = () => {
+    let afterFrame: number | undefined;
+    let started = false;
+    const start = () => {
+      if (started) return;
+      started = true;
+      window.removeEventListener('load', start);
+      window.clearTimeout(fallback);
       frame = requestAnimationFrame(() => {
-        timer = window.setTimeout(() => {
-          if (typeof requestIdleCallback === 'function') idle = requestIdleCallback(choose, { timeout: 1000 });
-          else choose();
-        });
+        afterFrame = window.setTimeout(choose);
       });
     };
-    if (document.readyState === 'complete') afterPaint();
-    else window.addEventListener('load', afterPaint, { once: true });
+    const fallback = window.setTimeout(start, LOOP_WAIT_MS);
+    if (document.readyState === 'complete') start();
+    else window.addEventListener('load', start, { once: true });
     return () => {
-      window.removeEventListener('load', afterPaint);
+      window.removeEventListener('load', start);
+      window.clearTimeout(fallback);
       if (frame !== undefined) cancelAnimationFrame(frame);
-      if (timer !== undefined) window.clearTimeout(timer);
-      if (idle !== undefined) cancelIdleCallback(idle);
+      if (afterFrame !== undefined) window.clearTimeout(afterFrame);
     };
   }, [mode, loopSrc, loop, narrowLoop]);
 

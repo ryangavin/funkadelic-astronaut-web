@@ -13,8 +13,8 @@
 // - assets/festival-map-1010.webp and festival-map-505.webp: the page background, from assets/festival-map.png. It sits
 //   under a dark veil and is upscaled to cover the page, so quality 70 reads the same as the original 92. Phones see
 //   only thin gutters of it, upscaled about 4×, so their 505 copy goes down to quality 20.
-// - assets/epk/live-poster.webp: the live video's poster (the frame at 0:30), re-encoded at quality 43 from the poster
-//   as first committed (read from git, so reruns give the same bytes): 31% smaller, SSIM 0.98 against that original.
+// - assets/epk/live-poster.webp: the live video's poster (the frame at 0:30), re-encoded at quality 43 from its master,
+//   assets/epk/live-poster-master.webp (the poster as first made): 31% smaller, SSIM 0.98 against it.
 import { execFileSync } from 'node:child_process';
 import { statSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
@@ -58,11 +58,8 @@ const map = (size, quality, file) => {
 map(null, '70', asset('festival-map-1010.webp'));
 map('505x779', '20', asset('festival-map-505.webp'));
 
-/** The commit that added the original live poster, the source of the lighter one. */
-const POSTER_COMMIT = '44c08cad8ea08ece31fd5b9098d36a8dbe09ed44';
+// The poster's master is the original 1280×720 frame, kept as assets/epk/live-poster-master.webp (never published:
+// the site imports only live-poster.webp).
 const poster = asset('epk/live-poster.webp');
-execFileSync('magick', ['webp:-', '-quality', '43', '-define', 'webp:method=6', poster], {
-  input: execFileSync('git', ['show', `${POSTER_COMMIT}:assets/epk/live-poster.webp`], { cwd: root }),
-  stdio: ['pipe', 'ignore', 'inherit'],
-});
+run('magick', asset('epk/live-poster-master.webp'), '-quality', '43', '-define', 'webp:method=6', poster);
 report(poster);
