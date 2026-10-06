@@ -4,6 +4,9 @@ import { usePlaces } from '../../behaviors/Movable/places';
 
 export type RoomArrangement = Record<string, Place>;
 
+/** The most of a flight one frame can account for: about six frames at 60 Hz. */
+const ARRANGE_MAX_STEP_MS = 100;
+
 /** Scene-owned target layouts, animated through the Room's shared place store.
  * Shadows and elevated drawings see the same intermediate positions as objects.
  * A new arrangement interrupts the old flight from its current position. A user
@@ -27,9 +30,14 @@ export function useRoomArrangement() {
       return;
     }
     const flights = Object.entries(targets).map(([id, to]) => ({ id, to, from: places.get(id) ?? to, last: places.get(id) }));
-    const start = performance.now();
+    // A stalled frame (often the one mounting whatever started the flight)
+    // advances it by one step at most, so slow frames slow the motion rather than skip it.
+    let last = performance.now();
+    let elapsed = 0;
     const tick = (now: number) => {
-      const progress = Math.min(1, (now - start) / duration);
+      elapsed += Math.min(Math.max(0, now - last), ARRANGE_MAX_STEP_MS);
+      last = now;
+      const progress = Math.min(1, elapsed / duration);
       const ease = 1 - (1 - progress) ** 3;
       for (let index = flights.length - 1; index >= 0; index--) {
         const flight = flights[index];
