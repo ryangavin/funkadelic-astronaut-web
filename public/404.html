@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Funkadelic Astronaut</title>
+  <meta name="robots" content="noindex">
+  <!--
+    GitHub Pages serves this page for every missing path, at the depth that was asked for, so a relative URL here
+    would resolve against the broken path. Every URL is absolute from the site root instead.
+  -->
+  <!-- Without JS there is no way to know the root or keep the hash, so the refresh goes to the domain's root. -->
+  <noscript><meta http-equiv="refresh" content="0; url=/"></noscript>
+  <script>
+    // The site root: `/` on funkadelicastronaut.com; on a `<user>.github.io/<repo>/` project site, the first path segment.
+    var repo = location.pathname.split('/')[1];
+    var root = /\.github\.io$/.test(location.hostname) && repo ? '/' + repo + '/' : '/';
+    // If the root itself is missing, sending the visitor there would loop; the link below is all that's left.
+    if (location.pathname !== root) location.replace(root + location.hash);
+  </script>
+</head>
+<body>
+  <main>
+    <p>This page isn't here: <a href="/">go to Funkadelic Astronaut</a>.</p>
+  </main>
+  <script>document.querySelector('a').href = root + location.hash;</script>
+</body>
+</html>

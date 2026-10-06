@@ -1,3 +1,4 @@
+import { BAND_NAME } from './support/content';
 import { expect, openSite, test } from './support/fixtures';
 
 /** The page as it arrives: it loads cleanly, says what it is, and old addresses still find it. */
@@ -36,6 +37,24 @@ test('a shared link previews with a title, description, image and canonical addr
   expect(served.status(), `${imagePath} is in the build`).toBe(200);
   expect(served.headers()['content-type']).toMatch(/^image\//);
 });
+
+// Broken links floating around (a mistyped page, an old path, a link to a section on a page that never existed)
+// get GitHub Pages' 404.html, which sends the visitor on to the band. The hash comes along.
+for (const [broken, hash] of [
+  ['some/broken/path', ''],
+  ['epk/', ''],
+  ['old/press/kit.html', '#book'],
+]) {
+  test.describe(() => {
+    test.use({ brokenLinks: [`/${broken}`] });
+
+    test(`a visitor following a broken /${broken}${hash} link lands on the band's page`, async ({ page, baseURL }) => {
+      await page.goto(`${broken}${hash}`);
+      await expect(page).toHaveURL(`${baseURL}${hash}`);
+      await expect(page.getByRole('heading', { level: 1, name: BAND_NAME })).toBeVisible();
+    });
+  });
+}
 
 for (const old of ['press-kit.html', 'classic.html']) {
   test(`a visitor following an old ${old} link lands on the press kit`, async ({ page, baseURL }) => {
