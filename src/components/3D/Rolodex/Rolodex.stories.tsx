@@ -2,6 +2,7 @@ import { DeskObjectStudy } from '../../../experience/debug/ObjectStudy/DeskObjec
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ROLODEX_CARDS, ROLODEX_FINISHES, Rolodex } from './Rolodex';
 import { RolodexCard } from './RolodexCard';
+import { ROLODEX_RATIO, ROLODEX_SOLID, ROLODEX_TALL, ROLODEX_WIDTH_MM } from './size';
 import type { RolodexEntry } from './wheel';
 
 const meta = {
@@ -140,5 +141,5 @@ export const AwkwardCards: Story = {
 export const OnDesk: Story = {
   name: 'On desk',
   parameters: { layout: 'fullscreen', composition: true },
-  render: (args) => <DeskObjectStudy name="Rolodex" widthMm={137.05} depthRatio={624/518} heightMm={107.95} solid={{ localCoordinates: true, height: 408/518, foot: { x: .5, y: 312/518 } }} note="Dimensions derived from the existing inch-scaled drawing. Simplified whole-file shadow; individual cards are not separate occluders."><Rolodex {...args} rotation={0} loose={false} /></DeskObjectStudy>,
+  render: (args) => <DeskObjectStudy name="Rolodex" widthMm={ROLODEX_WIDTH_MM} depthRatio={ROLODEX_RATIO} heightMm={ROLODEX_TALL} solid={ROLODEX_SOLID} note="Dimensions derived from the existing inch-scaled drawing. Simplified whole-file shadow; individual cards are not separate occluders."><Rolodex {...args} rotation={0} loose={false} /></DeskObjectStudy>,
 };

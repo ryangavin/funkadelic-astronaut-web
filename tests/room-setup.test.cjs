@@ -127,3 +127,52 @@ test('horizontal FOV sets physical focal length without changing eye, gaze or pr
     for(const fov of [0,-1,180,Infinity,NaN]) assert.throws(()=>roomFraming(camera,share,180,fov), /field of view/);
   }
 });
+
+test('eye height, setback and head tilt give the angle, the distance along the gaze and where the gaze lands on the desk', () => {
+  for (const [eyeHeightMm, viewerSetbackMm, headTiltDegrees] of [[1650, 650, DEFAULT_HEAD_TILT_DEGREES], [1650, 650, 60], [1200, 0, 90], [2000, 300, 120]]) {
+    const { camera } = roomSetup({ eyeHeightMm, viewerSetbackMm, headTiltDegrees });
+    const pitch = headTiltDegrees * Math.PI / 180, above = eyeHeightMm - 750;
+    near(camera.angle, headTiltDegrees);
+    near(camera.depth, above / Math.sin(pitch) * 1.2);
+    // The gaze reaches the desk top above/tan(pitch) in front of the eye; the desk's back edge is y = 0.
+    near(camera.targetY, (viewerSetbackMm - above / Math.tan(pitch)) * 1.2);
+  }
+  // Looking straight down, the gaze lands right under the eye.
+  near(roomSetup({ eyeHeightMm: 1650, viewerSetbackMm: 400, headTiltDegrees: 90 }).camera.targetY, 480);
+});
+
+test('doubling the eye\'s height above the desk and its setback doubles the distance and keeps the angle', () => {
+  for (const [above, setback] of [[900, 650], [400, 200], [1200, 0]]) for (const aimAtBackEdge of [false, true]) {
+    const headTiltDegrees = aimAtBackEdge ? Math.atan2(above, setback) * 180 / Math.PI : DEFAULT_HEAD_TILT_DEGREES;
+    const one = roomSetup({ eyeHeightMm: 750 + above, viewerSetbackMm: setback, headTiltDegrees }).camera;
+    const two = roomSetup({ eyeHeightMm: 750 + 2 * above, viewerSetbackMm: 2 * setback, headTiltDegrees }).camera;
+    near(two.angle, one.angle);
+    near(two.depth, 2 * one.depth);
+    near(two.targetY, 2 * one.targetY);
+    if (aimAtBackEdge) near(two.targetY, 0);
+  }
+});
+
+test('a wider or narrower lens scales the frame by tan(fov/2) and leaves the aim point where it was', () => {
+  const camera = roomSetup().camera, before = { ...camera };
+  const base = roomFraming(camera, .8, 180, 60);
+  for (const fov of [20, 45, 90, 140]) {
+    const framing = roomFraming(camera, .8, 180, fov);
+    // deskShare is the desk's share of the frame, so the frame's own width goes as 1/deskShare.
+    near(base.deskShare / framing.deskShare, Math.tan(fov * Math.PI / 360) / Math.tan(Math.PI / 6));
+    // The lip, in frame widths, is where the gaze sits; it must not move with the lens.
+    near(framing.lip * framing.deskShare, base.lip * base.deskShare);
+  }
+  assert.deepEqual(camera, before);
+});
+
+test('invalid camera inputs throw RangeErrors that name what is wrong', () => {
+  assert.throws(() => roomSetup({ deskWidthMm: 0 }), { name: 'RangeError', message: 'deskWidthMm must be finite and positive' });
+  assert.throws(() => roomSetup({ deskEdgeMm: -1 }), { name: 'RangeError', message: 'deskEdgeMm must be finite and nonnegative' });
+  assert.throws(() => roomSetup({ viewerSetbackMm: -1 }), { name: 'RangeError', message: 'viewerSetbackMm must be finite and nonnegative' });
+  assert.throws(() => roomSetup({ eyeHeightMm: 700 }), { name: 'RangeError', message: 'eye height above tabletop must be finite and positive' });
+  assert.throws(() => roomSetup({ headTiltDegrees: 0 }), { name: 'RangeError', message: /look angle must be greater than 0 and less than 180/ });
+  assert.throws(() => roomFraming(roomSetup().camera, .8, 180, 180), { name: 'RangeError', message: /horizontal field of view must be greater than 0 and less than 180/ });
+  // A desk taking no share of the frame implies a 180° reference lens, which is rejected the same way.
+  assert.throws(() => roomFraming(roomSetup().camera, 0, 180), { name: 'RangeError', message: /horizontal field of view/ });
+});

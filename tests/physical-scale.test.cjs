@@ -4,6 +4,12 @@ const { DESK_SIZE, PAPER_MM, LAMP_WIDTH, LAMP_HEIGHT, mmToUnits, unitsToMm } = r
 const { elevatedLayer } = require('../src/behaviors/Perspective/elevation.ts');
 const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-8, `${a} differs from ${b}`);
 
+test('one millimetre is 1.2 desk units, in both directions', () => {
+  const { UNITS_PER_MM } = require('../src/geometry/physicalScale.ts');
+  assert.equal(UNITS_PER_MM, 1.2);
+  for (const mm of [1, 10, 750, 1200]) { close(mmToUnits(mm), mm * 1.2); close(unitsToMm(mm * 1.2), mm); }
+});
+
 test('physical scale preserves fractional millimetres and approved desk and paper sizes', () => {
   assert.deepEqual(DESK_SIZE, { width: 1440, depth: 960, height: 900 });
   close(mmToUnits(PAPER_MM.width), 264);
