@@ -8,4 +8,4 @@ Floor, wall, tabletop, edge and lamp follow scene dimensions. The head circle is
 
 A shared lamp placement transform fixes live rotation/scale handling for the existing lamp artwork, lighting rig and pointer inverse. Only the lamp subscribes to its own live placement changes; the surrounding room remains independent. The optional shade point on the shared rig lets other lamp models provide their own outline radius without borrowing the existing lamp's proportions.
 
-Verification: `node --test tests/lamp-placement.test.cjs tests/room-diagram.test.cjs` checks reversible placement transforms, physical camera/target coordinates, lamp heights and orbit projections. Run `PREVIEW_URL=http://127.0.0.1:4175 node tests/room-diagram.browser.mjs` against a unified preview for controls, invalid-edit retention, pointer/keyboard orbit, lamp move/rotation/aim/switch synchronization and desktop/phone layouts.
+Verification: `node --test tests/lamp-placement.test.cjs tests/room-diagram.test.cjs` checks reversible placement transforms, physical camera/target coordinates, lamp heights and orbit projections.

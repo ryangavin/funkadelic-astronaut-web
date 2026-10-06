@@ -1,6 +1,6 @@
 # The legacy poster
 
-The original vanilla-JS poster site lives in `legacy/`: `classic.html`, `press-kit.html`, its runtime scripts (`app.js`, `living-video.js`, `performance-print.js`, `layout-studio.js`, `typography-debug.js` and the rest), `style.css`, `styles/`, `scripts/generate-ambient-sources.cjs` and its tests in `tests/` (`npm run test:legacy`, also run by `npm test`). It is kept for reference but not deployed and not served by `npm run dev`; `/classic.html` and `/press-kit.html` on the public site are noindex redirect stubs to `/` (`public/classic.html`, `public/press-kit.html`). Its React port is **Experience / Poster** (`src/experience/Poster/`, see [experience.md](experience.md)). Unless noted, the paths below are inside `legacy/`.
+The original vanilla-JS poster site lives in `legacy/`: `classic.html`, `press-kit.html`, its runtime scripts (`app.js`, `living-video.js`, `performance-print.js`, `layout-studio.js`, `typography-debug.js` and the rest), `style.css`, `styles/`, and `scripts/generate-ambient-sources.cjs`. It has no tests any more. It is kept for reference but not deployed and not served by `npm run dev`; `/classic.html` and `/press-kit.html` on the public site are noindex redirect stubs to `/` (`public/classic.html`, `public/press-kit.html`). Its React port is **Experience / Poster** (`src/experience/Poster/`, see [experience.md](experience.md)). Unless noted, the paths below are inside `legacy/`.
 
 ## Behavior
 
@@ -20,7 +20,7 @@ Learn contains a manual overview/member gallery. Its verified member content and
 
 Band and Tour continue the header's festival illustration with independent crops from the same asset: upper stages/camp behind Band, and the lower pond/bassist/astronaut scene behind Tour. The Band overview is illustration-only; each member selection places its existing press-kit portrait in a responsive, warm-paper Polaroid above that world. The Polaroid frame and individual biography both use the hero's shared `PaperCutout` scrap treatment for displaced torn edges, exposed fibers, aged stock, flecks and print wear. The photo window retains its faded gloss and inset depth, while the thicker lower margin carries the member's name and role. Biography copy is plain Comic Sans-style ink on a gently rotated scrap; the overview copy remains directly on the illustrated field. Polaroids slide fully across the paper with a brief lift and settle; compact biography copy follows more quietly and leaves room for larger edge navigation.
 
-The inline `printed-ink` SVG filter textures only display lettering. The repeating paper SVG is decorative and cannot intercept input. `overflow:clip` prevents overscanned media from becoming an internally scrollable focus container. The poster's behaviour is covered by the Node tests in `legacy/tests/` (`npm run test:legacy`).
+The inline `printed-ink` SVG filter textures only display lettering. The repeating paper SVG is decorative and cannot intercept input. `overflow:clip` prevents overscanned media from becoming an internally scrollable focus container.
 
 All design-critical typography is served locally: Modak for poster display type, Balsamiq Sans as the open-licensed Comic Sans-style body face, and Pacifico, Caveat and Sacramento for the three live-text member signatures. See [fonts.md](fonts.md) for file provenance and licenses.
 
