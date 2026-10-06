@@ -1,3 +1,5 @@
+import { GENRE, HOME } from '@content/band';
+import { BOOKING_EMAIL } from '@content/links';
 import catalogue from '@content/locales/en.json';
 import type { APIRequestContext, Page } from '@playwright/test';
 import { BANDCAMP_HREF, BAND_NAME, BOOKING_HREF, EARLIER_RELEASES, FEATURED_RELEASE, LISTEN_HREFS, MEMBERS, memberPart, SOCIAL_HREFS } from './support/content';
@@ -133,7 +135,11 @@ test('search engines read the band, its members and its profiles from the struct
   expect(band.name).toBe(await meta(page, 'property', 'og:site_name').getAttribute('content'));
   expect(band.url).toBe(await link(page, 'canonical').getAttribute('href'));
   expect(band.image).toBe(await meta(page, 'property', 'og:image').getAttribute('content'));
-  expect(catalogue.pressKit.dateline.place).toBe(`${band.location.name} · ${band.genre}`);
+  expect(band.genre).toBe(GENRE);
+  expect(band.location.address).toMatchObject({ addressRegion: HOME.region, addressCountry: HOME.country });
+  expect(catalogue.pressKit.dateline.since).toContain(`Est. ${band.foundingDate}`);
+  // Booking goes to the same address as the page's booking link.
+  expect(band.contactPoint).toMatchObject({ contactType: 'booking', email: BOOKING_EMAIL });
 
   // Every member, by name, with what they play.
   expect(band.member.map((role: { member: { name: string }; roleName: string }) => [role.member.name, role.roleName])).toEqual(

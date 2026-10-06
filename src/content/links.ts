@@ -27,7 +27,8 @@ export const BANDCAMP_HREF = { platform: 'bandcamp', href: 'https://funkadelicas
 /** Every platform the band has a link on. */
 export type BandPlatform = (typeof LISTEN_HREFS)[number]['platform'] | (typeof SOCIAL_HREFS)[number]['platform'] | typeof BANDCAMP_HREF.platform;
 
-const BOOKING_EMAIL = 'samluba1@gmail.com';
+/** Where booking enquiries go: Sam. */
+export const BOOKING_EMAIL ='samluba1@gmail.com';
 
 /** Booking goes to Sam, with the subject filled in. */
 export const BOOKING_HREF = `mailto:${BOOKING_EMAIL}?subject=Funkadelic%20Astronaut%20Booking`;

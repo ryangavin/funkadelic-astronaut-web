@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { Plugin } from 'vite';
-import { BANDCAMP_HREF, BOOKING_HREF, LISTEN_HREFS, SOCIAL_HREFS } from '../src/content/links.ts';
+import { GENRE, HOME } from '../src/content/band.ts';
+import { BANDCAMP_HREF, BOOKING_EMAIL, BOOKING_HREF, LISTEN_HREFS, SOCIAL_HREFS } from '../src/content/links.ts';
 import catalogue from '../src/content/locales/en.json' with { type: 'json' };
 import { MEMBERS } from '../src/content/members.ts';
 import { EARLIER_RELEASES, FEATURED_RELEASE } from '../src/content/releases.ts';
@@ -14,8 +15,8 @@ import { list, SHARED_STAGES } from '../src/content/stages.ts';
  * - the build gets /llms.txt (https://llmstxt.org), a short Markdown summary for language models.
  *
  * The name, address and picture come from index.html's own `og:site_name`, canonical link and `og:image`; the
- * founding year, members, their parts and start years, the genre, where they are, the bio, the records and every
- * link from src/content.
+ * founding year (the dateline's "Est."), members, their parts and start years, the genre and where they are
+ * (band.ts), booking, the bio, the records and every link from src/content.
  *
  * It runs only in the client build of the press kit (index.html). A server-side build (`vite build --ssr`), whose
  * output has neither the page nor the live set, and Storybook's build, whose page is its own iframe.html, skip it.
@@ -68,20 +69,16 @@ function headOf(html: string): Head {
   };
 }
 
-// The dateline reads "<where they are> · <genre>" and "Est. <year> · …".
-const [LOCATION, GENRE] = catalogue.pressKit.dateline.place.split(' · ');
+// The dateline reads "Est. <year> · …".
 const FOUNDED = catalogue.pressKit.dateline.since.match(/\bEst\. (\d{4})\b/)?.[1];
 if (!FOUNDED) throw new Error('structured-data: the dateline (pressKit.dateline.since) no longer gives an "Est. <year>"');
 const PROFILES = [BANDCAMP_HREF, ...LISTEN_HREFS, ...SOCIAL_HREFS];
 
-/**
- * Where the band is, as a place: the state the copy names ("NJ trio", "New Jersey"), with no town until the band
- * gives one.
- */
+/** Where the band is from, as a place: a state, with no town. */
 const PLACE = {
   '@type': 'Place',
-  name: LOCATION,
-  address: { '@type': 'PostalAddress', addressRegion: 'NJ', addressCountry: 'US' },
+  name: HOME.name,
+  address: { '@type': 'PostalAddress', addressRegion: HOME.region, addressCountry: HOME.country },
 };
 
 function musicGroup(head: Head) {
@@ -96,6 +93,7 @@ function musicGroup(head: Head) {
     location: PLACE,
     foundingLocation: PLACE,
     foundingDate: FOUNDED,
+    contactPoint: { '@type': 'ContactPoint', contactType: 'booking', email: BOOKING_EMAIL },
     member: MEMBERS.map(({ id: member, name, since }) => ({
       '@type': 'OrganizationRole',
       member: { '@type': 'Person', name },
@@ -122,10 +120,9 @@ function llmsTxt(head: Head, liveSetUrl: string) {
   const bio = catalogue.pressKit.record.bio;
   const earlier = EARLIER_RELEASES.map(({ title, year }) => plain(catalogue.pressKit.record.earlier, { title, year }));
   const { title, year } = FEATURED_RELEASE;
-  const bookingEmail = BOOKING_HREF.replace(/^mailto:/, '').split('?')[0];
   return `# ${head.name}
 
-> ${LOCATION} ${GENRE.toLowerCase()} trio, founded in ${FOUNDED}: ${list(MEMBERS.map(member => member.name))}.
+> ${HOME.name} ${GENRE.toLowerCase()} trio, founded in ${FOUNDED}: ${list(MEMBERS.map(member => member.name))}.
 
 ## About
 
@@ -138,7 +135,7 @@ ${MEMBERS.map(({ id, name, since }) => `- ${name}: ${catalogue.band.members[id].
 ## Links
 
 - [Press kit](${head.url}): bio, music, live video and booking
-- [Booking: ${bookingEmail}](${BOOKING_HREF})
+- [Booking: ${BOOKING_EMAIL}](${BOOKING_HREF})
 - [Live set video](${liveSetUrl})
 ${PROFILES.map(link => `- [${catalogue.band.links[link.platform]}](${link.href})`).join('\n')}
 
