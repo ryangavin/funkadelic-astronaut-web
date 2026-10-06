@@ -13,9 +13,6 @@ export type Segment = (typeof SEGMENTS)[number];
 const bit = (segment: Segment) => 1 << SEGMENTS.indexOf(segment);
 const lit = (...segments: Segment[]) => segments.reduce((mask, segment) => mask | bit(segment), 0);
 
-/** The seven-segment outline, for telling a digit-only display which ghosts to draw. */
-export const OUTLINE = lit('a', 'b', 'c', 'd', 'e', 'f', 'g1', 'g2');
-
 const GLYPHS: Record<string, number> = {
   ' ': 0,
   '0': lit('a', 'b', 'c', 'd', 'e', 'f'),

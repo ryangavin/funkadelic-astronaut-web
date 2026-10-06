@@ -1,35 +1,11 @@
-import { DEFAULT_LIGHT_TUNING, type LightTuning } from '../../geometry/lightingSetup';
+import type { LightTuning } from '../../geometry/lightingSetup';
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 export const DEFAULT_SHADOW_STRENGTH = 0.36;
 
 export type LightOccluderPoint = { x: number; y: number; height: number; radius: number };
-export type LampOccluder = { base: LightOccluderPoint; elbow: LightOccluderPoint; neck: LightOccluderPoint; shade?: LightOccluderPoint };
+type LampOccluder = { base: LightOccluderPoint; elbow: LightOccluderPoint; neck: LightOccluderPoint; shade?: LightOccluderPoint };
 export type DeskLight = { x: number; y: number; height: number; on: boolean; intensity?: number; tuning?: LightTuning; shadowStrength?: number; lamp?: LampOccluder };
-
-/*
-  How far anything on this desk is thrown by the light. One rule, in one place.
-
-  It was written out four times over — once for the stack of slices a thing casts
-  by, once for the mug, once for the lamp's own arms, once for the desk on the
-  boards — and the four had quietly drifted apart, each with its own idea of how
-  far was too far. They are the same geometry: a point standing `height` above
-  the surface is thrown away from the bulb by its drop over the bulb's clearance
-  above it, which is a fraction of however far it stands from the bulb.
-
-  Two things have to be bounded or the arithmetic runs away, and both happen on
-  this desk rather than in theory: a bulb lowered to or below the height of what
-  it is lighting divides by nothing, and a thing far enough out throws past the
-  room. So the clearance is held at a unit and the throw at a desk's width.
-*/
-
-/** How far a point is thrown, as a fraction of its distance from the bulb. */
-export function castRatio(height: number, light: DeskLight) {
-  return Math.max(0, height) / Math.max(1, light.height - height);
-}
-
-/** As far as a shadow is allowed to reach: one desk. */
-export const CAST_REACH = 1440;
 
 /*
   The light is a store rather than a piece of state, and the difference is the
@@ -90,22 +66,6 @@ export function useDeskLight(): DeskLight | null {
     store?.subscribe ?? (() => () => {}),
     store?.get ?? (() => null),
     () => null,
-  );
-}
-
-/**
- * One part of the light, for something that turns on a little of it — whether
- * the lamp is lit, say — and should sit still while the lamp is merely carried
- * about. It re-renders only when what is selected actually changes.
- */
-export function useDeskLightPart<T>(select: (light: DeskLight | null) => T): T {
-  const store = useContext(Store);
-  const chosen = useRef(select);
-  chosen.current = select;
-  return useSyncExternalStore(
-    store?.subscribe ?? (() => () => {}),
-    () => chosen.current(store?.get() ?? null),
-    () => chosen.current(null),
   );
 }
 

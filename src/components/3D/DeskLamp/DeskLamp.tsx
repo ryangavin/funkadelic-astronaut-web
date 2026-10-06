@@ -14,7 +14,7 @@ export const DESK_LAMP_ENAMELS = ['red', 'mustard', 'green', 'black'] as const;
 export type DeskLampEnamel = (typeof DESK_LAMP_ENAMELS)[number];
 
 /** Where the shade's centre is in the lamp's box, and its radius, in 720ths of the box's width. */
-export const DESK_LAMP_SHADE = { x: 200, y: 420, radius: 130 } as const;
+const DESK_LAMP_SHADE = { x: 200, y: 420, radius: 130 } as const;
 
 /*
   The light spilling round the rim.

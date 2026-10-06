@@ -40,7 +40,7 @@ export type FrameCost = {
   overBudget: number;
 };
 
-export type ProbeOptions = {
+type ProbeOptions = {
   /** How many pointer moves to time. The first few are thrown away. */
   moves?: number;
   /** How far each move travels, in screen pixels. Kept small so the thing stays on the desk. */
@@ -87,7 +87,7 @@ function find(root: Document | HTMLElement, label: string): HTMLElement {
  * would; only the pointer is synthetic. One move is dispatched per frame,
  * which is the most a real pointer ever delivers.
  */
-export async function dragCost(root: Document | HTMLElement, label: string, { moves = 20, reach = 5 }: ProbeOptions = {}): Promise<FrameCost> {
+async function dragCost(root: Document | HTMLElement, label: string, { moves = 20, reach = 5 }: ProbeOptions = {}): Promise<FrameCost> {
   const element = find(root, label);
   const win = element.ownerDocument.defaultView;
   if (!win) throw new Error('The desk is not in a window');
@@ -367,7 +367,7 @@ export function watchHandDrag(root: Document | HTMLElement, report: (drag: HandD
 }
 
 /** What the desk costs while nobody is touching it. Anything but sixty a second here is something repainting for free. */
-export async function idleCost(root: Document | HTMLElement, frames = 20): Promise<FrameCost> {
+async function idleCost(root: Document | HTMLElement, frames = 20): Promise<FrameCost> {
   const doc = root instanceof Document ? root : root.ownerDocument;
   const win = doc.defaultView;
   if (!win) throw new Error('The desk is not in a window');
@@ -390,7 +390,7 @@ export async function idleCost(root: Document | HTMLElement, frames = 20): Promi
   back. Dragging with it gone, against the same drag with it there, is what
   turns "the desk is slow" into "this is what it costs".
 */
-export type Layer = { name: string; strip: (root: Document | HTMLElement) => () => void };
+type Layer ={ name: string; strip: (root: Document | HTMLElement) => () => void };
 
 /** Hide everything matching, and give back the undo. */
 const hiding = (selector: string): Layer['strip'] => root => {
@@ -400,7 +400,7 @@ const hiding = (selector: string): Layer['strip'] => root => {
   return () => hidden.forEach((node, index) => { node.style.display = was[index]; });
 };
 
-export const DESK_LAYERS: Layer[] = [
+const DESK_LAYERS: Layer[] = [
   {
     /* The one that has always been worth the most. An SVG filter is rasterised
        off to one side and cannot be cached the way a moved layer can, so every
@@ -498,11 +498,11 @@ export async function attribute(root: Document | HTMLElement, label: string, opt
  * a fast desk — it is no desk. Something on this desk always costs more than a
  * frame while it is really being rasterised, so if nothing does, the run is void.
  */
-export function looksUndrawn(costs: FrameCost[]): boolean {
+function looksUndrawn(costs: FrameCost[]): boolean {
   return costs.length > 1 && costs.every(cost => cost.medianMs <= REFRESH_MS * 1.15);
 }
 
-export type Drawing = {
+type Drawing = {
   /** False when the control could not be set up, in which case nothing at all follows from the rest. */
   available: boolean;
   /** Whether this window is really rasterising what it is asked to. */
@@ -530,7 +530,7 @@ const NOT_ASKED: Drawing = { available: false, drawing: true, plainMs: 0, loaded
  * If it gets much dearer, the window is drawing and a fast reading is simply a
  * fast desk.
  */
-export async function drawingCheck(root: Document | HTMLElement, options?: ProbeOptions): Promise<Drawing> {
+async function drawingCheck(root: Document | HTMLElement, options?: ProbeOptions): Promise<Drawing> {
   /*
     The control has to be something that is *invalidated*, not merely something
     expensive. Both obvious loads were tried and both were free: a wide blur over
@@ -685,7 +685,7 @@ export function splitFrames(win: Window = window): { stop: () => FrameSplit } {
 }
 
 /** One kind of redundant work, and who did it. */
-export type Culprit = {
+type Culprit = {
   /** The element, near enough to find it: its tag and first class, and what was written to it. */
   what: string;
   /** How many times a frame. */

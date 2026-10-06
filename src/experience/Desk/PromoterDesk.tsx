@@ -47,11 +47,11 @@ import './PromoterDesk.css';
  * letter folder is 306 mm tall, so this is about as big as the Walkman can
  * be with the folder lying open inside the frame and room left around it.
  */
-export const REFERENCE = { object: 'Walkman', millimetres: 112, units: 224 } as const;
-export const mm = (millimetres: number) => Math.round((millimetres * REFERENCE.units) / REFERENCE.millimetres);
+const REFERENCE = { object: 'Walkman', millimetres: 112, units: 224 } as const;
+const mm = (millimetres: number) => Math.round((millimetres * REFERENCE.units) / REFERENCE.millimetres);
 
 /** The desk's design size: 1440 by 810, a 16 x 9 frame: 720 by 405 mm of desktop. */
-export const DESK_HEIGHT = 810;
+const DESK_HEIGHT = 810;
 
 /** Real widths, in millimetres, of what lies on the desk. Each component's box is measured across the thing itself. */
 const REAL_WIDTHS = {
@@ -109,8 +109,8 @@ const FOLDER_RATIO = 915 / 1440;
 /** The tab on the folder's edge, from the Folder component: 9% down the leaf, 52% of its height, 58 units wide, set 44 out past the edge. */
 const TAB = { top: 9, height: 52, width: 58, out: 44 };
 
-export type DeskThingId = 'walkman' | 'cassette' | 'handheld' | 'mug' | 'sheet' | 'plan' | 'ballpoint' | 'marker' | 'pick' | 'clock' | 'cradle';
-export type SpilledThingId = 'live' | 'print' | 'ryan' | 'kevin' | 'sam' | 'oneSheet' | 'handbill' | 'zine' | 'ticket' | 'pass';
+type DeskThingId = 'walkman' | 'cassette' | 'handheld' | 'mug' | 'sheet' | 'plan' | 'ballpoint' | 'marker' | 'pick' | 'clock' | 'cradle';
+type SpilledThingId = 'live' | 'print' | 'ryan' | 'kevin' | 'sam' | 'oneSheet' | 'handbill' | 'zine' | 'ticket' | 'pass';
 export type ThingId = DeskThingId | SpilledThingId;
 
 /**
@@ -162,7 +162,7 @@ export const DESK_LAYOUT = {
 };
 
 /** A layer on the desk: a thing, or the folder itself, which lies over the running order and under everything else. */
-export type LayerId = ThingId | 'folder';
+type LayerId =ThingId | 'folder';
 
 /** What lies on top of what, to begin with: first is underneath. Picking a thing up brings it to the top. */
 const STACKING: LayerId[] = ['plan', 'sheet', 'folder', 'ballpoint', 'marker', 'pick', 'cassette', 'clock', 'cradle', 'mug', 'handheld', 'walkman', 'live', 'print', 'oneSheet', 'ticket', 'ryan', 'kevin', 'sam', 'pass', 'handbill', 'zine'];

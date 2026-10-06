@@ -9,9 +9,7 @@ import './OneSheet.css';
 export const ONE_SHEET_STOCKS = ['bond', 'ivory', 'grey'] as const;
 export type OneSheetStock = (typeof ONE_SHEET_STOCKS)[number];
 /** How long the pull open takes, in milliseconds. Folding back takes about as long. */
-export const ONE_SHEET_PULL_MS = 900;
-/** The three panels' names, top to bottom. */
-export const ONE_SHEET_PANELS = ['a', 'b', 'c'] as const;
+const ONE_SHEET_PULL_MS = 900;
 
 /** What is printed on the three panels. */
 export type OneSheetContent = {
@@ -208,7 +206,7 @@ export function OneSheetColumns({ children, count = 3 }: { children: React.React
   );
 }
 
-export type OneSheetPhotoProps = {
+type OneSheetPhotoProps = {
   src: string;
   alt: string;
   caption?: React.ReactNode;

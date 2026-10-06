@@ -8,7 +8,7 @@ import './BandcampPlayer.css';
 export type BandcampEmbed = 'tracklist' | 'artwork';
 
 /** Bandcamp's large player, drawn on the newsprint in its ink: tokens.css's --epk-stock and --epk-violet, which Bandcamp takes as hex in the URL. */
-export const bandcampPlayerSrc = (release: BandcampRelease, embed: BandcampEmbed = 'tracklist') =>
+const bandcampPlayerSrc = (release: BandcampRelease, embed: BandcampEmbed = 'tracklist') =>
   `https://bandcamp.com/EmbeddedPlayer/album=${release.albumId}/size=large/bgcol=ece1c6/linkcol=5b48b0/${
     embed === 'artwork' ? 'minimal=true' : 'tracklist=true'
   }/transparent=true/`;

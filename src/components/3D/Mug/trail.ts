@@ -38,16 +38,16 @@ const COFFEE_GONE = 0.04;
 export const DESK = 'desk';
 
 /** Mug placement in surface units. Width is the unscaled artwork box; scale is its current placement scale. */
-export type MugPlace = { x: number; y: number; rotation?: number; width: number; scale?: number };
+type MugPlace = { x: number; y: number; rotation?: number; width: number; scale?: number };
 
 /** Something lying on the desk that a mug can be stood on, in the desk's units: a sheet of paper, a folder, a magazine. */
-export type Surface = { id: string; x: number; y: number; width: number; height: number; rotation?: number };
+type Surface = { id: string; x: number; y: number; width: number; height: number; rotation?: number };
 
 /** A ring's share of one surface: where it lies in that surface's own frame, which way the coffee pooled, how dark it still is, and the outlines of whatever was lying over it. */
 export type CoffeeStain = { id: number; x: number; y: number; width: number; rotation: number; strength: number; masks?: RingMask[] };
 
 /** The rings each thing on the desk is carrying, newest first, the wood under `DESK`. */
-export type CoffeeTrail = Record<string, CoffeeStain[]>;
+type CoffeeTrail = Record<string, CoffeeStain[]>;
 
 type Point = { x: number; y: number };
 
@@ -66,13 +66,13 @@ function ringUnder({ x, y, rotation = 0, width: baseWidth, scale = 1 }: MugPlace
 }
 
 /** Which way the coffee pooled. It never pools the same way twice, but the ring left in one place is always that ring, so the turn is taken from where the mug stood. */
-export function ringTurn(x: number, y: number) {
+function ringTurn(x: number, y: number) {
   const scatter = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
   return Math.round((scatter - Math.floor(scatter)) * 360);
 }
 
 /** A point of the desk as the surface itself has it: measured from its own corner, before it was turned. */
-export function intoSurface({ x, y }: Point, surface: Surface): Point {
+function intoSurface({ x, y }: Point, surface: Surface): Point {
   const turn = -(surface.rotation ?? 0) * RADIANS;
   const dx = x - (surface.x + surface.width / 2);
   const dy = y - (surface.y + surface.height / 2);
@@ -83,7 +83,7 @@ export function intoSurface({ x, y }: Point, surface: Surface): Point {
 }
 
 /** The four corners of a surface, in the desk's units, turned the way it lies. */
-export function cornersOf(surface: Surface): Point[] {
+function cornersOf(surface: Surface): Point[] {
   const turn = (surface.rotation ?? 0) * RADIANS;
   const midX = surface.x + surface.width / 2;
   const midY = surface.y + surface.height / 2;

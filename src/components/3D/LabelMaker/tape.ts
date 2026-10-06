@@ -13,19 +13,19 @@
 */
 
 /** A drawing unit is a quarter of a millimetre. */
-export const UNIT_MM = 0.25;
+const UNIT_MM = 0.25;
 
 /** 3/8 of an inch across: 38 units, 9.5 mm. */
 export const TAPE_WIDTH = 38;
 
 /** The pitch the wheel advances the tape by, one character at a time: 5 mm. */
-export const CHARACTER_PITCH = 20;
+const CHARACTER_PITCH = 20;
 
 /** The blank run the cutter leaves at each end — one character's worth, as on a real label. */
-export const TAPE_MARGIN = CHARACTER_PITCH;
+const TAPE_MARGIN = CHARACTER_PITCH;
 
 /** How deep the scalloped blade bites into the cut, in units: two millimetres. */
-export const SCALLOP_DEPTH = 8;
+const SCALLOP_DEPTH = 8;
 
 /** The colours the tape is sold in. */
 export const LABEL_COLORS = ['red', 'black', 'blue', 'green'] as const;

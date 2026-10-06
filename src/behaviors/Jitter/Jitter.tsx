@@ -2,7 +2,6 @@ import { useEffect, useRef, type HTMLAttributes } from 'react';
 import { attachJitter, type JitterOptions } from './motion';
 import './Jitter.css';
 
-export { JITTER_PRESETS, PRINT_CADENCE_MS } from './motion';
 export type { JitterOptions } from './motion';
 export type JitterProps = JitterOptions & HTMLAttributes<HTMLDivElement>;
 

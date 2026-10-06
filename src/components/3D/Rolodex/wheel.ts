@@ -6,18 +6,13 @@
   drawn. A rotary card is 4 inches by 2 5/8, which is 384 by 252 of them.
 */
 
-/** Ninety-sixths of an inch: the unit the whole drawing is measured in. */
-export const ROLODEX_PER_INCH = 96;
+/** A rotary card's width, in units: 4 inches, the size the V-File was cut for. */
+const ROLODEX_CARD_WIDTH = 384;
 
-/** A rotary card, in units: 4 inches by 2 5/8, the size the V-File was cut for. */
-export const ROLODEX_CARD_WIDTH = 384;
-export const ROLODEX_CARD_HEIGHT = 252;
-
-/** The tray, in units: 4 1/2 inches across the cheeks by 6 1/2 front to back, which is what the two fallen packs need. */
-export const ROLODEX_TRAY_WIDTH = 432;
-export const ROLODEX_TRAY_DEPTH = 624;
+/** The tray's depth, in units: 6 1/2 inches front to back, which is what the two fallen packs need. */
+const ROLODEX_TRAY_DEPTH = 624;
 /** The cheek the spindle is journalled in: a quarter inch of steel either side of the cards. */
-export const ROLODEX_CHEEK = 24;
+const ROLODEX_CHEEK = 24;
 
 /**
  * A knob, in units: a knurled wheel 1 3/4 inches across and a bit under half
@@ -26,58 +21,29 @@ export const ROLODEX_CHEEK = 24;
  * as the knob is thick and as long as the knob is across.
  */
 export const ROLODEX_KNOB_ACROSS = 168;
-export const ROLODEX_KNOB_THICK = 43;
+const ROLODEX_KNOB_THICK = 43;
 
-/** The wheel's own drawing: the tray with a knob standing off each end. */
-export const ROLODEX_WHEEL_WIDTH = ROLODEX_TRAY_WIDTH + 2 * ROLODEX_KNOB_THICK;
-export const ROLODEX_WHEEL_DEPTH = ROLODEX_TRAY_DEPTH;
 /** The spindle runs across the middle of the tray, and everything hangs off it. */
-export const ROLODEX_SPINDLE = ROLODEX_TRAY_DEPTH / 2;
-/** Where the cards' 4 inches start and end, between the cheeks. */
-export const ROLODEX_WELL_LEFT = ROLODEX_KNOB_THICK + ROLODEX_CHEEK;
-export const ROLODEX_WELL_RIGHT = ROLODEX_WELL_LEFT + ROLODEX_CARD_WIDTH;
+const ROLODEX_SPINDLE = ROLODEX_TRAY_DEPTH / 2;
+/** Where the cards' 4 inches start, between the cheeks. */
+const ROLODEX_WELL_LEFT = ROLODEX_KNOB_THICK + ROLODEX_CHEEK;
 
 /** How much of the tray's depth the two packs of fallen cards are free to lie in. */
-export const ROLODEX_COMB_DEPTH = 480;
+const ROLODEX_COMB_DEPTH = 480;
 /** How far apart two top edges are drawn, at the most and at the least: an empty file spreads, a full one packs. */
-export const ROLODEX_PITCH_MAX = 22;
-export const ROLODEX_PITCH_MIN = 4;
+const ROLODEX_PITCH_MAX = 22;
+const ROLODEX_PITCH_MIN = 4;
 /** The hole the card that has been taken out leaves in the comb, in pitches. */
-export const ROLODEX_GAP = 2.4;
+const ROLODEX_GAP = 2.4;
 
-/** A divider is cut taller than a card, so its tab stands this far proud of the comb. */
-export const ROLODEX_TAB_STAND = 26;
 /** The tab itself, in units, and how many lanes they are staggered across so a row of them can be read. */
-export const ROLODEX_TAB_WIDTH = 74;
-export const ROLODEX_TAB_LANES = 5;
+const ROLODEX_TAB_WIDTH = 74;
+const ROLODEX_TAB_LANES = 5;
 
 /** How far a knob is dragged to turn one card, in units: a bit over a quarter of an inch of rim. */
 export const ROLODEX_DRAG = 26;
 /** How far the pointer may wander and still count as a click on the knob, in pixels. */
 export const ROLODEX_SLOP = 4;
-
-/** The whole drawing: the wheel, then the card it is open at lying on the desk beside it. */
-export const ROLODEX_GUTTER = 58;
-export const ROLODEX_WIDTH = ROLODEX_WHEEL_WIDTH + ROLODEX_GUTTER + ROLODEX_CARD_WIDTH;
-export const ROLODEX_DEPTH = ROLODEX_TRAY_DEPTH;
-/** Where the loose card lies within that drawing. */
-export const ROLODEX_CARD_LEFT = ROLODEX_WHEEL_WIDTH + ROLODEX_GUTTER;
-export const ROLODEX_CARD_TOP = (ROLODEX_DEPTH - ROLODEX_CARD_HEIGHT) / 2;
-
-/** How tall the thing really stands, in units: 4 1/4 inches, desk to the top edge of the card standing up. */
-export const ROLODEX_TALL = 408;
-/**
- * How tall it is as a multiple of the width of the whole drawing, wheel and
- * loose card together — which is what a `Solid` wants when the pairing is put
- * on a tilted desk as one thing.
- */
-export const ROLODEX_HEIGHT = ROLODEX_TALL / ROLODEX_WIDTH;
-/** The same height against the wheel's own drawing, for a page that places the wheel by itself. */
-export const ROLODEX_WHEEL_HEIGHT = ROLODEX_TALL / ROLODEX_WHEEL_WIDTH;
-/** Where it stands within the whole drawing: the middle of the tray's footprint, well off to the left of it. */
-export const ROLODEX_FOOT = { x: ROLODEX_WHEEL_WIDTH / 2 / ROLODEX_WIDTH, y: 0.5 };
-/** A loose card lying on the desk: it has no height worth the name. */
-export const ROLODEX_CARD_STAND = 1 / ROLODEX_CARD_WIDTH;
 
 export type RolodexEntry = {
   /** The divider it files behind. Defaults to the first letter of the name. */
@@ -99,7 +65,7 @@ export type RolodexEntry = {
  * so it takes a place of its own, and the first card under a letter is a whole
  * place behind its divider.
  */
-export type RolodexSlot = {
+type RolodexSlot = {
   /** The card filed here, if this place holds one rather than a divider. */
   card?: RolodexEntry;
   /** Which card in the file this place is, or which card a divider stands in front of. */
@@ -111,7 +77,7 @@ export type RolodexSlot = {
 };
 
 /** A run of type, and whether the typist struck it out rather than starting the card again. */
-export type RolodexRun = { text: string; struck: boolean };
+type RolodexRun = { text: string; struck: boolean };
 
 /** Round a number into the file, so turning past the end of the wheel comes back at the front. */
 export function wrap(value: number, count: number): number {

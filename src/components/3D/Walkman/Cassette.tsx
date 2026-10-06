@@ -8,7 +8,7 @@ import { useId } from 'react';
   whenever the transport moves.
 */
 
-export const CASSETTE_BOX = [400, 254] as const;
+const CASSETTE_BOX =[400, 254] as const;
 
 const LEFT = 114;
 const RIGHT = 286;
@@ -17,7 +17,7 @@ const HUB = 21;
 const PACK_MIN = 30;
 const PACK_MAX = 90;
 /** The window in the label and shell: x, y, width, height. */
-export const CASSETTE_WINDOW = [72, 84, 256, 68] as const;
+const CASSETTE_WINDOW =[72, 84, 256, 68] as const;
 
 export type CassetteProps = {
   /** Handwriting on the label. */

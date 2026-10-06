@@ -25,7 +25,7 @@ import { CableCoil, CaseLid, FloorBox, FloorProps, TapeRoll } from '../../compon
  */
 
 /** The cast both settings are judged with: the band's two devices, its dossier, and the promoter's paperwork. */
-export const SETTING_CAST = ['dossier', 'walkman', 'handheld', 'sitePlan', 'setTimes', 'contract', 'pen', 'labelBro', 'mug'] as const;
+const SETTING_CAST = ['dossier', 'walkman', 'handheld', 'sitePlan', 'setTimes', 'contract', 'pen', 'labelBro', 'mug'] as const;
 
 const missing = SETTING_CAST.filter(id => !DESK_OBJECTS.some(object => object.id === id));
 if (missing.length) throw new Error(`Setting cast names objects the desk does not have: ${missing.join(', ')}`);

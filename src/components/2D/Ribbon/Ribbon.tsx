@@ -4,7 +4,7 @@ import { PrintInkFilter } from '../../../foundations/Distressed/Distressed';
 import './Ribbon.css';
 
 /** The site's fountain-pen inks, as the ribbon's outer band. */
-export const RIBBON_COLORS = {
+const RIBBON_COLORS = {
   purple: '#9275b2',
   amber: '#c58930',
   red: '#a52837',
@@ -42,7 +42,7 @@ const PHASE = 0.1;
  * The seam's centreline as an SVG path in pixel units, bleeding past both
  * edges so the strokes and the worn-ink displacement never show an end.
  */
-export function ribbonPath({ frequency, amplitude, rotation, x, y }: RibbonWave, width: number, height: number) {
+function ribbonPath({ frequency, amplitude, rotation, x, y }: RibbonWave, width: number, height: number) {
   width = Math.max(1, width);
   const omega = 2 * Math.PI * frequency;
   const tilt = Math.tan((rotation * Math.PI) / 180);

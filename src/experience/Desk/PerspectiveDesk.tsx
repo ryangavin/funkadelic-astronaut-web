@@ -7,13 +7,11 @@ import type { Place } from '../../behaviors/Movable/Movable';
 import { usePlaceStore } from '../../behaviors/Movable/places';
 import type { DeskSurface, DeskWood } from '../../components/3D/Desk/Desk';
 import type { DeskLampEnamel } from '../../components/3D/DeskLamp/DeskLamp';
-import { DESK_DEPTH, ROOM_LAMP, Room, useRoomCamera, type RoomProps } from '../../foundations/Room/Room';
+import { ROOM_LAMP, Room, useRoomCamera, type RoomProps } from '../../foundations/Room/Room';
 import { ROOM_DESK_SHARE, ROOM_LIP } from '../../foundations/Room/DeskRoom';
 import type { FloorWood } from '../../components/3D/Floor/Floor';
 import type { WallFinish } from '../../components/3D/Wall/Wall';
 import './PerspectiveDesk.css';
-
-export { DESK_DEPTH } from '../../foundations/Room/Room';
 
 export type RoomControls = Pick<RoomProps, 'outlook' | 'daylight' | 'floorContent' | 'windowHeightMm' | 'windowSillHeightMm' | 'showPerformance' | 'showCamera' | 'deskWidthMm' | 'deskDepthMm' | 'deskHeightMm' | 'deskEdgeMm' | 'eyeHeightMm' | 'viewerSetbackMm' | 'headTiltDegrees' | 'horizontalFieldOfViewDegrees' | 'roomSpanMm' | 'floorFrontMm' | 'wallHeightMm' | 'lampIntensity' | 'lightTuning'>;
 export type PerspectiveDeskProps = RoomControls & {

@@ -16,9 +16,6 @@ import { RecordSection } from './RecordSection';
 import '../styles/newsprint.css';
 import './PressKit.css';
 
-export type { PressKitInk } from './inks';
-export { PressKitBar } from './PressKitBar';
-
 /** The page's own links, each a tab in its own spot ink; the label is the catalogue's `nav.<id>`. */
 const NAV_LINKS = [
   { id: 'music', ink: 'violet' },

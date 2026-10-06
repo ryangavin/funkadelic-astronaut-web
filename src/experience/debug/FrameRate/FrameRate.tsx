@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, type CSSProperties } from 'react';
 import { attachFrameMeter, frameNote, frameState, BUDGET_MS, type FrameReadout } from './meter';
 import './FrameRate.css';
 
-export { BUDGET_MS } from './meter';
-export type { FrameReadout, FrameStats } from './meter';
+export type { FrameReadout } from './meter';
 
 export type FrameRateProps = {
   /** Whether to measure at all. False renders nothing and starts no clock, so it can be left in place behind a switch. */
@@ -127,22 +126,4 @@ export function FrameRate({
       ) : null}
     </div>
   );
-}
-
-/**
- * The easy way in: wrap anything and it gets the counter.
- *
- * Written to suit a Storybook decorator, which is the usual reason to want
- * one — `decorators: [withFrameRate()]` on a meta puts the readout over every
- * story in the file without any of them knowing.
- */
-export function withFrameRate(props: FrameRateProps = {}) {
-  return function frameRated(story: () => ReactNode) {
-    return (
-      <>
-        {story()}
-        <FrameRate {...props} />
-      </>
-    );
-  };
 }

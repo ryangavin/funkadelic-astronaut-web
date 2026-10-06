@@ -3,8 +3,6 @@ import { PACKET_RATIO } from '../../components/2D/Packet/Packet';
 import { DEFAULT_SIFT_MS, depthOf, movesBetween, sift, slotFor } from './sift';
 import './Stack.css';
 
-export { DEFAULT_SIFT_MS, STACK_TILTS, depthOf, movesBetween, siftKeyframes, slotFor } from './sift';
-
 export type StackProps = {
   /** Which child is on top of the pile. Changing it sifts. */
   index: number;

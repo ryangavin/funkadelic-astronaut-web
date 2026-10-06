@@ -5,7 +5,7 @@ import { wallMaterialBricks, type MaterialOrigin } from '../../../geometry/mater
 export const WALL_FINISHES = ['whitewash', 'red', 'buff', 'black', 'panel', 'glaze'] as const;
 export type WallFinish = (typeof WALL_FINISHES)[number];
 
-export const WALL_BONDS = ['running', 'stack'] as const;
+const WALL_BONDS =['running', 'stack'] as const;
 /** How one course sits over the one below: half a unit along, or squarely on it. */
 export type WallBond = (typeof WALL_BONDS)[number];
 
@@ -19,7 +19,7 @@ export const WALL_BRICK = 270;
 /** A course: a 65 millimetre brick on a 10 millimetre bed. */
 export const WALL_COURSE = 90;
 /** The mortar joint itself: 10 millimetres. */
-export const WALL_JOINT = 12;
+const WALL_JOINT = 12;
 /** A wall of an ordinary room: 2.4 metres. */
 export const WALL_HEIGHT = 2880;
 
@@ -39,7 +39,7 @@ export const WALL_HEIGHT = 2880;
  * composition that wants a tiled wall says `wall="glaze"` and gets tiles the
  * size tiles are.
  */
-export const WALL_COURSING: Record<WallFinish, { brick: number; course: number; joint: number; bond: WallBond; worn: number }> = {
+const WALL_COURSING:Record<WallFinish, { brick: number; course: number; joint: number; bond: WallBond; worn: number }> = {
   whitewash: { brick: WALL_BRICK, course: WALL_COURSE, joint: WALL_JOINT, bond: 'running', worn: 22 },
   red: { brick: WALL_BRICK, course: WALL_COURSE, joint: WALL_JOINT, bond: 'running', worn: 22 },
   buff: { brick: WALL_BRICK, course: WALL_COURSE, joint: WALL_JOINT, bond: 'running', worn: 22 },

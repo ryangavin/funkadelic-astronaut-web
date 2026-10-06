@@ -1,4 +1,4 @@
-import { OUTLINE, SEGMENTS, encode, type Segment } from './segments';
+import { SEGMENTS, encode, type Segment } from './segments';
 
 /*
   Draws a row of segmented cells. Every cell carries every segment, lit or
@@ -6,9 +6,9 @@ import { OUTLINE, SEGMENTS, encode, type Segment } from './segments';
   The whole row leans a few degrees, like the italic digits on a deck.
 */
 
-export const CELL_WIDTH = 64;
-export const COLON_WIDTH = 26;
-export const CELL_HEIGHT = 100;
+const CELL_WIDTH = 64;
+const COLON_WIDTH = 26;
+const CELL_HEIGHT = 100;
 const SLANT = 7;
 const LEAN = Math.tan((SLANT * Math.PI) / 180) * CELL_HEIGHT;
 
@@ -111,6 +111,3 @@ export function SegmentDisplay({ text, cells = text.length, kind = 'alnum', clas
     </svg>
   );
 }
-
-/** Which of the outline segments a digit display draws, for tests and docs. */
-export const DIGIT_OUTLINE = OUTLINE;

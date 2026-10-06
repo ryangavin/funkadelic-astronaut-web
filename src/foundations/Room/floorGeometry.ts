@@ -1,5 +1,5 @@
 import { mmToUnits } from '../../geometry/physicalScale.ts';
-export type WorldPoint = { x: number; y: number; z: number };
+type WorldPoint = { x: number; y: number; z: number };
 export type RoomFloorMesh = { name: string; faces: { points: WorldPoint[]; fill: string }[] };
 /** World origin is the wall-floor seam, centered across the desk, in desk units. */
 export function deskLegs(width: number, depth: number, stand: number, edge: number) {

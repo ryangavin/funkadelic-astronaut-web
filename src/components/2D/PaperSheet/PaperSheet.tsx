@@ -5,7 +5,6 @@ import '../../../styles/fonts.css';
 import '../../../styles/torn-edge.css';
 import './PaperSheet.css';
 
-export const PAPER_SHEET_REFERENCE_WIDTH = 1440;
 export const PAPER_STOCKS = ['wheat', 'white', 'ink', 'pale'] as const;
 export type PaperStock = (typeof PAPER_STOCKS)[number];
 

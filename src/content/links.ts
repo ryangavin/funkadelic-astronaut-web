@@ -4,7 +4,7 @@ import type { SocialPlatform } from '../components/2D/SocialIcon/SocialIcon';
  * Everywhere the band can be found, by platform. The label each link is read
  * out with lives in the copy catalogue, under `band:links.<platform>`.
  */
-export type BandLinkData = { platform: SocialPlatform; href: string };
+type BandLinkData = { platform: SocialPlatform; href: string };
 
 /** Where to listen. */
 export const LISTEN_HREFS = [
@@ -27,7 +27,7 @@ export const BANDCAMP_HREF = { platform: 'bandcamp', href: 'https://funkadelicas
 /** Every platform the band has a link on. */
 export type BandPlatform = (typeof LISTEN_HREFS)[number]['platform'] | (typeof SOCIAL_HREFS)[number]['platform'] | typeof BANDCAMP_HREF.platform;
 
-export const BOOKING_EMAIL = 'samluba1@gmail.com';
+const BOOKING_EMAIL = 'samluba1@gmail.com';
 
 /** Booking goes to Sam, with the subject filled in. */
 export const BOOKING_HREF = `mailto:${BOOKING_EMAIL}?subject=Funkadelic%20Astronaut%20Booking`;

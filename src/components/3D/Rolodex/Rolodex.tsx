@@ -18,25 +18,6 @@ import {
   type RolodexEntry,
 } from './wheel';
 
-export {
-  ROLODEX_CARD_HEIGHT,
-  ROLODEX_CARD_WIDTH,
-  ROLODEX_DEPTH,
-  ROLODEX_FOOT,
-  ROLODEX_HEIGHT,
-  ROLODEX_TALL,
-  ROLODEX_TRAY_DEPTH,
-  ROLODEX_TRAY_WIDTH,
-  ROLODEX_WHEEL_HEIGHT,
-  ROLODEX_WHEEL_WIDTH,
-  ROLODEX_WIDTH,
-  tabOf,
-  wheelOf,
-  type RolodexEntry,
-  type RolodexSlot,
-} from './wheel';
-export { RolodexCard, type RolodexCardProps } from './RolodexCard';
-
 /** The finishes these came in: the office putty, the black one, and the older bare steel. */
 export const ROLODEX_FINISHES = ['putty', 'black', 'steel'] as const;
 export type RolodexFinish = (typeof ROLODEX_FINISHES)[number];

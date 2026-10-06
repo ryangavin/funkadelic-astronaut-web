@@ -6,15 +6,13 @@ import { Label } from './Label';
 import { tapeMm, tapeUnits, type LabelColor, type LabelCut } from './tape';
 import './LabelMaker.css';
 
-export { Label, type LabelProps } from './Label';
-export { LABEL_COLORS, LABEL_CUTS, tapeMm, tapeUnits, UNIT_MM, type LabelColor, type LabelCut } from './tape';
-export { WHEEL, characterName } from './characters';
+export { LABEL_COLORS, LABEL_CUTS } from './tape';
 
 /**
  * How long a strip the machine will run out before you have to cut it. A real
  * roll holds two metres and does not care; a desk has less room than that.
  */
-export const LABEL_MAKER_LIMIT = 28;
+const LABEL_MAKER_LIMIT = 28;
 
 /** How thick a hand embosser is, as a multiple of the width of its drawing: 32 mm against 180. */
 export const LABEL_MAKER_HEIGHT = 128 / 720;

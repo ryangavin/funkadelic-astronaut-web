@@ -5,7 +5,7 @@
  */
 export type MemberId = 'ryan' | 'kevin' | 'sam';
 
-export type Member = { id: MemberId; name: string; since: number };
+type Member = { id: MemberId; name: string; since: number };
 
 export const MEMBERS = [
   { id: 'ryan', name: 'Ryan Gavin', since: 2012 },

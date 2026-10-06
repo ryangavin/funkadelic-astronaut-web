@@ -2,8 +2,8 @@ import type { CSSProperties, ElementType, HTMLAttributes, ReactNode } from 'reac
 import './Weathered.css';
 
 export type WeatheredTone = 'dark' | 'light';
-export const WEATHERED_TEXTURES = ['patina', 'flecks', 'grain', 'wear'] as const;
-export type WeatheredTexture = (typeof WEATHERED_TEXTURES)[number];
+const WEATHERED_TEXTURES = ['patina', 'flecks', 'grain', 'wear'] as const;
+type WeatheredTexture = (typeof WEATHERED_TEXTURES)[number];
 
 export type WeatheredProps = Omit<HTMLAttributes<HTMLElement>, 'children'> & {
   /** Which element to render. The surface must be the element itself: its background is what weathers. */

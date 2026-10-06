@@ -32,9 +32,9 @@ export const DEFAULT_TOUR_PASS_ROTATION = -2.15;
  * Every pass is the same size, so a long venue name cannot make its card taller:
  * its initial type size follows name length, then the complete details fit the available space.
  */
-export const VENUE_FITS = ['short', 'medium', 'long'] as const;
-export type VenueFit = (typeof VENUE_FITS)[number];
-export const venueFit = (venue: string): VenueFit => (venue.length <= 12 ? 'short' : venue.length <= 22 ? 'medium' : 'long');
+const VENUE_FITS = ['short', 'medium', 'long'] as const;
+type VenueFit = (typeof VENUE_FITS)[number];
+const venueFit =(venue: string): VenueFit => (venue.length <= 12 ? 'short' : venue.length <= 22 ? 'medium' : 'long');
 
 export const OLIVES_TOUR_PASS_PROPS: TourPassProps = {
   dateTime: '2026-09-18',

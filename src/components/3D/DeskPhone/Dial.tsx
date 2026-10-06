@@ -26,11 +26,11 @@ import {
 */
 
 /** How far out the finger holes sit, in millimetres from the dial's centre. */
-export const HOLE_RADIUS = 38;
+const HOLE_RADIUS = 38;
 /** A finger hole, wide enough for an index finger. */
-export const HOLE_SIZE = 15;
+const HOLE_SIZE = 15;
 /** The clear wheel's outside diameter, in millimetres. */
-export const WHEEL_SIZE = 105;
+const WHEEL_SIZE = 105;
 /** The square the whole dial is drawn in, in millimetres. */
 const DIAL_BOX = 118;
 

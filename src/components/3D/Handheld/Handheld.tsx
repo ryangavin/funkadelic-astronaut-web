@@ -5,17 +5,15 @@ import { youTubeId } from '../../2D/Polaroid/embed';
 import { YOUTUBE_ORIGIN, clock, command, discTitle, listening, modeOf, parseMessage, stepVolume, youTubeDisc, type HandheldMode } from './player';
 import './Handheld.css';
 
-export { clock, discTitle, modeOf, stepVolume, youTubeDisc, type HandheldMode } from './player';
-
 export const HANDHELD_FINISHES = ['black', 'silver', 'white'] as const;
 export type HandheldFinish = (typeof HANDHELD_FINISHES)[number];
 
 /** How far the directional pad steps through the video, in seconds. */
-export const HANDHELD_SEEK_SECONDS = 10;
+const HANDHELD_SEEK_SECONDS = 10;
 /** How far a shoulder button skips, in seconds. */
-export const HANDHELD_SKIP_SECONDS = 30;
+const HANDHELD_SKIP_SECONDS = 30;
 /** The screen's brightness levels, full first, stepped down and round by the display button. */
-export const HANDHELD_BRIGHTNESS = [1.12, 0.85, 0.6] as const;
+const HANDHELD_BRIGHTNESS = [1.12, 0.85, 0.6] as const;
 
 export type HandheldProps = {
   /** The disc: a YouTube link, or a video file. Without one the screen idles. */

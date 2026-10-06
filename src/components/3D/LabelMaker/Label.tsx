@@ -1,9 +1,7 @@
 import type React from 'react';
 import '../../../styles/fonts.css';
-import { CHARACTER_PITCH, TAPE_WIDTH, tapeClip, tapeMm, tapeUnits, type LabelColor, type LabelCut } from './tape';
+import { TAPE_WIDTH, tapeClip, tapeUnits, type LabelColor, type LabelCut } from './tape';
 import './Label.css';
-
-export { LABEL_COLORS, LABEL_CUTS, tapeMm, tapeUnits, type LabelColor, type LabelCut } from './tape';
 
 export type LabelProps = {
   /** What is stamped into it. Capitals only — the wheel has no lower-case dies. */
@@ -60,8 +58,3 @@ export function Label({ text = '', color = 'red', cut = 'straight', rotation = 0
     </div>
   );
 }
-
-/** The width of a strip carrying this text, in millimetres, for anyone laying one out at scale. */
-export const labelMm = tapeMm;
-/** A character's worth of tape, in millimetres. */
-export const LABEL_PITCH_MM = CHARACTER_PITCH * 0.25;

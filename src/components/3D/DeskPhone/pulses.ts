@@ -33,10 +33,6 @@ export const DIAL_STOP = 120;
 const PULSE_RATE = 10;
 /** The governor's speed on the return, in degrees a second. */
 export const DIAL_SPEED = DIAL_PITCH * PULSE_RATE;
-/** How long a pulse holds the line broken, in milliseconds. */
-export const PULSE_BREAK = 61;
-/** How long it closes again before the next, in milliseconds. */
-export const PULSE_MAKE = 39;
 /** Roughly how fast a finger winds the wheel round, in degrees a second. */
 export const WIND_SPEED = 560;
 
@@ -58,13 +54,10 @@ export const DIAL_DIGITS = [
 export const holeAngle = (index: number): number => DIAL_STOP - DIAL_OFFSET - DIAL_PITCH * index;
 
 /** Which hole a digit is in: 1 first, 0 last. */
-export const holeOf = (digit: number): number => (digit === 0 ? 9 : digit - 1);
+const holeOf = (digit: number): number => (digit === 0 ? 9 : digit - 1);
 
 /** How far the wheel must be wound to bring a digit's hole to the finger stop. */
 export const travelFor = (digit: number): number => DIAL_OFFSET + DIAL_PITCH * holeOf(digit);
-
-/** The furthest the wheel goes: the arc for 0. */
-export const DIAL_TRAVEL = travelFor(0);
 
 /** How many pulses the cam counts out of a wound arc, whatever digit was meant. */
 export function pulsesFor(angle: number): number {

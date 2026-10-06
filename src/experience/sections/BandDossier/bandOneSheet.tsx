@@ -5,8 +5,6 @@ import { list, SHARED_STAGES } from '../../../content/stages';
 
 const PARTS = ['Keys', 'Drums', 'Bass & vocals'];
 
-export { SHARED_STAGES };
-
 /** The live shot runs across the first crease: this much of its top is printed on the top panel. */
 const LIVE_PHOTO = { src: performance, height: 240, focus: '50% 40%', spill: 56 };
 

@@ -5,7 +5,7 @@ import './NewtonsCradle.css';
 /** One full swing, out and back on one side, then the other: in milliseconds. */
 export const CRADLE_PERIOD_MS = 1300;
 /** How many periods a push lasts before the balls settle. */
-export const CRADLE_SWINGS = 8;
+const CRADLE_SWINGS =8;
 /** The balls' centres, in 720ths of the frame's width, and their radius. */
 export const CRADLE_BALLS = [140, 250, 360, 470, 580] as const;
 export const CRADLE_RADIUS = 52;
@@ -15,7 +15,7 @@ export const CRADLE_REST = 300;
 /** How far an end ball swings out, in the same units. */
 export const CRADLE_SWING = 95;
 /** The string's turn and stretch at the end of a swing: from the rail down to the ball at rest, then out to where it has gone. */
-export const CRADLE_STRING = {
+const CRADLE_STRING ={
   angle: (Math.atan(CRADLE_SWING / (CRADLE_REST - CRADLE_RAILS[0])) * 180) / Math.PI,
   stretch: Math.hypot(CRADLE_SWING, CRADLE_REST - CRADLE_RAILS[0]) / (CRADLE_REST - CRADLE_RAILS[0]),
 };

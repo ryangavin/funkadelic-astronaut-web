@@ -4,7 +4,7 @@ import { DEFAULT_SHADOW_STRENGTH, useDeskLightEffect, type DeskLight, type Light
 import { LampLight } from './DeskLamp';
 
 /** Project an occluder away from the bulb onto the desk. Above-bulb parts cannot block its downward light. */
-export function lampShadowPoint(point: LightOccluderPoint, light: DeskLight) {
+function lampShadowPoint(point: LightOccluderPoint, light: DeskLight) {
   const ratio = point.height / Math.max(1, light.height - point.height);
   const dx = point.x - light.x, dy = point.y - light.y;
   const distance = Math.hypot(dx, dy);

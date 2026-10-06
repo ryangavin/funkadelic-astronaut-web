@@ -44,7 +44,7 @@ const DOSSIER_OPEN_TARGETS: RoomArrangement = {
 };
 
 /** Centre of the closed right-hand leaf, including its current turn and scale. */
-export function dossierOrigin(place: Place, width: number) {
+function dossierOrigin(place: Place, width: number) {
   const wide = width * (place.scale ?? 1);
   const angle = (place.rotation ?? 0) * Math.PI / 180;
   return { x: place.x + wide / 2 + wide / 4 * Math.cos(angle), y: place.y + wide * (915 / 1440) / 2 + wide / 4 * Math.sin(angle) };
@@ -67,7 +67,7 @@ const Contents = memo(function Contents() {
   </>;
 });
 
-export const DOSSIER_RETURN_MS = SPILL_FLIGHT_MS * .8 + 9 * SPILL_STAGGER_MS;
+const DOSSIER_RETURN_MS = SPILL_FLIGHT_MS * .8 + 9 * SPILL_STAGGER_MS;
 type Phase = 'closed' | 'preparing' | 'opening' | 'spilling' | 'open' | 'returning' | 'closing';
 
 /** One content tree stays in the folder's stacking context, but its positions

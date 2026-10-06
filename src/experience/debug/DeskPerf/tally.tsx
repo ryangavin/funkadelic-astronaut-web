@@ -16,11 +16,11 @@ import { Profiler, createContext, useContext, type ProfilerOnRenderCallback, typ
   composition is exactly what it was.
 */
 
-export type Tally = (id: string, phase: 'mount' | 'update' | 'nested-update', ms: number) => void;
+type Tally = (id: string, phase: 'mount' | 'update' | 'nested-update', ms: number) => void;
 
 export const RenderTally = createContext<Tally | null>(null);
 
-export function useRenderTally() {
+function useRenderTally() {
   return useContext(RenderTally);
 }
 

@@ -19,7 +19,7 @@ function frameWindow(windowMs = 2000) {
   };
 }
 
-export type FrameClock = {
+type FrameClock = {
   request: (callback: (now: number) => void) => number;
   cancel: (id: number) => void;
   hidden: () => boolean;

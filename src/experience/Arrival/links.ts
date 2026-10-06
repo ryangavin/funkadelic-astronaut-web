@@ -8,7 +8,7 @@ import { TOUR_DATES } from '../../components/2D/TourPass/TourPass.data';
  */
 export type ArrivalLinkId = 'listen' | 'watch' | 'shows' | 'press' | 'book';
 
-export type ArrivalLink = {
+type ArrivalLink = {
   id: ArrivalLinkId;
   label: string;
   /** The thing on the desk this goes to, by its place id. */
