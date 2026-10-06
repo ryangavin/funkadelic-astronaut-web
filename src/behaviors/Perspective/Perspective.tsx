@@ -121,7 +121,7 @@ const ON_ITS_BOTTOM: Foot = { x: 0.5, y: 1 };
  * comes back as a place in the surface for the top face to be drawn at, and
  * the plane's own projection does the rest.
  */
-function stand(plane: HTMLElement, view: View, foot: { left: number; top: number }, edge: { left: number; top: number }, reach: number, height: number): Stood {
+export function stand(plane: HTMLElement, view: View, foot: { left: number; top: number }, edge: { left: number; top: number }, reach: number, height: number): Stood {
   const { tilt, depth, width } = view;
   /* Where the thing stands, and where its own right-hand edge is, both on the surface. */
   const at = unproject(plane, view, foot.left, foot.top);
