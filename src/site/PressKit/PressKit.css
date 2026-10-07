@@ -122,12 +122,16 @@
   margin-top: var(--epk-space-s);
   padding-top: var(--epk-space-xs);
   border-top: var(--epk-rule);
-  font-family: var(--epk-serif);
+  font-family: var(--epk-serif-italic);
   font-size: var(--epk-text-caption);
   font-style: italic;
+  font-synthesis: none;
 }
 
+/* The lead-in stays upright Newsreader; held to its own size so the two faces' metrics don't open the line up. */
 .epk__live figcaption strong {
+  font-family: var(--epk-serif);
+  line-height: 1;
   font-style: normal;
   text-transform: uppercase;
   letter-spacing: var(--epk-caps);
