@@ -29,8 +29,10 @@ module.exports = {
       },
     },
     assert: {
-      // Assert on the median of the three runs, so one slow run neither fails nor passes the build.
-      aggregationMethod: 'median-run',
+      // Assert on each metric's median across the three runs, so one slow run neither fails nor passes the build.
+      // ('median-run' picks one representative run instead, and on CI it picked a run where a slow CPU moment
+      // pushed blocking time to 618 ms while the other two measured 155 ms and 28 ms.)
+      aggregationMethod: 'median',
       assertions: {
         'categories:performance': ['error', { minScore: 0.8 }],
         'categories:accessibility': ['error', { minScore: 1 }],
