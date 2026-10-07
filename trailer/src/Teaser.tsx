@@ -29,13 +29,6 @@ const ORANGE = '#ef8a3c';
 
 const DISPLAY: CSSProperties = { fontFamily: "'Bowlby One'", lineHeight: 0.9, color: STOCK, textTransform: 'uppercase' };
 const LABEL: CSSProperties = { fontFamily: 'Archivo', fontWeight: 900, fontStretch: '62%', textTransform: 'uppercase', color: STOCK };
-/**
- * Where booking goes: BOOKING_EMAIL in src/content/links.ts, copied because
- * that file imports the site's component types, which the trailer can't
- * type-check. Change both together.
- */
-const BOOKING_EMAIL = 'samluba1@gmail.com';
-
 const SHADOW =(u: number) => `0 ${0.5 * u}px ${2 * u}px rgb(0 0 0 / 0.75)`;
 
 /** Size in hundredths of the frame's short side, so both cuts share one layout. */
@@ -93,8 +86,10 @@ const ShotClip = ({ shot, look }: { shot: Shot; look?: CSSProperties['filter'] }
   const t = [0, durationInFrames];
   const scale = interpolate(frame, t, move.scale);
   // The vertical cut is already cropped tight on `focus`; it pans less, about that point.
-  const across = interpolate(frame, t, move.x);
+  const pans = move.x[0] !== move.x[1];
+  const across = pans ? interpolate(frame, t, move.x) : (shot.focusX ?? 50);
   const x = vertical ? shot.focus + (across - 50) * 0.4 : across;
+  const y = shot.focusY ?? 45;
   return (
     <AbsoluteFill style={{ background: 'black', overflow: 'hidden' }}>
       <OffthreadVideo
@@ -106,9 +101,11 @@ const ShotClip = ({ shot, look }: { shot: Shot; look?: CSSProperties['filter'] }
           height: '100%',
           objectFit: 'cover',
           objectPosition: `${shot.focus}% 50%`,
-          transformOrigin: `${x}% 45%`,
+          transformOrigin: `${x}% ${y}%`,
           transform: `scale(${scale})`,
-          filter: look ?? 'contrast(1.1) saturate(1.15)',
+          filter:
+            look ??
+            (shot.look === 'lift' ? 'brightness(1.45) contrast(1.15) saturate(1.1)' : 'contrast(1.1) saturate(1.15)'),
         }}
       />
     </AbsoluteFill>
@@ -134,14 +131,14 @@ const Bug = () => {
   );
 };
 
-/** One bar over the crowd from the street: the name lands on beats 1 and 3. */
+/** One bar over a packed room: the name lands on beats 1 and 3. */
 const Intro = () => {
   const { u, vertical } = useUnit();
   const size = (vertical ? 10.5 : 11) * u;
   return (
     <AbsoluteFill>
       <ShotClip shot={INTRO_SHOT} />
-      <AbsoluteFill style={{ background: 'rgb(28 22 64 / 0.45)' }} />
+      <AbsoluteFill style={{ background: 'rgb(28 22 64 / 0.15)' }} />
       <Vignette />
       <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
         <Slam at={0} style={{ ...DISPLAY, fontSize: size, textShadow: SHADOW(u) }}>Funkadelic</Slam>
@@ -225,7 +222,7 @@ const Clips = () => {
   );
 };
 
-/** Booking, over the crowd, softened: what the trailer is for. Fades to night on the last bar. */
+/** The genre, the name and the site, over the crowd, softened. Fades to night on the last bar. */
 const EndCard = () => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
@@ -242,16 +239,15 @@ const EndCard = () => {
         <AbsoluteFill
           style={{ alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 2.4 * u, padding: 6 * u }}
         >
-          <Slam at={0} style={{ ...LABEL, fontSize: 5 * u, color: PINK, letterSpacing: '0.04em' }}>
-            Future rock · New Jersey
+          <Slam at={0} style={{ ...LABEL, fontSize: 6 * u, color: PINK, letterSpacing: '0.04em' }}>
+            Future rock
           </Slam>
-          <Slam at={beatFrame(2)} style={{ ...DISPLAY, fontSize: (vertical ? 13 : 12) * u }}>
-            Book the band
+          <Slam at={beatFrame(2)} style={{ ...DISPLAY, fontSize: (vertical ? 10.5 : 11) * u }}>
+            Funkadelic
+            <br />
+            <span style={{ color: LIME }}>Astronaut</span>
           </Slam>
-          <Slam at={beatFrame(4)} style={{ ...LABEL, fontSize: 5.4 * u, color: LIME, textTransform: 'none', fontStretch: '75%' }}>
-            {BOOKING_EMAIL}
-          </Slam>
-          <Slam at={beatFrame(5)} style={{ ...LABEL, fontSize: 4.4 * u, textTransform: 'none', fontStretch: '75%' }}>
+          <Slam at={beatFrame(4)} style={{ ...LABEL, fontSize: 5.4 * u, textTransform: 'none', fontStretch: '75%' }}>
             funkadelicastronaut.com
           </Slam>
         </AbsoluteFill>

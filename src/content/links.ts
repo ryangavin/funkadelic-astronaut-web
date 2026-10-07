@@ -27,7 +27,7 @@ export const BANDCAMP_HREF = { platform: 'bandcamp', href: 'https://funkadelicas
 /** Every platform the band has a link on. */
 export type BandPlatform = (typeof LISTEN_HREFS)[number]['platform'] | (typeof SOCIAL_HREFS)[number]['platform'] | typeof BANDCAMP_HREF.platform;
 
-/** Where booking enquiries go: Sam. The trailer's end card has a copy (trailer/src/Teaser.tsx); change both together. */
+/** Where booking enquiries go: Sam. */
 export const BOOKING_EMAIL ='samluba1@gmail.com';
 
 /** Booking goes to Sam, with the subject filled in. */
