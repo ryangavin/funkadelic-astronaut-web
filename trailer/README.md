@@ -14,7 +14,7 @@ The song is played to a 110 BPM click, so everything is timed in bars (`src/timi
 | Trailer | What | Song |
 | --- | --- | --- |
 | Bar 1 | Intro: the porchfest crowd from the street, the name landing on beats 1 and 3 | From 2:03.7, the bar before its loudest stretch |
-| Bars 2–11 | The clips (`src/shots.ts`): ten one-bar shots, every other one the Nyack crowd, with "Future rock" and "From New Jersey" over four of them | Straight on |
+| Bars 2–11 | The clips (`src/shots.ts`): ten one-bar shots, four of them the Nyack crowd, with "Future rock" and "From New Jersey" over four of them | Straight on |
 | The last 6 s | End card over the softened crowd: "Book the band", the booking email and funkadelicastronaut.com; fades on the last bar | Fading out |
 
 Every shot has a slow Ken Burns move (push in, pull out, or pan left or right), set per shot. To recut it, edit `SHOTS`; the composition throws if the shots don't add up to 10 bars.

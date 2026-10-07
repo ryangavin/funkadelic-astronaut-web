@@ -34,7 +34,7 @@ export const INTRO_SHOT: Shot = { clip: 'nyack', from: 0.5, bars: 1, focus: NYAC
 /** The porchfest crowd, softened under the end card. */
 export const END_SHOT: Shot = { clip: 'nyack', from: 3, bars: 3, focus: NYACK, move: 'out' };
 
-/** Ten bars, one shot each, every other one a crowd: they play to people. */
+/** Ten bars, one shot each, four of them the Nyack crowd: they play to people. */
 export const SHOTS: Shot[] = [
   { clip: 'nyack', from: 19.5, bars: 1, focus: 40, move: 'in' },
   { clip: 'olives-1', from: 0, bars: 1, focus: OLIVES, move: 'right' },
