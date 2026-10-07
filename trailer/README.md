@@ -33,9 +33,9 @@ Each clip is an 8-second section, `yt-dlp -f "bv*[height<=1080][ext=mp4]/bv*[hei
 | Names | Video | Starts (seconds) |
 | --- | --- | --- |
 | `olives-1` to `olives-5` | Millenial Timemachine, 2026-07-31 (`QlC7tOQjGkM`) | 338, 1521, 2704, 3549, 4732 |
-| `wildair-1` to `wildair-3` | Wild Air Beerworks, 2026-06-28 (`N-sebD6b1jg`) | 70, 630, 910 |
+| `wildair-1`, `wildair-3` | Wild Air Beerworks, 2026-06-28 (`N-sebD6b1jg`) | 70, 910 |
 | `lenoras-1` to `lenoras-5` | Lenora's Bar and Grill, 2026-04-24 (`ekYHu2QAWNw`) | 222, 592, 1110, 1480, 2738 |
-| `howl-1` to `howl-3` | Howl to the Moon, live in the studio (`qMXotFgqFMI`) | 30, 200, 400 |
+| `howl-1`, `howl-2` | Howl to the Moon, live in the studio (`qMXotFgqFMI`) | 30, 200 |
 | `prelude-1`, `prelude-2` | Prelude ➤ Universal Eyes, live in the studio (`aAr3TOye4XU`) | 60, 500 |
 
 Bandcamp streams at 128 kbps. For a final cut, swap `song.mp3` for an MP3 from the master at the same length; the timings stay the same.
