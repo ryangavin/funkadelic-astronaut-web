@@ -10,16 +10,13 @@ export const BAR = 4 * BEAT;
 /** Where the song's bars sit: bar 27 starts on the downbeat at 1:00.44. */
 const songBar = (n: number) => 60.44 + (n - 27) * BAR;
 
-/** The two bars of build-up the intro plays over (2:01.5). */
-export const SONG_INTRO_AT = songBar(55);
-/** The loudest 16 bars (2:05.9 to 2:40.8), looped under the clips and back round for the end card. */
-export const SONG_LOOP_AT = songBar(57);
+/** The song starts two bars before its loudest stretch (2:05.9 to 3:04.8), so the intro is its build-up. */
+export const SONG_AT = songBar(55);
 
-/** The trailer's own bars: intro, the clips, the end card. */
+/** The trailer's own bars: two bars of intro, then the clips; the end card has what's left of the 30 seconds. */
 export const INTRO_BARS = 2;
-export const CLIP_BARS = 16;
-export const END_BARS = 4;
-export const TOTAL_BARS = INTRO_BARS + CLIP_BARS + END_BARS;
+export const CLIP_BARS = 9;
+export const TOTAL_FRAMES = 30 * FPS;
 
 /** The frame a (fractional) bar of the trailer starts on. Rounded from seconds, so the cuts never drift off the beat. */
 export const barFrame = (bars: number) => Math.round(bars * BAR * FPS);

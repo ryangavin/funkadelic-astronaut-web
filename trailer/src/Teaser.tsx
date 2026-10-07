@@ -2,8 +2,6 @@ import React, { type CSSProperties, type ReactNode } from 'react';
 import {
   AbsoluteFill,
   Audio,
-  Easing,
-  Img,
   OffthreadVideo,
   Sequence,
   interpolate,
@@ -13,23 +11,11 @@ import {
   useVideoConfig,
 } from 'remotion';
 import { loadFont } from '@remotion/fonts';
-import { FEATURED_RELEASE } from '../../src/content/releases';
-import astronaut from '../../assets/astronaut-transparent.png';
-import starMap from '../../assets/epk/star-map.webp';
+import nyackSet from '../../assets/epk/nyack-set.mp4';
 import bowlbyOne from '../../assets/fonts/bowlby-one/BowlbyOne-latin.woff2';
 import archivo from '../../assets/fonts/archivo/Archivo-latin.woff2';
-import { SHOTS, type Shot } from './shots';
-import {
-  BEAT,
-  CLIP_BARS,
-  END_BARS,
-  FPS,
-  INTRO_BARS,
-  SONG_INTRO_AT,
-  SONG_LOOP_AT,
-  barFrame,
-  secondsFrame,
-} from './timing';
+import { END_SHOT, INTRO_SHOT, SHOTS, type Move, type Shot } from './shots';
+import { BEAT, CLIP_BARS, FPS, INTRO_BARS, SONG_AT, TOTAL_FRAMES, barFrame, secondsFrame } from './timing';
 
 loadFont({ family: 'Bowlby One', url: bowlbyOne });
 loadFont({ family: 'Archivo', url: archivo, weight: '100 900', stretch: '62% 125%' });
@@ -43,6 +29,7 @@ const ORANGE = '#ef8a3c';
 
 const DISPLAY: CSSProperties = { fontFamily: "'Bowlby One'", lineHeight: 0.9, color: STOCK, textTransform: 'uppercase' };
 const LABEL: CSSProperties = { fontFamily: 'Archivo', fontWeight: 900, fontStretch: '62%', textTransform: 'uppercase', color: STOCK };
+const SHADOW =(u: number) => `0 ${0.5 * u}px ${2 * u}px rgb(0 0 0 / 0.75)`;
 
 /** Size in hundredths of the frame's short side, so both cuts share one layout. */
 const useUnit = () => {
@@ -50,11 +37,7 @@ const useUnit = () => {
   return { u: Math.min(width, height) / 100, vertical: height > width };
 };
 
-/** 1 on a beat, decaying to 0 before the next: the kick every shot breathes with. */
-const beatPulse = (frame: number) => {
-  const phase = (frame / FPS / BEAT) % 1;
-  return Math.exp(-phase * 7);
-};
+const beatFrame = (n: number) => Math.round(n * BEAT * FPS);
 
 /** A word that lands on its frame with a spring, from a little too big. */
 const Slam = ({ at, children, style }: { at: number; children: ReactNode; style?: CSSProperties }) => {
@@ -79,66 +62,37 @@ const Flash = ({ frames = 5 }: { frames?: number }) => {
   const frame = useCurrentFrame();
   return (
     <AbsoluteFill
-      style={{ background: STOCK, opacity: interpolate(frame, [0, frames], [0.85, 0], { extrapolateRight: 'clamp' }) }}
+      style={{ background: STOCK, opacity: interpolate(frame, [0, frames], [0.7, 0], { extrapolateRight: 'clamp' }) }}
     />
   );
 };
 
-const Stars = ({ opacity }: { opacity: number }) => {
-  const frame = useCurrentFrame();
-  return (
-    <AbsoluteFill style={{ background: NIGHT }}>
-      <Img
-        src={starMap}
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          opacity,
-          // The map is ink on paper; inverted and screened it is pale ink on the night.
-          filter: 'invert(1) hue-rotate(180deg)',
-          mixBlendMode: 'screen',
-          transform: `scale(${1.1 + frame * 0.0008}) rotate(${frame * 0.02}deg)`,
-        }}
-      />
-    </AbsoluteFill>
-  );
+/**
+ * The Ken Burns move, from the shot's first frame to its last: scale, and the
+ * point the frame is scaled about, as a percentage across and down.
+ */
+const MOVES: Record<Move, { scale: [number, number]; x: [number, number] }> = {
+  in: { scale: [1.05, 1.22], x: [50, 50] },
+  out: { scale: [1.22, 1.05], x: [50, 50] },
+  left: { scale: [1.18, 1.18], x: [80, 20] },
+  right: { scale: [1.18, 1.18], x: [20, 80] },
 };
 
-/** Two bars of build-up: the astronaut drifts in, then the name lands on beats 5 and 7. */
-const Intro = () => {
+const ShotClip = ({ shot, look }: { shot: Shot; look?: CSSProperties['filter'] }) => {
   const frame = useCurrentFrame();
-  const { u, vertical } = useUnit();
-  const beat = (n: number) => Math.round(n * BEAT * FPS);
-  const drift = interpolate(frame, [0, beat(4)], [30, 0], { extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) });
+  const { durationInFrames } = useVideoConfig();
+  const { vertical } = useUnit();
+  const move = MOVES[shot.move];
+  const t = [0, durationInFrames];
+  const scale = interpolate(frame, t, move.scale);
+  // The vertical cut is already cropped tight on `focus`; it pans less, about that point.
+  const across = interpolate(frame, t, move.x);
+  const x = vertical ? shot.focus + (across - 50) * 0.4 : across;
+  const y = shot.focusY ?? 45;
   return (
-    <AbsoluteFill>
-      <Stars opacity={0.45} />
-      <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2 * u }}>
-        <Img
-          src={astronaut}
-          style={{
-            height: (vertical ? 38 : 34) * u,
-            opacity: interpolate(frame, [0, beat(2)], [0, 1], { extrapolateRight: 'clamp' }),
-            transform: `translateY(${drift * u}px) rotate(${-8 + frame * 0.06}deg)`,
-          }}
-        />
-        <div style={{ textAlign: 'center' }}>
-          <Slam at={beat(4)} style={{ ...DISPLAY, fontSize: (vertical ? 10.5 : 11) * u }}>Funkadelic</Slam>
-          <Slam at={beat(6)} style={{ ...DISPLAY, fontSize: (vertical ? 10.5 : 11) * u, color: LIME }}>Astronaut</Slam>
-        </div>
-      </AbsoluteFill>
-    </AbsoluteFill>
-  );
-};
-
-const ShotClip = ({ shot }: { shot: Shot }) => {
-  const frame = useCurrentFrame();
-  const kick = beatPulse(frame);
-  return (
-    <AbsoluteFill style={{ background: 'black' }}>
+    <AbsoluteFill style={{ background: 'black', overflow: 'hidden' }}>
       <OffthreadVideo
-        src={staticFile(`media/${shot.clip}.mp4`)}
+        src={shot.clip === 'nyack' ? nyackSet : staticFile(`media/${shot.clip}.mp4`)}
         trimBefore={secondsFrame(shot.from)}
         muted
         style={{
@@ -146,11 +100,11 @@ const ShotClip = ({ shot }: { shot: Shot }) => {
           height: '100%',
           objectFit: 'cover',
           objectPosition: `${shot.focus}% 50%`,
-          transform: `scale(${1.04 + 0.03 * kick})`,
+          transformOrigin: `${x}% ${y}%`,
+          transform: `scale(${scale})`,
           filter:
-            shot.look === 'daylight'
-              ? `contrast(1.35) saturate(1.4) brightness(${0.9 + 0.08 * kick})`
-              : `contrast(1.1) saturate(1.15) brightness(${1 + 0.08 * kick})`,
+            look ??
+            (shot.look === 'lift' ? 'brightness(1.45) contrast(1.15) saturate(1.1)' : 'contrast(1.1) saturate(1.15)'),
         }}
       />
     </AbsoluteFill>
@@ -158,20 +112,28 @@ const ShotClip = ({ shot }: { shot: Shot }) => {
 };
 
 /** Darkened edges, so the type reads over any room. */
-const Vignette = () => (
+const Vignette = ({ strength = 0.75 }: { strength?: number }) => (
   <AbsoluteFill
-    style={{ background: 'radial-gradient(ellipse at center, transparent 45%, rgb(10 6 30 / 0.75) 100%)' }}
+    style={{ background: `radial-gradient(ellipse at center, transparent 40%, rgb(10 6 30 / ${strength}) 100%)` }}
   />
 );
 
-/** The band's name, small, in the corner of every live shot; at the top of the vertical cut, clear of Reels' captions. */
-const Bug = () => {
+/** Two bars over a packed room: the crowd alone for the first, then the name lands on beats 1 and 3 of the second. */
+const Intro = () => {
   const { u, vertical } = useUnit();
+  const size = (vertical ? 10.5 : 11) * u;
+  const name = barFrame(1);
   return (
-    <AbsoluteFill style={{ justifyContent: vertical ? 'flex-start' : 'flex-end', padding: (vertical ? 8 : 4) * u }}>
-      <div style={{ ...DISPLAY, fontSize: 3.6 * u, textShadow: `0 0 ${u}px rgb(0 0 0 / 0.8)` }}>
-        Funkadelic <span style={{ color: LIME }}>Astronaut</span>
-      </div>
+    <AbsoluteFill>
+      <ShotClip shot={INTRO_SHOT} />
+      <AbsoluteFill style={{ background: 'rgb(28 22 64 / 0.15)' }} />
+      <Vignette />
+      <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+        <Slam at={name} style={{ ...DISPLAY, fontSize: size, textShadow: SHADOW(u) }}>Funkadelic</Slam>
+        <Slam at={name + beatFrame(2)} style={{ ...DISPLAY, fontSize: size, color: LIME, textShadow: SHADOW(u) }}>
+          Astronaut
+        </Slam>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
@@ -192,16 +154,10 @@ const TITLES: Record<NonNullable<Shot['title']>, ReactNode> = {
 const Title = ({ title }: { title: NonNullable<Shot['title']> }) => {
   const { u, vertical } = useUnit();
   return (
-    <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center', background: 'rgb(28 22 64 / 0.35)' }}>
+    <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center', background: 'rgb(28 22 64 / 0.3)' }}>
       <Slam
         at={0}
-        style={{
-          ...LABEL,
-          fontSize: (vertical ? 22 : 24) * u,
-          lineHeight: 0.85,
-          textAlign: 'center',
-          textShadow: `0 ${0.6 * u}px ${2 * u}px rgb(0 0 0 / 0.7)`,
-        }}
+        style={{ ...LABEL, fontSize: (vertical ? 22 : 24) * u, lineHeight: 0.85, textAlign: 'center', textShadow: SHADOW(u) }}
       >
         {TITLES[title]}
       </Slam>
@@ -243,7 +199,6 @@ const Clips = () => {
         </Sequence>
       ))}
       <Vignette />
-      <Bug />
       {titles.map(({ title, start, end }) => (
         <Sequence key={`${title}-${start}`} {...clipSpan(start, end)}>
           <Title title={title} />
@@ -254,79 +209,54 @@ const Clips = () => {
   );
 };
 
-/** Four bars: the record, and where to get it. Fades to night on the last bar. */
+/** The genre, the name and the site, over the crowd, softened. Fades to night on the last bar. */
 const EndCard = () => {
   const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
   const { u, vertical } = useUnit();
-  const bar = barFrame(1);
-  const host = new URL(FEATURED_RELEASE.href).host;
-  const fade = interpolate(frame, [barFrame(END_BARS) - bar, barFrame(END_BARS)], [1, 0], {
+  const fade = interpolate(frame, [durationInFrames - barFrame(1), durationInFrames], [1, 0], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
   return (
-    <AbsoluteFill style={{ opacity: fade }}>
-      <Stars opacity={0.35} />
-      <AbsoluteFill
-        style={{
-          flexDirection: vertical ? 'column' : 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: (vertical ? 4 : 6) * u,
-          padding: 6 * u,
-        }}
-      >
-        <Img
-          src={astronaut}
-          style={{
-            height: (vertical ? 34 : 52) * u,
-            transform: `translateY(${Math.sin(frame / 18) * u}px) rotate(${6 - frame * 0.04}deg)`,
-          }}
-        />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2.4 * u, alignItems: vertical ? 'center' : 'flex-start', textAlign: vertical ? 'center' : 'left' }}>
-          <Slam at={0} style={{ ...LABEL, fontSize: 5 * u, color: PINK, letterSpacing: '0.04em' }}>
-            The new record · out now
+    <AbsoluteFill style={{ background: NIGHT }}>
+      <AbsoluteFill style={{ opacity: fade }}>
+        <ShotClip shot={END_SHOT} look="blur(10px) brightness(0.55) saturate(1.2)" />
+        <AbsoluteFill style={{ background: 'rgb(28 22 64 / 0.55)' }} />
+        <AbsoluteFill
+          style={{ alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 2.4 * u, padding: 6 * u }}
+        >
+          <Slam at={0} style={{ ...LABEL, fontSize: 6 * u, color: PINK, letterSpacing: '0.04em' }}>
+            Future rock
           </Slam>
-          <Slam at={Math.round(2 * BEAT * FPS)} style={{ ...DISPLAY, fontSize: (vertical ? 11 : 10) * u, maxWidth: (vertical ? 90 : 100) * u }}>
-            {FEATURED_RELEASE.title}
+          <Slam at={beatFrame(2)} style={{ ...DISPLAY, fontSize: (vertical ? 10.5 : 11) * u }}>
+            Funkadelic
+            <br />
+            <span style={{ color: LIME }}>Astronaut</span>
           </Slam>
-          <Slam at={bar} style={{ ...LABEL, fontSize: 5.4 * u, color: LIME, textTransform: 'none', fontStretch: '75%' }}>
-            {host}
+          <Slam at={beatFrame(4)} style={{ ...LABEL, fontSize: 5.4 * u, textTransform: 'none', fontStretch: '75%' }}>
+            funkadelicastronaut.com
           </Slam>
-        </div>
+        </AbsoluteFill>
       </AbsoluteFill>
       <Flash />
     </AbsoluteFill>
   );
 };
 
-/**
- * The song: the intro's build-up runs straight into the 16-bar loop, which
- * comes back round from the top under the end card and fades with it.
- */
-const Music = () => {
-  const endAt = barFrame(INTRO_BARS + CLIP_BARS);
-  const bar = barFrame(1);
-  return (
-    <>
-      <Sequence durationInFrames={endAt}>
-        <Audio src={staticFile('media/song.mp3')} trimBefore={secondsFrame(SONG_INTRO_AT)} />
-      </Sequence>
-      <Sequence from={endAt} durationInFrames={barFrame(END_BARS)}>
-        <Audio
-          src={staticFile('media/song.mp3')}
-          trimBefore={secondsFrame(SONG_LOOP_AT)}
-          volume={(f) =>
-            interpolate(f, [barFrame(END_BARS) - bar, barFrame(END_BARS)], [1, 0], {
-              extrapolateLeft: 'clamp',
-              extrapolateRight: 'clamp',
-            })
-          }
-        />
-      </Sequence>
-    </>
-  );
-};
+/** The song from the bar before its loudest stretch, fading out over the last bar. */
+const Music = () => (
+  <Audio
+    src={staticFile('media/song.mp3')}
+    trimBefore={secondsFrame(SONG_AT)}
+    volume={(f) =>
+      interpolate(f, [TOTAL_FRAMES - barFrame(1), TOTAL_FRAMES], [1, 0], {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      })
+    }
+  />
+);
 
 export const Teaser = () => {
   const { bars } = timeline();
