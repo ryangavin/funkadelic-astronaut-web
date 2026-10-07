@@ -55,7 +55,8 @@ const FACES = [
   'archivo/Archivo-Italic',
   'bowlby-one/BowlbyOne',
   'newsreader/Newsreader',
-  'newsreader/Newsreader-Italic',
+  // No Newsreader-Italic: the site sets its italics in the system serif (tokens.css). Its source,
+  // Newsreader-Italic-latin.woff2, stays in assets/fonts/ but nothing links it, so it never ships.
 ];
 
 for (const face of FACES) {

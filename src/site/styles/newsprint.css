@@ -96,6 +96,19 @@
   hyphens: auto;
 }
 
+/*
+  Italic words (an album title in the copy) in the system's serif italic: the site ships no italic face. Its taller
+  ascent and descent would push their line a pixel or two apart from its neighbours, so the word's own line box is
+  kept to its size and the line keeps the height of the copy around it.
+*/
+.epk em,
+.epk i {
+  font-family: var(--epk-serif-italic);
+  font-style: italic;
+  font-synthesis: none;
+  line-height: 1;
+}
+
 /* A ribbon of the item's own spot ink across its top, as each member and each record is headed. */
 .epk-ribbon {
   padding-top: var(--epk-space-m);

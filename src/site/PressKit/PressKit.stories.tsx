@@ -114,6 +114,30 @@ export const Poster: Story = {
   },
 };
 
+/**
+ * The italics (the live set's caption, the album title in the story) are the system's serif italic, never Newsreader:
+ * the site ships no Newsreader italic, so naming Newsreader would draw it slanted by the browser. The caption's
+ * strong lead-in stays in upright Newsreader.
+ */
+export const Italics: Story = {
+  play: async ({ canvasElement }) => {
+    const family = (element: Element | null) => (element ? getComputedStyle(element).fontFamily : '');
+    const caption = canvasElement.querySelector('figcaption');
+    const title = canvasElement.querySelector('em');
+    for (const element of [caption, title]) {
+      await expect(element, 'an italic element is missing').not.toBeNull();
+      await expect(getComputedStyle(element!).fontStyle).toBe('italic');
+      await expect(family(element)).toMatch(/^Georgia,/);
+      await expect(family(element)).not.toMatch(/Newsreader/);
+      await expect(getComputedStyle(element!).fontSynthesisStyle).toBe('none');
+    }
+    await expect(title).toHaveTextContent(FEATURED_RELEASE.title);
+    const lead = caption!.querySelector('strong');
+    await expect(getComputedStyle(lead!).fontStyle).toBe('normal');
+    await expect(family(lead)).toMatch(/^"?Newsreader/);
+  },
+};
+
 /** Every link goes where src/content says; the ones off the site open in a new tab without handing it this page. */
 export const Links: Story = {
   play: async ({ canvasElement }) => {

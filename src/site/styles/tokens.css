@@ -35,6 +35,8 @@
   /* Type. Archivo, heavy and condensed, for headlines, labels and links; Newsreader for the copy; Bowlby One for the nameplate only. */
   --epk-sans: 'Archivo', system-ui, sans-serif;
   --epk-serif: 'Newsreader', Georgia, serif;
+  /* The italic is the system's serif italic (Georgia on Apple and Windows, Noto Serif on Android), never a slanted Newsreader. */
+  --epk-serif-italic: Georgia, 'Noto Serif', 'Droid Serif', 'Times New Roman', serif;
   --epk-display: 'Bowlby One', var(--epk-sans);
   --epk-weight-black: 900;
   --epk-weight-heavy: 800;

@@ -6,8 +6,8 @@
 //
 // Third parties are blocked (see chromeFlags), so the audit measures the site's own files only. The budgets are what
 // the site scores with room for slower CI runners: at the time of writing the median mobile run scores performance
-// 0.84, accessibility 1, best practices 1, SEO 1, with LCP 4.5 s, FCP 1.65 s, TBT 0 ms, CLS 0 and 1.51 MB
-// transferred. Accessibility and SEO don't depend on timing, so they stay at 1. Raise the budgets when the site gets
+// 0.90, accessibility 1, best practices 1, SEO 1, with LCP 3.5 s, FCP 1.4 s, TBT 0 ms, CLS 0 and 1.32 MB
+// transferred. Performance is held to the median less 0.05, LCP to it plus 1.5 s. Accessibility and SEO don't depend on timing, so they stay at 1. Raise the budgets when the site gets
 // faster; never lower them to let a regression through.
 const PORT = 4180;
 
@@ -31,12 +31,12 @@ module.exports = {
       // Assert on the median of the three runs, so one slow run neither fails nor passes the build.
       aggregationMethod: 'median-run',
       assertions: {
-        'categories:performance': ['error', { minScore: 0.75 }],
+        'categories:performance': ['error', { minScore: 0.85 }],
         'categories:accessibility': ['error', { minScore: 1 }],
         'categories:best-practices': ['error', { minScore: 0.95 }],
         'categories:seo': ['error', { minScore: 1 }],
         'first-contentful-paint': ['error', { maxNumericValue: 2500 }],
-        'largest-contentful-paint': ['error', { maxNumericValue: 6000 }],
+        'largest-contentful-paint': ['error', { maxNumericValue: 5000 }],
         'total-blocking-time': ['error', { maxNumericValue: 300 }],
         'cumulative-layout-shift': ['error', { maxNumericValue: 0.05 }],
         'total-byte-weight': ['error', { maxNumericValue: 1800000 }],

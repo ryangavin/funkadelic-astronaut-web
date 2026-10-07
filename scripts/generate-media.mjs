@@ -10,9 +10,11 @@
 //   (a 412 px phone at DPR 1.75 draws them ~380 CSS px wide, ~665 device px). The 900×600 copies beside them are
 //   assets/<id>-portrait.webp (1800×1199) squeezed to 900×600 at webp quality 80; the smaller sizes are made the same
 //   way, so every size shows exactly the same picture. The 900s are left as they are.
-// - assets/festival-map-1010.webp and festival-map-505.webp: the page background, from assets/festival-map.png. It sits
+// - assets/festival-map-1010.webp and festival-map-96.webp: the page background, from assets/festival-map.png. It sits
 //   under a dark veil and is upscaled to cover the page, so quality 70 reads the same as the original 92. Phones see
-//   only thin gutters of it, upscaled about 4×, so their 505 copy goes down to quality 20.
+//   only 4 px gutters and the top and bottom margins of it, upscaled about 10× even from a 505 px copy, so theirs is a
+//   96×148 thumbnail at quality 30 (about 5 KB, was 98 KB): under the veil it reads as the same colours, only softer
+//   (a mean difference of 14/255 in those gutters at 390 px).
 // - assets/epk/live-poster.webp: the live video's poster (the frame at 0:30), re-encoded at quality 43 from its master,
 //   assets/epk/live-poster-master.webp (the poster as first made): 31% smaller, SSIM 0.98 against it.
 import { execFileSync } from 'node:child_process';
@@ -56,7 +58,7 @@ const map = (size, quality, file) => {
 };
 
 map(null, '70', asset('festival-map-1010.webp'));
-map('505x779', '20', asset('festival-map-505.webp'));
+map('96x148', '30', asset('festival-map-96.webp'));
 
 // The poster's master is the original 1280×720 frame, kept as assets/epk/live-poster-master.webp (never published:
 // the site imports only live-poster.webp).

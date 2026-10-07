@@ -11,8 +11,8 @@
 
 /*
   The festival poster under the night ink. It is drawn several times its size (cover over the whole page), so a
-  lighter encode looks the same; phones, which only show it in the gutters, get a half-size one
-  (scripts/generate-media.mjs makes both from assets/festival-map.png).
+  lighter encode looks the same; phones, which only show it in the gutters, get a 96 px thumbnail of a few KB, so it
+  never holds up their first paint (scripts/generate-media.mjs makes both from assets/festival-map.png).
 */
 .epk {
   --epk-poster: url('../../../assets/festival-map-1010.webp');
@@ -122,12 +122,16 @@
   margin-top: var(--epk-space-s);
   padding-top: var(--epk-space-xs);
   border-top: var(--epk-rule);
-  font-family: var(--epk-serif);
+  font-family: var(--epk-serif-italic);
   font-size: var(--epk-text-caption);
   font-style: italic;
+  font-synthesis: none;
 }
 
+/* The lead-in stays upright Newsreader; held to its own size so the two faces' metrics don't open the line up. */
 .epk__live figcaption strong {
+  font-family: var(--epk-serif);
+  line-height: 1;
   font-style: normal;
   text-transform: uppercase;
   letter-spacing: var(--epk-caps);
@@ -198,7 +202,7 @@
 @media (max-width: 679px) {
   /* Tight gutters keep Bandcamp's player at the 350px it needs to fit its controls. */
   .epk {
-    --epk-poster: url('../../../assets/festival-map-505.webp');
+    --epk-poster: url('../../../assets/festival-map-96.webp');
     padding-inline: var(--epk-space-2xs);
     line-height: var(--epk-leading-body-narrow);
   }

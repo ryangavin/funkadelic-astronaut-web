@@ -28,13 +28,10 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: 'Newsreader';
-  src: url('../../../assets/fonts/newsreader/Newsreader-Italic-site.woff2') format('woff2');
-  font-style: italic;
-  font-weight: 200 800;
-  font-display: swap;
-}
+/*
+  No Newsreader italic: at 96 KB it was the heaviest thing a phone fetched before its first paint, for one caption and
+  one album title. Those are set in the system's own serif italic (--epk-serif-italic in tokens.css).
+*/
 
 @font-face {
   font-family: 'Archivo';

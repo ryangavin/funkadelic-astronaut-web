@@ -102,7 +102,9 @@ const siteFonts = () =>
 
 test('fonts.css loads the cut-down fonts, each with its original beside it', () => {
   const fonts = siteFonts();
-  assert.equal(fonts.length, 5);
+  // Archivo and its italic, Bowlby One, Newsreader. No Newsreader italic: the site's italics are the system serif's.
+  assert.equal(fonts.length, 4);
+  assert.ok(!fonts.some(({ subset }) => /Newsreader-Italic/.test(subset)), 'fonts.css loads Newsreader italic again');
   for (const { subset, source } of fonts) {
     assert.match(subset, /-site\.woff2$/, `${subset} is not one of the cut-down fonts`);
     assert.ok(fs.existsSync(subset), `${subset} is missing; run node scripts/subset-fonts.mjs`);
