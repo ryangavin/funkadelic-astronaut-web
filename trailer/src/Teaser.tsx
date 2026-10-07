@@ -86,8 +86,7 @@ const ShotClip = ({ shot, look }: { shot: Shot; look?: CSSProperties['filter'] }
   const t = [0, durationInFrames];
   const scale = interpolate(frame, t, move.scale);
   // The vertical cut is already cropped tight on `focus`; it pans less, about that point.
-  const pans = move.x[0] !== move.x[1];
-  const across = pans ? interpolate(frame, t, move.x) : (shot.focusX ?? 50);
+  const across = interpolate(frame, t, move.x);
   const x = vertical ? shot.focus + (across - 50) * 0.4 : across;
   const y = shot.focusY ?? 45;
   return (
@@ -119,30 +118,19 @@ const Vignette = ({ strength = 0.75 }: { strength?: number }) => (
   />
 );
 
-/** The band's name, small, in the corner of every shot; at the top of the vertical cut, clear of Reels' captions. */
-const Bug = () => {
-  const { u, vertical } = useUnit();
-  return (
-    <AbsoluteFill style={{ justifyContent: vertical ? 'flex-start' : 'flex-end', padding: (vertical ? 8 : 4) * u }}>
-      <div style={{ ...DISPLAY, fontSize: 3.6 * u, textShadow: `0 0 ${u}px rgb(0 0 0 / 0.8)` }}>
-        Funkadelic <span style={{ color: LIME }}>Astronaut</span>
-      </div>
-    </AbsoluteFill>
-  );
-};
-
-/** One bar over a packed room: the name lands on beats 1 and 3. */
+/** Two bars over a packed room: the crowd alone for the first, then the name lands on beats 1 and 3 of the second. */
 const Intro = () => {
   const { u, vertical } = useUnit();
   const size = (vertical ? 10.5 : 11) * u;
+  const name = barFrame(1);
   return (
     <AbsoluteFill>
       <ShotClip shot={INTRO_SHOT} />
       <AbsoluteFill style={{ background: 'rgb(28 22 64 / 0.15)' }} />
       <Vignette />
       <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-        <Slam at={0} style={{ ...DISPLAY, fontSize: size, textShadow: SHADOW(u) }}>Funkadelic</Slam>
-        <Slam at={beatFrame(2)} style={{ ...DISPLAY, fontSize: size, color: LIME, textShadow: SHADOW(u) }}>
+        <Slam at={name} style={{ ...DISPLAY, fontSize: size, textShadow: SHADOW(u) }}>Funkadelic</Slam>
+        <Slam at={name + beatFrame(2)} style={{ ...DISPLAY, fontSize: size, color: LIME, textShadow: SHADOW(u) }}>
           Astronaut
         </Slam>
       </AbsoluteFill>
@@ -211,7 +199,6 @@ const Clips = () => {
         </Sequence>
       ))}
       <Vignette />
-      <Bug />
       {titles.map(({ title, start, end }) => (
         <Sequence key={`${title}-${start}`} {...clipSpan(start, end)}>
           <Title title={title} />

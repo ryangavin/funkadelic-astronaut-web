@@ -18,8 +18,7 @@ export type Shot = {
   bars: number;
   focus: number;
   move: Move;
-  /** Where a push in or pull out centres, as percentages across and down the 16:9 frame; 50 and 45 unless the crowd is elsewhere. Pans keep their own path across. */
-  focusX?: number;
+  /** How far down the frame the move centres, as a percentage; 45 unless the crowd is higher up. */
   focusY?: number;
   /** Lifts footage too dark to read the crowd in. */
   look?: 'lift';
@@ -39,18 +38,17 @@ const SPACE_INVASION = 55;
 const SPROUT = 20;
 
 /** The packed room at Space Invasion II (opening for Space Bacon), under the intro's title. */
-export const INTRO_SHOT: Shot = { clip: 'spacebacon-2', from: 0, bars: 1, focus: SPACE_INVASION, move: 'in', look: 'lift' };
+export const INTRO_SHOT: Shot = { clip: 'spacebacon-2', from: 0, bars: 2, focus: SPACE_INVASION, move: 'in', look: 'lift' };
 
 /** The porchfest crowd, softened under the end card. */
 export const END_SHOT: Shot = { clip: 'nyack', from: 3, bars: 3, focus: NYACK, move: 'out' };
 
-/** Ten bars, one shot each, six of them crowds: this band is a live band. */
+/** Nine bars, one shot each, five of them crowds: this band is a live band. */
 export const SHOTS: Shot[] = [
   { clip: 'sprout-1', from: 0, bars: 1, focus: SPROUT, move: 'in' },
   { clip: 'olives-1', from: 0, bars: 1, focus: OLIVES, move: 'right' },
   { clip: 'nyack', from: 19.5, bars: 1, focus: 40, move: 'in', title: 'genre' },
   { clip: 'lenoras-1', from: 1, bars: 1, focus: LENORAS, move: 'in', title: 'genre' },
-  { clip: 'spacebacon-1', from: 2, bars: 1, focus: SPACE_INVASION, move: 'left', look: 'lift' },
   { clip: 'olives-3', from: 0, bars: 1, focus: OLIVES, move: 'out', title: 'place' },
   { clip: 'nyack', from: 47, bars: 1, focus: NYACK, move: 'right', title: 'place' },
   { clip: 'sprout-1', from: 4.5, bars: 1, focus: SPROUT, move: 'right' },
