@@ -204,6 +204,14 @@ export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:str
     },
     get position(){return depositedPosition;},
     get journeyLength(){return journeyLength;},
+    getSpineTrace(){
+      const points=new Float32Array((depositedSamples.length+1)*2);
+      for(let i=0;i<=depositedSamples.length;i++){
+        const screenY=i/depositedSamples.length*viewportLength;
+        points[i*2]=nativeSpineX(depositedSamples,depositedPosition+screenY,depositedWidth);points[i*2+1]=screenY/viewportLength;
+      }
+      return points;
+    },
     getSpinePoint(worldY:number){return {x:nativeSpineX(depositedSamples,worldY,depositedWidth),y:wrapJourney(worldY-depositedPosition)/viewportLength};},
     jump(worldY:number){target=wrapJourney(worldY);},
     setPaused(value:boolean){paused=value;diagnostics.paused=value;},
