@@ -184,6 +184,15 @@
       "label": "Visual look",
       "tree": "Tree",
       "stars": "Star map"
+    },
+    "worlds": {
+      "label": "Interactive world",
+      "garden": "Resonance Garden",
+      "ink": "Living Ink",
+      "orrery": "Orrery",
+      "autonomous": "Autonomous sources",
+      "clear": "Clear marks",
+      "draw": "Click or draw into the visualizer"
     }
   }
 }

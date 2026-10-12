@@ -1,3 +1,4 @@
+import { initialMode, type WorldMode } from './worlds';
 import { gentleDefaults, gentlePresetId, type GentleTuning } from './gentle-preset';
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -13,7 +14,9 @@ import './museum.css';
 
 function TreeMuseum() {
   const [tuning,setTuning]=useState<GentleTuning>({...gentleDefaults});
-  const [look,setLook]=useState<'tree'|'stars'>('tree');
+  const [mode,setMode]=useState<WorldMode>(initialMode);
+  const [autonomous,setAutonomous]=useState(true);
+  const look='tree';
   const [tuningOpen,setTuningOpen]=useState(false);
   const perfEnabled=new URLSearchParams(location.search).get('perf')==='1';
   const [theme,setTheme]=useState<ThemeId>(initialTheme);
@@ -65,27 +68,16 @@ function TreeMuseum() {
     const updateLabels = () => {
       const position=renderer.current?.position || 0;
       const geometry=renderer.current?.getTreeGeometry();
-      if(geometry){let d='';for(const trace of geometry.lines)for(let i=0;i<trace.length;i+=2)d+=`${i?'L':'M'}${(trace[i]*1000).toFixed(2)} ${(trace[i+1]*1000).toFixed(2)}`;foregroundUnderstroke.current?.setAttribute('d',d);foreground.current?.setAttribute('d',d);foregroundHalo.current?.setAttribute('d',d);
-        if(hierarchy.current){const paths=geometry.lines.map((line,index)=>{let path='';for(let i=0;i<line.length;i+=2)path+=`${i?'L':'M'}${(line[i]*1000).toFixed(2)} ${(line[i+1]*1000).toFixed(2)}`;return `<path class="museum-order-${geometry.orders[index]}" d="${path}"/>`;}).join('');const nodes=[...geometry.junctions,...geometry.anchors.values()].map(point=>`<circle cx="${point.x*1000}" cy="${point.y*1000}" r="2.4"/>`).join('');hierarchy.current.innerHTML=paths+nodes;}
-      }
+      if(geometry&&hierarchy.current){const nodes=[...geometry.junctions,...geometry.anchors.values()].map(point=>`<circle cx="${point.x*1000}" cy="${point.y*1000}" r="2.4"/>`).join('');hierarchy.current.innerHTML=nodes;}
       labels.current.forEach((label,index)=>{
         if (!label) return;
-        const y=wrapJourney(projects[index].worldY-position);
-        const visible=y>.65&&y<viewportLength-.55;
         const point=renderer.current?.getProjectPoint(index);
+        const y=point?.y||0;const visible=!!point;
         const branch=branches.current[index];
-        if(branch)branch.style.display=visible&&point?'':'none';
-        if(branch&&point&&visible){
-          branch.style.display=visible?'':'none';
-          const rect=label.getBoundingClientRect(),endX=(projects[index].side<0?rect.right:rect.left)/innerWidth*1000;
-          const x=point.x*1000,sy=point.y*1000;
-          branch.querySelector('path')?.setAttribute('d',`M ${x} ${sy} C ${x+(endX-x)*.18} ${sy+projects[index].side*35}, ${endX-(endX-x)*.28} ${sy-projects[index].side*18}, ${endX} ${sy}`);
-
-          branch.querySelector('circle')?.setAttribute('cx',String(x));branch.querySelector('circle')?.setAttribute('cy',String(sy));
-        }
+        if(branch)branch.style.display='none';
         label.hidden=!visible; label.tabIndex=visible?0:-1;
-        label.style.top=`${y/viewportLength*100}%`;
-        label.style.opacity=String(Math.min(1,(y-.65)*3,(viewportLength-.55-y)*3));
+        label.style.top=`${y*100}%`;label.style.left=point?`${point.x*100}%`:"";label.style.right="";
+        label.style.opacity="1";
       });
       document.querySelectorAll<HTMLElement>('.museum-chapter').forEach((label,index)=>{
         const y=wrapJourney(chapters[index].worldY-position);label.hidden=y/viewportLength*innerHeight<175||y>viewportLength-.7;
@@ -101,12 +93,6 @@ function TreeMuseum() {
       const pixels=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?innerHeight:1);
       move(Math.max(-1,Math.min(1,pixels*.003)));
     };
-    let touchY=0;
-    const touchStart=(event:TouchEvent)=>{touchY=event.touches[0].clientY;};
-    const touchMove=(event:TouchEvent)=>{
-      if(activeRef.current!==null||pickerRef.current||(event.target instanceof Element&&event.target.closest('.museum-tuning'))) return;
-      event.preventDefault();const y=event.touches[0].clientY;move((touchY-y)*.009);touchY=y;
-    };
     const key=(event:KeyboardEvent)=>{
       if(activeRef.current!==null||pickerRef.current) return;
       const target=event.target;
@@ -121,11 +107,10 @@ function TreeMuseum() {
       if(event.key in deltas) {event.preventDefault();move(deltas[event.key]);}
       if(event.key==='Home') {event.preventDefault();renderer.current?.reset();}
     };
-    addEventListener('wheel',wheel,{passive:false});addEventListener('touchstart',touchStart,{passive:true});
-    addEventListener('touchmove',touchMove,{passive:false});addEventListener('keydown',key);
+    addEventListener('wheel',wheel,{passive:false});addEventListener('keydown',key);
     return()=>{
       selectionRequest.current++;selectionAbort.current?.abort();clearInterval(perfTimer);cancelAnimationFrame(labelsFrame);renderer.current?.dispose();renderer.current=null;
-      removeEventListener('wheel',wheel);removeEventListener('touchstart',touchStart);removeEventListener('touchmove',touchMove);removeEventListener('keydown',key);
+      removeEventListener('wheel',wheel);removeEventListener('keydown',key);
     };
   },[]);
   useEffect(()=>{
@@ -142,7 +127,7 @@ function TreeMuseum() {
   },[active]);
   const selected=active===null?null:projects[active];
   const close=()=>{const previous=active;setActive(null);if(previous!==null) requestAnimationFrame(()=>labels.current[previous]?.focus());};
-  return <main className={`tree-museum museum-look-${look}`} aria-label={t('museum.label')}>
+  return <main className={`tree-museum museum-world-${mode} museum-look-${look}`} onPointerDown={event=>{if(active!==null||pickerOpen||event.button!==0||(event.target instanceof Element&&event.target.closest('button,a,input,select,textarea,dialog,label,summary,details,.museum-tuning,.museum-world-controls,.museum-themes,.museum-preset-quick,.museum-chapter-nav')))return;const rect=event.currentTarget.getBoundingClientRect();event.currentTarget.setPointerCapture(event.pointerId);renderer.current?.beginStroke(event.pointerId,(event.clientX-rect.left)/rect.width,(event.clientY-rect.top)/rect.height);}} onPointerMove={event=>{if(!event.currentTarget.hasPointerCapture(event.pointerId))return;const rect=event.currentTarget.getBoundingClientRect();renderer.current?.extendStroke(event.pointerId,(event.clientX-rect.left)/rect.width,(event.clientY-rect.top)/rect.height);}} onPointerUp={event=>{renderer.current?.endStroke(event.pointerId);if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);}} onPointerCancel={event=>renderer.current?.endStroke(event.pointerId)} onLostPointerCapture={event=>renderer.current?.endStroke(event.pointerId)} aria-label={t('museum.label')}>
     <canvas ref={canvas} style={{opacity:tuning.background}} className="museum-canvas" aria-hidden="true" />
     {perfEnabled && perf && <output id="museum-performance" className="museum-performance" aria-label={t('museum.perf.label')} data-native-position={window.__treeMuseum?.nativePosition.toFixed(3)} data-native-frames={window.__treeMuseum?.nativeFrames} data-native-deposits={window.__treeMuseum?.nativeDeposits} data-native-target-bound={String(window.__treeMuseum?.nativeTargetBound)} data-injecting={String(injecting)} data-quality={window.__treeMuseum?.quality.tier} data-quality-transitions={window.__treeMuseum?.quality.transitions} data-fps={perf.fps.toFixed(1)} data-raf-p95-ms={perf.rafP95Ms.toFixed(2)} data-cpu-p95-ms={perf.cpuP95Ms.toFixed(2)} data-compositor-gpu-ms={perf.compositorGpuMs?.toFixed(2)||'unavailable'}>
       <span>{t('museum.perf.timing',{fps:perf.fps.toFixed(1),raf:perf.rafP95Ms.toFixed(2)})}</span>
@@ -170,7 +155,7 @@ function TreeMuseum() {
       }}>{t(item.label)}</button>)}
     </div>
     <PresetBrowser retryId={retryPresetId} selected={retryPresetId||presetId||presetCatalogue.find(preset=>preset.name===themes.find(item=>item.id===theme)!.name)?.id||null} name={presetCatalogue.find(preset=>preset.id===presetId)?.name||themes.find(item=>item.id===theme)!.name} loading={presetLoading} error={presetError} onSelect={id=>{void selectLibrary(id);}} onOpen={setPickerOpen} />
-    <div className="museum-look-picker" role="group" aria-label={t('museum.look.label')}><button type="button" aria-pressed={look==='tree'} onClick={()=>setLook('tree')}>{t('museum.look.tree')}</button><button type="button" aria-pressed={look==='stars'} onClick={()=>setLook('stars')}>{t('museum.look.stars')}</button></div>
+    <div className="museum-world-controls"><div role="group" aria-label={t('museum.worlds.label')}>{(['garden','ink','orrery'] as const).map(value=><button key={value} aria-pressed={mode===value} onClick={()=>{setMode(value);renderer.current?.setMode(value);const url=new URL(location.href);url.searchParams.set('mode',value);history.replaceState(null,'',url);}}>{t(`museum.worlds.${value}`)}</button>)}</div><button aria-pressed={autonomous} onClick={()=>{setAutonomous(!autonomous);renderer.current?.setAutonomous(!autonomous);}}>{t('museum.worlds.autonomous')}</button><button onClick={()=>renderer.current?.clearMarks()}>{t('museum.worlds.clear')}</button><span>{t('museum.worlds.draw')}</span></div>
     <section className="museum-tuning" aria-label={t('museum.tuning.title')}>
       <button type="button" aria-expanded={tuningOpen} aria-controls="museum-tuning-panel" onClick={()=>setTuningOpen(!tuningOpen)}>{t('museum.tuning.title')}</button>
       {tuningOpen&&<div id="museum-tuning-panel"><p>{t(presetId===gentlePresetId?'museum.tuning.customHint':'museum.tuning.libraryHint')}</p>
@@ -181,16 +166,15 @@ function TreeMuseum() {
     <div className="museum-content-contrast" aria-hidden="true" />
     <svg className="museum-foreground-tree" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"><path className="museum-tree-understroke" ref={foregroundUnderstroke}/><path className="museum-tree-halo" ref={foregroundHalo}/><path className="museum-tree-core" ref={foreground}/><g className="museum-hierarchy" ref={hierarchy}/></svg>
     <nav className="museum-chapter-nav" aria-label={t('museum.journey.chapters')}>
-      {chapters.map(chapter=><button key={chapter.owner} onClick={()=>{renderer.current?.jump(chapter.worldY-1.4);setExplored(true);}}>{chapter.owner}<small>{chapter.count}</small></button>)}
+      {chapters.map((chapter,index)=><button key={chapter.owner} onClick={()=>{renderer.current?.setChapter(index);setExplored(true);}}>{chapter.owner}<small>{chapter.count}</small></button>)}
     </nav>
     <svg className="museum-connections" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">{projects.map((project,index)=><g key={project.url} ref={element=>{branches.current[index]=element;}} style={{display:'none'}}><path/><circle r="2.5"/></g>)}</svg>
     <nav className="museum-projects" aria-label={t('museum.projects')}>
-      {chapters.map((chapter,index)=><div className="museum-chapter" key={chapter.owner} hidden><small>{String(index+1).padStart(2,'0')} / {t('museum.journey.public',{count:String(chapter.count)})}</small><h2>{chapter.owner}</h2></div>)}
       {projects.map((project,index)=><button className={`museum-project museum-project-${project.side<0?'left':'right'}`} key={project.url} ref={element=>{labels.current[index]=element;}} type="button" style={project.side<0?{left:`${4+(index%3)*3}%`}:{right:`${4+(index%3)*3}%`}} hidden onClick={()=>setActive(index)} aria-haspopup="dialog">
         <span className="museum-project-number">{String(index+1).padStart(2,'0')}</span><span className="museum-project-name">{project.name}</span>
       </button>)}
     </nav>
-    <div className={`museum-scroll-cue${explored?' museum-scroll-cue-used':''}`}><span>{t('museum.scroll')}</span><span aria-hidden="true">↓</span></div>
+    <div className={`museum-scroll-cue${explored?' museum-scroll-cue-used':''}`}><span>{t('museum.worlds.draw')}</span><span aria-hidden="true">↓</span></div>
     {error && <p className="museum-error" role="status">{t('museum.error')}</p>}
     <dialog className="museum-dialog" ref={dialog} aria-labelledby="project-title" onCancel={event=>{event.preventDefault();close();}} onClick={event=>{if(event.target===event.currentTarget) close();}}>
       {selected && <article className="museum-detail">

@@ -1,3 +1,4 @@
+import { buildWorld, initialMode, type WorldMode, type Stroke } from './worlds';
 import { gentleDefaults, type GentleTuning } from './gentle-preset';
 import { journeyLength, wrapJourney } from './journey';
 import butterchurn from 'butterchurn';
@@ -8,7 +9,7 @@ import { createNativeSpinePreset, installNativeSpine, type NativeSpineInput } fr
 
 export interface MuseumDiagnostics {
   renderer:string; theme:ThemeId; presets:string[]; quality:QualityStatus; frames:number; milkFrames:number;
-  position:number;paused:boolean;gestureCount:number;pulseCount:number;signalEnergy:number;trailFrames:number;
+  mode:WorldMode;strokeCount:number;autonomous:boolean;position:number;paused:boolean;gestureCount:number;pulseCount:number;signalEnergy:number;trailFrames:number;
   nativeBands:{bass:number;mid:number;treble:number};nativeFrames:number;nativePosition:number;nativeDeposits:number;nativeWavePoints:number;nativeTargetBound:boolean;nativeSize:number[];injecting:boolean;
   waveformFeed:string;waveformFeedTime:number;performance?:MuseumPerformance;error?:string;
 }
@@ -24,11 +25,13 @@ void main(){
 }`;
 
 export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:string)=>void,selectedTheme:ThemeId=initialTheme()) {
+  const modeTint=(value:WorldMode)=>value==='garden'?[.25,.8,.7]:value==='ink'?[.9,.48,.3]:[.55,.45,.95];
+  let mode=initialMode(),chapter=0,autonomous=true;const strokes:Stroke[]=[];
   let tuning={...gentleDefaults};
   let themeIndex=themes.findIndex(theme=>theme.id===selectedTheme);
   const quality=createQualityController();let tier=qualityTiers[quality.status.tier];
   const diagnostics:MuseumDiagnostics={renderer:'Butterchurn2.6.7 / native waveform-stage feedback',theme:selectedTheme,presets:[themes[themeIndex].name],quality:quality.status,
-    frames:0,milkFrames:0,position:0,paused:false,gestureCount:0,pulseCount:0,signalEnergy:0,trailFrames:0,
+    frames:0,milkFrames:0,mode,strokeCount:0,autonomous:true,position:0,paused:false,gestureCount:0,pulseCount:0,signalEnergy:0,trailFrames:0,
     nativeBands:{bass:0,mid:0,treble:0},nativeFrames:0,nativePosition:0,nativeDeposits:0,nativeWavePoints:513,nativeTargetBound:false,nativeSize:[tier.source,tier.source],injecting:true,
     waveformFeed:'One mono input; native FFT bands and native512 timeArrayL waveform deposited into targetTexture',waveformFeedTime:0};
   window.__treeMuseum=diagnostics;
@@ -119,7 +122,7 @@ export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:str
     smoothLeft.fill(0);smoothRight.fill(0);smoothEnvelope.fill(0);
     diagnostics.pulseCount=0;uploadSignal();
   }
-  const spine:NativeSpineInput={response:tuning.response,geometry:{lines:[],orders:[],junctions:[],anchors:new Map()},samples:visualizer.renderer.audio.timeArrayL,envelope:new Float32Array(sampleCount),time:0,position:0,worldWidth:Math.max(3.9,innerWidth/innerHeight*3.25),theme:selectedTheme,injecting:true,
+  const spine:NativeSpineInput={uploadedPoints:0,tint:modeTint(mode),response:tuning.response,geometry:{lines:[],orders:[],junctions:[],anchors:new Map()},samples:visualizer.renderer.audio.timeArrayL,envelope:new Float32Array(sampleCount),time:0,position:0,worldWidth:Math.max(3.9,innerWidth/innerHeight*3.25),theme:selectedTheme,injecting:true,
     onDeposit:()=>{
       diagnostics.nativeTargetBound=nativeGl.getParameter(nativeGl.DRAW_FRAMEBUFFER_BINDING)===visualizer.renderer.targetFrameBuffer;
       if(!diagnostics.nativeTargetBound) throw new Error('Native waveform stage is not bound to target feedback');
@@ -134,6 +137,7 @@ export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:str
     nativeGl.bindFramebuffer(nativeGl.FRAMEBUFFER,previous);
   }
   let depositedPosition=0;
+  spine.buildGeometry=()=>buildWorld(mode,spine.samples,time,innerWidth/innerHeight,chapter,autonomous,strokes);
   const disposeSpine=installNativeSpine(nativeGl,visualizer.renderer,spine);
   let goodPreset:unknown=themes[themeIndex].preset;
   let renderFailed=false,goodName=themes[themeIndex].name as string;
@@ -172,10 +176,10 @@ export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:str
     const qualityChanged=quality.record(now,!paused&&!document.hidden&&document.hasFocus());
     if(!document.hidden) {
       const submittedAt=performance.now();perf?.startFrame(now,paused);
-      if(!paused){time+=dt;gestureEnergy*=Math.exp(-dt*2.4);for(let i=pulses.length-1;i>=0;i--)if(time-pulses[i].born>7)pulses.splice(i,1);}
+      if(!paused){time+=dt;for(let i=strokes.length-1;i>=0;i--)if(!strokes[i].active&&time-strokes[i].born>12)strokes.splice(i,1);gestureEnergy*=Math.exp(-dt*2.4);for(let i=pulses.length-1;i>=0;i--)if(time-pulses[i].born>7)pulses.splice(i,1);}
       current+=(target-current)*Math.min(1,dt*9);
       if(Math.abs(target-current)<.00001&&Math.abs(target)>600){current=wrapJourney(current);target=current;}
-      diagnostics.position=wrapJourney(current);diagnostics.paused=paused;
+      diagnostics.mode=mode;diagnostics.strokeCount=strokes.length;diagnostics.autonomous=autonomous;diagnostics.position=wrapJourney(current);diagnostics.paused=paused;
       try {
         if(qualityChanged) applyQuality();
         if(lastSignal<0||(!paused&&time-lastSignal>=1/60-.0004)){history.push(synthesize(time));uploadSignal();lastSignal=time;}
@@ -185,7 +189,7 @@ export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:str
           if(pendingPreset){goodPreset=pendingPreset.preset;goodName=pendingPreset.name;pendingPreset.resolve();pendingPreset=null;}
           diagnostics.nativeBands={bass:visualizer.renderer.audioLevels.bass,mid:visualizer.renderer.audioLevels.mid,treble:visualizer.renderer.audioLevels.treb};
           diagnostics.nativeFrames=visualizer.renderer.frameNum;if(spine.injecting){depositedPosition=wrapJourney(spine.position);}
-          diagnostics.nativeWavePoints=spine.geometry.lines.reduce((total,line)=>total+line.length/2,0);diagnostics.nativePosition=depositedPosition;diagnostics.milkFrames++;diagnostics.waveformFeedTime=spine.time;
+          diagnostics.nativeWavePoints=spine.uploadedPoints;diagnostics.nativePosition=depositedPosition;diagnostics.milkFrames++;diagnostics.waveformFeedTime=spine.time;
           gl.bindTexture(gl.TEXTURE_2D,texture);gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,gl.RGBA,gl.UNSIGNED_BYTE,source);
         }
         perf?.beginGpu();gl.useProgram(program);gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,canvas.width,canvas.height);
@@ -197,8 +201,16 @@ export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:str
     } else perf?.idle();request=requestAnimationFrame(frame);
   }
   request=requestAnimationFrame(frame);
+  const blur=()=>{for(const stroke of strokes)stroke.active=false;};addEventListener('blur',blur);
   const lost=(event:Event)=>{event.preventDefault();fail('Graphics context interrupted. Reload to resume.');};canvas.addEventListener('webglcontextlost',lost);source.addEventListener('webglcontextlost',lost);
   return {
+    setMode(value:WorldMode){mode=value;spine.tint=modeTint(mode);strokes.length=0;clearNativeFeedback();lastRender=-1;},
+    setChapter(value:number){chapter=value;},
+    setAutonomous(value:boolean){autonomous=value;},
+    clearMarks(){strokes.length=0;clearNativeFeedback();},
+    beginStroke(id:number,x:number,y:number){if(paused)return;if(strokes.length>=12)strokes.shift();strokes.push({id,born:time,points:[{x,y}],active:true});},
+    extendStroke(id:number,x:number,y:number){if(paused)return;const stroke=strokes.find(item=>item.id===id&&item.active);if(!stroke)return;const previous=stroke.points[stroke.points.length-1];if(Math.hypot((previous.x-x)*innerWidth,(previous.y-y)*innerHeight)<3)return;if(stroke.points.length>=128)stroke.points.splice(1,1);stroke.points.push({x,y});},
+    endStroke(id:number){const stroke=strokes.find(item=>item.id===id&&item.active);if(stroke)stroke.active=false;},
     move(delta:number){const bounded=Math.max(-2,Math.min(2,Number.isFinite(delta)?delta:0));target+=bounded;
       if(paused||document.hidden||Math.abs(bounded)<.0001)return;diagnostics.gestureCount++;gestureEnergy=Math.min(1,gestureEnergy+Math.abs(bounded)*.85);
       if(lastPulse<0||time-lastPulse>.14){pulses.push({born:time,origin:wrap(current+2.1),amplitude:.35+Math.min(.45,Math.abs(bounded)*.8)+random()*.12,
@@ -220,7 +232,7 @@ export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:str
       return new Promise((resolve,reject)=>{pendingPreset={preset,name,resolve,reject};});
     },
     reset(){target=0;clearExcitation();clearNativeFeedback();lastSignal=-1;lastRender=-1;},
-    dispose(){pendingPreset?.reject(new Error('Renderer disposed'));pendingPreset=null;disposed=true;cancelAnimationFrame(request);removeEventListener('resize',resize);canvas.removeEventListener('webglcontextlost',lost);source.removeEventListener('webglcontextlost',lost);
+    dispose(){pendingPreset?.reject(new Error('Renderer disposed'));pendingPreset=null;disposed=true;cancelAnimationFrame(request);removeEventListener('resize',resize);removeEventListener('blur',blur);canvas.removeEventListener('webglcontextlost',lost);source.removeEventListener('webglcontextlost',lost);
       disposeSpine();perf?.dispose();gl.deleteTexture(texture);gl.deleteBuffer(buffer);gl.deleteProgram(program);gl.deleteShader(vs);gl.deleteShader(fs);nativeGl.getExtension('WEBGL_lose_context')?.loseContext();},
   };
 }
