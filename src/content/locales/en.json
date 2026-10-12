@@ -157,7 +157,8 @@
       "retry": "Retry selection",
       "close": "Close preset library",
       "quick": "Quick preset browsing",
-      "shortcuts": "[ previous · ] next · R random"
+      "shortcuts": "[ previous · ] next · R random",
+      "quietCurrent": "Quiet Current"
     },
     "journey": {
       "chapters": "Repository chapters",
