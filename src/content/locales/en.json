@@ -171,14 +171,19 @@
     },
     "tuning": {
       "title": "Tune the current",
-      "customHint": "Movement and trails shape Quiet Current. Input and background controls work with every preset.",
-      "libraryHint": "Choose Quiet Current to tune movement and trails. Input and background controls work with every preset.",
+      "customHint": "Response controls how strongly the waveform feeds the visual effect. Movement and trails shape Quiet Current.",
+      "libraryHint": "Response controls how strongly the waveform feeds the visual effect. Choose Quiet Current to tune movement and trails.",
       "speed": "Current speed",
-      "sensitivity": "Waveform sensitivity",
       "persistence": "Trail persistence",
       "background": "Background strength",
       "seconds": "{{value}} s",
-      "reset": "Reset gentle defaults"
+      "reset": "Reset gentle defaults",
+      "response": "Preset response"
+    },
+    "look": {
+      "label": "Visual look",
+      "tree": "Tree",
+      "stars": "Star map"
     }
   }
 }

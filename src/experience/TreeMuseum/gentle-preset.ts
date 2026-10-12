@@ -1,6 +1,6 @@
 // Original museum preset: fixed-color, near-identity native feedback.
 export const gentlePresetId='gentle-current';
-export const gentleDefaults={speed:.3,sensitivity:.65,persistence:14,background:.45};
+export const gentleDefaults={speed:.3,response:.65,persistence:14,background:.45};
 export type GentleTuning=typeof gentleDefaults;
 export const gentlePreset={
   gentleCurrent:true,
@@ -8,7 +8,7 @@ export const gentlePreset={
   shapes:[],waves:[],init_eqs_str:'',frame_eqs_str:'',pixel_eqs_str:'',
   warp:`shader_body {
     float phase = mod(uv_orig.y * 6.0 + q1, q3) / q3 * 6.28318530718;
-    float center = .5 + (sin(phase*9.0)*.92 + sin(phase*17.0+.8)*.38 + cos(phase*23.0)*.16)/q2;
+    float center = .5 + (sin(phase*3.0)*.72 + sin(phase*5.0+.8)*.22)/q2;
     float direction = clamp((uv_orig.x-center)*8.0,-1.0,1.0);
     vec2 at = clamp(uv_orig-vec2(direction*.00025*q4*q6*60.0,0.0),0.0,1.0);
     vec2 step = texsize.zw;

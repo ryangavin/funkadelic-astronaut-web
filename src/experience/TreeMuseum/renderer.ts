@@ -108,7 +108,7 @@ export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:str
     if(!latest) {audioLevels.timeByteArray.fill(128);audioLevels.timeByteArrayL.fill(128);audioLevels.timeByteArrayR.fill(128);spine.envelope.fill(0);return;}
     let energy=0;
     for(let i=0;i<sampleCount;i++) {
-      const value=byte((latest.left[i]*.8+latest.right[i]*.2)*tuning.sensitivity);
+      const value=byte(latest.left[i]*.8+latest.right[i]*.2);
       audioLevels.timeByteArray[i]=audioLevels.timeByteArrayL[i]=audioLevels.timeByteArrayR[i]=value;
       spine.envelope[i]=latest.envelope[i];energy+=Math.pow((value-128)/127,2);
     }
@@ -119,7 +119,7 @@ export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:str
     smoothLeft.fill(0);smoothRight.fill(0);smoothEnvelope.fill(0);
     diagnostics.pulseCount=0;uploadSignal();
   }
-  const spine:NativeSpineInput={geometry:{lines:[],anchors:new Map()},samples:visualizer.renderer.audio.timeArrayL,envelope:new Float32Array(sampleCount),time:0,position:0,worldWidth:Math.max(3.9,innerWidth/innerHeight*3.25),theme:selectedTheme,injecting:true,
+  const spine:NativeSpineInput={response:tuning.response,geometry:{lines:[],orders:[],junctions:[],anchors:new Map()},samples:visualizer.renderer.audio.timeArrayL,envelope:new Float32Array(sampleCount),time:0,position:0,worldWidth:Math.max(3.9,innerWidth/innerHeight*3.25),theme:selectedTheme,injecting:true,
     onDeposit:()=>{
       diagnostics.nativeTargetBound=nativeGl.getParameter(nativeGl.DRAW_FRAMEBUFFER_BINDING)===visualizer.renderer.targetFrameBuffer;
       if(!diagnostics.nativeTargetBound) throw new Error('Native waveform stage is not bound to target feedback');
@@ -209,7 +209,7 @@ export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:str
     getTreeGeometry(){return spine.geometry;},
     getProjectPoint(index:number){return spine.geometry.anchors.get(index);},
     jump(worldY:number){target=wrapJourney(worldY);},
-    setTuning(value:GentleTuning){tuning={...value};},
+    setTuning(value:GentleTuning){tuning={...value};spine.response=tuning.response;},
     setPaused(value:boolean){paused=value;diagnostics.paused=value;},
     setInjecting(value:boolean){spine.injecting=value;diagnostics.injecting=value;},
     setTheme(value:ThemeId){if(diagnostics.theme===value&&diagnostics.presets[0]===themes.find(theme=>theme.id===value)?.name)return;themeIndex=themes.findIndex(theme=>theme.id===value);diagnostics.theme=value;diagnostics.presets=[themes[themeIndex].name];loadTheme();lastRender=-1;quality.suspend();},

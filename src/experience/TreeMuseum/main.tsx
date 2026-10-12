@@ -13,6 +13,7 @@ import './museum.css';
 
 function TreeMuseum() {
   const [tuning,setTuning]=useState<GentleTuning>({...gentleDefaults});
+  const [look,setLook]=useState<'tree'|'stars'>('tree');
   const [tuningOpen,setTuningOpen]=useState(false);
   const perfEnabled=new URLSearchParams(location.search).get('perf')==='1';
   const [theme,setTheme]=useState<ThemeId>(initialTheme);
@@ -28,6 +29,7 @@ function TreeMuseum() {
   const canvas = useRef<HTMLCanvasElement>(null);
   const renderer = useRef<ReturnType<typeof createMuseumRenderer> | null>(null);
   const foregroundUnderstroke=useRef<SVGPathElement|null>(null),foreground=useRef<SVGPathElement|null>(null),foregroundHalo=useRef<SVGPathElement|null>(null);
+  const hierarchy=useRef<SVGGElement|null>(null);
   const branches=useRef<(SVGGElement|null)[]>([]);
   const labels = useRef<(HTMLButtonElement | null)[]>([]);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -63,7 +65,9 @@ function TreeMuseum() {
     const updateLabels = () => {
       const position=renderer.current?.position || 0;
       const geometry=renderer.current?.getTreeGeometry();
-      if(geometry){let d='';for(const trace of geometry.lines)for(let i=0;i<trace.length;i+=2)d+=`${i?'L':'M'}${(trace[i]*1000).toFixed(2)} ${(trace[i+1]*1000).toFixed(2)}`;foregroundUnderstroke.current?.setAttribute('d',d);foreground.current?.setAttribute('d',d);foregroundHalo.current?.setAttribute('d',d);}
+      if(geometry){let d='';for(const trace of geometry.lines)for(let i=0;i<trace.length;i+=2)d+=`${i?'L':'M'}${(trace[i]*1000).toFixed(2)} ${(trace[i+1]*1000).toFixed(2)}`;foregroundUnderstroke.current?.setAttribute('d',d);foreground.current?.setAttribute('d',d);foregroundHalo.current?.setAttribute('d',d);
+        if(hierarchy.current){const paths=geometry.lines.map((line,index)=>{let path='';for(let i=0;i<line.length;i+=2)path+=`${i?'L':'M'}${(line[i]*1000).toFixed(2)} ${(line[i+1]*1000).toFixed(2)}`;return `<path class="museum-order-${geometry.orders[index]}" d="${path}"/>`;}).join('');const nodes=[...geometry.junctions,...geometry.anchors.values()].map(point=>`<circle cx="${point.x*1000}" cy="${point.y*1000}" r="2.4"/>`).join('');hierarchy.current.innerHTML=paths+nodes;}
+      }
       labels.current.forEach((label,index)=>{
         if (!label) return;
         const y=wrapJourney(projects[index].worldY-position);
@@ -138,7 +142,7 @@ function TreeMuseum() {
   },[active]);
   const selected=active===null?null:projects[active];
   const close=()=>{const previous=active;setActive(null);if(previous!==null) requestAnimationFrame(()=>labels.current[previous]?.focus());};
-  return <main className="tree-museum" aria-label={t('museum.label')}>
+  return <main className={`tree-museum museum-look-${look}`} aria-label={t('museum.label')}>
     <canvas ref={canvas} style={{opacity:tuning.background}} className="museum-canvas" aria-hidden="true" />
     {perfEnabled && perf && <output id="museum-performance" className="museum-performance" aria-label={t('museum.perf.label')} data-native-position={window.__treeMuseum?.nativePosition.toFixed(3)} data-native-frames={window.__treeMuseum?.nativeFrames} data-native-deposits={window.__treeMuseum?.nativeDeposits} data-native-target-bound={String(window.__treeMuseum?.nativeTargetBound)} data-injecting={String(injecting)} data-quality={window.__treeMuseum?.quality.tier} data-quality-transitions={window.__treeMuseum?.quality.transitions} data-fps={perf.fps.toFixed(1)} data-raf-p95-ms={perf.rafP95Ms.toFixed(2)} data-cpu-p95-ms={perf.cpuP95Ms.toFixed(2)} data-compositor-gpu-ms={perf.compositorGpuMs?.toFixed(2)||'unavailable'}>
       <span>{t('museum.perf.timing',{fps:perf.fps.toFixed(1),raf:perf.rafP95Ms.toFixed(2)})}</span>
@@ -166,15 +170,16 @@ function TreeMuseum() {
       }}>{t(item.label)}</button>)}
     </div>
     <PresetBrowser retryId={retryPresetId} selected={retryPresetId||presetId||presetCatalogue.find(preset=>preset.name===themes.find(item=>item.id===theme)!.name)?.id||null} name={presetCatalogue.find(preset=>preset.id===presetId)?.name||themes.find(item=>item.id===theme)!.name} loading={presetLoading} error={presetError} onSelect={id=>{void selectLibrary(id);}} onOpen={setPickerOpen} />
+    <div className="museum-look-picker" role="group" aria-label={t('museum.look.label')}><button type="button" aria-pressed={look==='tree'} onClick={()=>setLook('tree')}>{t('museum.look.tree')}</button><button type="button" aria-pressed={look==='stars'} onClick={()=>setLook('stars')}>{t('museum.look.stars')}</button></div>
     <section className="museum-tuning" aria-label={t('museum.tuning.title')}>
       <button type="button" aria-expanded={tuningOpen} aria-controls="museum-tuning-panel" onClick={()=>setTuningOpen(!tuningOpen)}>{t('museum.tuning.title')}</button>
       {tuningOpen&&<div id="museum-tuning-panel"><p>{t(presetId===gentlePresetId?'museum.tuning.customHint':'museum.tuning.libraryHint')}</p>
-        {([{key:'speed',min:0,max:2,step:.05},{key:'sensitivity',min:0,max:2,step:.05},{key:'persistence',min:4,max:30,step:1},{key:'background',min:0,max:1,step:.05}] as const).map(item=><label key={item.key} htmlFor={`museum-tune-${item.key}`}><span>{t(`museum.tuning.${item.key}`)}</span><output>{item.key==='persistence'?t('museum.tuning.seconds',{value:String(tuning[item.key])}):tuning[item.key].toFixed(2)}</output><input id={`museum-tune-${item.key}`} type="range" min={item.min} max={item.max} step={item.step} disabled={(item.key==='speed'||item.key==='persistence')&&presetId!==gentlePresetId} value={tuning[item.key]} onChange={event=>setTuning({...tuning,[item.key]:Number(event.target.value)})}/></label>)}
+        {([{key:'speed',min:0,max:2,step:.05},{key:'response',min:0,max:2,step:.05},{key:'persistence',min:4,max:30,step:1},{key:'background',min:0,max:1,step:.05}] as const).map(item=><label key={item.key} htmlFor={`museum-tune-${item.key}`}><span>{t(`museum.tuning.${item.key}`)}</span><output>{item.key==='persistence'?t('museum.tuning.seconds',{value:String(tuning[item.key])}):tuning[item.key].toFixed(2)}</output><input id={`museum-tune-${item.key}`} type="range" min={item.min} max={item.max} step={item.step} disabled={(item.key==='speed'||item.key==='persistence')&&presetId!==gentlePresetId} value={tuning[item.key]} onChange={event=>setTuning({...tuning,[item.key]:Number(event.target.value)})}/></label>)}
         <button type="button" onClick={()=>setTuning({...gentleDefaults})}>{t('museum.tuning.reset')}</button>
       </div>}
     </section>
     <div className="museum-content-contrast" aria-hidden="true" />
-    <svg className="museum-foreground-tree" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"><path className="museum-tree-understroke" ref={foregroundUnderstroke}/><path className="museum-tree-halo" ref={foregroundHalo}/><path className="museum-tree-core" ref={foreground}/></svg>
+    <svg className="museum-foreground-tree" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"><path className="museum-tree-understroke" ref={foregroundUnderstroke}/><path className="museum-tree-halo" ref={foregroundHalo}/><path className="museum-tree-core" ref={foreground}/><g className="museum-hierarchy" ref={hierarchy}/></svg>
     <nav className="museum-chapter-nav" aria-label={t('museum.journey.chapters')}>
       {chapters.map(chapter=><button key={chapter.owner} onClick={()=>{renderer.current?.jump(chapter.worldY-1.4);setExplored(true);}}>{chapter.owner}<small>{chapter.count}</small></button>)}
     </nav>
