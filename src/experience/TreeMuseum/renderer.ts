@@ -1,10 +1,10 @@
 import { gentleDefaults, type GentleTuning } from './gentle-preset';
-import { journeyLength, viewportLength, wrapJourney } from './journey';
+import { journeyLength, wrapJourney } from './journey';
 import butterchurn from 'butterchurn';
 import { createPerformanceMonitor, type MuseumPerformance } from './performance';
 import { themes, initialTheme, type ThemeId } from './themes';
 import { createQualityController, qualityTiers, type QualityStatus } from './quality';
-import { createNativeSpinePreset, installNativeSpine, nativeSpineX, type NativeSpineInput } from './native-spine';
+import { createNativeSpinePreset, installNativeSpine, type NativeSpineInput } from './native-spine';
 
 export interface MuseumDiagnostics {
   renderer:string; theme:ThemeId; presets:string[]; quality:QualityStatus; frames:number; milkFrames:number;
@@ -119,7 +119,7 @@ export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:str
     smoothLeft.fill(0);smoothRight.fill(0);smoothEnvelope.fill(0);
     diagnostics.pulseCount=0;uploadSignal();
   }
-  const spine:NativeSpineInput={samples:visualizer.renderer.audio.timeArrayL,envelope:new Float32Array(sampleCount),time:0,position:0,worldWidth:Math.max(3.9,innerWidth/innerHeight*3.25),theme:selectedTheme,injecting:true,
+  const spine:NativeSpineInput={geometry:{lines:[],anchors:new Map()},samples:visualizer.renderer.audio.timeArrayL,envelope:new Float32Array(sampleCount),time:0,position:0,worldWidth:Math.max(3.9,innerWidth/innerHeight*3.25),theme:selectedTheme,injecting:true,
     onDeposit:()=>{
       diagnostics.nativeTargetBound=nativeGl.getParameter(nativeGl.DRAW_FRAMEBUFFER_BINDING)===visualizer.renderer.targetFrameBuffer;
       if(!diagnostics.nativeTargetBound) throw new Error('Native waveform stage is not bound to target feedback');
@@ -133,7 +133,7 @@ export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:str
     nativeGl.clearColor(0,0,0,1);for(const target of targets){nativeGl.bindFramebuffer(nativeGl.FRAMEBUFFER,target);nativeGl.clear(nativeGl.COLOR_BUFFER_BIT);}
     nativeGl.bindFramebuffer(nativeGl.FRAMEBUFFER,previous);
   }
-  const depositedSamples=new Int8Array(spine.samples.length);let depositedPosition=0,depositedWidth=spine.worldWidth;
+  let depositedPosition=0;
   const disposeSpine=installNativeSpine(nativeGl,visualizer.renderer,spine);
   let goodPreset:unknown=themes[themeIndex].preset;
   let renderFailed=false,goodName=themes[themeIndex].name as string;
@@ -184,8 +184,8 @@ export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:str
           spine.position=current;visualizer.render({audioLevels,elapsedTime:elapsed});lastRender=time;
           if(pendingPreset){goodPreset=pendingPreset.preset;goodName=pendingPreset.name;pendingPreset.resolve();pendingPreset=null;}
           diagnostics.nativeBands={bass:visualizer.renderer.audioLevels.bass,mid:visualizer.renderer.audioLevels.mid,treble:visualizer.renderer.audioLevels.treb};
-          diagnostics.nativeFrames=visualizer.renderer.frameNum;depositedSamples.set(spine.samples);depositedPosition=wrapJourney(spine.position);depositedWidth=spine.worldWidth;
-          diagnostics.nativePosition=depositedPosition;diagnostics.milkFrames++;diagnostics.waveformFeedTime=spine.time;
+          diagnostics.nativeFrames=visualizer.renderer.frameNum;if(spine.injecting){depositedPosition=wrapJourney(spine.position);}
+          diagnostics.nativeWavePoints=spine.geometry.lines.reduce((total,line)=>total+line.length/2,0);diagnostics.nativePosition=depositedPosition;diagnostics.milkFrames++;diagnostics.waveformFeedTime=spine.time;
           gl.bindTexture(gl.TEXTURE_2D,texture);gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,gl.RGBA,gl.UNSIGNED_BYTE,source);
         }
         perf?.beginGpu();gl.useProgram(program);gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,canvas.width,canvas.height);
@@ -206,15 +206,8 @@ export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:str
     },
     get position(){return depositedPosition;},
     get journeyLength(){return journeyLength;},
-    getSpineTrace(){
-      const points=new Float32Array((depositedSamples.length+1)*2);
-      for(let i=0;i<=depositedSamples.length;i++){
-        const screenY=i/depositedSamples.length*viewportLength;
-        points[i*2]=nativeSpineX(depositedSamples,depositedPosition+screenY,depositedWidth);points[i*2+1]=screenY/viewportLength;
-      }
-      return points;
-    },
-    getSpinePoint(worldY:number){return {x:nativeSpineX(depositedSamples,worldY,depositedWidth),y:wrapJourney(worldY-depositedPosition)/viewportLength};},
+    getTreeGeometry(){return spine.geometry;},
+    getProjectPoint(index:number){return spine.geometry.anchors.get(index);},
     jump(worldY:number){target=wrapJourney(worldY);},
     setTuning(value:GentleTuning){tuning={...value};},
     setPaused(value:boolean){paused=value;diagnostics.paused=value;},
