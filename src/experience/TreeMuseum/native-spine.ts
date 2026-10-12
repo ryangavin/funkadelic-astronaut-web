@@ -48,7 +48,7 @@ export function installNativeSpine(gl:WebGL2RenderingContext,renderer:NativeStag
     gl.uniform1f(core,0);
     // Fixed Gaussian halo, deposited into native history with the same sample geometry.
     for(const dx of [-4,-3,-2,-1,1,2,3,4]){gl.uniform1f(alpha,.42*Math.exp(-dx*dx/(2*1.6*1.6)));gl.uniform1f(offset,dx*2/renderer.texsizeX);draw();}
-    gl.uniform1f(core,1);gl.uniform1f(alpha,1);gl.uniform1f(offset,0);gl.drawArrays(gl.LINE_STRIP,0,input.samples.length+1);
+    gl.uniform1f(core,1);gl.uniform1f(alpha,1);gl.uniform1f(offset,0);draw();
     gl.bindVertexArray(previousVao);gl.useProgram(previousProgram);gl.bindBuffer(gl.ARRAY_BUFFER,previousBuffer);gl.blendEquationSeparate(eqRgb,eqAlpha);gl.blendFuncSeparate(srcRgb,dstRgb,srcAlpha,dstAlpha);if(!blend)gl.disable(gl.BLEND);
   };
   return ()=>{renderer.basicWaveform.drawBasicWaveform=original;renderer.customWaveforms.forEach((wave,index)=>{wave.drawCustomWaveform=originals[index];});gl.deleteVertexArray(vao);gl.deleteBuffer(buffer);gl.deleteProgram(program);gl.deleteShader(vs);gl.deleteShader(fs);};
