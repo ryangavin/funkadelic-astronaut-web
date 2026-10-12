@@ -158,7 +158,8 @@
       "close": "Close preset library",
       "quick": "Quick preset browsing",
       "shortcuts": "[ previous · ] next · R random",
-      "quietCurrent": "Quiet Current"
+      "quietCurrent": "Quiet Current",
+      "quietName": "Quiet Current — original museum preset"
     },
     "journey": {
       "chapters": "Repository chapters",
@@ -167,6 +168,17 @@
       "fork": "Fork",
       "archived": "Archived",
       "noDescription": "No description provided on GitHub."
+    },
+    "tuning": {
+      "title": "Tune the current",
+      "customHint": "Movement and trails shape Quiet Current. Input and background controls work with every preset.",
+      "libraryHint": "Choose Quiet Current to tune movement and trails. Input and background controls work with every preset.",
+      "speed": "Current speed",
+      "sensitivity": "Waveform sensitivity",
+      "persistence": "Trail persistence",
+      "background": "Background strength",
+      "seconds": "{{value}} s",
+      "reset": "Reset gentle defaults"
     }
   }
 }

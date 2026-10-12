@@ -15,12 +15,12 @@ export function nativeSpineX(samples:Int8Array,worldY:number,worldWidth:number) 
   return .5+(spinePathX(worldY)+signed*.65)/worldWidth;
 }
 const compile=(source=''):Equation=>new Function('a',`${source}; return a;`) as Equation;
-export function createNativeSpinePreset(authored:unknown) {
+export function createNativeSpinePreset(authored:unknown,tuning?:()=>{position:number;width:number;length:number;speed:number;persistence:number}) {
   const preset=structuredClone(authored) as AuthoredPreset;
   const frame=compile(preset.frame_eqs_str);
   return {...preset,
     init_eqs:compile(preset.init_eqs_str),
-    frame_eqs:frame,
+    frame_eqs:(values:Values)=>{const result=frame(values);if((authored as {gentleCurrent?:boolean}).gentleCurrent&&tuning){const settings=tuning();result.q1=settings.position;result.q2=settings.width;result.q3=settings.length;result.q4=settings.speed;result.q5=settings.persistence;result.q6=1/Math.max(1,result.fps||60);}return result;},
     pixel_eqs:preset.pixel_eqs_str?compile(preset.pixel_eqs_str):'',
     // Preserve all authored callbacks and slots, including shared-buffer side effects.
     waves:preset.waves.map(wave=>({...wave,init_eqs:compile(wave.init_eqs_str),frame_eqs:compile(wave.frame_eqs_str),point_eqs:wave.point_eqs_str?compile(wave.point_eqs_str):''})),
