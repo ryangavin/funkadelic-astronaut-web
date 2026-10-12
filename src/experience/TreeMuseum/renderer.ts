@@ -1,3 +1,4 @@
+import { gentleDefaults, type GentleTuning } from './gentle-preset';
 import { journeyLength, viewportLength, wrapJourney } from './journey';
 import butterchurn from 'butterchurn';
 import { createPerformanceMonitor, type MuseumPerformance } from './performance';
@@ -23,6 +24,7 @@ void main(){
 }`;
 
 export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:string)=>void,selectedTheme:ThemeId=initialTheme()) {
+  let tuning={...gentleDefaults};
   let themeIndex=themes.findIndex(theme=>theme.id===selectedTheme);
   const quality=createQualityController();let tier=qualityTiers[quality.status.tier];
   const diagnostics:MuseumDiagnostics={renderer:'Butterchurn2.6.7 / native waveform-stage feedback',theme:selectedTheme,presets:[themes[themeIndex].name],quality:quality.status,
@@ -106,7 +108,7 @@ export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:str
     if(!latest) {audioLevels.timeByteArray.fill(128);audioLevels.timeByteArrayL.fill(128);audioLevels.timeByteArrayR.fill(128);spine.envelope.fill(0);return;}
     let energy=0;
     for(let i=0;i<sampleCount;i++) {
-      const value=byte(latest.left[i]*.8+latest.right[i]*.2);
+      const value=byte((latest.left[i]*.8+latest.right[i]*.2)*tuning.sensitivity);
       audioLevels.timeByteArray[i]=audioLevels.timeByteArrayL[i]=audioLevels.timeByteArrayR[i]=value;
       spine.envelope[i]=latest.envelope[i];energy+=Math.pow((value-128)/127,2);
     }
@@ -138,7 +140,7 @@ export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:str
   let pendingPreset:{preset:unknown;name:string;resolve:()=>void;reject:(error:unknown)=>void}|null=null;
   function loadPreset(preset:unknown) {
     const native=visualizer.renderer,stale=[native.prevWarpShader.shaderProgram,native.prevCompShader.shaderProgram];
-    try{visualizer.loadPreset(createNativeSpinePreset(preset),0);}
+    try{visualizer.loadPreset(createNativeSpinePreset(preset,()=>({position:spine.position,width:spine.worldWidth,length:journeyLength,speed:tuning.speed,persistence:tuning.persistence})),0);}
     finally{
       const retained=[native.warpShader.shaderProgram,native.compShader.shaderProgram,native.prevWarpShader.shaderProgram,native.prevCompShader.shaderProgram];
       for(const program of stale)if(!retained.includes(program)){for(const shader of nativeGl.getAttachedShaders(program)||[])nativeGl.deleteShader(shader);nativeGl.deleteProgram(program);}
@@ -214,6 +216,7 @@ export function createMuseumRenderer(canvas:HTMLCanvasElement,onError:(error:str
     },
     getSpinePoint(worldY:number){return {x:nativeSpineX(depositedSamples,worldY,depositedWidth),y:wrapJourney(worldY-depositedPosition)/viewportLength};},
     jump(worldY:number){target=wrapJourney(worldY);},
+    setTuning(value:GentleTuning){tuning={...value};},
     setPaused(value:boolean){paused=value;diagnostics.paused=value;},
     setInjecting(value:boolean){spine.injecting=value;diagnostics.injecting=value;},
     setTheme(value:ThemeId){if(diagnostics.theme===value&&diagnostics.presets[0]===themes.find(theme=>theme.id===value)?.name)return;themeIndex=themes.findIndex(theme=>theme.id===value);diagnostics.theme=value;diagnostics.presets=[themes[themeIndex].name];loadTheme();lastRender=-1;quality.suspend();},

@@ -1,3 +1,4 @@
+import { gentleDefaults, gentlePresetId, type GentleTuning } from './gentle-preset';
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { t } from '../../i18n/copy';
@@ -11,6 +12,8 @@ import './museum.css';
 
 
 function TreeMuseum() {
+  const [tuning,setTuning]=useState<GentleTuning>({...gentleDefaults});
+  const [tuningOpen,setTuningOpen]=useState(false);
   const perfEnabled=new URLSearchParams(location.search).get('perf')==='1';
   const [theme,setTheme]=useState<ThemeId>(initialTheme);
   const startingPreset=useRef(initialPreset());
@@ -88,7 +91,7 @@ function TreeMuseum() {
     updateLabels();
     const move = (delta: number) => {renderer.current?.move(delta);setExplored(true);};
     const wheel = (event: WheelEvent) => {
-      if(activeRef.current!==null || pickerRef.current || event.ctrlKey) return;
+      if(activeRef.current!==null || pickerRef.current || event.ctrlKey || (event.target instanceof Element&&event.target.closest('.museum-tuning'))) return;
       event.preventDefault();
       const pixels=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?innerHeight:1);
       move(Math.max(-1,Math.min(1,pixels*.003)));
@@ -96,7 +99,7 @@ function TreeMuseum() {
     let touchY=0;
     const touchStart=(event:TouchEvent)=>{touchY=event.touches[0].clientY;};
     const touchMove=(event:TouchEvent)=>{
-      if(activeRef.current!==null||pickerRef.current) return;
+      if(activeRef.current!==null||pickerRef.current||(event.target instanceof Element&&event.target.closest('.museum-tuning'))) return;
       event.preventDefault();const y=event.touches[0].clientY;move((touchY-y)*.009);touchY=y;
     };
     const key=(event:KeyboardEvent)=>{
@@ -125,6 +128,7 @@ function TreeMuseum() {
     try {localStorage.setItem('treeMuseum.theme',theme);} catch { /* Storage can be disabled. */ }
     const url=new URL(location.href);url.searchParams.set('theme',theme);history.replaceState(null,'',url);
   },[theme]);
+  useEffect(()=>{renderer.current?.setTuning(tuning);},[tuning]);
   useEffect(()=>{renderer.current?.setPaused(paused||active!==null);},[paused,active]);
   useEffect(()=>{
     const element=dialog.current;
@@ -134,7 +138,7 @@ function TreeMuseum() {
   const selected=active===null?null:projects[active];
   const close=()=>{const previous=active;setActive(null);if(previous!==null) requestAnimationFrame(()=>labels.current[previous]?.focus());};
   return <main className="tree-museum" aria-label={t('museum.label')}>
-    <canvas ref={canvas} className="museum-canvas" aria-hidden="true" />
+    <canvas ref={canvas} style={{opacity:tuning.background}} className="museum-canvas" aria-hidden="true" />
     {perfEnabled && perf && <output id="museum-performance" className="museum-performance" aria-label={t('museum.perf.label')} data-native-position={window.__treeMuseum?.nativePosition.toFixed(3)} data-native-frames={window.__treeMuseum?.nativeFrames} data-native-deposits={window.__treeMuseum?.nativeDeposits} data-native-target-bound={String(window.__treeMuseum?.nativeTargetBound)} data-injecting={String(injecting)} data-quality={window.__treeMuseum?.quality.tier} data-quality-transitions={window.__treeMuseum?.quality.transitions} data-fps={perf.fps.toFixed(1)} data-raf-p95-ms={perf.rafP95Ms.toFixed(2)} data-cpu-p95-ms={perf.cpuP95Ms.toFixed(2)} data-compositor-gpu-ms={perf.compositorGpuMs?.toFixed(2)||'unavailable'}>
       <span>{t('museum.perf.timing',{fps:perf.fps.toFixed(1),raf:perf.rafP95Ms.toFixed(2)})}</span>
       <span>{t('museum.perf.cpu',{mean:perf.cpuMeanMs.toFixed(2),p95:perf.cpuP95Ms.toFixed(2)})}</span>
@@ -161,6 +165,13 @@ function TreeMuseum() {
       }}>{t(item.label)}</button>)}
     </div>
     <PresetBrowser retryId={retryPresetId} selected={retryPresetId||presetId||presetCatalogue.find(preset=>preset.name===themes.find(item=>item.id===theme)!.name)?.id||null} name={presetCatalogue.find(preset=>preset.id===presetId)?.name||themes.find(item=>item.id===theme)!.name} loading={presetLoading} error={presetError} onSelect={id=>{void selectLibrary(id);}} onOpen={setPickerOpen} />
+    <section className="museum-tuning" aria-label={t('museum.tuning.title')}>
+      <button type="button" aria-expanded={tuningOpen} aria-controls="museum-tuning-panel" onClick={()=>setTuningOpen(!tuningOpen)}>{t('museum.tuning.title')}</button>
+      {tuningOpen&&<div id="museum-tuning-panel"><p>{t(presetId===gentlePresetId?'museum.tuning.customHint':'museum.tuning.libraryHint')}</p>
+        {([{key:'speed',min:0,max:2,step:.05},{key:'sensitivity',min:0,max:2,step:.05},{key:'persistence',min:4,max:30,step:1},{key:'background',min:0,max:1,step:.05}] as const).map(item=><label key={item.key} htmlFor={`museum-tune-${item.key}`}><span>{t(`museum.tuning.${item.key}`)}</span><output>{item.key==='persistence'?t('museum.tuning.seconds',{value:String(tuning[item.key])}):tuning[item.key].toFixed(2)}</output><input id={`museum-tune-${item.key}`} type="range" min={item.min} max={item.max} step={item.step} disabled={(item.key==='speed'||item.key==='persistence')&&presetId!==gentlePresetId} value={tuning[item.key]} onChange={event=>setTuning({...tuning,[item.key]:Number(event.target.value)})}/></label>)}
+        <button type="button" onClick={()=>setTuning({...gentleDefaults})}>{t('museum.tuning.reset')}</button>
+      </div>}
+    </section>
     <div className="museum-content-contrast" aria-hidden="true" />
     <svg className="museum-foreground-tree" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"><path className="museum-tree-understroke" ref={foregroundUnderstroke}/><path className="museum-tree-halo" ref={foregroundHalo}/><path className="museum-tree-core" ref={foreground}/></svg>
     <nav className="museum-chapter-nav" aria-label={t('museum.journey.chapters')}>
