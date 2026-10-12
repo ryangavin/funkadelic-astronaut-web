@@ -24,6 +24,7 @@ function TreeMuseum() {
   const [injecting,setInjecting]=useState(true);
   const canvas = useRef<HTMLCanvasElement>(null);
   const renderer = useRef<ReturnType<typeof createMuseumRenderer> | null>(null);
+  const foregroundUnderstroke=useRef<SVGPathElement|null>(null),foreground=useRef<SVGPathElement|null>(null),foregroundHalo=useRef<SVGPathElement|null>(null);
   const branches=useRef<(SVGGElement|null)[]>([]);
   const labels = useRef<(HTMLButtonElement | null)[]>([]);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -58,6 +59,8 @@ function TreeMuseum() {
     if(startingPreset.current)void selectLibrary(startingPreset.current);
     const updateLabels = () => {
       const position=renderer.current?.position || 0;
+      const trace=renderer.current?.getSpineTrace();
+      if(trace){let d='';for(let i=0;i<trace.length;i+=2)d+=`${i?'L':'M'}${(trace[i]*1000).toFixed(2)} ${(trace[i+1]*1000).toFixed(2)}`;foregroundUnderstroke.current?.setAttribute('d',d);foreground.current?.setAttribute('d',d);foregroundHalo.current?.setAttribute('d',d);}
       labels.current.forEach((label,index)=>{
         if (!label) return;
         const y=wrapJourney(projects[index].worldY-position);
@@ -68,7 +71,8 @@ function TreeMuseum() {
           branch.style.display=visible?'':'none';
           const rect=label.getBoundingClientRect(),endX=(projects[index].side<0?rect.right:rect.left)/innerWidth*1000;
           const x=point.x*1000,sy=point.y*1000;
-          branch.querySelector('path')?.setAttribute('d',`M ${x} ${sy} C ${x+(endX-x)*.4} ${sy}, ${endX} ${sy}, ${endX} ${sy}`);
+          branch.querySelector('path')?.setAttribute('d',`M ${x} ${sy} C ${x+(endX-x)*.18} ${sy+projects[index].side*35}, ${endX-(endX-x)*.28} ${sy-projects[index].side*18}, ${endX} ${sy}`);
+          branch.querySelector('.museum-branch-twig')?.setAttribute('d',`M ${x} ${sy} C ${x+(endX-x)*.2} ${sy+projects[index].side*35}, ${x+(endX-x)*.45} ${sy+projects[index].side*50}, ${x+(endX-x)*.62} ${sy+projects[index].side*55}`);
           branch.querySelector('circle')?.setAttribute('cx',String(x));branch.querySelector('circle')?.setAttribute('cy',String(sy));
         }
         label.hidden=!visible; label.tabIndex=visible?0:-1;
@@ -76,7 +80,7 @@ function TreeMuseum() {
         label.style.opacity=String(Math.min(1,(y-.65)*3,(viewportLength-.55-y)*3));
       });
       document.querySelectorAll<HTMLElement>('.museum-chapter').forEach((label,index)=>{
-        const y=wrapJourney(chapters[index].worldY-position);label.hidden=y>.65+viewportLength;
+        const y=wrapJourney(chapters[index].worldY-position);label.hidden=y/viewportLength*innerHeight<175||y>viewportLength-.7;
         label.style.top=`${y/viewportLength*100}%`;
       });
       labelsFrame=requestAnimationFrame(updateLabels);
@@ -156,10 +160,12 @@ function TreeMuseum() {
       }}>{t(item.label)}</button>)}
     </div>
     <PresetBrowser retryId={retryPresetId} selected={retryPresetId||presetId||presetCatalogue.find(preset=>preset.name===themes.find(item=>item.id===theme)!.name)?.id||null} name={presetCatalogue.find(preset=>preset.id===presetId)?.name||themes.find(item=>item.id===theme)!.name} loading={presetLoading} error={presetError} onSelect={id=>{void selectLibrary(id);}} onOpen={setPickerOpen} />
+    <div className="museum-content-contrast" aria-hidden="true" />
+    <svg className="museum-foreground-tree" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"><path className="museum-tree-understroke" ref={foregroundUnderstroke}/><path className="museum-tree-halo" ref={foregroundHalo}/><path className="museum-tree-core" ref={foreground}/></svg>
     <nav className="museum-chapter-nav" aria-label={t('museum.journey.chapters')}>
       {chapters.map(chapter=><button key={chapter.owner} onClick={()=>{renderer.current?.jump(chapter.worldY-1.4);setExplored(true);}}>{chapter.owner}<small>{chapter.count}</small></button>)}
     </nav>
-    <svg className="museum-connections" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">{projects.map((project,index)=><g key={project.url} ref={element=>{branches.current[index]=element;}} style={{display:'none'}}><path/><circle r="1.8"/></g>)}</svg>
+    <svg className="museum-connections" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">{projects.map((project,index)=><g key={project.url} ref={element=>{branches.current[index]=element;}} style={{display:'none'}}><path/><path className="museum-branch-twig"/><circle r="2.5"/></g>)}</svg>
     <nav className="museum-projects" aria-label={t('museum.projects')}>
       {chapters.map((chapter,index)=><div className="museum-chapter" key={chapter.owner} hidden><small>{String(index+1).padStart(2,'0')} / {t('museum.journey.public',{count:String(chapter.count)})}</small><h2>{chapter.owner}</h2></div>)}
       {projects.map((project,index)=><button className={`museum-project museum-project-${project.side<0?'left':'right'}`} key={project.url} ref={element=>{labels.current[index]=element;}} type="button" style={project.side<0?{left:`${4+(index%3)*3}%`}:{right:`${4+(index%3)*3}%`}} hidden onClick={()=>setActive(index)} aria-haspopup="dialog">

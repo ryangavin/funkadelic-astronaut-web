@@ -18,5 +18,5 @@ export const wrapJourney = (worldY: number) => ((worldY % journeyLength) + journ
 // Smooth periodic centerline, shared by native waveform and repository attachments.
 export function spinePathX(worldY: number) {
   const phase = wrapJourney(worldY) / journeyLength * Math.PI * 2;
-  return Math.sin(phase * 3) * .34 + Math.sin(phase * 7 + .8) * .18 + Math.cos(phase * 11) * .07;
+  return Math.sin(phase * 9) * .92 + Math.sin(phase * 17 + .8) * .38 + Math.cos(phase * 23) * .16;
 }
