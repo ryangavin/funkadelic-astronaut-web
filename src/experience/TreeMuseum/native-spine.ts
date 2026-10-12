@@ -6,7 +6,7 @@ type Equation=(values:Values)=>Values;
 interface AuthoredPart {baseVals:Values;init_eqs_str?:string;frame_eqs_str?:string;point_eqs_str?:string}
 interface AuthoredPreset extends AuthoredPart {pixel_eqs_str?:string;shapes:AuthoredPart[];waves:AuthoredPart[];warp:string;comp:string}
 export interface NativeSpineInput {
-  geometry:TreeGeometry;samples:Int8Array;envelope:Float32Array;time:number;position:number;worldWidth:number;theme:ThemeId;injecting:boolean;onDeposit:()=>void;
+  response:number;geometry:TreeGeometry;samples:Int8Array;envelope:Float32Array;time:number;position:number;worldWidth:number;theme:ThemeId;injecting:boolean;onDeposit:()=>void;
 }
 export const nativeSpineX=waveformX;
 const compile=(source=''):Equation=>new Function('a',`${source}; return a;`) as Equation;
@@ -36,19 +36,20 @@ export function installNativeSpine(gl:WebGL2RenderingContext,renderer:NativeStag
   gl.bindVertexArray(vao);gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,points.byteLength,gl.DYNAMIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,20,0);gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,3,gl.FLOAT,false,20,8);gl.bindVertexArray(null);
   const offset=gl.getUniformLocation(program,'offset'),alpha=gl.getUniformLocation(program,'alpha'),core=gl.getUniformLocation(program,'core');
   renderer.basicWaveform.drawBasicWaveform=()=>{
-    if(!input.injecting)return;input.onDeposit();
-    const colors:Record<ThemeId,number[]>={prism:[.4,.6,1],garden:[.3,.86,.66],horizon:[.72,.5,1]},color=colors[input.theme];
+    if(!input.injecting)return;
     input.geometry=buildTreeGeometry(input.samples,input.position,input.worldWidth);
-    const ranges:{start:number;count:number}[]=[];let count=0;
-    for(const line of input.geometry.lines){const start=count;for(let i=0;i<line.length;i+=2){points[count*5]=line[i]*2-1;points[count*5+1]=line[i+1]*2-1;for(let channel=0;channel<3;channel++)points[count*5+2+channel]=color[channel];count++;}ranges.push({start,count:count-start});}
-    const draw=()=>{for(const range of ranges)gl.drawArrays(gl.LINE_STRIP,range.start,range.count);};
+    if(input.response<=0)return;input.onDeposit();
+    const colors:Record<ThemeId,number[]>={prism:[.4,.6,1],garden:[.3,.86,.66],horizon:[.72,.5,1]},color=colors[input.theme];
+    const ranges:{start:number;count:number;order:number}[]=[];let count=0;
+    for(const line of input.geometry.lines){const start=count;for(let i=0;i<line.length;i+=2){points[count*5]=line[i]*2-1;points[count*5+1]=line[i+1]*2-1;for(let channel=0;channel<3;channel++)points[count*5+2+channel]=color[channel];count++;}ranges.push({start,count:count-start,order:input.geometry.orders[ranges.length]});}
+    const draw=(strength:number)=>{for(const range of ranges){gl.uniform1f(alpha,Math.min(1,strength*input.response)*(range.order===0?1:range.order===1?.72:.45));gl.drawArrays(gl.LINE_STRIP,range.start,range.count);}};
     const previousVao=gl.getParameter(gl.VERTEX_ARRAY_BINDING),previousProgram=gl.getParameter(gl.CURRENT_PROGRAM),previousBuffer=gl.getParameter(gl.ARRAY_BUFFER_BINDING);
     const blend=gl.isEnabled(gl.BLEND),eqRgb=gl.getParameter(gl.BLEND_EQUATION_RGB),eqAlpha=gl.getParameter(gl.BLEND_EQUATION_ALPHA),srcRgb=gl.getParameter(gl.BLEND_SRC_RGB),dstRgb=gl.getParameter(gl.BLEND_DST_RGB),srcAlpha=gl.getParameter(gl.BLEND_SRC_ALPHA),dstAlpha=gl.getParameter(gl.BLEND_DST_ALPHA);
     gl.useProgram(program);gl.bindVertexArray(vao);gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,points.subarray(0,count*5));gl.enable(gl.BLEND);gl.blendEquation(gl.FUNC_ADD);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
     gl.uniform1f(core,0);
     // Fixed Gaussian halo, deposited into native history with the same sample geometry.
-    for(const dx of [-4,-3,-2,-1,1,2,3,4]){gl.uniform1f(alpha,.42*Math.exp(-dx*dx/(2*1.6*1.6)));gl.uniform1f(offset,dx*2/renderer.texsizeX);draw();}
-    gl.uniform1f(core,1);gl.uniform1f(alpha,1);gl.uniform1f(offset,0);draw();
+    for(const dx of [-4,-3,-2,-1,1,2,3,4]){gl.uniform1f(offset,dx*2/renderer.texsizeX);draw(.42*Math.exp(-dx*dx/(2*1.6*1.6)));}
+    gl.uniform1f(core,1);gl.uniform1f(offset,0);draw(1);
     gl.bindVertexArray(previousVao);gl.useProgram(previousProgram);gl.bindBuffer(gl.ARRAY_BUFFER,previousBuffer);gl.blendEquationSeparate(eqRgb,eqAlpha);gl.blendFuncSeparate(srcRgb,dstRgb,srcAlpha,dstAlpha);if(!blend)gl.disable(gl.BLEND);
   };
   return ()=>{renderer.basicWaveform.drawBasicWaveform=original;renderer.customWaveforms.forEach((wave,index)=>{wave.drawCustomWaveform=originals[index];});gl.deleteVertexArray(vao);gl.deleteBuffer(buffer);gl.deleteProgram(program);gl.deleteShader(vs);gl.deleteShader(fs);};
