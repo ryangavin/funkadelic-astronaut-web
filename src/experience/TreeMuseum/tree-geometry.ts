@@ -15,7 +15,7 @@ export function buildTreeGeometry(samples:Int8Array,position:number,width:number
   trace(position,position+viewportLength,samples.length,0,(_,y)=>center(y,width));
   chapters.forEach((chapter,chapterIndex)=>{
     for(let group=0;group<chapter.projects.length;group+=3){
-      const members=chapter.projects.slice(group,group+3),side=(Math.floor(group/3)+chapterIndex)%2?1:-1;
+      const members=chapter.projects.slice(group,group+3),side=members[0].side;
       const first=members[0],last=members[members.length-1];
       const baseStart=first.worldY-1.5,baseEnd=last.worldY+.3;
       const start=position+wrapJourney(baseStart-position),end=start+baseEnd-baseStart;
