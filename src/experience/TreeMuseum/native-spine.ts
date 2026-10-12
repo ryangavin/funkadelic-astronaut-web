@@ -1,4 +1,4 @@
-import { spinePathX, viewportLength } from './journey';
+import { buildTreeGeometry, waveformX, type TreeGeometry } from './tree-geometry';
 import type { ThemeId } from './themes';
 
 type Values=Record<string,number>;
@@ -6,14 +6,9 @@ type Equation=(values:Values)=>Values;
 interface AuthoredPart {baseVals:Values;init_eqs_str?:string;frame_eqs_str?:string;point_eqs_str?:string}
 interface AuthoredPreset extends AuthoredPart {pixel_eqs_str?:string;shapes:AuthoredPart[];waves:AuthoredPart[];warp:string;comp:string}
 export interface NativeSpineInput {
-  samples:Int8Array;envelope:Float32Array;time:number;position:number;worldWidth:number;theme:ThemeId;injecting:boolean;onDeposit:()=>void;
+  geometry:TreeGeometry;samples:Int8Array;envelope:Float32Array;time:number;position:number;worldWidth:number;theme:ThemeId;injecting:boolean;onDeposit:()=>void;
 }
-export function nativeSpineX(samples:Int8Array,worldY:number,worldWidth:number) {
-  const phase=((worldY%viewportLength)+viewportLength)%viewportLength;
-  const sample=phase/viewportLength*samples.length,index=Math.floor(sample)%samples.length,next=(index+1)%samples.length,fraction=sample-Math.floor(sample);
-  const signed=(samples[index]*(1-fraction)+samples[next]*fraction)/128;
-  return .5+(spinePathX(worldY)+signed*.65)/worldWidth;
-}
+export const nativeSpineX=waveformX;
 const compile=(source=''):Equation=>new Function('a',`${source}; return a;`) as Equation;
 export function createNativeSpinePreset(authored:unknown,tuning?:()=>{position:number;width:number;length:number;speed:number;persistence:number}) {
   const preset=structuredClone(authored) as AuthoredPreset;
@@ -37,25 +32,22 @@ export function installNativeSpine(gl:WebGL2RenderingContext,renderer:NativeStag
   const vs=shader(gl.VERTEX_SHADER,`#version 300 es\nin vec2 point;in vec3 tint;out vec3 color;uniform float offset;void main(){gl_Position=vec4(point+vec2(offset,0.),0.,1.);color=tint;}`);
   const fs=shader(gl.FRAGMENT_SHADER,`#version 300 es\nprecision highp float;in vec3 color;out vec4 outputColor;uniform float alpha;uniform float core;void main(){outputColor=vec4(mix(color,vec3(.98,.99,1.),core),alpha);}`);
   const program=gl.createProgram()!;gl.attachShader(program,vs);gl.attachShader(program,fs);gl.bindAttribLocation(program,0,'point');gl.bindAttribLocation(program,1,'tint');gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program)||'Native spine link failed');
-  const vao=gl.createVertexArray()!,buffer=gl.createBuffer()!;const points=new Float32Array((input.samples.length+1)*5);
+  const vao=gl.createVertexArray()!,buffer=gl.createBuffer()!;const points=new Float32Array(8192*5);
   gl.bindVertexArray(vao);gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,points.byteLength,gl.DYNAMIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,20,0);gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,3,gl.FLOAT,false,20,8);gl.bindVertexArray(null);
   const offset=gl.getUniformLocation(program,'offset'),alpha=gl.getUniformLocation(program,'alpha'),core=gl.getUniformLocation(program,'core');
   renderer.basicWaveform.drawBasicWaveform=()=>{
     if(!input.injecting)return;input.onDeposit();
     const colors:Record<ThemeId,number[]>={prism:[.4,.6,1],garden:[.3,.86,.66],horizon:[.72,.5,1]},color=colors[input.theme];
-    for(let i=0;i<=input.samples.length;i++){
-      const screenY=i/input.samples.length*6,y=((screenY+input.position)%6+6)%6;
-
-      // Native comp flips framebuffer UV.y; deposit bottom-up so displayed s=0 is the top.
-      points[i*5]=2*nativeSpineX(input.samples,screenY+input.position,input.worldWidth)-1;points[i*5+1]=2*screenY/6-1;
-      for(let channel=0;channel<3;channel++)points[i*5+2+channel]=color[channel]+input.envelope[Math.floor(y/6*input.envelope.length)%input.envelope.length]*.08;
-    }
+    input.geometry=buildTreeGeometry(input.samples,input.position,input.worldWidth);
+    const ranges:{start:number;count:number}[]=[];let count=0;
+    for(const line of input.geometry.lines){const start=count;for(let i=0;i<line.length;i+=2){points[count*5]=line[i]*2-1;points[count*5+1]=line[i+1]*2-1;for(let channel=0;channel<3;channel++)points[count*5+2+channel]=color[channel];count++;}ranges.push({start,count:count-start});}
+    const draw=()=>{for(const range of ranges)gl.drawArrays(gl.LINE_STRIP,range.start,range.count);};
     const previousVao=gl.getParameter(gl.VERTEX_ARRAY_BINDING),previousProgram=gl.getParameter(gl.CURRENT_PROGRAM),previousBuffer=gl.getParameter(gl.ARRAY_BUFFER_BINDING);
     const blend=gl.isEnabled(gl.BLEND),eqRgb=gl.getParameter(gl.BLEND_EQUATION_RGB),eqAlpha=gl.getParameter(gl.BLEND_EQUATION_ALPHA),srcRgb=gl.getParameter(gl.BLEND_SRC_RGB),dstRgb=gl.getParameter(gl.BLEND_DST_RGB),srcAlpha=gl.getParameter(gl.BLEND_SRC_ALPHA),dstAlpha=gl.getParameter(gl.BLEND_DST_ALPHA);
-    gl.useProgram(program);gl.bindVertexArray(vao);gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,points);gl.enable(gl.BLEND);gl.blendEquation(gl.FUNC_ADD);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+    gl.useProgram(program);gl.bindVertexArray(vao);gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,points.subarray(0,count*5));gl.enable(gl.BLEND);gl.blendEquation(gl.FUNC_ADD);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
     gl.uniform1f(core,0);
     // Fixed Gaussian halo, deposited into native history with the same sample geometry.
-    for(const dx of [-4,-3,-2,-1,1,2,3,4]){gl.uniform1f(alpha,.42*Math.exp(-dx*dx/(2*1.6*1.6)));gl.uniform1f(offset,dx*2/renderer.texsizeX);gl.drawArrays(gl.LINE_STRIP,0,input.samples.length+1);}
+    for(const dx of [-4,-3,-2,-1,1,2,3,4]){gl.uniform1f(alpha,.42*Math.exp(-dx*dx/(2*1.6*1.6)));gl.uniform1f(offset,dx*2/renderer.texsizeX);draw();}
     gl.uniform1f(core,1);gl.uniform1f(alpha,1);gl.uniform1f(offset,0);gl.drawArrays(gl.LINE_STRIP,0,input.samples.length+1);
     gl.bindVertexArray(previousVao);gl.useProgram(previousProgram);gl.bindBuffer(gl.ARRAY_BUFFER,previousBuffer);gl.blendEquationSeparate(eqRgb,eqAlpha);gl.blendFuncSeparate(srcRgb,dstRgb,srcAlpha,dstAlpha);if(!blend)gl.disable(gl.BLEND);
   };

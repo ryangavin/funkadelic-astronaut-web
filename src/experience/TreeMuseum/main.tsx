@@ -62,20 +62,21 @@ function TreeMuseum() {
     if(startingPreset.current)void selectLibrary(startingPreset.current);
     const updateLabels = () => {
       const position=renderer.current?.position || 0;
-      const trace=renderer.current?.getSpineTrace();
-      if(trace){let d='';for(let i=0;i<trace.length;i+=2)d+=`${i?'L':'M'}${(trace[i]*1000).toFixed(2)} ${(trace[i+1]*1000).toFixed(2)}`;foregroundUnderstroke.current?.setAttribute('d',d);foreground.current?.setAttribute('d',d);foregroundHalo.current?.setAttribute('d',d);}
+      const geometry=renderer.current?.getTreeGeometry();
+      if(geometry){let d='';for(const trace of geometry.lines)for(let i=0;i<trace.length;i+=2)d+=`${i?'L':'M'}${(trace[i]*1000).toFixed(2)} ${(trace[i+1]*1000).toFixed(2)}`;foregroundUnderstroke.current?.setAttribute('d',d);foreground.current?.setAttribute('d',d);foregroundHalo.current?.setAttribute('d',d);}
       labels.current.forEach((label,index)=>{
         if (!label) return;
         const y=wrapJourney(projects[index].worldY-position);
         const visible=y>.65&&y<viewportLength-.55;
-        const point=renderer.current?.getSpinePoint(projects[index].worldY);
+        const point=renderer.current?.getProjectPoint(index);
         const branch=branches.current[index];
-        if(branch&&point){
+        if(branch)branch.style.display=visible&&point?'':'none';
+        if(branch&&point&&visible){
           branch.style.display=visible?'':'none';
           const rect=label.getBoundingClientRect(),endX=(projects[index].side<0?rect.right:rect.left)/innerWidth*1000;
           const x=point.x*1000,sy=point.y*1000;
           branch.querySelector('path')?.setAttribute('d',`M ${x} ${sy} C ${x+(endX-x)*.18} ${sy+projects[index].side*35}, ${endX-(endX-x)*.28} ${sy-projects[index].side*18}, ${endX} ${sy}`);
-          branch.querySelector('.museum-branch-twig')?.setAttribute('d',`M ${x} ${sy} C ${x+(endX-x)*.2} ${sy+projects[index].side*35}, ${x+(endX-x)*.45} ${sy+projects[index].side*50}, ${x+(endX-x)*.62} ${sy+projects[index].side*55}`);
+
           branch.querySelector('circle')?.setAttribute('cx',String(x));branch.querySelector('circle')?.setAttribute('cy',String(sy));
         }
         label.hidden=!visible; label.tabIndex=visible?0:-1;
@@ -177,7 +178,7 @@ function TreeMuseum() {
     <nav className="museum-chapter-nav" aria-label={t('museum.journey.chapters')}>
       {chapters.map(chapter=><button key={chapter.owner} onClick={()=>{renderer.current?.jump(chapter.worldY-1.4);setExplored(true);}}>{chapter.owner}<small>{chapter.count}</small></button>)}
     </nav>
-    <svg className="museum-connections" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">{projects.map((project,index)=><g key={project.url} ref={element=>{branches.current[index]=element;}} style={{display:'none'}}><path/><path className="museum-branch-twig"/><circle r="2.5"/></g>)}</svg>
+    <svg className="museum-connections" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">{projects.map((project,index)=><g key={project.url} ref={element=>{branches.current[index]=element;}} style={{display:'none'}}><path/><circle r="2.5"/></g>)}</svg>
     <nav className="museum-projects" aria-label={t('museum.projects')}>
       {chapters.map((chapter,index)=><div className="museum-chapter" key={chapter.owner} hidden><small>{String(index+1).padStart(2,'0')} / {t('museum.journey.public',{count:String(chapter.count)})}</small><h2>{chapter.owner}</h2></div>)}
       {projects.map((project,index)=><button className={`museum-project museum-project-${project.side<0?'left':'right'}`} key={project.url} ref={element=>{labels.current[index]=element;}} type="button" style={project.side<0?{left:`${4+(index%3)*3}%`}:{right:`${4+(index%3)*3}%`}} hidden onClick={()=>setActive(index)} aria-haspopup="dialog">
