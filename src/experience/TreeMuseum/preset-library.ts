@@ -1,10 +1,16 @@
 import catalogue from '../../content/museum-presets.json';
 export const presetCatalogue=catalogue as {id:string;name:string}[];
+export const quietPresetId='71c4cbf00017ee5e36ca155d';
 export function initialPreset():string|null {
   const query=new URLSearchParams(location.search).get('preset');let saved:string|null=null;
   try{saved=localStorage.getItem('treeMuseum.preset');}catch{/* Storage may be disabled. */}
   const requested=query||(new URLSearchParams(location.search).has('theme')?null:saved);
-  return presetCatalogue.find(preset=>preset.id===requested)?.id||null;
+  const known=presetCatalogue.find(preset=>preset.id===requested)?.id;
+  if(known)return known;
+  const params=new URLSearchParams(location.search);
+  if(params.has('preset')||params.has('theme')||saved)return null;
+  try{if(localStorage.getItem('treeMuseum.theme'))return null;}catch{/* Storage may be disabled. */}
+  return quietPresetId;
 }
 export async function loadLibraryPreset(id:string,signal:AbortSignal):Promise<unknown> {
   if(!presetCatalogue.some(preset=>preset.id===id))throw new Error('Unknown preset');

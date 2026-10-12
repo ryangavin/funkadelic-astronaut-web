@@ -5,7 +5,7 @@ import { createMuseumRenderer } from './renderer';
 import type { MuseumPerformance } from './performance';
 import { themes, initialTheme, type ThemeId } from './themes';
 import { PresetBrowser } from './PresetBrowser';
-import { initialPreset, loadLibraryPreset, presetCatalogue } from './preset-library';
+import { initialPreset, loadLibraryPreset, presetCatalogue, quietPresetId } from './preset-library';
 import { chapters, projects, viewportLength, wrapJourney } from './journey';
 import './museum.css';
 
@@ -154,6 +154,7 @@ function TreeMuseum() {
       <button type="button" aria-label={t('museum.reset')} title={t('museum.reset')} onClick={()=>renderer.current?.reset()}><span aria-hidden="true">↺</span></button>
     </div>
     <div className="museum-themes" role="toolbar" aria-label={t('museum.themes.label')}>
+      <button type="button" aria-pressed={presetId===quietPresetId} onClick={()=>{void selectLibrary(quietPresetId);}}>{t('museum.presets.quietCurrent')}</button>
       {themes.map((item,index)=><button key={item.id} ref={button=>{themeButtons.current[index]=button;}} type="button" aria-pressed={presetId===null&&theme===item.id} onClick={()=>chooseTheme(item.id)} onKeyDown={event=>{
         const next=event.key==='ArrowRight'?(index+1)%themes.length:event.key==='ArrowLeft'?(index+themes.length-1)%themes.length:event.key==='Home'?0:event.key==='End'?themes.length-1:-1;
         if(next<0) return;event.preventDefault();event.stopPropagation();chooseTheme(themes[next].id);themeButtons.current[next]?.focus();

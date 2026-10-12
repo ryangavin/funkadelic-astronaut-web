@@ -73,3 +73,5 @@ Previous, next and shuffle controls remain visible beside the preset browser. Ou
 ## Readable foreground tree
 
 The updated design intentionally places a brighter foreground trace above the preset, over a restrained contrast layer. This is an authorized presentation treatment: both foreground and native deposition use the same shared centerline and interpolated last-deposited audio samples. The foreground has no independent oscillator or decorative signal. Curved repository branches attach to that same exact native input geometry. A wider, more rapidly wandering periodic path spans the viewport while the native preset camera remains fixed. Text and branch contrast are strengthened for browsing. Paused/reduced-motion navigation retains the last deposited geometry until native rendering resumes.
+
+Fresh visitors default to Geiss - Cauldron - painterly4 (`71c4cbf00017ee5e36ca155d`), a curated quiet current. Explicit preset/theme URL choices and stored preset/theme choices take precedence. The Quiet Current quickpick makes the calmer selection available to returning visitors without resetting their saved preference.
